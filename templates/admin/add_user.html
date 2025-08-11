@@ -82,13 +82,10 @@
                         </div>
 
                         <div class="mb-3">
-                            {{ form.bio.label(class="form-label") }}
-                            {{ form.bio(class="form-control", rows="3") }}
-                            {% if form.bio.errors %}
-                                <div class="text-danger small">
-                                    {% for error in form.bio.errors %}{{ error }}{% endfor %}
-                                </div>
-                            {% endif %}
+                            <div class="form-check form-switch">
+                                {{ form.is_active(class="form-check-input") }}
+                                {{ form.is_active.label(class="form-check-label") }}
+                            </div>
                         </div>
 
                         <div class="mb-3">

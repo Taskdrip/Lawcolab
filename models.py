@@ -31,6 +31,10 @@ class User(UserMixin, db.Model):
     assigned_projects = db.relationship('ProjectAssignment', back_populates='user', foreign_keys='ProjectAssignment.user_id', cascade='all, delete-orphan')
     client_notes = db.relationship('ClientNote', back_populates='client', foreign_keys='ClientNote.client_id')
     created_notes = db.relationship('ClientNote', back_populates='created_by_user', foreign_keys='ClientNote.created_by_id')
+    
+    # Chat relationships
+    sent_messages = db.relationship('ChatMessage', back_populates='sender', foreign_keys='ChatMessage.sender_id')
+    received_messages = db.relationship('ChatMessage', back_populates='receiver', foreign_keys='ChatMessage.receiver_id')
 
     @property
     def full_name(self):
@@ -166,3 +170,44 @@ class ClientNote(db.Model):
     # Relationships
     client = db.relationship('User', back_populates='client_notes', foreign_keys=[client_id])
     created_by_user = db.relationship('User', back_populates='created_notes', foreign_keys=[created_by_id])
+
+
+
+class ChatMessage(db.Model):
+    __tablename__ = 'chat_messages'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    receiver_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.now)
+    is_read = db.Column(db.Boolean, default=False)
+    
+    # Relationships
+    sender = db.relationship('User', back_populates='sent_messages', foreign_keys=[sender_id])
+    receiver = db.relationship('User', back_populates='received_messages', foreign_keys=[receiver_id])
+    
+    def __repr__(self):
+        return f'<ChatMessage from {self.sender_id} to {self.receiver_id}>'
+
+class ChatConversation(db.Model):
+    __tablename__ = 'chat_conversations'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user1_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    user2_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    last_message_at = db.Column(db.DateTime, default=datetime.now)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    
+    # Relationships
+    user1 = db.relationship('User', foreign_keys=[user1_id])
+    user2 = db.relationship('User', foreign_keys=[user2_id])
+    
+    __table_args__ = (UniqueConstraint('user1_id', 'user2_id', name='unique_conversation'),)
+    
+    def get_other_user(self, current_user_id):
+        """Get the other user in the conversation"""
+        return self.user2 if self.user1_id == current_user_id else self.user1
+    
+    def __repr__(self):
+        return f'<ChatConversation between {self.user1_id} and {self.user2_id}>'

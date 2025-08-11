@@ -11,6 +11,7 @@ from blueprints.clients import clients_bp
 from blueprints.projects import projects_bp
 from blueprints.team import team_bp
 from blueprints.public import public_bp
+from blueprints.chat import chat_bp
 
 # Register blueprints
 app.register_blueprint(auth_bp, url_prefix="/auth")
@@ -20,6 +21,7 @@ app.register_blueprint(clients_bp, url_prefix="/clients")
 app.register_blueprint(projects_bp, url_prefix="/projects")
 app.register_blueprint(team_bp, url_prefix="/team")
 app.register_blueprint(public_bp, url_prefix="/public")
+app.register_blueprint(chat_bp, url_prefix="/chat")
 
 # Make session permanent
 @app.before_request
