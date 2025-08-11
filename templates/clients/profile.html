@@ -152,6 +152,9 @@
                         <a href="{{ url_for('clients.list_clients') }}" class="btn btn-outline-primary">
                             <i class="fas fa-arrow-left me-2"></i>Back to Clients
                         </a>
+                        <a href="{{ url_for('chat.conversation_with', user_id=client.id) }}" class="btn btn-success">
+                            <i class="fas fa-comments me-2"></i>Start Chat
+                        </a>
                         {% endif %}
                         {% if projects %}
                         <a href="{{ url_for('projects.list_projects') }}" class="btn btn-outline-primary">
@@ -159,7 +162,7 @@
                         </a>
                         {% endif %}
                         {% if current_user.is_admin() %}
-                        <a href="{{ url_for('admin.edit_user_profile', user_id=client.id) }}" class="btn btn-outline-secondary">
+                        <a href="{{ url_for('admin.edit_user', user_id=client.id) }}" class="btn btn-outline-secondary">
                             <i class="fas fa-edit me-2"></i>Edit Profile
                         </a>
                         {% endif %}
