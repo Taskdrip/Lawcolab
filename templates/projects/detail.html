@@ -259,7 +259,11 @@
                             {% for user in all_users %}
                                 {% set is_assigned = project.assignments|selectattr('user_id', 'equalto', user.id)|list|length > 0 %}
                                 {% if not is_assigned %}
-                                <option value="{{ user.id }}">{{ user.full_name }} ({{ user.role.replace('_', ' ').title() }})</option>
+                                <option value="{{ user.id }}">
+                                    {{ user.display_name }} 
+                                    ({{ user.role.replace('_', ' ').title() }})
+                                    {% if user.role == 'client' and user.company_name %} - {{ user.company_name }}{% endif %}
+                                </option>
                                 {% endif %}
                             {% endfor %}
                         </select>

@@ -81,7 +81,7 @@ def project_detail(project_id):
     # Get all users for assignment (admin/team member only)
     all_users = []
     if current_user.is_admin() or current_user.is_team_member():
-        all_users = User.query.filter(User.role.in_(['team_member', 'client'])).all()
+        all_users = User.query.filter_by(active=True).order_by(User.role, User.first_name, User.last_name).all()
     
     from datetime import date
     return render_template('projects/detail.html', 
@@ -117,8 +117,72 @@ def assign_user(project_id):
             assigned_by_id=current_user.id
         )
         db.session.add(assignment)
-        db.session.commit()
-        flash(f'{user.full_name} has been assigned to the project.', 'success')
+        
+        # Implement seamless tagging for lawyer-client connections
+        try:
+            db.session.flush()
+            
+            # Get current project assignments to check for automatic connections
+            project_assignments = ProjectAssignment.query.filter_by(project_id=project_id).all()
+            clients = [a.user for a in project_assignments if a.user.role == 'client']
+            lawyers = [a.user for a in project_assignments if a.user.role in ['admin', 'team_member']]
+            
+            # Create automatic chat connections between clients and lawyers
+            if user.role == 'client':
+                # New client assigned, connect to all existing lawyers
+                for lawyer in lawyers:
+                    if lawyer.id != user.id:
+                        # Check if conversation already exists
+                        from models import ChatConversation
+                        from sqlalchemy import or_, and_
+                        existing_conversation = ChatConversation.query.filter(
+                            or_(
+                                and_(ChatConversation.user1_id == user.id, ChatConversation.user2_id == lawyer.id),
+                                and_(ChatConversation.user1_id == lawyer.id, ChatConversation.user2_id == user.id)
+                            )
+                        ).first()
+                        
+                        if not existing_conversation:
+                            conversation = ChatConversation(
+                                user1_id=min(user.id, lawyer.id),
+                                user2_id=max(user.id, lawyer.id)
+                            )
+                            db.session.add(conversation)
+            elif user.role in ['admin', 'team_member']:
+                # New lawyer assigned, connect to all existing clients
+                for client in clients:
+                    if client.id != user.id:
+                        # Check if conversation already exists
+                        from models import ChatConversation
+                        from sqlalchemy import or_, and_
+                        existing_conversation = ChatConversation.query.filter(
+                            or_(
+                                and_(ChatConversation.user1_id == user.id, ChatConversation.user2_id == client.id),
+                                and_(ChatConversation.user1_id == client.id, ChatConversation.user2_id == user.id)
+                            )
+                        ).first()
+                        
+                        if not existing_conversation:
+                            conversation = ChatConversation(
+                                user1_id=min(user.id, client.id),
+                                user2_id=max(user.id, client.id)
+                            )
+                            db.session.add(conversation)
+            
+            db.session.commit()
+            
+            # Success message with seamless tagging info
+            connection_count = len(clients) if user.role in ['admin', 'team_member'] else len(lawyers)
+            if connection_count > 0:
+                flash(f'{user.full_name} has been assigned to the project with automatic chat connections established!', 'success')
+            else:
+                flash(f'{user.full_name} has been assigned to the project.', 'success')
+        except Exception as e:
+            db.session.rollback()
+            db.session.add(assignment)
+            db.session.commit()
+            flash(f'{user.full_name} has been assigned to the project.', 'success')
+            print(f"Seamless tagging error: {e}")
     
     return redirect(url_for('projects.project_detail', project_id=project_id))
 
