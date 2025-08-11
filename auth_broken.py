@@ -31,9 +31,9 @@ def login():
                     if user.is_admin():
                         next_page = url_for('admin.admin_dashboard')
                     elif user.is_team_member():
-                        next_page = url_for('index')
+                        next_page = url_for('dashboard.team_member_dashboard')
                     else:
-                        next_page = url_for('index')
+                        next_page = url_for('dashboard.client_dashboard')
                 return redirect(next_page)
             else:
                 flash('Invalid email or password', 'error')
@@ -86,17 +86,23 @@ def profile():
     form = ProfileForm(obj=current_user)
     
     if form.validate_on_submit():
+        # Check if email is being changed and if it's already taken
+        if form.email.data.lower() != current_user.email:
+            existing_user = User.query.filter_by(email=form.email.data.lower()).first()
+            if existing_user:
+                flash('Email address is already in use.', 'error')
+                return render_template('auth/profile.html', form=form)
+        
         current_user.first_name = form.first_name.data
         current_user.last_name = form.last_name.data
-        email = form.email.data
-        if email:
-            current_user.email = email.lower()
+        current_user.email = form.email.data.lower()
         current_user.phone = form.phone.data
         current_user.bio = form.bio.data
         
         try:
             db.session.commit()
             flash('Profile updated successfully!', 'success')
+            return redirect(url_for('auth.profile'))
         except Exception as e:
             db.session.rollback()
             flash('Failed to update profile. Please try again.', 'error')
@@ -109,16 +115,18 @@ def change_password():
     form = ChangePasswordForm()
     
     if form.validate_on_submit():
-        if current_user.check_password(form.current_password.data):
-            current_user.set_password(form.new_password.data)
-            try:
-                db.session.commit()
-                flash('Password changed successfully!', 'success')
-                return redirect(url_for('auth.profile'))
-            except Exception as e:
-                db.session.rollback()
-                flash('Failed to change password. Please try again.', 'error')
-        else:
+        if not current_user.check_password(form.current_password.data):
             flash('Current password is incorrect.', 'error')
+            return render_template('auth/change_password.html', form=form)
+        
+        current_user.set_password(form.new_password.data)
+        
+        try:
+            db.session.commit()
+            flash('Password changed successfully!', 'success')
+            return redirect(url_for('auth.profile'))
+        except Exception as e:
+            db.session.rollback()
+            flash('Failed to change password. Please try again.', 'error')
     
     return render_template('auth/change_password.html', form=form)

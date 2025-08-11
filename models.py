@@ -21,7 +21,7 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String, default=ROLE_CLIENT, nullable=False)
     phone = db.Column(db.String, nullable=True)
     bio = db.Column(db.Text, nullable=True)
-    is_active = db.Column(db.Boolean, default=True)
+    active = db.Column(db.Boolean, default=True)
     password_hash = db.Column(db.String(256), nullable=True)  # For email/password login
     
     created_at = db.Column(db.DateTime, default=datetime.now)
@@ -53,6 +53,9 @@ class User(UserMixin, db.Model):
 
     def is_client(self):
         return self.role == ROLE_CLIENT
+    
+    def is_active(self):
+        return self.active
 
     def set_password(self, password):
         """Hash and store password"""
