@@ -211,3 +211,15 @@ class ChatConversation(db.Model):
     
     def __repr__(self):
         return f'<ChatConversation between {self.user1_id} and {self.user2_id}>'
+
+class ProjectMessage(db.Model):
+    __tablename__ = 'project_messages'
+    id = db.Column(db.Integer, primary_key=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
+    user_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    
+    # Relationships
+    project = db.relationship('Project', backref='project_messages')
+    user = db.relationship('User', backref='sent_project_messages')

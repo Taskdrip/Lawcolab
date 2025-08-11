@@ -48,6 +48,14 @@ def load_user(user_id):
     from models import User
     return User.query.get(user_id)
 
+# Custom template filter for line breaks
+@app.template_filter('nl2br')
+def nl2br_filter(text):
+    """Convert newlines to <br> tags"""
+    if text is None:
+        return ''
+    return text.replace('\n', '<br>')
+
 # Create tables
 with app.app_context():
     import models  # noqa: F401

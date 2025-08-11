@@ -4,7 +4,7 @@ from replit_auth import require_login
 from utils.decorators import require_team_member_or_admin
 from utils.forms import ProjectForm
 from app import db
-from models import Project, ProjectAssignment, User, ProjectFile
+from models import Project, ProjectAssignment, User, ProjectFile, ProjectMessage
 import os
 from werkzeug.utils import secure_filename
 import uuid
@@ -190,3 +190,78 @@ def upload_file(project_id):
         flash('File uploaded successfully!', 'success')
     
     return redirect(url_for('projects.project_detail', project_id=project_id))
+
+@projects_bp.route('/<int:project_id>/chat')
+@require_login
+def project_chat(project_id):
+    """Project chat page for collaboration"""
+    project = Project.query.get_or_404(project_id)
+    
+    # Check if user has access to this project
+    if current_user.is_client():
+        assignment = ProjectAssignment.query.filter_by(
+            project_id=project_id, 
+            user_id=current_user.id
+        ).first()
+        if not assignment:
+            flash('You do not have access to this project.', 'error')
+            return redirect(url_for('projects.list_projects'))
+    elif current_user.is_team_member():
+        if project.created_by_id != current_user.id:
+            assignment = ProjectAssignment.query.filter_by(
+                project_id=project_id, 
+                user_id=current_user.id
+            ).first()
+            if not assignment:
+                flash('You do not have access to this project.', 'error')
+                return redirect(url_for('projects.list_projects'))
+    
+    # Get chat messages
+    messages = ProjectMessage.query.filter_by(project_id=project_id).order_by(ProjectMessage.created_at.asc()).all()
+    
+    return render_template('projects/chat.html', 
+                         project=project, 
+                         messages=messages)
+
+@projects_bp.route('/<int:project_id>/chat/send', methods=['POST'])
+@require_login
+def send_message(project_id):
+    """Send a message to project chat"""
+    project = Project.query.get_or_404(project_id)
+    message_text = request.form.get('message', '').strip()
+    
+    if not message_text:
+        flash('Message cannot be empty.', 'error')
+        return redirect(url_for('projects.project_chat', project_id=project_id))
+    
+    # Check access
+    if current_user.is_client():
+        assignment = ProjectAssignment.query.filter_by(
+            project_id=project_id, 
+            user_id=current_user.id
+        ).first()
+        if not assignment:
+            flash('You do not have access to this project.', 'error')
+            return redirect(url_for('projects.list_projects'))
+    elif current_user.is_team_member():
+        if project.created_by_id != current_user.id:
+            assignment = ProjectAssignment.query.filter_by(
+                project_id=project_id, 
+                user_id=current_user.id
+            ).first()
+            if not assignment:
+                flash('You do not have access to this project.', 'error')
+                return redirect(url_for('projects.list_projects'))
+    
+    # Create message
+    message = ProjectMessage(
+        project_id=project_id,
+        user_id=current_user.id,
+        message=message_text
+    )
+    
+    db.session.add(message)
+    db.session.commit()
+    
+    flash('Message sent successfully!', 'success')
+    return redirect(url_for('projects.project_chat', project_id=project_id))

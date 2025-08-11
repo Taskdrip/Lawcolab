@@ -131,8 +131,8 @@
                             <i class="fas fa-users me-2"></i>Assigned Users
                         </h5>
                         {% if current_user.is_admin() or current_user.is_team_member() %}
-                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#assignModal">
-                            <i class="fas fa-plus"></i>
+                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#assignModal">
+                            <i class="fas fa-plus me-1"></i>Add User
                         </button>
                         {% endif %}
                     </div>
@@ -193,6 +193,9 @@
                     <div class="d-grid gap-2">
                         <a href="{{ url_for('projects.list_projects') }}" class="btn btn-outline-primary">
                             <i class="fas fa-arrow-left me-2"></i>Back to Projects
+                        </a>
+                        <a href="{{ url_for('projects.project_chat', project_id=project.id) }}" class="btn btn-success">
+                            <i class="fas fa-comments me-2"></i>Project Chat
                         </a>
                         {% if current_user.is_admin() or current_user.is_team_member() %}
                         <button class="btn btn-outline-secondary" onclick="alert('Edit project functionality would be implemented here')">
