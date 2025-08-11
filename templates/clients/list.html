@@ -36,10 +36,9 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
                         <div class="me-3">
-                            {% set user = client %}
-                            {% set size = 'sm' %}
-                            {% set show_badge = true %}
-                            {% include 'components/user_avatar.html' %}
+                            {% with user=client, size='sm', show_badge=true %}
+                                {% include 'components/user_avatar.html' %}
+                            {% endwith %}
                         </div>
                         
                         <div>

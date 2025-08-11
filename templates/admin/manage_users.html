@@ -35,10 +35,9 @@
                             <td>
                                 <div class="d-flex align-items-center">
                                     <div class="me-2">
-                                        {% set avatar_user = user %}
-                                        {% set size = 'xs' %}
-                                        {% set show_badge = true %}
-                                        {% include 'components/user_avatar.html' %}
+                                        {% with user=user, size='xs', show_badge=true %}
+                                            {% include 'components/user_avatar.html' %}
+                                        {% endwith %}
                                     </div>
                                     <div>
                                         <div class="fw-medium">{{ user.full_name }}</div>

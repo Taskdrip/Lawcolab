@@ -41,16 +41,22 @@
     }
 } %}
 
-{% set avatar_user = avatar_user or user %}
+{% set avatar_user = user %}
 {% set config = role_config[avatar_user.role] %}
 
 <div class="position-relative d-inline-block">
     {% if avatar_user.profile_image_url %}
-        <img src="{{ avatar_user.profile_image_url }}" 
+        <img src="{{ '/uploads/' + avatar_user.profile_image_url if not avatar_user.profile_image_url.startswith(('http://', 'https://')) else avatar_user.profile_image_url }}" 
              alt="{{ avatar_user.display_name }}" 
              class="rounded-3 border border-3 shadow-sm" 
              width="{{ current_size.width }}" height="{{ current_size.height }}" 
-             style="object-fit: cover; border-color: {{ config.color }} !important;">
+             style="object-fit: cover; border-color: {{ config.color }} !important;"
+             onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <!-- Fallback div that shows when image fails to load -->
+        <div class="rounded-3 d-flex align-items-center justify-content-center border border-3 shadow-sm" 
+             style="width: {{ current_size.width }}; height: {{ current_size.height }}; background: {{ config.gradient }}; border-color: {{ config.color }} !important; display: none;">
+            <i class="fas fa-{{ 'building' if avatar_user.company_name and avatar_user.role == 'client' else config.icon }} text-white" style="font-size: {{ current_size.icon_size }};"></i>
+        </div>
     {% else %}
         <div class="rounded-3 d-flex align-items-center justify-content-center border border-3 shadow-sm" 
              style="width: {{ current_size.width }}; height: {{ current_size.height }}; background: {{ config.gradient }}; border-color: {{ config.color }} !important;">

@@ -15,10 +15,9 @@
                                 <i class="fas fa-arrow-left"></i>
                             </a>
                             <div class="flex-shrink-0 me-3">
-                                {% set user = other_user %}
-                                {% set size = 'sm' %}
-                                {% set show_badge = true %}
-                                {% include 'components/user_avatar.html' %}
+                                {% with user=other_user, size='sm', show_badge=true %}
+                                    {% include 'components/user_avatar.html' %}
+                                {% endwith %}
                             </div>
                             <div>
                                 <h4 class="mb-1 fw-bold">{{ other_user.display_name }}</h4>
@@ -61,10 +60,9 @@
                         <div class="d-flex {% if message.sender_id == current_user.id %}justify-content-end{% else %}justify-content-start{% endif %} mb-4">
                             {% if message.sender_id != current_user.id %}
                             <div class="flex-shrink-0 me-3">
-                                {% set user = other_user %}
-                                {% set size = 'xs' %}
-                                {% set show_badge = false %}
-                                {% include 'components/user_avatar.html' %}
+                                {% with user=other_user, size='xs', show_badge=false %}
+                                    {% include 'components/user_avatar.html' %}
+                                {% endwith %}
                             </div>
                             {% endif %}
                             
@@ -84,10 +82,9 @@
                             
                             {% if message.sender_id == current_user.id %}
                             <div class="flex-shrink-0 ms-3">
-                                {% set user = current_user %}
-                                {% set size = 'xs' %}
-                                {% set show_badge = false %}
-                                {% include 'components/user_avatar.html' %}
+                                {% with user=current_user, size='xs', show_badge=false %}
+                                    {% include 'components/user_avatar.html' %}
+                                {% endwith %}
                             </div>
                             {% endif %}
                         </div>

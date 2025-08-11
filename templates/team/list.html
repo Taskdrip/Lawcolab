@@ -23,10 +23,9 @@
                                 <div class="card border h-100">
                                     <div class="card-body text-center p-4">
                                         <div class="mb-3 d-flex justify-content-center">
-                                            {% set user = member %}
-                                            {% set size = 'lg' %}
-                                            {% set show_badge = true %}
-                                            {% include 'components/user_avatar.html' %}
+                                            {% with user=member, size='lg', show_badge=true %}
+                                                {% include 'components/user_avatar.html' %}
+                                            {% endwith %}
                                         </div>
                                         
                                         <h5 class="card-title mb-2">
