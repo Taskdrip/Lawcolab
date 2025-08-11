@@ -152,7 +152,7 @@
                         <a href="{{ url_for('clients.list_clients') }}" class="btn btn-outline-primary">
                             <i class="fas fa-arrow-left me-2"></i>Back to Clients
                         </a>
-                        <a href="{{ url_for('chat.conversation_with', user_id=client.id) }}" class="btn btn-success">
+                        <a href="{{ url_for('chat.conversation', user_id=client.id) }}" class="btn btn-success">
                             <i class="fas fa-comments me-2"></i>Start Chat
                         </a>
                         {% endif %}
