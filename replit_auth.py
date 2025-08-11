@@ -155,16 +155,22 @@ def require_login(f):
             session["next_url"] = get_next_navigation_url(request)
             return redirect(url_for('replit_auth.login'))
 
-        expires_in = replit.token.get('expires_in', 0)
-        if expires_in < 0:
-            refresh_token_url = issuer_url + "/token"
-            try:
-                token = replit.refresh_token(token_url=refresh_token_url,
-                                             client_id=os.environ['REPL_ID'])
-            except InvalidGrantError:
-                session["next_url"] = get_next_navigation_url(request)
-                return redirect(url_for('replit_auth.login'))
-            replit.token_updater(token)
+        # Check if this is a Replit OAuth user (has token) or email/password user
+        try:
+            if hasattr(g, 'flask_dance_replit') and replit.token:
+                expires_in = replit.token.get('expires_in', 0)
+                if expires_in < 0:
+                    refresh_token_url = issuer_url + "/token"
+                    try:
+                        token = replit.refresh_token(token_url=refresh_token_url,
+                                                     client_id=os.environ['REPL_ID'])
+                    except InvalidGrantError:
+                        session["next_url"] = get_next_navigation_url(request)
+                        return redirect(url_for('replit_auth.login'))
+                    replit.token_updater(token)
+        except (AttributeError, KeyError):
+            # This is likely an email/password user, skip token refresh
+            pass
 
         return f(*args, **kwargs)
 

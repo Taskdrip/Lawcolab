@@ -1,30 +1,40 @@
 from functools import wraps
-from flask import abort
+from flask import redirect, url_for, flash, abort
 from flask_login import current_user
-from replit_auth import require_login
 
-def require_role(role):
-    """Decorator to require a specific role"""
-    def decorator(f):
-        @wraps(f)
-        @require_login
-        def decorated_function(*args, **kwargs):
-            if not current_user.has_role(role):
-                abort(403)
-            return f(*args, **kwargs)
-        return decorated_function
-    return decorator
+def simple_login_required(f):
+    """Simple login check without OAuth token verification"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            flash('Please log in to access this page.', 'warning')
+            return redirect(url_for('auth.login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 def require_admin(f):
-    """Decorator to require admin role"""
-    return require_role('admin')(f)
+    @wraps(f)
+    @simple_login_required
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_admin():
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
 
 def require_team_member_or_admin(f):
-    """Decorator to require team member or admin role"""
     @wraps(f)
-    @require_login
+    @simple_login_required
     def decorated_function(*args, **kwargs):
         if not (current_user.is_admin() or current_user.is_team_member()):
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
+
+def require_client_or_admin(f):
+    @wraps(f)
+    @simple_login_required
+    def decorated_function(*args, **kwargs):
+        if not (current_user.is_admin() or current_user.is_client()):
             abort(403)
         return f(*args, **kwargs)
     return decorated_function

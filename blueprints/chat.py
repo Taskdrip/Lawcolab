@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from flask_login import login_required, current_user
+from flask_login import current_user
+from utils.decorators import simple_login_required
 from app import db
 from models import User, ChatMessage, ChatConversation
 from sqlalchemy import or_, and_, desc
@@ -8,19 +9,8 @@ import json
 
 chat_bp = Blueprint('chat', __name__, template_folder='../templates')
 
-def require_authenticated(f):
-    """Decorator to ensure user is authenticated"""
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated:
-            flash('Please log in to access the chat system.', 'warning')
-            return redirect(url_for('auth.login'))
-        return f(*args, **kwargs)
-    decorated_function.__name__ = f.__name__
-    return decorated_function
-
 @chat_bp.route('/')
-@login_required
-@require_authenticated
+@simple_login_required
 def chat_home():
     """Main chat interface showing conversations list"""
     # Get all conversations for current user
@@ -55,8 +45,7 @@ def chat_home():
                          unread_counts=unread_counts)
 
 @chat_bp.route('/conversation/<user_id>')
-@login_required
-@require_authenticated
+@simple_login_required
 def conversation(user_id):
     """View conversation with a specific user"""
     other_user = User.query.get_or_404(user_id)
@@ -106,8 +95,7 @@ def conversation(user_id):
                          conversation=conversation)
 
 @chat_bp.route('/send_message', methods=['POST'])
-@login_required
-@require_authenticated
+@simple_login_required
 def send_message():
     """Send a message to another user"""
     try:
@@ -164,8 +152,7 @@ def send_message():
         return jsonify({'error': 'Failed to send message'}), 500
 
 @chat_bp.route('/api/messages/<user_id>')
-@login_required
-@require_authenticated
+@simple_login_required
 def get_messages(user_id):
     """Get messages with a specific user (API endpoint)"""
     try:
@@ -194,8 +181,7 @@ def get_messages(user_id):
         return jsonify({'error': 'Failed to fetch messages'}), 500
 
 @chat_bp.route('/api/unread_count')
-@login_required
-@require_authenticated
+@simple_login_required
 def get_unread_count():
     """Get total unread message count for current user"""
     try:
