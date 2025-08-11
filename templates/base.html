@@ -88,13 +88,13 @@
                 {% else %}
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('landing') }}">About</a>
+                        <a class="nav-link" href="{{ url_for('about') }}">About</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#features">Features</a>
+                        <a class="nav-link" href="{{ url_for('landing') }}">Features</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#contact">Contact</a>
+                        <a class="nav-link" href="{{ url_for('contact') }}">Contact</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>

@@ -50,6 +50,16 @@ def landing():
     """Comprehensive landing page"""
     return render_template('landing.html')
 
+@app.route('/about')
+def about():
+    """About Taskdrip and LawFirmOS page"""
+    return render_template('about.html')
+
+@app.route('/contact')
+def contact():
+    """Contact Taskdrip page"""
+    return render_template('contact.html')
+
 # Add route to serve uploaded files
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
