@@ -86,21 +86,19 @@ def add_user():
     
     if form.validate_on_submit():
         # Check if email already exists
-        email = form.email.data
-        if email:
-            existing_user = User.query.filter_by(email=email.lower()).first()
-            if existing_user:
-                flash('A user with this email already exists.', 'error')
-                return render_template('admin/add_user.html', form=form)
+        existing_user = User.query.filter_by(email=form.email.data.lower()).first()
+        if existing_user:
+            flash('A user with this email already exists.', 'error')
+            return render_template('admin/add_user.html', form=form)
         
         user = User()
         user.id = str(uuid.uuid4())
         user.first_name = form.first_name.data
         user.last_name = form.last_name.data
-        if email:
-            user.email = email.lower()
+        user.email = form.email.data.lower()
         user.phone = form.phone.data
         user.role = form.role.data
+        user.bio = form.bio.data
         user.set_password(form.password.data)
         user.active = True
         
@@ -126,11 +124,10 @@ def edit_user(user_id):
     if form.validate_on_submit():
         user.first_name = form.first_name.data
         user.last_name = form.last_name.data
-        email = form.email.data
-        if email:
-            user.email = email.lower()
+        user.email = form.email.data.lower()
         user.phone = form.phone.data
         user.role = form.role.data
+        user.bio = form.bio.data
         
         if form.password.data:
             user.set_password(form.password.data)
@@ -224,3 +221,53 @@ def assign_project(project_id):
 def team_management():
     """Team management overview"""
     return redirect(url_for('admin.list_users'))
+    
+    if form.validate_on_submit():
+        # Check if email is being changed and if it's already taken
+        if form.email.data.lower() != user.email:
+            existing_user = User.query.filter_by(email=form.email.data.lower()).first()
+            if existing_user:
+                flash('A user with this email already exists.', 'error')
+                return render_template('admin/edit_user.html', form=form, user=user)
+        
+        user.first_name = form.first_name.data
+        user.last_name = form.last_name.data
+        user.email = form.email.data.lower()
+        user.phone = form.phone.data
+        user.role = form.role.data
+        user.is_active = form.is_active.data
+        
+        if form.password.data:
+            user.set_password(form.password.data)
+        
+        try:
+            db.session.commit()
+            flash(f'User {user.full_name} updated successfully!', 'success')
+            return redirect(url_for('admin.manage_users'))
+        except Exception as e:
+            db.session.rollback()
+            flash('Failed to update user. Please try again.', 'error')
+    
+    return render_template('admin/edit_user.html', form=form, user=user)
+
+@admin_bp.route('/users/<user_id>/toggle-status', methods=['POST'])
+@require_admin
+def toggle_user_status(user_id):
+    """Toggle user active status"""
+    user = User.query.get_or_404(user_id)
+    
+    if user.id == current_user.id:
+        flash('You cannot deactivate your own account.', 'error')
+        return redirect(url_for('admin.manage_users'))
+    
+    user.is_active = not user.is_active
+    status = 'activated' if user.is_active else 'deactivated'
+    
+    try:
+        db.session.commit()
+        flash(f'User {user.full_name} has been {status}.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Failed to update user status.', 'error')
+    
+    return redirect(url_for('admin.manage_users'))

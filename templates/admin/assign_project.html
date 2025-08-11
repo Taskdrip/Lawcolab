@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Assign Team Members - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center mb-4">
+                <a href="{{ url_for('admin.list_projects') }}" class="btn btn-outline-secondary me-3">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <h1><i class="fas fa-user-friends me-2"></i>Assign Team Members</h1>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Project Details</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="fw-bold">{{ project.name }}</h6>
+                    <p class="text-muted mb-1">{{ project.description }}</p>
+                    <small class="text-muted">
+                        <i class="fas fa-user me-1"></i>Client: {{ project.client.full_name if project.client else 'Not assigned' }}
+                        <span class="ms-3">
+                            <i class="fas fa-calendar me-1"></i>Created: {{ project.created_at.strftime('%b %d, %Y') }}
+                        </span>
+                    </small>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Team Assignment</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-4">
+                            <p class="text-muted">Select team members to assign to this project:</p>
+                        </div>
+
+                        {% if team_members %}
+                        <div class="row">
+                            {% for member in team_members %}
+                            <div class="col-md-6 mb-3">
+                                <div class="admin-card">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" 
+                                               name="user_ids" value="{{ member.id }}"
+                                               id="user_{{ member.id }}"
+                                               {% if member.id in assigned_user_ids %}checked{% endif %}>
+                                        <label class="form-check-label w-100" for="user_{{ member.id }}">
+                                            <div class="d-flex align-items-center">
+                                                <div class="admin-card-icon me-3">
+                                                    <i class="fas fa-user"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-bold">{{ member.full_name }}</div>
+                                                    <div class="small text-muted">{{ member.email }}</div>
+                                                    <span class="badge 
+                                                        {% if member.role == 'admin' %}bg-danger
+                                                        {% else %}bg-primary{% endif %} small">
+                                                        {{ member.role.replace('_', ' ').title() }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <a href="{{ url_for('admin.list_projects') }}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Update Assignments
+                            </button>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-user-slash fa-3x text-muted mb-3"></i>
+                            <h5>No Team Members Available</h5>
+                            <p class="text-muted">Please add team members first before assigning projects.</p>
+                            <a href="{{ url_for('admin.add_user') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Add Team Member
+                            </a>
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
