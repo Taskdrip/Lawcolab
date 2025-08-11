@@ -34,17 +34,9 @@
                         <tr>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    {% if user.profile_image_url %}
-                                        <img src="{{ user.profile_image_url }}" 
-                                             alt="{{ user.full_name }}" 
-                                             class="rounded-circle me-2"
-                                             style="width: 32px; height: 32px; object-fit: cover;">
-                                    {% else %}
-                                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2"
-                                             style="width: 32px; height: 32px; color: white; font-size: 14px;">
-                                            {{ user.first_name[0] if user.first_name else 'U' }}
-                                        </div>
-                                    {% endif %}
+                                    <div class="me-2">
+                                        {% include 'components/user_avatar.html' with user=user, size='xs', show_badge=true %}
+                                    </div>
                                     <div>
                                         <div class="fw-medium">{{ user.full_name }}</div>
                                         {% if user.phone %}
@@ -55,11 +47,12 @@
                             </td>
                             <td>{{ user.email or 'No email' }}</td>
                             <td>
-                                <span class="badge 
+                                <span class="badge fw-bold px-2 py-1
                                     {% if user.role == 'admin' %}bg-danger
-                                    {% elif user.role == 'team_member' %}bg-primary
-                                    {% else %}bg-secondary{% endif %}">
-                                    {{ user.role.replace('_', ' ').title() }}
+                                    {% elif user.role == 'team_member' %}bg-success
+                                    {% else %}bg-primary{% endif %}">
+                                    <i class="fas fa-{{ 'crown' if user.role == 'admin' else 'gavel' if user.role == 'team_member' else 'handshake' }} me-1"></i>
+                                    {{ 'Administrator' if user.role == 'admin' else 'Lawyer' if user.role == 'team_member' else 'Client' }}
                                 </span>
                             </td>
                             <td>

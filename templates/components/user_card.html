@@ -1,0 +1,102 @@
+<!-- User Card Component with Role-Based Styling -->
+<!-- Usage: {% include 'components/user_card.html' with user=user_object, show_actions=true %}-->
+
+{% set role_config = {
+    'admin': {
+        'color': '#dc3545',
+        'gradient': 'linear-gradient(135deg, #dc3545, #ff6b6b)',
+        'bg_gradient': 'linear-gradient(135deg, #fff5f5, #ffffff)',
+        'icon': 'user-shield',
+        'badge_icon': 'crown',
+        'label': 'Administrator',
+        'badge_class': 'bg-danger'
+    },
+    'team_member': {
+        'color': '#198754',
+        'gradient': 'linear-gradient(135deg, #198754, #51cf66)',
+        'bg_gradient': 'linear-gradient(135deg, #f0fff4, #ffffff)',
+        'icon': 'user-tie',
+        'badge_icon': 'gavel',
+        'label': 'Lawyer',
+        'badge_class': 'bg-success'
+    },
+    'client': {
+        'color': '#0d6efd',
+        'gradient': 'linear-gradient(135deg, #0d6efd, #74c0fc)',
+        'bg_gradient': 'linear-gradient(135deg, #f0f8ff, #ffffff)',
+        'icon': 'building' if user.company_name else 'handshake',
+        'badge_icon': 'handshake',
+        'label': 'Client',
+        'badge_class': 'bg-primary'
+    }
+} %}
+
+{% set config = role_config[user.role] %}
+
+<div class="card border-0 shadow-sm h-100" style="background: {{ config.bg_gradient }};">
+    <div class="card-body p-3">
+        <div class="d-flex align-items-center">
+            <div class="me-3">
+                {% include 'components/user_avatar.html' with user=user, size='md', show_badge=true %}
+            </div>
+            <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1 fw-bold text-dark">
+                            {% if user.is_client() and show_profile_link|default(true) %}
+                                <a href="{{ url_for('clients.client_profile', client_id=user.id) }}" class="text-decoration-none text-dark">
+                                    {{ user.display_name }}
+                                </a>
+                            {% else %}
+                                {{ user.display_name }}
+                            {% endif %}
+                        </h6>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge {{ config.badge_class }} fw-bold px-2 py-1">
+                                <i class="fas fa-{{ config.badge_icon }} me-1"></i>{{ config.label }}
+                            </span>
+                            {% if user.role == 'client' and user.company_name %}
+                                <span class="badge bg-info bg-opacity-25 text-info fw-normal px-2 py-1">
+                                    <i class="fas fa-building me-1"></i>{{ user.company_name }}
+                                </span>
+                            {% endif %}
+                        </div>
+                        <small class="text-muted d-flex align-items-center mb-1">
+                            <i class="fas fa-envelope me-2 text-primary"></i>{{ user.email }}
+                        </small>
+                        {% if user.phone %}
+                        <small class="text-muted d-flex align-items-center mb-1">
+                            <i class="fas fa-phone me-2 text-success"></i>{{ user.phone }}
+                        </small>
+                        {% endif %}
+                        {% if show_joined_date|default(false) %}
+                        <small class="text-muted d-flex align-items-center">
+                            <i class="fas fa-calendar-plus me-2 text-info"></i>Joined {{ user.created_at.strftime('%b %Y') }}
+                        </small>
+                        {% endif %}
+                    </div>
+                    {% if show_actions|default(false) and (current_user.is_admin() or current_user.is_team_member()) %}
+                    <div class="flex-shrink-0">
+                        <div class="btn-group" role="group">
+                            {% if edit_url %}
+                            <a href="{{ edit_url }}" class="btn btn-sm btn-outline-primary" title="Edit User">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            {% endif %}
+                            {% if remove_url %}
+                            <form method="POST" action="{{ remove_url }}" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                        onclick="return confirm('Remove {{ user.display_name }}?')"
+                                        title="Remove User">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
