@@ -247,12 +247,15 @@ def manage_projects():
 @admin_bp.route('/projects/add', methods=['GET', 'POST'])
 @require_admin
 def add_project():
-    """Add new project"""
+    """Add new project - Admin only"""
     form = ProjectForm()
     
     # Get all clients and team members for assignment
-    clients = User.query.filter_by(role=ROLE_CLIENT).all()
-    team_members = User.query.filter(User.role.in_([ROLE_TEAM_MEMBER, ROLE_ADMIN])).all()
+    clients = User.query.filter_by(role='client', active=True).order_by(User.first_name, User.last_name).all()
+    team_members = User.query.filter(
+        User.role.in_(['team_member', 'admin']), 
+        User.active == True
+    ).order_by(User.role, User.first_name, User.last_name).all()
     
     if form.validate_on_submit():
         project = Project()
@@ -262,7 +265,6 @@ def add_project():
         project.status = form.status.data
         project.priority = form.priority.data
         project.deadline = form.deadline.data
-        # project.budget = form.budget.data  # TODO: Add budget field to Project model
         
         try:
             db.session.add(project)
@@ -272,19 +274,25 @@ def add_project():
             assigned_users = request.form.getlist('assigned_users')
             if assigned_users:
                 for user_id in assigned_users:
-                    assignment = ProjectAssignment()
-                    assignment.project_id = project.id
-                    assignment.user_id = user_id
-                    db.session.add(assignment)
+                    if user_id:  # Ensure user_id is not empty
+                        assignment = ProjectAssignment()
+                        assignment.project_id = project.id
+                        assignment.user_id = user_id
+                        assignment.assigned_by_id = current_user.id
+                        db.session.add(assignment)
             
             db.session.commit()
-            flash(f'Project "{project.title}" created successfully!', 'success')
+            flash(f'Project "{project.title}" created successfully with {len(assigned_users) if assigned_users else 0} assignments!', 'success')
             return redirect(url_for('admin.manage_projects'))
         except Exception as e:
             db.session.rollback()
             flash('Failed to create project. Please try again.', 'error')
+            print(f"Error creating project: {e}")  # Debug logging
     
-    return render_template('admin/add_project.html', form=form, clients=clients, team_members=team_members)
+    return render_template('admin/add_project_enhanced.html', 
+                         form=form, 
+                         clients=clients, 
+                         team_members=team_members)
 
 @admin_bp.route('/projects/<project_id>/assign', methods=['GET', 'POST'])
 @require_admin
@@ -316,7 +324,7 @@ def assign_project_users(project_id):
     all_users = User.query.filter_by(active=True).all()
     current_assignments = [a.user_id for a in project.assignments]
     
-    return render_template('admin/assign_project.html', 
+    return render_template('admin/assign_project_enhanced.html', 
                          project=project, 
                          all_users=all_users, 
                          current_assignments=current_assignments)

@@ -9,9 +9,11 @@
             <i class="fas fa-briefcase me-2"></i>
             Manage Projects
         </h2>
+        {% if current_user.is_admin() or current_user.role == 'admin' %}
         <a href="{{ url_for('admin.add_project') }}" class="btn btn-primary">
             <i class="fas fa-plus me-1"></i>Add Project
         </a>
+        {% endif %}
     </div>
 
     {% if projects %}
@@ -33,10 +35,10 @@
                         {% for project in projects %}
                         <tr>
                             <td>
-                                <div>
-                                    <div class="fw-medium">{{ project.title }}</div>
+                                <div class="d-flex flex-column">
+                                    <div class="fw-bold text-dark mb-1">{{ project.title }}</div>
                                     {% if project.description %}
-                                        <small class="text-muted">{{ project.description[:100] }}{% if project.description|length > 100 %}...{% endif %}</small>
+                                    <div class="text-muted small p-2 bg-light rounded border" style="max-width: 300px; white-space: pre-wrap; line-height: 1.4;">{{ project.description[:150] }}{% if project.description|length > 150 %}...{% endif %}</div>
                                     {% endif %}
                                 </div>
                             </td>
@@ -96,9 +98,11 @@
             <i class="fas fa-briefcase fa-3x text-muted mb-3"></i>
             <h5>No Projects Found</h5>
             <p class="text-muted">Start by creating your first project.</p>
+            {% if current_user.is_admin() or current_user.role == 'admin' %}
             <a href="{{ url_for('admin.add_project') }}" class="btn btn-primary">
                 <i class="fas fa-plus me-1"></i>Add Project
             </a>
+            {% endif %}
         </div>
     </div>
     {% endif %}

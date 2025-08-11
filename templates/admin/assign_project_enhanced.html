@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Assign Team to {{ project.title }} - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fas fa-users me-2 text-primary"></i>
+                        Assign Team Members
+                    </h2>
+                    <p class="text-muted mb-0">Manage assignments for: <strong>{{ project.title }}</strong></p>
+                </div>
+                <a href="{{ url_for('admin.manage_projects') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Projects
+                </a>
+            </div>
+
+            <!-- Project Overview -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5 class="fw-bold mb-2">{{ project.title }}</h5>
+                            {% if project.description %}
+                            <div class="text-muted p-3 bg-light rounded border" style="white-space: pre-wrap; line-height: 1.4;">
+                                {{ project.description[:200] }}{% if project.description|length > 200 %}...{% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="d-flex flex-column gap-2">
+                                <span class="badge bg-{{ 'success' if project.status == 'active' else 'warning' if project.status == 'on_hold' else 'secondary' }} fs-6">
+                                    {{ project.status.replace('_', ' ').title() }}
+                                </span>
+                                <span class="badge bg-{{ 'danger' if project.priority == 'high' else 'warning' if project.priority == 'medium' else 'info' }} fs-6">
+                                    {{ project.priority.title() }} Priority
+                                </span>
+                                {% if project.deadline %}
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>Due: {{ project.deadline.strftime('%b %d, %Y') }}
+                                </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assignment Form -->
+            <form method="POST" id="assignment-form">
+                <div class="row g-4">
+                    <!-- Team Members Panel -->
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-gavel me-2"></i>Lawyers & Team Members
+                                </h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="p-3" style="max-height: 400px; overflow-y: auto;">
+                                    {% for user in all_users %}
+                                    {% if user.role in ['admin', 'team_member'] %}
+                                    <div class="form-check mb-3 p-3 border rounded bg-light">
+                                        <input class="form-check-input" type="checkbox" 
+                                               name="assigned_users" value="{{ user.id }}" 
+                                               id="user_{{ user.id }}"
+                                               {% if user.id in current_assignments %}checked{% endif %}>
+                                        <label class="form-check-label d-flex align-items-center w-100" for="user_{{ user.id }}">
+                                            <div class="flex-shrink-0 me-3">
+                                                {% if user.profile_image_url %}
+                                                    <img src="/uploads/{{ user.profile_image_url }}" alt="{{ user.display_name }}" 
+                                                         class="rounded-circle border shadow-sm" width="45" height="45" style="object-fit: cover;">
+                                                {% else %}
+                                                    <div class="bg-{{ 'danger' if user.role == 'admin' else 'success' }} rounded-circle d-flex align-items-center justify-content-center shadow-sm" 
+                                                         style="width: 45px; height: 45px;">
+                                                        <i class="fas fa-{{ 'shield-alt' if user.role == 'admin' else 'briefcase' }} text-white"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <div class="fw-bold text-dark">{{ user.display_name }}</div>
+                                                <small class="text-muted d-block">{{ user.email }}</small>
+                                                <div class="d-flex gap-2 mt-1">
+                                                    <span class="badge bg-{{ 'danger' if user.role == 'admin' else 'success' }}">
+                                                        {{ user.role.replace('_', ' ').title() }}
+                                                    </span>
+                                                    {% if user.specialization %}
+                                                    <span class="badge bg-secondary">{{ user.specialization }}</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Clients Panel -->
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-building me-2"></i>Clients
+                                </h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="p-3" style="max-height: 400px; overflow-y: auto;">
+                                    {% for user in all_users %}
+                                    {% if user.role == 'client' %}
+                                    <div class="form-check mb-3 p-3 border rounded bg-light">
+                                        <input class="form-check-input" type="checkbox" 
+                                               name="assigned_users" value="{{ user.id }}" 
+                                               id="user_{{ user.id }}"
+                                               {% if user.id in current_assignments %}checked{% endif %}>
+                                        <label class="form-check-label d-flex align-items-center w-100" for="user_{{ user.id }}">
+                                            <div class="flex-shrink-0 me-3">
+                                                {% if user.profile_image_url %}
+                                                    <img src="/uploads/{{ user.profile_image_url }}" alt="{{ user.display_name }}" 
+                                                         class="rounded-circle border shadow-sm" width="45" height="45" style="object-fit: cover;">
+                                                {% else %}
+                                                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" 
+                                                         style="width: 45px; height: 45px;">
+                                                        <i class="fas fa-{{ 'building' if user.company_name else 'user' }} text-white"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <div class="fw-bold text-dark">{{ user.display_name }}</div>
+                                                <small class="text-muted d-block">{{ user.email }}</small>
+                                                {% if user.company_name %}
+                                                <small class="text-muted d-block">{{ user.company_name }}</small>
+                                                {% endif %}
+                                                <div class="d-flex gap-2 mt-1">
+                                                    <span class="badge bg-primary">Client</span>
+                                                    {% if user.industry %}
+                                                    <span class="badge bg-info">{{ user.industry }}</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Select team members and clients to assign to this project
+                                </small>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('admin.manage_projects') }}" class="btn btn-secondary">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-save me-2"></i>Update Assignments
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('assignment-form');
+    const checkboxes = document.querySelectorAll('input[name="assigned_users"]');
+    
+    // Show assignment count
+    function updateAssignmentCount() {
+        const checkedBoxes = document.querySelectorAll('input[name="assigned_users"]:checked');
+        console.log(`${checkedBoxes.length} users assigned`);
+    }
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateAssignmentCount);
+    });
+    
+    // Initial count
+    updateAssignmentCount();
+    
+    // Form submission confirmation
+    form.addEventListener('submit', function(e) {
+        const checkedBoxes = document.querySelectorAll('input[name="assigned_users"]:checked');
+        if (checkedBoxes.length === 0) {
+            const confirm = window.confirm('No users are assigned to this project. Continue anyway?');
+            if (!confirm) {
+                e.preventDefault();
+                return;
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
