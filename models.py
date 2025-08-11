@@ -207,6 +207,11 @@ class ChatMessage(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.now)
     is_read = db.Column(db.Boolean, default=False)
     
+    @property
+    def created_at(self):
+        """Alias for timestamp to maintain template compatibility"""
+        return self.timestamp
+    
     # Relationships
     sender = db.relationship('User', back_populates='sent_messages', foreign_keys=[sender_id])
     receiver = db.relationship('User', back_populates='received_messages', foreign_keys=[receiver_id])
