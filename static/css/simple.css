@@ -25,6 +25,15 @@
     text-shadow: 0 0 10px rgba(102, 179, 255, 0.3);
 }
 
+/* Blue OS Icon Logo */
+.text-blue-os {
+    color: #007bff;
+    font-weight: 800;
+    font-family: 'Courier New', monospace;
+    text-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+    font-size: 1.1em;
+}
+
 /* Taskdrip Gradient Styling */
 .text-gradient-taskdrip {
     background: linear-gradient(45deg, var(--taskdrip-blue), var(--taskdrip-light-blue));
