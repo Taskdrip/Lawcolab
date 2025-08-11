@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}LawFirmOS by Taskdrip{% endblock %}</title>
+    <title>{% block title %}LawFirmOS - Professional Legal Practice Management{% endblock %}</title>
     
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -19,7 +19,8 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
         <div class="container">
             <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
-                <i class="fas fa-balance-scale me-2"></i>LawFirmOS by Taskdrip
+                <i class="fas fa-balance-scale me-2"></i>LawFirm<span class="text-gradient-os">OS</span>
+                <small class="text-gradient-taskdrip ms-2" style="font-size: 0.7em;">powered by Taskdrip</small>
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">

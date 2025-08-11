@@ -9,6 +9,29 @@
     --light-color: #ffffff;
     --dark-color: #000000;
     --border-color: #dee2e6;
+    --taskdrip-blue: #007bff;
+    --taskdrip-light-blue: #66b3ff;
+    --os-gradient: linear-gradient(45deg, #333333, #666666);
+}
+
+/* OS Styling for Operating System Effect */
+.text-gradient-os {
+    background: var(--os-gradient);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+    font-family: 'Courier New', monospace;
+    text-shadow: 0 0 10px rgba(102, 179, 255, 0.3);
+}
+
+/* Taskdrip Gradient Styling */
+.text-gradient-taskdrip {
+    background: linear-gradient(45deg, var(--taskdrip-blue), var(--taskdrip-light-blue));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 600;
 }
 
 body {

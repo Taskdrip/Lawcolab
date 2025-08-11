@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome - LawFirmOS by Taskdrip{% endblock %}
+{% block title %}LawFirmOS - Built by Lawyers for Legal Professionals Globally{% endblock %}
 
 {% block content %}
 {% if current_user.is_authenticated %}
@@ -22,11 +22,11 @@
         <div class="container">
             <div class="row align-items-center min-vh-100">
                 <div class="col-lg-6">
-                    <h1 class="display-4 fw-bold text-gradient mb-4">
-                        Professional Legal Practice Management
+                    <h1 class="display-4 fw-bold mb-4">
+                        LawFirm<span class="text-gradient-os">OS</span>
                     </h1>
-                    <h2 class="h3 mb-4">Powered by Taskdrip</h2>
-                    <p class="lead mb-4">Built by lawyers for lawyers globally to streamline legal practice, operations, clients, teams, and different projects in one place.</p>
+                    <h2 class="h3 mb-4 text-gradient-taskdrip">Powered by Taskdrip</h2>
+                    <p class="lead mb-4">Built by lawyers for law firms and legal practitioners globally to seamlessly manage all their operations and transactions from one comprehensive dashboard.</p>
                     
                     <div class="d-flex flex-column flex-sm-row gap-3">
                         <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">
@@ -97,7 +97,7 @@
                 <div class="col-lg-6">
                     <h2 class="h1 fw-bold mb-4">Professional Excellence</h2>
                     <p class="lead mb-4">
-                        Experience exceptional legal representation with our diverse team of skilled attorneys who bring varied perspectives and expertise to every case.
+                        Transform your legal practice with intelligent technology that adapts to your workflow. Experience seamless case management, enhanced client relationships, and optimized operational efficiency—all powered by innovation designed specifically for legal professionals.
                     </p>
                     <div class="row">
                         <div class="col-md-6">
@@ -125,9 +125,9 @@
                          class="img-fluid rounded shadow">
                 </div>
                 <div class="col-lg-6 order-lg-1">
-                    <h2 class="h1 fw-bold mb-4">Collaborative Environment</h2>
+                    <h2 class="h1 fw-bold mb-4">Collaborative Intelligence</h2>
                     <p class="lead mb-4">
-                        Our modern law office fosters collaboration and innovation, bringing together talented professionals from diverse backgrounds to deliver outstanding legal services.
+                        Unite your legal team through advanced collaboration tools that break down silos and amplify productivity. Foster innovation, streamline communication, and deliver coordinated excellence that sets your firm apart in today's competitive legal landscape.
                     </p>
                     <div class="row">
                         <div class="col-md-6">
@@ -155,8 +155,8 @@
         <div class="container">
             <div class="row text-center mb-5">
                 <div class="col-lg-8 mx-auto">
-                    <h2 class="h1 fw-bold text-gradient">Why Choose LawFirmOS by Taskdrip?</h2>
-                    <p class="lead">Built by lawyers for lawyers - comprehensive legal practice management designed to streamline operations globally</p>
+                    <h2 class="h1 fw-bold">Why Choose LawFirm<span class="text-gradient-os">OS</span>?</h2>
+                    <p class="lead">Engineered by legal professionals for the global legal community - transforming how modern law firms operate, collaborate, and excel</p>
                 </div>
             </div>
             
@@ -166,7 +166,7 @@
                         <div class="card-body text-center p-4">
                             <i class="fas fa-users fa-3x text-primary mb-3"></i>
                             <h4>Client Management</h4>
-                            <p class="text-muted">Organize client information, case details, and communication history in one secure platform.</p>
+                            <p class="text-muted">Centralize client relationships, case portfolios, and communication workflows in one intelligent, secure platform designed for legal excellence.</p>
                         </div>
                     </div>
                 </div>
@@ -175,8 +175,8 @@
                     <div class="card h-100 border-0 shadow-sm">
                         <div class="card-body text-center p-4">
                             <i class="fas fa-briefcase fa-3x text-primary mb-3"></i>
-                            <h4>Project Tracking</h4>
-                            <p class="text-muted">Track case progress, deadlines, and team assignments with real-time collaboration tools.</p>
+                            <h4>Project Orchestration</h4>
+                            <p class="text-muted">Master case progression, critical deadlines, and team coordination through advanced real-time collaboration technology.</p>
                         </div>
                     </div>
                 </div>
@@ -185,8 +185,8 @@
                     <div class="card h-100 border-0 shadow-sm">
                         <div class="card-body text-center p-4">
                             <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
-                            <h4>Secure & Compliant</h4>
-                            <p class="text-muted">Bank-level security with legal industry compliance standards and data protection.</p>
+                            <h4>Enterprise Security</h4>
+                            <p class="text-muted">Military-grade security protocols with comprehensive legal industry compliance, ensuring absolute confidentiality and data integrity.</p>
                         </div>
                     </div>
                 </div>
@@ -199,8 +199,8 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-4 mb-4">
-                    <h5><i class="fas fa-balance-scale me-2"></i>LawFirmOS by Taskdrip</h5>
-                    <p class="text-muted">Built by lawyers for lawyers globally. Streamline your legal practice, operations, clients, teams, and different projects in one comprehensive platform.</p>
+                    <h5><i class="fas fa-balance-scale me-2"></i>LawFirm<span class="text-gradient-os">OS</span> <small class="text-gradient-taskdrip">by Taskdrip</small></h5>
+                    <p class="text-muted">Empowering legal professionals worldwide with cutting-edge technology. Streamline practice management, client relations, team collaboration, and operational excellence—all from one intelligent dashboard.</p>
                     <div class="d-flex gap-3">
                         <a href="#" class="text-decoration-none"><i class="fab fa-linkedin"></i></a>
                         <a href="#" class="text-decoration-none"><i class="fab fa-twitter"></i></a>
@@ -256,7 +256,7 @@
                     <p class="mb-0 text-muted">&copy; 2025 LawFirmOS by Taskdrip. All rights reserved.</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <small class="text-muted">Made with <i class="fas fa-heart text-danger"></i> by lawyers for lawyers globally</small>
+                    <small class="text-muted">Engineered with <i class="fas fa-heart text-danger"></i> by legal professionals for the global legal community</small>
                 </div>
             </div>
         </div>
