@@ -83,8 +83,7 @@ class User(UserMixin, db.Model):
     def is_client(self):
         return self.role == ROLE_CLIENT
     
-    def is_active(self):
-        return self.active
+    # Note: is_active property inherited from UserMixin, using self.active field
 
     def set_password(self, password):
         """Hash and store password"""

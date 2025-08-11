@@ -39,16 +39,13 @@ def chat_home():
                     assigned_user_ids.add(assignment.user_id)
         
         all_users = User.query.filter(
-            and_(
-                User.id.in_(assigned_user_ids),
-                User.active == True
-            )
-        ).order_by(User.role, User.first_name, User.last_name).all()
+            User.id.in_(assigned_user_ids)
+        ).filter(User.active == True).order_by(User.role, User.first_name, User.last_name).all()
     else:
         # Team members and admins can chat with all active users
         all_users = User.query.filter(
-            and_(User.id != current_user.id, User.active == True)
-        ).order_by(User.role, User.first_name, User.last_name).all()
+            User.id != current_user.id
+        ).filter(User.active == True).order_by(User.role, User.first_name, User.last_name).all()
     
     # Get unread message counts
     unread_counts = {}
@@ -82,19 +79,19 @@ def conversation(user_id):
     if request.method == 'POST':
         message_text = request.form.get('message', '').strip()
         if message_text:
-            # Create new message
+            # Create new message - fixed to use string user IDs
             message = ChatMessage(
                 sender_id=current_user.id,
-                receiver_id=user_id,
+                receiver_id=str(user_id),
                 message=message_text
             )
             db.session.add(message)
             
-            # Update or create conversation
+            # Update or create conversation - fixed to use string user IDs
             conversation = ChatConversation.query.filter(
                 or_(
-                    and_(ChatConversation.user1_id == current_user.id, ChatConversation.user2_id == user_id),
-                    and_(ChatConversation.user1_id == user_id, ChatConversation.user2_id == current_user.id)
+                    and_(ChatConversation.user1_id == current_user.id, ChatConversation.user2_id == str(user_id)),
+                    and_(ChatConversation.user1_id == str(user_id), ChatConversation.user2_id == current_user.id)
                 )
             ).first()
             
@@ -103,8 +100,8 @@ def conversation(user_id):
                 conversation.last_message = message_text
             else:
                 conversation = ChatConversation(
-                    user1_id=min(current_user.id, user_id),
-                    user2_id=max(current_user.id, user_id),
+                    user1_id=min(current_user.id, str(user_id)),
+                    user2_id=max(current_user.id, str(user_id)),
                     last_message_at=datetime.now(),
                     last_message=message_text
                 )
@@ -138,18 +135,18 @@ def conversation(user_id):
         db.session.add(conversation)
         db.session.commit()
     
-    # Get messages for this conversation
+    # Get messages for this conversation - fixed to handle string user IDs properly
     messages = ChatMessage.query.filter(
         or_(
-            and_(ChatMessage.sender_id == current_user.id, ChatMessage.receiver_id == user_id),
-            and_(ChatMessage.sender_id == user_id, ChatMessage.receiver_id == current_user.id)
+            and_(ChatMessage.sender_id == current_user.id, ChatMessage.receiver_id == str(user_id)),
+            and_(ChatMessage.sender_id == str(user_id), ChatMessage.receiver_id == current_user.id)
         )
     ).order_by(ChatMessage.timestamp.asc()).all()
     
-    # Mark messages from other user as read
+    # Mark messages from other user as read - fixed to use string user IDs
     ChatMessage.query.filter(
         and_(
-            ChatMessage.sender_id == user_id,
+            ChatMessage.sender_id == str(user_id),
             ChatMessage.receiver_id == current_user.id,
             ChatMessage.is_read == False
         )
