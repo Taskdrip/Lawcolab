@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Team Management - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h2 text-gradient mb-4">
+                <i class="fas fa-users-cog me-2"></i>Team Management
+            </h1>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Team Members -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user-tie me-2"></i>Team Members & Admins
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if team_members %}
+                        {% for member in team_members %}
+                        <div class="d-flex align-items-center justify-content-between mb-3 p-3 border rounded">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    {% if member.profile_image_url %}
+                                        <img src="{{ member.profile_image_url }}" alt="{{ member.full_name }}" class="rounded-circle" width="50" height="50">
+                                    {% else %}
+                                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                            <i class="fas fa-user text-white"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">{{ member.full_name }}</h6>
+                                    <p class="mb-1 text-muted">{{ member.email }}</p>
+                                    <span class="badge bg-{{ 'danger' if member.role == 'admin' else 'primary' }}">
+                                        {{ member.role.replace('_', ' ').title() }}
+                                    </span>
+                                    {% if member.phone %}
+                                        <small class="text-muted d-block">{{ member.phone }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    Actions
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <form method="POST" action="{{ url_for('admin.update_user_role') }}" class="dropdown-item">
+                                            <input type="hidden" name="user_id" value="{{ member.id }}">
+                                            <select name="role" class="form-select form-select-sm" onchange="this.form.submit()">
+                                                <option value="admin" {% if member.role == 'admin' %}selected{% endif %}>Admin</option>
+                                                <option value="team_member" {% if member.role == 'team_member' %}selected{% endif %}>Team Member</option>
+                                                <option value="client" {% if member.role == 'client' %}selected{% endif %}>Client</option>
+                                            </select>
+                                        </form>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('admin.edit_user_profile', user_id=member.id) }}">
+                                            <i class="fas fa-edit me-2"></i>Edit Profile
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-user-tie fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No team members found. They will appear here after logging in.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Clients -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users me-2"></i>Clients
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if clients %}
+                        {% for client in clients %}
+                        <div class="d-flex align-items-center justify-content-between mb-3 p-3 border rounded">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    {% if client.profile_image_url %}
+                                        <img src="{{ client.profile_image_url }}" alt="{{ client.full_name }}" class="rounded-circle" width="50" height="50">
+                                    {% else %}
+                                        <div class="bg-info rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                            <i class="fas fa-user text-white"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">{{ client.full_name }}</h6>
+                                    <p class="mb-1 text-muted">{{ client.email }}</p>
+                                    <span class="badge bg-info">Client</span>
+                                    {% if client.phone %}
+                                        <small class="text-muted d-block">{{ client.phone }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    Actions
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('clients.client_profile', client_id=client.id) }}">
+                                            <i class="fas fa-eye me-2"></i>View Profile
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <form method="POST" action="{{ url_for('admin.update_user_role') }}" class="dropdown-item">
+                                            <input type="hidden" name="user_id" value="{{ client.id }}">
+                                            <select name="role" class="form-select form-select-sm" onchange="this.form.submit()">
+                                                <option value="client" selected>Client</option>
+                                                <option value="team_member">Team Member</option>
+                                                <option value="admin">Admin</option>
+                                            </select>
+                                        </form>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('admin.edit_user_profile', user_id=client.id) }}">
+                                            <i class="fas fa-edit me-2"></i>Edit Profile
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No clients found. They will appear here after logging in.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h5 class="alert-heading">
+                    <i class="fas fa-info-circle me-2"></i>Team Management Instructions
+                </h5>
+                <ul class="mb-0">
+                    <li>Users will appear here after they log in for the first time</li>
+                    <li>New users default to "Client" role - change their role using the dropdown</li>
+                    <li><strong>Admin:</strong> Full access to all features and settings</li>
+                    <li><strong>Team Member:</strong> Can manage projects, clients, and collaborate</li>
+                    <li><strong>Client:</strong> Can view assigned projects and communicate with team</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

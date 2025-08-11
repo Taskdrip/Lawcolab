@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Edit {{ user.display_name }} - Admin Panel - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>Edit {{ user.display_name }}
+                </h2>
+                <a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Users
+                </a>
+            </div>
+            
+            <!-- User Profile Edit Form -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user-edit me-2"></i>
+                        {{ 'Company Information' if user.is_client() else 'Professional Information' }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <!-- Basic Information -->
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-3">Basic Information</h6>
+                                
+                                <div class="mb-3">
+                                    <label for="first_name" class="form-label">First Name</label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" 
+                                           value="{{ user.first_name or '' }}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="last_name" class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" 
+                                           value="{{ user.last_name or '' }}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           value="{{ user.email }}" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Phone Number</label>
+                                    <input type="text" class="form-control" id="phone" name="phone" 
+                                           value="{{ user.phone or '' }}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="role" class="form-label">Role</label>
+                                    <select class="form-select" id="role" name="role" required>
+                                        <option value="client" {{ 'selected' if user.role == 'client' else '' }}>Client</option>
+                                        <option value="team_member" {{ 'selected' if user.role == 'team_member' else '' }}>Team Member</option>
+                                        <option value="admin" {{ 'selected' if user.role == 'admin' else '' }}>Administrator</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="active" name="active" 
+                                               {{ 'checked' if user.active else '' }}>
+                                        <label class="form-check-label" for="active">
+                                            Active Account
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Role-Specific Information -->
+                            <div class="col-md-6">
+                                <!-- Company Information for Clients -->
+                                <div id="company_fields" style="{{ 'display: block' if user.is_client() else 'display: none' }}">
+                                    <h6 class="text-muted mb-3">Company Information</h6>
+                                    
+                                    <div class="mb-3">
+                                        <label for="company_name" class="form-label">Company Name</label>
+                                        <input type="text" class="form-control" id="company_name" name="company_name" 
+                                               value="{{ user.company_name or '' }}">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="industry" class="form-label">Industry</label>
+                                        <select class="form-select" id="industry" name="industry">
+                                            <option value="">Select Industry</option>
+                                            <option value="Agriculture" {{ 'selected' if user.industry == 'Agriculture' else '' }}>Agriculture</option>
+                                            <option value="Education" {{ 'selected' if user.industry == 'Education' else '' }}>Education</option>
+                                            <option value="Education & Agriculture" {{ 'selected' if user.industry == 'Education & Agriculture' else '' }}>Education & Agriculture</option>
+                                            <option value="Healthcare" {{ 'selected' if user.industry == 'Healthcare' else '' }}>Healthcare</option>
+                                            <option value="Technology" {{ 'selected' if user.industry == 'Technology' else '' }}>Technology</option>
+                                            <option value="Finance" {{ 'selected' if user.industry == 'Finance' else '' }}>Finance</option>
+                                            <option value="Manufacturing" {{ 'selected' if user.industry == 'Manufacturing' else '' }}>Manufacturing</option>
+                                            <option value="Real Estate" {{ 'selected' if user.industry == 'Real Estate' else '' }}>Real Estate</option>
+                                            <option value="Retail" {{ 'selected' if user.industry == 'Retail' else '' }}>Retail</option>
+                                            <option value="Legal Services" {{ 'selected' if user.industry == 'Legal Services' else '' }}>Legal Services</option>
+                                            <option value="Other" {{ 'selected' if user.industry == 'Other' else '' }}>Other</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="company_size" class="form-label">Company Size</label>
+                                        <select class="form-select" id="company_size" name="company_size">
+                                            <option value="">Select Size</option>
+                                            <option value="Small (1-50)" {{ 'selected' if user.company_size == 'Small (1-50)' else '' }}>Small (1-50)</option>
+                                            <option value="Medium (51-200)" {{ 'selected' if user.company_size == 'Medium (51-200)' else '' }}>Medium (51-200)</option>
+                                            <option value="Large (201-1000)" {{ 'selected' if user.company_size == 'Large (201-1000)' else '' }}>Large (201-1000)</option>
+                                            <option value="Enterprise (1000+)" {{ 'selected' if user.company_size == 'Enterprise (1000+)' else '' }}>Enterprise (1000+)</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="website_url" class="form-label">Website URL</label>
+                                        <input type="url" class="form-control" id="website_url" name="website_url" 
+                                               value="{{ user.website_url or '' }}" placeholder="https://example.com">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="headquarters" class="form-label">Headquarters</label>
+                                        <input type="text" class="form-control" id="headquarters" name="headquarters" 
+                                               value="{{ user.headquarters or '' }}" placeholder="City, State/Country">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="founded_year" class="form-label">Founded Year</label>
+                                        <input type="number" class="form-control" id="founded_year" name="founded_year" 
+                                               value="{{ user.founded_year or '' }}" min="1900" max="2025">
+                                    </div>
+                                </div>
+                                
+                                <!-- Professional Information for Team Members -->
+                                <div id="professional_fields" style="{{ 'display: block' if user.is_team_member() or user.is_admin() else 'display: none' }}">
+                                    <h6 class="text-muted mb-3">Professional Information</h6>
+                                    
+                                    <div class="mb-3">
+                                        <label for="specialization" class="form-label">Specialization/Practice Area</label>
+                                        <input type="text" class="form-control" id="specialization" name="specialization" 
+                                               value="{{ user.specialization or '' }}" 
+                                               placeholder="e.g., Corporate Law, Family Law, Criminal Defense">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="years_experience" class="form-label">Years of Experience</label>
+                                        <input type="number" class="form-control" id="years_experience" name="years_experience" 
+                                               value="{{ user.years_experience or '' }}" min="0" max="50">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="education" class="form-label">Education</label>
+                                        <textarea class="form-control" id="education" name="education" rows="3" 
+                                                  placeholder="Law school, degrees, relevant education">{{ user.education or '' }}</textarea>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="certifications" class="form-label">Certifications & Licenses</label>
+                                        <textarea class="form-control" id="certifications" name="certifications" rows="3" 
+                                                  placeholder="Bar admissions, certifications, professional licenses">{{ user.certifications or '' }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Bio/Description (for all users) -->
+                        <div class="row">
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3">
+                                    {% if user.is_client() %}Company Description{% else %}Professional Bio{% endif %}
+                                </h6>
+                                
+                                <div class="mb-4">
+                                    <label for="bio_description" class="form-label">
+                                        {% if user.is_client() %}Company Description{% else %}Bio{% endif %}
+                                    </label>
+                                    <textarea class="form-control" id="bio_description" name="bio_description" rows="4" 
+                                              placeholder="{% if user.is_client() %}Describe the company, services, and background{% else %}Professional background and experience{% endif %}">{{ (user.company_description if user.is_client() else user.bio) or '' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div class="d-flex justify-content-end gap-3">
+                            <a href="{{ url_for('admin.manage_users') }}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Show/hide fields based on role selection
+document.getElementById('role').addEventListener('change', function() {
+    const role = this.value;
+    const companyFields = document.getElementById('company_fields');
+    const professionalFields = document.getElementById('professional_fields');
+    
+    if (role === 'client') {
+        companyFields.style.display = 'block';
+        professionalFields.style.display = 'none';
+    } else if (role === 'team_member' || role === 'admin') {
+        companyFields.style.display = 'none';
+        professionalFields.style.display = 'block';
+    } else {
+        companyFields.style.display = 'none';
+        professionalFields.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}

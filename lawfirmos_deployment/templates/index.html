@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}LawFirmOS - Built by Lawyers for Legal Professionals Globally{% endblock %}
+
+{% block content %}
+{% if current_user.is_authenticated %}
+    <!-- This shouldn't normally show as authenticated users are redirected -->
+    <div class="container mt-5">
+        <div class="alert alert-info">
+            <h4>Welcome back, {{ current_user.full_name }}!</h4>
+            <p>You are being redirected to your dashboard...</p>
+            <script>
+                setTimeout(function() {
+                    window.location.href = '{{ url_for("index") }}';
+                }, 2000);
+            </script>
+        </div>
+    </div>
+{% else %}
+    <!-- Public Landing Page -->
+    <div class="hero-section">
+        <div class="container">
+            <div class="row align-items-center min-vh-100">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold mb-4">
+                        Professional Legal Practice Management
+                    </h1>
+                    <h2 class="h3 mb-4 text-gradient-taskdrip">Powered by Taskdrip</h2>
+                    <p class="lead mb-4">Built by lawyers for law firms and legal practitioners globally to seamlessly manage all their operations and transactions from one comprehensive dashboard.</p>
+                    
+                    <div class="d-flex flex-column flex-sm-row gap-3">
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Client Portal
+                        </a>
+                        <a href="{{ url_for('auth.signup') }}" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>Sign Up
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-body p-5">
+                            <div class="text-center mb-4">
+                                <i class="fas fa-balance-scale fa-3x text-primary mb-3"></i>
+                                <h3 class="card-title">Access Your Account</h3>
+                                <p class="text-muted">Secure client portal and team collaboration</p>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                                </a>
+                                <a href="{{ url_for('auth.signup') }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-user-plus me-2"></i>Create Account
+                                </a>
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="feature-stat">
+                                            <div class="feature-icon">
+                                                <i class="fas fa-users"></i>
+                                            </div>
+                                            <h6>Clients</h6>
+                                            <span class="text-muted">Portal Access</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="feature-stat">
+                                            <div class="feature-icon">
+                                                <i class="fas fa-user-tie"></i>
+                                            </div>
+                                            <h6>Lawyers</h6>
+                                            <span class="text-muted">Team Management</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diverse Team Showcase -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row align-items-center mb-5">
+                <div class="col-lg-6">
+                    <img src="{{ url_for('static', filename='images/Professional_legal_consultation_scene_0650a100.png') }}" 
+                         alt="Professional Legal Consultation" 
+                         class="img-fluid rounded shadow">
+                </div>
+                <div class="col-lg-6">
+                    <h2 class="h1 fw-bold mb-4">Professional Excellence</h2>
+                    <p class="lead mb-4">
+                        Transform your legal practice with intelligent technology that adapts to your workflow. Experience seamless case management, enhanced client relationships, and optimized operational efficiency—all powered by innovation designed specifically for legal professionals.
+                    </p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="feature-item">
+                                <i class="fas fa-handshake text-primary mb-2"></i>
+                                <h6>Client-Focused</h6>
+                                <p class="small text-muted">Personalized attention for every client</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-item">
+                                <i class="fas fa-users text-primary mb-2"></i>
+                                <h6>Diverse Team</h6>
+                                <p class="small text-muted">Varied perspectives, better outcomes</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row align-items-center">
+                <div class="col-lg-6 order-lg-2">
+                    <img src="{{ url_for('static', filename='images/Modern_diverse_law_office_43d2990c.png') }}" 
+                         alt="Modern Law Office Collaboration" 
+                         class="img-fluid rounded shadow">
+                </div>
+                <div class="col-lg-6 order-lg-1">
+                    <h2 class="h1 fw-bold mb-4">Collaborative Intelligence</h2>
+                    <p class="lead mb-4">
+                        Unite your legal team through advanced collaboration tools that break down silos and amplify productivity. Foster innovation, streamline communication, and deliver coordinated excellence that sets your firm apart in today's competitive legal landscape.
+                    </p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="feature-item">
+                                <i class="fas fa-laptop text-primary mb-2"></i>
+                                <h6>Modern Technology</h6>
+                                <p class="small text-muted">Cutting-edge tools and systems</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-item">
+                                <i class="fas fa-comments text-primary mb-2"></i>
+                                <h6>Open Communication</h6>
+                                <p class="small text-muted">Transparent client relationships</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-lg-8 mx-auto">
+                    <h2 class="h1 fw-bold">Why Choose LawFirm<span class="text-blue-os">OS</span>?</h2>
+                    <p class="lead">Engineered by legal professionals for the global legal community - transforming how modern law firms operate, collaborate, and excel</p>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                            <h4>Client Management</h4>
+                            <p class="text-muted">Centralize client relationships, case portfolios, and communication workflows in one intelligent, secure platform designed for legal excellence.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-briefcase fa-3x text-primary mb-3"></i>
+                            <h4>Project Orchestration</h4>
+                            <p class="text-muted">Master case progression, critical deadlines, and team coordination through advanced real-time collaboration technology.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+                            <h4>Enterprise Security</h4>
+                            <p class="text-muted">Military-grade security protocols with comprehensive legal industry compliance, ensuring absolute confidentiality and data integrity.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <a href="{{ url_for('index') }}" class="text-decoration-none">
+                        <h5><i class="fas fa-balance-scale me-2"></i>LawFirm<span class="text-blue-os">OS</span> <small class="text-gradient-taskdrip">by Taskdrip</small></h5>
+                    </a>
+                    <p class="text-muted">Empowering legal professionals worldwide with cutting-edge technology. Streamline practice management, client relations, team collaboration, and operational excellence—all from one intelligent dashboard.</p>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-decoration-none"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="text-decoration-none"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-decoration-none"><i class="fas fa-envelope"></i></a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h6>Product</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('landing') }}">Features</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="#security">Security</a></li>
+                        <li><a href="#integrations">Integrations</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h6>Company</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#careers">Careers</a></li>
+                        <li><a href="#blog">Blog</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h6>Support</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#help">Help Center</a></li>
+                        <li><a href="#documentation">Documentation</a></li>
+                        <li><a href="#community">Community</a></li>
+                        <li><a href="#status">System Status</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h6>Legal</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#privacy">Privacy Policy</a></li>
+                        <li><a href="#terms">Terms of Service</a></li>
+                        <li><a href="#cookies">Cookie Policy</a></li>
+                        <li><a href="#compliance">Compliance</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <hr class="my-4">
+            
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-0 text-muted">&copy; 2025 LawFirmOS by Taskdrip. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <small class="text-muted">Engineered with <i class="fas fa-heart text-danger"></i> by legal professionals for the global legal community</small>
+                </div>
+            </div>
+        </div>
+    </footer>
+{% endif %}
+{% endblock %}

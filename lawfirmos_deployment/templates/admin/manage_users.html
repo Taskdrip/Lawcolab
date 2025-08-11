@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users - Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="fas fa-users me-2"></i>
+            Manage Users
+        </h2>
+        <a href="{{ url_for('admin.add_user') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>Add User
+        </a>
+    </div>
+
+    {% if users %}
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="me-2">
+                                        {% with user=user, size='xs', show_badge=true %}
+                                            {% include 'components/user_avatar.html' %}
+                                        {% endwith %}
+                                    </div>
+                                    <div>
+                                        <div class="fw-medium">{{ user.full_name }}</div>
+                                        {% if user.phone %}
+                                            <small class="text-muted">{{ user.phone }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ user.email or 'No email' }}</td>
+                            <td>
+                                <span class="badge fw-bold px-2 py-1
+                                    {% if user.role == 'admin' %}bg-danger
+                                    {% elif user.role == 'team_member' %}bg-success
+                                    {% else %}bg-primary{% endif %}">
+                                    <i class="fas fa-{{ 'crown' if user.role == 'admin' else 'gavel' if user.role == 'team_member' else 'handshake' }} me-1"></i>
+                                    {{ 'Administrator' if user.role == 'admin' else 'Lawyer' if user.role == 'team_member' else 'Client' }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if user.active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.created_at.strftime('%b %d, %Y') }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ url_for('admin.grant_admin', user_id=user.id) }}" 
+                                       class="btn btn-sm btn-outline-warning"
+                                       onclick="return confirm('Grant admin privileges to {{ user.full_name }}?')">
+                                        <i class="fas fa-crown"></i>
+                                    </a>
+                                    <a href="{{ url_for('admin.toggle_user_status', user_id=user.id) }}" 
+                                       class="btn btn-sm btn-outline-secondary"
+                                       onclick="return confirm('Toggle status for {{ user.full_name }}?')">
+                                        <i class="fas fa-toggle-{% if user.active %}off{% else %}on{% endif %}"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+            <h5>No Users Found</h5>
+            <p class="text-muted">Start by adding your first team member or client.</p>
+            <a href="{{ url_for('admin.add_user') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Add User
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Clients - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="fas fa-users me-2"></i>
+            Clients
+        </h2>
+        {% if current_user.is_admin() %}
+        <a href="{{ url_for('admin.add_user') }}" class="btn btn-primary">
+            <i class="fas fa-user-plus me-1"></i>Add Client
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Search Bar -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <form method="GET" class="d-flex">
+                <input type="text" class="form-control" name="search" placeholder="Search clients..." value="{{ search }}">
+                <button class="btn btn-outline-secondary ms-2" type="submit">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {% if clients %}
+    <div class="row">
+        {% for client in clients %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="me-3">
+                            {% with user=client, size='sm', show_badge=true %}
+                                {% include 'components/user_avatar.html' %}
+                            {% endwith %}
+                        </div>
+                        
+                        <div>
+                            <h5 class="card-title mb-1">
+                                <a href="{{ url_for('public.user_profile', user_id=client.id) }}" class="text-decoration-none">
+                                    {{ client.full_name }}
+                                </a>
+                            </h5>
+                            <small class="text-muted">{{ client.email }}</small>
+                        </div>
+                    </div>
+                    
+                    {% if client.phone %}
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-phone me-1"></i>
+                            {{ client.phone }}
+                        </small>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar me-1"></i>
+                            Client since {{ client.created_at.strftime('%b %Y') }}
+                        </small>
+                    </div>
+                    
+                    <!-- Active Projects Count -->
+                    {% set active_projects = client.assigned_projects | selectattr('project.status', 'equalto', 'active') | list %}
+                    {% if active_projects %}
+                    <div class="mb-3">
+                        <span class="badge bg-success">
+                            {{ active_projects|length }} Active Project{{ 's' if active_projects|length != 1 else '' }}
+                        </span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-{{ 'success' if client.active else 'secondary' }}">
+                            {{ 'Active' if client.active else 'Inactive' }}
+                        </span>
+                        
+                        <a href="{{ url_for('clients.client_profile', client_id=client.id) }}" class="btn btn-sm btn-outline-primary">
+                            View Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if clients|length == 0 and search %}
+    <div class="text-center py-5">
+        <i class="fas fa-search fa-4x text-muted mb-4"></i>
+        <h4 class="text-muted">No Results Found</h4>
+        <p class="text-muted">No clients match your search criteria.</p>
+        <a href="{{ url_for('clients.list_clients') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-times me-1"></i>Clear Search
+        </a>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-users fa-4x text-muted mb-4"></i>
+        <h4 class="text-muted">No Clients Found</h4>
+        <p class="text-muted">
+            {% if current_user.is_admin() %}
+                Get started by adding your first client.
+            {% else %}
+                No clients have been added to the system yet.
+            {% endif %}
+        </p>
+        {% if current_user.is_admin() %}
+        <a href="{{ url_for('admin.add_user') }}" class="btn btn-primary">
+            <i class="fas fa-user-plus me-1"></i>Add Client
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

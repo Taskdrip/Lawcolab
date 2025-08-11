@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Team Dashboard - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 text-gradient">
+                    <i class="fas fa-user-tie me-2"></i>Team Dashboard
+                </h1>
+                <div>
+                    <a href="{{ url_for('projects.create_project') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>New Project
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Image Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <img src="{{ url_for('static', filename='images/Professional_legal_consultation_scene_0650a100.png') }}" 
+                             class="img-fluid rounded-start h-100" alt="Professional Legal Consultation" 
+                             style="object-fit: cover; min-height: 200px;">
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body h-100 d-flex flex-column justify-content-center">
+                            <h5 class="card-title">Welcome to Your Dashboard</h5>
+                            <p class="card-text">Manage your assigned projects, collaborate with team members, and deliver exceptional legal services to our clients.</p>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('projects.list_projects') }}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i>View All Projects
+                                </a>
+                                <a href="{{ url_for('team.list_team') }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-users me-1"></i>Team Directory
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- My Projects -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-briefcase me-2"></i>My Assigned Projects
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if assigned_projects %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Project</th>
+                                        <th>Status</th>
+                                        <th>Priority</th>
+                                        <th>Deadline</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for project in assigned_projects %}
+                                    <tr>
+                                        <td>
+                                            <h6 class="mb-1">{{ project.title }}</h6>
+                                            <small class="text-muted">{{ project.description[:50] }}{% if project.description|length > 50 %}...{% endif %}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if project.status == 'active' else 'secondary' }}">
+                                                {{ project.status.replace('_', ' ').title() }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'danger' if project.priority == 'high' else 'warning' if project.priority == 'medium' else 'secondary' }}">
+                                                {{ project.priority.title() }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if project.deadline %}
+                                                {{ project.deadline.strftime('%b %d, %Y') }}
+                                            {% else %}
+                                                <span class="text-muted">No deadline</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="btn btn-sm btn-outline-primary">
+                                                View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-briefcase fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No projects assigned</h5>
+                            <p class="text-muted">You'll see your assigned projects here once an admin assigns them to you.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- My Clients -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users me-2"></i>My Clients
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if clients %}
+                        {% for client in clients %}
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="flex-shrink-0">
+                                {% if client.profile_image_url %}
+                                    <img src="{{ client.profile_image_url }}" alt="{{ client.full_name }}" class="rounded-circle" width="40" height="40">
+                                {% else %}
+                                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-user text-white"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-1">
+                                    <a href="{{ url_for('clients.client_profile', client_id=client.id) }}" class="text-decoration-none">
+                                        {{ client.full_name }}
+                                    </a>
+                                </h6>
+                                <small class="text-muted">{{ client.email }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-users fa-2x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">No clients assigned to your projects yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

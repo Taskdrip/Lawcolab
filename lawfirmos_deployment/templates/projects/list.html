@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Projects - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="fas fa-briefcase me-2"></i>
+            Projects
+        </h2>
+        {% if current_user.is_admin() or current_user.is_team_member() %}
+        <a href="{{ url_for('projects.create_project') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>New Project
+        </a>
+        {% endif %}
+    </div>
+
+    {% if projects %}
+    <div class="row">
+        {% for project in projects %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="card-title">
+                            <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="text-decoration-none">
+                                {{ project.title }}
+                            </a>
+                        </h5>
+                        <span class="badge bg-{{ 'success' if project.status == 'active' else 'warning' if project.status == 'on_hold' else 'secondary' }}">
+                            {{ project.status.replace('_', ' ').title() }}
+                        </span>
+                    </div>
+                    
+                    {% if project.description %}
+                    <p class="card-text text-muted">
+                        {{ project.description[:100] }}{% if project.description|length > 100 %}...{% endif %}
+                    </p>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="fas fa-flag me-1"></i>
+                            Priority: <span class="text-{{ 'danger' if project.priority == 'high' else 'warning' if project.priority == 'medium' else 'success' }}">{{ project.priority.title() }}</span>
+                        </small>
+                    </div>
+                    
+                    {% if project.deadline %}
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar me-1"></i>
+                            Due: {{ project.deadline.strftime('%b %d, %Y') }}
+                        </small>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="fas fa-user me-1"></i>
+                            Created by: {{ project.created_by.full_name }}
+                        </small>
+                    </div>
+                    
+                    {% if project.assigned_users %}
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Assigned to:</small>
+                        <div class="d-flex flex-wrap gap-1">
+                            {% for user in project.assigned_users[:3] %}
+                            <span class="badge bg-light text-dark">{{ user.full_name }}</span>
+                            {% endfor %}
+                            {% if project.assigned_users|length > 3 %}
+                            <span class="badge bg-light text-dark">+{{ project.assigned_users|length - 3 }} more</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="card-footer bg-transparent">
+                    <small class="text-muted">
+                        Created {{ project.created_at.strftime('%b %d, %Y') }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-briefcase fa-4x text-muted mb-4"></i>
+        <h4 class="text-muted">No Projects Found</h4>
+        <p class="text-muted">
+            {% if current_user.is_admin() or current_user.is_team_member() %}
+                Get started by creating your first project.
+            {% else %}
+                You haven't been assigned to any projects yet.
+            {% endif %}
+        </p>
+        {% if current_user.is_admin() or current_user.is_team_member() %}
+        <a href="{{ url_for('projects.create_project') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>Create Project
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

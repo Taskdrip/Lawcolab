@@ -1,0 +1,24 @@
+# Environment Variables for LawFirmOS Production Deployment
+# Copy this to .env and fill in your values
+
+# Database Configuration
+DATABASE_URL=postgresql://username:password@localhost/database_name
+PGHOST=localhost
+PGPORT=5432
+PGDATABASE=lawfirmos_db
+PGUSER=lawfirmos_user
+PGPASSWORD=your_secure_password_here
+
+# Session Security (Generate a random 32+ character string)
+SESSION_SECRET=your_very_secure_session_secret_here_at_least_32_characters_long
+
+# Flask Configuration
+FLASK_ENV=production
+PORT=5000
+
+# Optional: Email Configuration (if adding email features later)
+# MAIL_SERVER=smtp.gmail.com
+# MAIL_PORT=587
+# MAIL_USE_TLS=True
+# MAIL_USERNAME=your_email@gmail.com
+# MAIL_PASSWORD=your_app_password

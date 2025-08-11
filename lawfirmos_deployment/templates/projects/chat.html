@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Project Chat - {{ project.title }} - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Project Info Sidebar -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-briefcase me-2"></i>{{ project.title }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Status</small>
+                        <span class="badge bg-{{ 'success' if project.status == 'active' else 'warning' if project.status == 'on_hold' else 'secondary' }}">
+                            {{ project.status.replace('_', ' ').title() }}
+                        </span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Priority</small>
+                        <span class="badge bg-{{ 'danger' if project.priority == 'high' else 'warning' if project.priority == 'medium' else 'secondary' }}">
+                            {{ project.priority.title() }}
+                        </span>
+                    </div>
+                    
+                    {% if project.deadline %}
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Deadline</small>
+                        <span class="text-dark">{{ project.deadline.strftime('%b %d, %Y') }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Participants</small>
+                        <div class="mt-2">
+                            <!-- Creator -->
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
+                                    <i class="fas fa-user text-white small"></i>
+                                </div>
+                                <div>
+                                    <small class="fw-bold">{{ project.created_by.full_name }}</small>
+                                    <br><small class="text-muted">Project Creator</small>
+                                </div>
+                            </div>
+                            
+                            <!-- Assigned Users -->
+                            {% for assignment in project.assignments %}
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="bg-{{ 'info' if assignment.user.is_client() else 'success' }} rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
+                                    <i class="fas fa-user text-white small"></i>
+                                </div>
+                                <div>
+                                    <small class="fw-bold">{{ assignment.user.full_name }}</small>
+                                    <br><small class="text-muted">{{ assignment.user.role.replace('_', ' ').title() }}</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Project
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Section -->
+        <div class="col-md-9">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-comments me-2"></i>Project Discussion
+                        </h5>
+                        <small class="text-muted">{{ messages|length }} message{{ 's' if messages|length != 1 else '' }}</small>
+                    </div>
+                </div>
+                
+                <!-- Messages Container -->
+                <div class="card-body p-0" style="height: 500px; overflow-y: auto;" id="messagesContainer">
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="p-3 border-bottom">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    {% if message.user.profile_image_url %}
+                                        <img src="{{ message.user.profile_image_url }}" alt="{{ message.user.full_name }}" class="rounded-circle" width="40" height="40">
+                                    {% else %}
+                                        <div class="bg-{{ 'primary' if message.user.is_admin() else 'success' if message.user.is_team_member() else 'info' }} rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-user text-white"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <h6 class="mb-0">{{ message.user.full_name }}</h6>
+                                        <small class="text-muted">{{ message.created_at.strftime('%b %d, %Y at %I:%M %p') }}</small>
+                                    </div>
+                                    <small class="text-muted d-block mb-2">{{ message.user.role.replace('_', ' ').title() }}</small>
+                                    <div class="message-content">
+                                        {{ message.message|nl2br|safe }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted">No messages yet</h5>
+                            <p class="text-muted">Start the conversation by sending the first message.</p>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Message Input -->
+                <div class="card-footer bg-transparent">
+                    <form method="POST" action="{{ url_for('projects.send_message', project_id=project.id) }}" class="d-flex">
+                        <div class="flex-grow-1 me-2">
+                            <textarea name="message" class="form-control" rows="2" placeholder="Type your message here..." required></textarea>
+                        </div>
+                        <div class="d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-1"></i>Send
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-scroll to bottom of messages
+document.addEventListener('DOMContentLoaded', function() {
+    const messagesContainer = document.getElementById('messagesContainer');
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // Auto-resize textarea
+    const textarea = document.querySelector('textarea[name="message"]');
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+    }
+});
+</script>
+{% endblock %}

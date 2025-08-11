@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}{{ client.full_name }} - Client Profile{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Client Profile -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start mb-4">
+                        <div class="flex-shrink-0">
+                            {% set user = client %}
+                            {% set size = 'lg' %}
+                            {% set show_badge = true %}
+                            {% include 'components/user_avatar.html' %}
+                        </div>
+                        <div class="flex-grow-1 ms-4">
+                            <h1 class="h3 mb-2">
+                                <a href="{{ url_for('public.user_profile', user_id=client.id) }}" class="text-decoration-none text-dark">
+                                    {{ client.full_name }} <i class="fas fa-external-link-alt ms-1 small text-muted"></i>
+                                </a>
+                            </h1>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-envelope me-2"></i>{{ client.email }}
+                            </p>
+                            {% if client.phone %}
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-phone me-2"></i>{{ client.phone }}
+                            </p>
+                            {% endif %}
+                            <span class="badge bg-primary fw-bold px-2 py-1">
+                                <i class="fas fa-handshake me-1"></i>Client
+                            </span>
+                            {% if client.company_name %}
+                            <span class="badge bg-info bg-opacity-25 text-info fw-normal px-2 py-1 ms-2">
+                                <i class="fas fa-building me-1"></i>{{ client.company_name }}
+                            </span>
+                            {% endif %}
+                            <small class="text-muted d-block mt-2">
+                                Member since {{ client.created_at.strftime('%B %Y') }}
+                            </small>
+                        </div>
+                    </div>
+                    
+                    {% if client.bio %}
+                    <div class="mb-4">
+                        <h5>About</h5>
+                        <p class="text-muted">{{ client.bio }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Client Projects -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-briefcase me-2"></i>Active Cases
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if projects %}
+                        <div class="row g-3">
+                            {% for project in projects %}
+                            <div class="col-md-6">
+                                <div class="card border-start border-primary border-4">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="card-title mb-0">{{ project.title }}</h6>
+                                            <span class="badge bg-{{ 'success' if project.status == 'active' else 'secondary' }}">
+                                                {{ project.status.replace('_', ' ').title() }}
+                                            </span>
+                                        </div>
+                                        <p class="card-text small text-muted mb-3">
+                                            {{ project.description[:80] }}{% if project.description|length > 80 %}...{% endif %}
+                                        </p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                {% if project.deadline %}
+                                                    <i class="fas fa-calendar me-1"></i>{{ project.deadline.strftime('%b %d, %Y') }}
+                                                {% else %}
+                                                    <i class="fas fa-clock me-1"></i>No deadline
+                                                {% endif %}
+                                            </small>
+                                            <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="btn btn-sm btn-outline-primary">
+                                                View
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-briefcase fa-2x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">No active cases assigned to this client.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Client Notes (Admin/Team only) -->
+            {% if current_user.is_admin() or current_user.is_team_member() %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-sticky-note me-2"></i>Client Notes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Add Note Form -->
+                    <form method="POST" action="{{ url_for('clients.add_client_note', client_id=client.id) }}" class="mb-4">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-3">
+                            {{ form.note.label(class="form-label") }}
+                            {{ form.note(class="form-control", rows="3", placeholder="Add a note about this client...") }}
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add Note
+                        </button>
+                    </form>
+
+                    <!-- Notes List -->
+                    {% if notes %}
+                        {% for note in notes %}
+                        <div class="border-start border-primary border-4 ps-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <strong>{{ note.created_by_user.full_name }}</strong>
+                                <small class="text-muted">{{ note.created_at.strftime('%b %d, %Y at %I:%M %p') }}</small>
+                            </div>
+                            <p class="mb-0">{{ note.note }}</p>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-sticky-note fa-2x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">No notes yet. Add the first note above.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if current_user.is_admin() or current_user.is_team_member() %}
+                        <a href="{{ url_for('clients.list_clients') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Clients
+                        </a>
+                        <a href="{{ url_for('chat.conversation', user_id=client.id) }}" class="btn btn-success">
+                            <i class="fas fa-comments me-2"></i>Start Chat
+                        </a>
+                        {% endif %}
+                        {% if projects %}
+                        <a href="{{ url_for('projects.list_projects') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-briefcase me-2"></i>View All Projects
+                        </a>
+                        {% endif %}
+                        {% if current_user.is_admin() %}
+                        <a href="{{ url_for('admin.edit_user', user_id=client.id) }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-edit me-2"></i>Edit Profile
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Client Stats -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Client Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center g-3">
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded">
+                                <h4 class="mb-1">{{ projects|length }}</h4>
+                                <small class="text-muted">Active Cases</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded">
+                                <h4 class="mb-1">{{ notes|length if notes else 0 }}</h4>
+                                <small class="text-muted">Notes</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
