@@ -3,7 +3,9 @@ from flask_login import login_required, current_user
 from functools import wraps
 from forms import AdminUserForm, LawFirmForm, ProjectForm
 from app import db
-from models import LawFirm, User, Project, ProjectAssignment, ROLE_ADMIN, ROLE_TEAM_MEMBER, ROLE_CLIENT
+from models import LawFirm, User, Project, ProjectAssignment, ChatConversation, ROLE_ADMIN, ROLE_TEAM_MEMBER, ROLE_CLIENT
+from sqlalchemy import or_, and_
+from datetime import datetime
 from werkzeug.utils import secure_filename
 import uuid
 import os
@@ -270,19 +272,60 @@ def add_project():
             db.session.add(project)
             db.session.flush()  # Get the project ID
             
-            # Assign selected users to project
+            # Assign selected users to project with seamless tagging
             assigned_users = request.form.getlist('assigned_users')
+            client_assignments = []
+            lawyer_assignments = []
+            
             if assigned_users:
                 for user_id in assigned_users:
                     if user_id:  # Ensure user_id is not empty
-                        assignment = ProjectAssignment()
-                        assignment.project_id = project.id
-                        assignment.user_id = user_id
-                        assignment.assigned_by_id = current_user.id
-                        db.session.add(assignment)
+                        user = User.query.get(user_id)
+                        if user:
+                            assignment = ProjectAssignment()
+                            assignment.project_id = project.id
+                            assignment.user_id = user_id
+                            assignment.assigned_by_id = current_user.id
+                            assignment.assigned_at = datetime.now()
+                            db.session.add(assignment)
+                            
+                            # Track assignments by role for automatic tagging
+                            if user.role == 'client':
+                                client_assignments.append(user)
+                            elif user.role in ['admin', 'team_member']:
+                                lawyer_assignments.append(user)
             
             db.session.commit()
-            flash(f'Project "{project.title}" created successfully with {len(assigned_users) if assigned_users else 0} assignments!', 'success')
+            
+            # Implement seamless tagging between clients and lawyers
+            if client_assignments and lawyer_assignments:
+                try:
+                    for client in client_assignments:
+                        for lawyer in lawyer_assignments:
+                            # Create automatic chat connection between client and assigned lawyer
+                            existing_conversation = ChatConversation.query.filter(
+                                or_(
+                                    and_(ChatConversation.user1_id == client.id, ChatConversation.user2_id == lawyer.id),
+                                    and_(ChatConversation.user1_id == lawyer.id, ChatConversation.user2_id == client.id)
+                                )
+                            ).first()
+                            
+                            if not existing_conversation:
+                                conversation = ChatConversation(
+                                    user1_id=min(client.id, lawyer.id),
+                                    user2_id=max(client.id, lawyer.id)
+                                )
+                                db.session.add(conversation)
+                    
+                    db.session.commit()
+                    flash(f'Project "{project.title}" created with {len(assigned_users)} assignments and automatic team connections established!', 'success')
+                except Exception as e:
+                    # Don't fail the project creation if tagging fails
+                    flash(f'Project "{project.title}" created successfully with {len(assigned_users)} assignments!', 'success')
+                    print(f"Tagging error: {e}")
+            else:
+                flash(f'Project "{project.title}" created successfully with {len(assigned_users) if assigned_users else 0} assignments!', 'success')
+            
             return redirect(url_for('admin.manage_projects'))
         except Exception as e:
             db.session.rollback()
@@ -304,17 +347,54 @@ def assign_project_users(project_id):
         # Clear existing assignments
         ProjectAssignment.query.filter_by(project_id=project_id).delete()
         
-        # Add new assignments
+        # Add new assignments with seamless tagging
         assigned_users = request.form.getlist('assigned_users')
+        client_assignments = []
+        lawyer_assignments = []
+        
         for user_id in assigned_users:
-            assignment = ProjectAssignment()
-            assignment.project_id = project_id
-            assignment.user_id = user_id
-            db.session.add(assignment)
+            user = User.query.get(user_id)
+            if user:
+                assignment = ProjectAssignment()
+                assignment.project_id = project_id
+                assignment.user_id = user_id
+                assignment.assigned_by_id = current_user.id
+                assignment.assigned_at = datetime.now()
+                db.session.add(assignment)
+                
+                # Track assignments by role for automatic tagging
+                if user.role == 'client':
+                    client_assignments.append(user)
+                elif user.role in ['admin', 'team_member']:
+                    lawyer_assignments.append(user)
+        
+        # Implement seamless tagging between clients and lawyers
+        if client_assignments and lawyer_assignments:
+            for client in client_assignments:
+                for lawyer in lawyer_assignments:
+                    # Create automatic chat connection
+                    existing_conversation = ChatConversation.query.filter(
+                        or_(
+                            and_(ChatConversation.user1_id == client.id, ChatConversation.user2_id == lawyer.id),
+                            and_(ChatConversation.user1_id == lawyer.id, ChatConversation.user2_id == client.id)
+                        )
+                    ).first()
+                    
+                    if not existing_conversation:
+                        conversation = ChatConversation(
+                            user1_id=min(client.id, lawyer.id),
+                            user2_id=max(client.id, lawyer.id)
+                        )
+                        db.session.add(conversation)
         
         try:
             db.session.commit()
-            flash(f'Project assignments updated for "{project.title}"!', 'success')
+            
+            # Success message based on seamless tagging
+            if client_assignments and lawyer_assignments:
+                flash(f'Project assignments updated for "{project.title}" with automatic team connections established!', 'success')
+            else:
+                flash(f'Project assignments updated for "{project.title}"!', 'success')
             return redirect(url_for('admin.manage_projects'))
         except Exception as e:
             db.session.rollback()

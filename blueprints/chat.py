@@ -144,7 +144,7 @@ def conversation(user_id):
             and_(ChatMessage.sender_id == current_user.id, ChatMessage.receiver_id == user_id),
             and_(ChatMessage.sender_id == user_id, ChatMessage.receiver_id == current_user.id)
         )
-    ).order_by(ChatMessage.created_at.asc()).all()
+    ).order_by(ChatMessage.timestamp.asc()).all()
     
     # Mark messages from other user as read
     ChatMessage.query.filter(
