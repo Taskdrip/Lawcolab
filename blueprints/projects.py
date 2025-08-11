@@ -83,9 +83,11 @@ def project_detail(project_id):
     if current_user.is_admin() or current_user.is_team_member():
         all_users = User.query.filter(User.role.in_(['team_member', 'client'])).all()
     
+    from datetime import date
     return render_template('projects/detail.html', 
                          project=project, 
-                         all_users=all_users)
+                         all_users=all_users,
+                         today=date.today())
 
 @projects_bp.route('/<int:project_id>/assign', methods=['POST'])
 @require_team_member_or_admin

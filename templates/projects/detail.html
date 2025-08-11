@@ -38,7 +38,7 @@
                     <div class="alert alert-info">
                         <i class="fas fa-calendar-alt me-2"></i>
                         <strong>Deadline:</strong> {{ project.deadline.strftime('%B %d, %Y') }}
-                        {% set days_left = (project.deadline - moment().date()).days %}
+                        {% set days_left = (project.deadline - today).days %}
                         {% if days_left < 0 %}
                             <span class="text-danger ms-2">(Overdue by {{ -days_left }} days)</span>
                         {% elif days_left == 0 %}
