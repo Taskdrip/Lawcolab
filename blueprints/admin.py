@@ -216,30 +216,29 @@ def add_project():
     
     if form.validate_on_submit():
         project = Project()
-        project.id = str(uuid.uuid4())
-        project.name = form.name.data
+        project.created_by_id = current_user.id
+        project.title = form.name.data
         project.description = form.description.data
         project.status = form.status.data
         project.priority = form.priority.data
         project.deadline = form.deadline.data
-        project.budget = form.budget.data
+        # project.budget = form.budget.data  # TODO: Add budget field to Project model
         
         try:
             db.session.add(project)
             db.session.flush()  # Get the project ID
             
             # Assign selected users to project
-            if hasattr(form, 'assigned_users') and form.assigned_users.data:
-                for user_id in form.assigned_users.data:
+            assigned_users = request.form.getlist('assigned_users')
+            if assigned_users:
+                for user_id in assigned_users:
                     assignment = ProjectAssignment()
-                    assignment.id = str(uuid.uuid4())
                     assignment.project_id = project.id
                     assignment.user_id = user_id
-                    assignment.role = 'assigned'
                     db.session.add(assignment)
             
             db.session.commit()
-            flash(f'Project "{project.name}" created successfully!', 'success')
+            flash(f'Project "{project.title}" created successfully!', 'success')
             return redirect(url_for('admin.manage_projects'))
         except Exception as e:
             db.session.rollback()
@@ -261,15 +260,13 @@ def assign_project_users(project_id):
         assigned_users = request.form.getlist('assigned_users')
         for user_id in assigned_users:
             assignment = ProjectAssignment()
-            assignment.id = str(uuid.uuid4())
             assignment.project_id = project_id
             assignment.user_id = user_id
-            assignment.role = 'assigned'
             db.session.add(assignment)
         
         try:
             db.session.commit()
-            flash(f'Project assignments updated for "{project.name}"!', 'success')
+            flash(f'Project assignments updated for "{project.title}"!', 'success')
             return redirect(url_for('admin.manage_projects'))
         except Exception as e:
             db.session.rollback()
@@ -326,49 +323,3 @@ def allowed_file(filename):
     """Check if file extension is allowed"""
     allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
-    """Assign team members to project"""
-    project = Project.query.get_or_404(project_id)
-    
-    if request.method == 'POST':
-        user_ids = request.form.getlist('user_ids')
-        
-        # Clear existing assignments
-        from models import ProjectAssignment
-        ProjectAssignment.query.filter_by(project_id=project_id).delete()
-        
-        # Add new assignments
-        for user_id in user_ids:
-            user = User.query.get(user_id)
-            if user and (user.is_team_member() or user.is_admin()):
-                assignment = ProjectAssignment()
-                assignment.project_id = project_id
-                assignment.user_id = user_id
-                assignment.assigned_at = db.func.now()
-                db.session.add(assignment)
-        
-        try:
-            db.session.commit()
-            flash(f'Team members assigned to {project.name} successfully!', 'success')
-            return redirect(url_for('admin.list_projects'))
-        except Exception as e:
-            db.session.rollback()
-            flash('Failed to assign team members. Please try again.', 'error')
-    
-    # Get available team members
-    team_members = User.query.filter(User.role.in_([ROLE_TEAM_MEMBER, ROLE_ADMIN])).all()
-    
-    # Get current assignments
-    from models import ProjectAssignment
-    current_assignments = ProjectAssignment.query.filter_by(project_id=project_id).all()
-    assigned_user_ids = [a.user_id for a in current_assignments]
-    
-    return render_template('admin/assign_project.html', 
-                         project=project, 
-                         team_members=team_members,
-                         assigned_user_ids=assigned_user_ids)
-
-@admin_bp.route('/team-management')
-@require_admin
-def team_management():
-    """Team management overview"""
-    return redirect(url_for('admin.list_users'))
