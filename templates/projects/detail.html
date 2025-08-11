@@ -140,36 +140,60 @@
                 <div class="card-body">
                     {% if project.assignments %}
                         {% for assignment in project.assignments %}
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="d-flex align-items-center">
-                                <div class="flex-shrink-0">
+                        <div class="d-flex align-items-center justify-content-between mb-3 p-3 border rounded shadow-sm bg-white">
+                            <div class="d-flex align-items-center flex-grow-1">
+                                <div class="flex-shrink-0 me-3">
                                     {% if assignment.user.profile_image_url %}
-                                        <img src="{{ assignment.user.profile_image_url }}" alt="{{ assignment.user.full_name }}" class="rounded-circle" width="40" height="40">
+                                        <img src="{{ assignment.user.profile_image_url }}" 
+                                             alt="{{ assignment.user.display_name }}" 
+                                             class="rounded-circle border border-2 shadow-sm" 
+                                             width="50" height="50" 
+                                             style="object-fit: cover; border-color: {% if assignment.user.role == 'admin' %}#dc3545{% elif assignment.user.role == 'team_member' %}#198754{% else %}#0d6efd{% endif %} !important;">
                                     {% else %}
-                                        <div class="bg-{{ 'primary' if assignment.user.is_team_member() else 'info' if assignment.user.is_client() else 'danger' }} rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                            <i class="fas fa-user text-white"></i>
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center border border-2 shadow-sm" 
+                                             style="width: 50px; height: 50px; background: linear-gradient(135deg, {% if assignment.user.role == 'admin' %}#dc3545, #fd7e8a{% elif assignment.user.role == 'team_member' %}#198754, #75b798{% else %}#0d6efd, #7db3fd{% endif %}); border-color: {% if assignment.user.role == 'admin' %}#dc3545{% elif assignment.user.role == 'team_member' %}#198754{% else %}#0d6efd{% endif %} !important;">
+                                            <i class="fas fa-{{ 'shield-alt' if assignment.user.role == 'admin' else 'briefcase' if assignment.user.role == 'team_member' else 'building' if assignment.user.company_name else 'user' }} text-white fs-5"></i>
                                         </div>
                                     {% endif %}
                                 </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <h6 class="mb-1">
-                                        {% if assignment.user.is_client() %}
-                                            <a href="{{ url_for('clients.client_profile', client_id=assignment.user.id) }}" class="text-decoration-none">
-                                                {{ assignment.user.full_name }}
-                                            </a>
-                                        {% else %}
-                                            {{ assignment.user.full_name }}
-                                        {% endif %}
-                                    </h6>
-                                    <small class="text-muted">{{ assignment.user.role.replace('_', ' ').title() }}</small>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1 fw-bold">
+                                                {% if assignment.user.is_client() %}
+                                                    <a href="{{ url_for('clients.client_profile', client_id=assignment.user.id) }}" class="text-decoration-none text-dark">
+                                                        {{ assignment.user.display_name }}
+                                                    </a>
+                                                {% else %}
+                                                    {{ assignment.user.display_name }}
+                                                {% endif %}
+                                            </h6>
+                                            <div class="d-flex align-items-center gap-2 mb-1">
+                                                <span class="badge bg-{{ 'danger' if assignment.user.role == 'admin' else 'success' if assignment.user.role == 'team_member' else 'primary' }} small">
+                                                    {{ assignment.user.role.replace('_', ' ').title() }}
+                                                </span>
+                                                {% if assignment.user.role == 'client' and assignment.user.company_name %}
+                                                    <span class="badge bg-info bg-opacity-25 text-info small">{{ assignment.user.company_name }}</span>
+                                                {% endif %}
+                                            </div>
+                                            <small class="text-muted">
+                                                <i class="fas fa-envelope me-1"></i>{{ assignment.user.email }}
+                                            </small>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             {% if current_user.is_admin() or current_user.is_team_member() %}
-                            <form method="POST" action="{{ url_for('projects.unassign_user', project_id=project.id, user_id=assignment.user.id) }}" class="d-inline">
-                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Remove {{ assignment.user.full_name }} from this project?')">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </form>
+                            <div class="flex-shrink-0 ms-2">
+                                <form method="POST" action="{{ url_for('projects.unassign_user', project_id=project.id, user_id=assignment.user.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle" 
+                                            style="width: 32px; height: 32px; padding: 0;"
+                                            onclick="return confirm('Remove {{ assignment.user.display_name }} from this project?')"
+                                            title="Remove from project">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                            </div>
                             {% endif %}
                         </div>
                         {% endfor %}
