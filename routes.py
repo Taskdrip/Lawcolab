@@ -1,4 +1,4 @@
-from flask import session, render_template, redirect, url_for, send_from_directory
+from flask import session, render_template, redirect, url_for, send_from_directory, make_response
 from flask_login import current_user
 from app import app, db
 from models import User, LawFirm, Project, ProjectAssignment
@@ -53,12 +53,32 @@ def landing():
 @app.route('/about')
 def about():
     """About Taskdrip and LawFirmOS page"""
-    return render_template('about.html')
+    response = render_template('about.html')
+    # Add cache control headers to prevent caching issues
+    from flask import make_response
+    resp = make_response(response)
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    resp.headers['Pragma'] = 'no-cache'
+    resp.headers['Expires'] = '0'
+    return resp
 
 @app.route('/contact')
 def contact():
     """Contact Taskdrip page"""
-    return render_template('contact.html')
+    response = render_template('contact.html')
+    # Add cache control headers to prevent caching issues
+    from flask import make_response
+    resp = make_response(response)
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    resp.headers['Pragma'] = 'no-cache'
+    resp.headers['Expires'] = '0'
+    return resp
+
+# Test route to verify pages are working
+@app.route('/test-pages')
+def test_pages():
+    """Simple test page to verify About and Contact pages"""
+    return send_from_directory('.', 'test_pages.html')
 
 # Add route to serve uploaded files
 @app.route('/uploads/<path:filename>')

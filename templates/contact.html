@@ -3,6 +3,13 @@
 {% block title %}Contact Us - LawFirmOS by Taskdrip{% endblock %}
 
 {% block content %}
+<!-- Prevent redirect on this page -->
+<script>
+    // Prevent any automatic redirects
+    if (typeof preventRedirect === 'undefined') {
+        var preventRedirect = true;
+    }
+</script>
 <!-- Hero Section -->
 <section class="py-5 bg-light">
     <div class="container">

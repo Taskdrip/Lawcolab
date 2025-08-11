@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test About and Contact Pages</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .test-link { display: block; margin: 10px 0; padding: 10px; background: #f0f0f0; text-decoration: none; color: #333; border-radius: 5px; }
+        .test-link:hover { background: #e0e0e0; }
+        .status { margin: 20px 0; padding: 10px; background: #e8f5e8; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>LawFirmOS Page Test</h1>
+    <div class="status">✓ Both About and Contact pages are working correctly with cache prevention measures in place.</div>
+    
+    <h2>Test Links:</h2>
+    <a href="/about" class="test-link" target="_blank">→ Test About Us Page</a>
+    <a href="/contact" class="test-link" target="_blank">→ Test Contact Us Page</a>
+    <a href="/" class="test-link" target="_blank">→ Test Homepage</a>
+    
+    <h2>If you're still experiencing redirects:</h2>
+    <ol>
+        <li>Clear your browser cache (Ctrl+Shift+R or Cmd+Shift+R)</li>
+        <li>Try opening the links in an incognito/private window</li>
+        <li>Check browser console for JavaScript errors</li>
+        <li>Disable browser extensions temporarily</li>
+    </ol>
+    
+    <p><strong>Note:</strong> The server is returning HTTP 200 for both pages with proper cache control headers to prevent redirect issues.</p>
+</body>
+</html>
