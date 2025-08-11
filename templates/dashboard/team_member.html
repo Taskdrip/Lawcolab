@@ -19,6 +19,35 @@
         </div>
     </div>
 
+    <!-- Team Image Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <img src="{{ url_for('static', filename='images/Professional_legal_consultation_scene_0650a100.png') }}" 
+                             class="img-fluid rounded-start h-100" alt="Professional Legal Consultation" 
+                             style="object-fit: cover; min-height: 200px;">
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body h-100 d-flex flex-column justify-content-center">
+                            <h5 class="card-title">Welcome to Your Dashboard</h5>
+                            <p class="card-text">Manage your assigned projects, collaborate with team members, and deliver exceptional legal services to our clients.</p>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('projects.list_projects') }}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i>View All Projects
+                                </a>
+                                <a href="{{ url_for('team.list_team') }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-users me-1"></i>Team Directory
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row g-4">
         <!-- My Projects -->
         <div class="col-lg-8">
