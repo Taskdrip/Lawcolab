@@ -146,14 +146,14 @@ def logged_in(blueprint, token):
 
 @oauth_error.connect
 def handle_error(blueprint, error, error_description=None, error_uri=None):
-    return redirect(url_for('replit_auth.error'))
+    return redirect(url_for('auth.login'))
 
 def require_login(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated:
             session["next_url"] = get_next_navigation_url(request)
-            return redirect(url_for('replit_auth.login'))
+            return redirect(url_for('auth.login'))
 
         # Check if this is a Replit OAuth user (has token) or email/password user
         try:
@@ -166,7 +166,7 @@ def require_login(f):
                                                      client_id=os.environ['REPL_ID'])
                     except InvalidGrantError:
                         session["next_url"] = get_next_navigation_url(request)
-                        return redirect(url_for('replit_auth.login'))
+                        return redirect(url_for('auth.login'))
                     replit.token_updater(token)
         except (AttributeError, KeyError):
             # This is likely an email/password user, skip token refresh
