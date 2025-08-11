@@ -3,6 +3,7 @@ from app import db
 from flask_dance.consumer.storage.sqla import OAuthConsumerMixin
 from flask_login import UserMixin
 from sqlalchemy import UniqueConstraint
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # User roles
 ROLE_ADMIN = 'admin'
@@ -20,7 +21,8 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String, default=ROLE_CLIENT, nullable=False)
     phone = db.Column(db.String, nullable=True)
     bio = db.Column(db.Text, nullable=True)
-    is_active = db.Column(db.Boolean, default=True)
+    active = db.Column(db.Boolean, default=True)
+    password_hash = db.Column(db.String(256), nullable=True)  # For email/password login
     
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
@@ -51,6 +53,16 @@ class User(UserMixin, db.Model):
 
     def is_client(self):
         return self.role == ROLE_CLIENT
+
+    def set_password(self, password):
+        """Hash and store password"""
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        """Check if provided password matches hash"""
+        if not self.password_hash:
+            return False
+        return check_password_hash(self.password_hash, password)
 
 # (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
 class OAuth(OAuthConsumerMixin, db.Model):

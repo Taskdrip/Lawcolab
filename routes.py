@@ -1,13 +1,10 @@
 from flask import session, render_template, redirect, url_for
 from flask_login import current_user
 from app import app, db
-from replit_auth import require_login, make_replit_blueprint
 from models import User, LawFirm, Project, ProjectAssignment
 
-# Register blueprints
-app.register_blueprint(make_replit_blueprint(), url_prefix="/auth")
-
 # Import blueprint modules
+from auth import auth_bp
 from blueprints.dashboard import dashboard_bp
 from blueprints.admin import admin_bp
 from blueprints.clients import clients_bp
@@ -15,6 +12,8 @@ from blueprints.projects import projects_bp
 from blueprints.team import team_bp
 from blueprints.public import public_bp
 
+# Register blueprints
+app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(dashboard_bp, url_prefix="/dashboard")
 app.register_blueprint(admin_bp, url_prefix="/admin")
 app.register_blueprint(clients_bp, url_prefix="/clients")
@@ -33,7 +32,7 @@ def index():
     if current_user.is_authenticated:
         # Redirect to appropriate dashboard based on role
         if current_user.is_admin():
-            return redirect(url_for('dashboard.admin_dashboard'))
+            return redirect(url_for('admin.admin_dashboard'))
         elif current_user.is_team_member():
             return redirect(url_for('dashboard.team_member_dashboard'))
         else:
@@ -42,6 +41,11 @@ def index():
     # Show public landing page
     firm = LawFirm.query.first()
     return render_template('index.html', firm=firm)
+
+@app.route('/landing')
+def landing():
+    """Comprehensive landing page"""
+    return render_template('landing.html')
 
 @app.errorhandler(403)
 def forbidden(e):

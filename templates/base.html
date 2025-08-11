@@ -85,10 +85,8 @@
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><span class="dropdown-item-text small text-muted">{{ current_user.role.replace('_', ' ').title() }}</span></li>
                             <li><hr class="dropdown-divider"></li>
-                            {% if current_user.is_client() %}
-                            <li><a class="dropdown-item" href="{{ url_for('clients.client_profile', client_id=current_user.id) }}">My Profile</a></li>
-                            {% endif %}
-                            <li><a class="dropdown-item" href="{{ url_for('replit_auth.logout') }}">Logout</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}">My Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
                         </ul>
                     </li>
                 </ul>

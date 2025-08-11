@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Login - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="container-fluid h-100">
+        <div class="row h-100">
+            <!-- Left side - Branding -->
+            <div class="col-lg-6 d-none d-lg-flex auth-brand-side">
+                <div class="auth-brand-content">
+                    <div class="text-center">
+                        <i class="fas fa-balance-scale auth-brand-icon"></i>
+                        <h1 class="auth-brand-title">LawFirmOS</h1>
+                        <p class="auth-brand-subtitle">Professional Legal Practice Management</p>
+                    </div>
+                    
+                    <div class="auth-features">
+                        <div class="feature-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <div>
+                                <h5>Secure & Confidential</h5>
+                                <p>Enterprise-grade security for your legal data</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-users"></i>
+                            <div>
+                                <h5>Client Management</h5>
+                                <p>Streamlined client communication and case tracking</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-chart-line"></i>
+                            <div>
+                                <h5>Practice Analytics</h5>
+                                <p>Insights to grow and optimize your legal practice</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right side - Login Form -->
+            <div class="col-lg-6 auth-form-side">
+                <div class="auth-form-container">
+                    <div class="auth-form-header">
+                        <h2>Welcome Back</h2>
+                        <p class="text-muted">Sign in to your account to continue</p>
+                    </div>
+                    
+                    <form method="POST" class="auth-form">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="form-group mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control form-control-lg") }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.email.errors[0] }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            {{ form.password.label(class="form-label") }}
+                            {{ form.password(class="form-control form-control-lg") }}
+                            {% if form.password.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.password.errors[0] }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <div class="form-check">
+                                {{ form.remember_me(class="form-check-input") }}
+                                {{ form.remember_me.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                        </button>
+                        
+                        <div class="text-center">
+                            <p class="mb-0">Don't have an account? 
+                                <a href="{{ url_for('auth.signup') }}" class="text-primary">Sign up here</a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
