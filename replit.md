@@ -10,7 +10,7 @@ Profile image preferences: Beautiful square profile images with clear role-based
 ## Recent Changes
 - **August 11, 2025**: DEPLOYMENT READY - Created comprehensive About Us and Contact Us pages for Taskdrip with full team profiles, Abraham's story, social media integration
 - **August 11, 2025**: Added professional About Us page featuring Abraham (Founder/CEO - lawyer since 2015, tech entrepreneur) and complete team including Wiam Tahbat (Co-Founder/COO)
-- **August 11, 2025**: Implemented Contact Us page with inquiry forms, WhatsApp contact (+234 803 662 2568), social media links (Telegram, Instagram, TikTok, YouTube)
+- **August 11, 2025**: Implemented Contact Us page with inquiry forms, WhatsApp contact (+234 803 662 2568), social media links (Telegram, Instagram, TikTok, YouTube: https://www.youtube.com/@Taskdriper)
 - **August 11, 2025**: Created deployment package (LawFirmOS_Deployment_Package.tar.gz) ready for Contabo VPS hosting with complete setup scripts
 - **August 11, 2025**: Fixed all routing issues - About and Contact pages fully functional with professional content and Abraham's profile photo
 - **August 11, 2025**: Generated deployment documentation, startup scripts, environment templates for production hosting
