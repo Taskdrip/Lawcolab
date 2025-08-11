@@ -1,0 +1,98 @@
+Build a full-stack web application called LawFirmOS using Python (Flask) for the backend, SQLite for the database (easy to upgrade to PostgreSQL later), and HTML/CSS/JavaScript (Bootstrap) for the frontend. The app should be responsive, clean, and use a white background with gradient black/dark blue fonts.
+
+MVP Features:
+
+1. Authentication System:
+
+Signup and login via email & password using Flask-Login.
+
+Three roles: Admin, Team Member, Client.
+
+Role-based dashboard redirection after login.
+
+
+
+2. Law Firm Profile Management:
+
+Admin can create and update their law firm profile (name, logo, contact info, description, branches, practice areas).
+
+Auto-generate a public landing page for each firm (About Us, Contact, Teams, Branches).
+
+
+
+3. Team Management:
+
+Admin can add, edit, and remove team members (name, role, email, phone, bio).
+
+Assign team members to projects/cases.
+
+
+
+4. Client Management:
+
+Admin can add clients with profile details (name, contact info, case details).
+
+Assign clients to specific projects/cases.
+
+
+
+5. Project/Case Management:
+
+Create projects with title, description, deadline, assigned team members and clients.
+
+Simple project collaboration view with file uploads (PDF, DOCX, Images) stored in a secure folder.
+
+
+
+6. Communication:
+
+Basic in-app chat system (similar to Telegram style but simplified).
+
+Separate chat channels for each project, allowing team and client communication.
+
+
+
+7. Email Integration:
+
+Use an open-source email client (e.g., integration with IMAP/SMTP) for sending/receiving emails inside the app.
+
+
+
+8. CRM Basics:
+
+Simple client list with search/filter.
+
+Notes section for each client.
+
+
+
+9. Admin Dashboard:
+
+Overview of total projects, active clients, team members, and pending tasks.
+
+Table of latest activities (file uploads, messages, new cases).
+
+
+
+10. UI Styling:
+
+
+
+White background, black/dark blue gradient headings, Bootstrap components for cards, forms, tables.
+
+Mobile-friendly layout.
+
+
+Technical Notes:
+
+Structure code with Flask Blueprints (auth, dashboard, projects, clients, chat).
+
+Use SQLAlchemy ORM for models.
+
+Store uploaded files in /uploads and track them in the database.
+
+Secure routes based on user role.
+
+Include a requirements.txt file for dependencies (Flask, Flask-Login, Flask-SQLAlchemy, Flask-WTF, etc.).
+
+Include a simple README.md with setup instructions.
