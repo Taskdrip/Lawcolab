@@ -5,8 +5,10 @@ LawFirmOS is a comprehensive legal practice management system built with Flask, 
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
+Profile image preferences: Beautiful square profile images with clear role-based icons for visual distinction between admins, clients, and lawyers.
 
 ## Recent Changes
+- **August 11, 2025**: Enhanced profile image display with square layout and role-based visual distinction
 - **August 11, 2025**: Comprehensive project management and communication system implemented
 - Fixed navigation links for Projects and Clients pages with full functionality
 - Added project assignment system allowing admins/lawyers to assign team members and clients to projects
