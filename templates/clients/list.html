@@ -36,12 +36,15 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
                         <div class="me-3">
-                            {% include 'components/user_avatar.html' with user=client, size='sm', show_badge=true %}
+                            {% set user = client %}
+                            {% set size = 'sm' %}
+                            {% set show_badge = true %}
+                            {% include 'components/user_avatar.html' %}
                         </div>
                         
                         <div>
                             <h5 class="card-title mb-1">
-                                <a href="{{ url_for('clients.client_profile', client_id=client.id) }}" class="text-decoration-none">
+                                <a href="{{ url_for('public.user_profile', user_id=client.id) }}" class="text-decoration-none">
                                     {{ client.full_name }}
                                 </a>
                             </h5>

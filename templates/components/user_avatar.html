@@ -41,19 +41,20 @@
     }
 } %}
 
-{% set config = role_config[user.role] %}
+{% set avatar_user = avatar_user or user %}
+{% set config = role_config[avatar_user.role] %}
 
 <div class="position-relative d-inline-block">
-    {% if user.profile_image_url %}
-        <img src="{{ user.profile_image_url }}" 
-             alt="{{ user.display_name }}" 
+    {% if avatar_user.profile_image_url %}
+        <img src="{{ avatar_user.profile_image_url }}" 
+             alt="{{ avatar_user.display_name }}" 
              class="rounded-3 border border-3 shadow-sm" 
              width="{{ current_size.width }}" height="{{ current_size.height }}" 
              style="object-fit: cover; border-color: {{ config.color }} !important;">
     {% else %}
         <div class="rounded-3 d-flex align-items-center justify-content-center border border-3 shadow-sm" 
              style="width: {{ current_size.width }}; height: {{ current_size.height }}; background: {{ config.gradient }}; border-color: {{ config.color }} !important;">
-            <i class="fas fa-{{ config.icon }} text-white" style="font-size: {{ current_size.icon_size }};"></i>
+            <i class="fas fa-{{ 'building' if avatar_user.company_name and avatar_user.role == 'client' else config.icon }} text-white" style="font-size: {{ current_size.icon_size }};"></i>
         </div>
     {% endif %}
     

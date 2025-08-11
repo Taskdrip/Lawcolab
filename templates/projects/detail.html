@@ -140,11 +140,11 @@
                 <div class="card-body">
                     {% if project.assignments %}
                         {% for assignment in project.assignments %}
-                            {% include 'components/user_card.html' with 
-                                user=assignment.user, 
-                                show_actions=true,
-                                show_joined_date=false,
-                                remove_url=url_for('projects.unassign_user', project_id=project.id, user_id=assignment.user.id) %}
+                            {% set user = assignment.user %}
+                            {% set show_actions = true %}
+                            {% set show_joined_date = false %}
+                            {% set remove_url = url_for('projects.unassign_user', project_id=project.id, user_id=assignment.user.id) %}
+                            {% include 'components/user_card.html' %}
                         {% endfor %}
                     {% else %}
                         <div class="text-center py-3">
