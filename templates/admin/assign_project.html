@@ -1,93 +1,115 @@
 {% extends "base.html" %}
 
-{% block title %}Assign Team Members - LawFirmOS{% endblock %}
+{% block title %}Assign Users to {{ project.name }} - Admin{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="d-flex align-items-center mb-4">
-                <a href="{{ url_for('admin.list_projects') }}" class="btn btn-outline-secondary me-3">
-                    <i class="fas fa-arrow-left"></i>
-                </a>
-                <h1><i class="fas fa-user-friends me-2"></i>Assign Team Members</h1>
-            </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="fas fa-users me-2"></i>
+            Assign Users to "{{ project.name }}"
+        </h2>
+        <a href="{{ url_for('admin.manage_projects') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Projects
+        </a>
+    </div>
 
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Project Details</h5>
-                </div>
-                <div class="card-body">
-                    <h6 class="fw-bold">{{ project.name }}</h6>
-                    <p class="text-muted mb-1">{{ project.description }}</p>
-                    <small class="text-muted">
-                        <i class="fas fa-user me-1"></i>Client: {{ project.client.full_name if project.client else 'Not assigned' }}
-                        <span class="ms-3">
-                            <i class="fas fa-calendar me-1"></i>Created: {{ project.created_at.strftime('%b %d, %Y') }}
-                        </span>
-                    </small>
-                </div>
-            </div>
-
+    <div class="row">
+        <div class="col-md-8">
             <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Team Assignment</h5>
-                </div>
                 <div class="card-body">
                     <form method="POST">
                         <div class="mb-4">
-                            <p class="text-muted">Select team members to assign to this project:</p>
+                            <h5>Project Details</h5>
+                            <p class="text-muted">{{ project.description or 'No description provided' }}</p>
+                            <div class="d-flex gap-3">
+                                <span class="badge bg-primary">{{ project.status.replace('_', ' ').title() }}</span>
+                                <span class="badge bg-warning">{{ project.priority.title() }} Priority</span>
+                                {% if project.deadline %}
+                                    <span class="badge bg-info">Due: {{ project.deadline.strftime('%b %d, %Y') }}</span>
+                                {% endif %}
+                            </div>
                         </div>
 
-                        {% if team_members %}
-                        <div class="row">
-                            {% for member in team_members %}
-                            <div class="col-md-6 mb-3">
-                                <div class="admin-card">
+                        <div class="mb-3">
+                            <h6>Select Team Members and Clients</h6>
+                            <div class="row">
+                                {% for user in all_users %}
+                                <div class="col-md-6 mb-2">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" 
-                                               name="user_ids" value="{{ member.id }}"
-                                               id="user_{{ member.id }}"
-                                               {% if member.id in assigned_user_ids %}checked{% endif %}>
-                                        <label class="form-check-label w-100" for="user_{{ member.id }}">
-                                            <div class="d-flex align-items-center">
-                                                <div class="admin-card-icon me-3">
-                                                    <i class="fas fa-user"></i>
+                                        <input class="form-check-input" 
+                                               type="checkbox" 
+                                               name="assigned_users" 
+                                               value="{{ user.id }}" 
+                                               id="user_{{ user.id }}"
+                                               {% if user.id in current_assignments %}checked{% endif %}>
+                                        <label class="form-check-label d-flex align-items-center" for="user_{{ user.id }}">
+                                            {% if user.profile_image_url %}
+                                                <img src="{{ user.profile_image_url }}" 
+                                                     alt="{{ user.full_name }}" 
+                                                     class="rounded-circle me-2"
+                                                     style="width: 24px; height: 24px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2"
+                                                     style="width: 24px; height: 24px; color: white; font-size: 12px;">
+                                                    {{ user.first_name[0] if user.first_name else 'U' }}
                                                 </div>
-                                                <div>
-                                                    <div class="fw-bold">{{ member.full_name }}</div>
-                                                    <div class="small text-muted">{{ member.email }}</div>
-                                                    <span class="badge 
-                                                        {% if member.role == 'admin' %}bg-danger
-                                                        {% else %}bg-primary{% endif %} small">
-                                                        {{ member.role.replace('_', ' ').title() }}
+                                            {% endif %}
+                                            <div>
+                                                <div class="fw-medium">{{ user.full_name }}</div>
+                                                <small class="text-muted">
+                                                    <span class="badge badge-sm 
+                                                        {% if user.role == 'admin' %}bg-danger
+                                                        {% elif user.role == 'team_member' %}bg-primary
+                                                        {% else %}bg-secondary{% endif %}">
+                                                        {{ user.role.replace('_', ' ').title() }}
                                                     </span>
-                                                </div>
+                                                </small>
                                             </div>
                                         </label>
                                     </div>
                                 </div>
+                                {% endfor %}
                             </div>
-                            {% endfor %}
                         </div>
 
-                        <div class="d-flex justify-content-end gap-2 mt-4">
-                            <a href="{{ url_for('admin.list_projects') }}" class="btn btn-secondary">Cancel</a>
+                        <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Update Assignments
+                                <i class="fas fa-save me-1"></i>Update Assignments
                             </button>
+                            <a href="{{ url_for('admin.manage_projects') }}" class="btn btn-secondary">Cancel</a>
                         </div>
-                        {% else %}
-                        <div class="text-center py-4">
-                            <i class="fas fa-user-slash fa-3x text-muted mb-3"></i>
-                            <h5>No Team Members Available</h5>
-                            <p class="text-muted">Please add team members first before assigning projects.</p>
-                            <a href="{{ url_for('admin.add_user') }}" class="btn btn-primary">
-                                <i class="fas fa-plus me-2"></i>Add Team Member
-                            </a>
-                        </div>
-                        {% endif %}
                     </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6><i class="fas fa-info-circle me-1"></i>Current Assignments</h6>
+                    {% if current_assignments %}
+                        <div class="small">
+                            {% for assignment in project.assignments %}
+                                <div class="d-flex align-items-center mb-2">
+                                    {% if assignment.user.profile_image_url %}
+                                        <img src="{{ assignment.user.profile_image_url }}" 
+                                             alt="{{ assignment.user.full_name }}" 
+                                             class="rounded-circle me-2"
+                                             style="width: 20px; height: 20px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2"
+                                             style="width: 20px; height: 20px; color: white; font-size: 10px;">
+                                            {{ assignment.user.first_name[0] if assignment.user.first_name else 'U' }}
+                                        </div>
+                                    {% endif %}
+                                    <span>{{ assignment.user.full_name }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted small">No current assignments</p>
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, SelectField, PasswordField, EmailField, DateField, FileField, BooleanField
-from wtforms.validators import DataRequired, Email, Length, Optional, EqualTo, ValidationError
+from wtforms import StringField, TextAreaField, SelectField, PasswordField, EmailField, DateField, FileField, BooleanField, DecimalField
+from wtforms.validators import DataRequired, Email, Length, Optional, EqualTo, ValidationError, NumberRange
 from models import User
 
 class LoginForm(FlaskForm):
@@ -63,7 +63,7 @@ class AdminUserForm(FlaskForm):
     password = PasswordField('Password', validators=[Optional(), Length(min=8)])
 
 class ProjectForm(FlaskForm):
-    title = StringField('Project Title', validators=[DataRequired(), Length(max=200)])
+    name = StringField('Project Name', validators=[DataRequired(), Length(max=200)])
     description = TextAreaField('Description', validators=[Optional(), Length(max=1000)])
     status = SelectField('Status', choices=[
         ('active', 'Active'),
@@ -76,6 +76,15 @@ class ProjectForm(FlaskForm):
         ('high', 'High')
     ], default='medium')
     deadline = DateField('Deadline', validators=[Optional()])
+    budget = DecimalField('Budget', validators=[Optional(), NumberRange(min=0)])
+
+class LawFirmForm(FlaskForm):
+    name = StringField('Firm Name', validators=[DataRequired(), Length(max=200)])
+    description = TextAreaField('Description', validators=[Optional(), Length(max=1000)])
+    address = TextAreaField('Address', validators=[Optional(), Length(max=500)])
+    phone = StringField('Phone', validators=[Optional(), Length(max=20)])
+    email = EmailField('Email', validators=[Optional(), Email()])
+    website = StringField('Website', validators=[Optional(), Length(max=200)])
 
 class ClientNoteForm(FlaskForm):
     note = TextAreaField('Note', validators=[DataRequired(), Length(max=2000)])

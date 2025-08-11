@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Add Project - Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="fas fa-plus me-2"></i>
+            Add New Project
+        </h2>
+        <a href="{{ url_for('admin.manage_projects') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Projects
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.name.label(class="form-label") }}
+                            {{ form.name(class="form-control") }}
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.name.errors[0] }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control", rows="4") }}
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.description.errors[0] }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form.status.label(class="form-label") }}
+                                    {{ form.status(class="form-select") }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form.priority.label(class="form-label") }}
+                                    {{ form.priority(class="form-select") }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form.deadline.label(class="form-label") }}
+                                    {{ form.deadline(class="form-control", type="date") }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.budget.label(class="form-label") }}
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                {{ form.budget(class="form-control") }}
+                            </div>
+                            {% if form.budget.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.budget.errors[0] }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Assign Team Members</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Team Members & Lawyers</h6>
+                                    {% for member in team_members %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="assigned_users" value="{{ member.id }}" id="member_{{ member.id }}">
+                                        <label class="form-check-label" for="member_{{ member.id }}">
+                                            {{ member.full_name }} ({{ member.role.replace('_', ' ').title() }})
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Clients</h6>
+                                    {% for client in clients %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="assigned_users" value="{{ client.id }}" id="client_{{ client.id }}">
+                                        <label class="form-check-label" for="client_{{ client.id }}">
+                                            {{ client.full_name }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Create Project
+                            </button>
+                            <a href="{{ url_for('admin.manage_projects') }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6><i class="fas fa-info-circle me-1"></i>Project Guidelines</h6>
+                    <ul class="small text-muted">
+                        <li>Choose a clear, descriptive project name</li>
+                        <li>Assign relevant team members and clients</li>
+                        <li>Set realistic deadlines and budgets</li>
+                        <li>Use priority levels to organize workload</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
