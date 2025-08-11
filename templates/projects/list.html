@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Projects - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 text-gradient">
+                    <i class="fas fa-briefcase me-2"></i>
+                    {% if current_user.is_client() %}
+                        My Cases
+                    {% else %}
+                        Project Management
+                    {% endif %}
+                </h1>
+                
+                {% if current_user.is_admin() or current_user.is_team_member() %}
+                <a href="{{ url_for('projects.create_project') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>New Project
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    {% if projects %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Project</th>
+                                        <th>Status</th>
+                                        <th>Priority</th>
+                                        {% if current_user.is_admin() %}
+                                        <th>Created By</th>
+                                        {% endif %}
+                                        {% if not current_user.is_client() %}
+                                        <th>Assigned Users</th>
+                                        {% endif %}
+                                        <th>Deadline</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for project in projects %}
+                                    <tr>
+                                        <td>
+                                            <h6 class="mb-1">{{ project.title }}</h6>
+                                            <small class="text-muted">
+                                                {{ project.description[:60] }}{% if project.description|length > 60 %}...{% endif %}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if project.status == 'active' else 'warning' if project.status == 'on_hold' else 'secondary' }}">
+                                                {{ project.status.replace('_', ' ').title() }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'danger' if project.priority == 'high' else 'warning' if project.priority == 'medium' else 'secondary' }}">
+                                                {{ project.priority.title() }}
+                                            </span>
+                                        </td>
+                                        {% if current_user.is_admin() %}
+                                        <td>{{ project.created_by.full_name }}</td>
+                                        {% endif %}
+                                        {% if not current_user.is_client() %}
+                                        <td>
+                                            {% if project.assigned_users %}
+                                                {% for user in project.assigned_users[:2] %}
+                                                    <span class="badge bg-light text-dark me-1">{{ user.full_name }}</span>
+                                                {% endfor %}
+                                                {% if project.assigned_users|length > 2 %}
+                                                    <span class="badge bg-secondary">+{{ project.assigned_users|length - 2 }} more</span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-muted">None</span>
+                                            {% endif %}
+                                        </td>
+                                        {% endif %}
+                                        <td>
+                                            {% if project.deadline %}
+                                                {{ project.deadline.strftime('%b %d, %Y') }}
+                                                {% set days_left = (project.deadline - moment().date()).days %}
+                                                {% if days_left < 0 %}
+                                                    <br><small class="text-danger">Overdue</small>
+                                                {% elif days_left <= 7 %}
+                                                    <br><small class="text-warning">Due soon</small>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-muted">No deadline</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="btn btn-sm btn-outline-primary">
+                                                View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-briefcase fa-3x text-muted mb-3"></i>
+                            {% if current_user.is_client() %}
+                                <h5 class="text-muted">No cases assigned</h5>
+                                <p class="text-muted">Your assigned cases will appear here. Contact your legal team if you have questions.</p>
+                            {% else %}
+                                <h5 class="text-muted">No projects yet</h5>
+                                <p class="text-muted">Create your first project to get started with case management.</p>
+                                <a href="{{ url_for('projects.create_project') }}" class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>Create First Project
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

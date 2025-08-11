@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - LawFirmOS{% endblock %}
+
+{% block content %}
+{% if current_user.is_authenticated %}
+    <!-- This shouldn't normally show as authenticated users are redirected -->
+    <div class="container mt-5">
+        <div class="alert alert-info">
+            <h4>Welcome back, {{ current_user.full_name }}!</h4>
+            <p>You are being redirected to your dashboard...</p>
+            <script>
+                setTimeout(function() {
+                    window.location.href = '{{ url_for("index") }}';
+                }, 2000);
+            </script>
+        </div>
+    </div>
+{% else %}
+    <!-- Public Landing Page -->
+    <div class="hero-section">
+        <div class="container">
+            <div class="row align-items-center min-vh-100">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold text-gradient mb-4">
+                        Professional Legal Practice Management
+                    </h1>
+                    {% if firm %}
+                    <h2 class="h3 mb-4">{{ firm.name }}</h2>
+                    <p class="lead mb-4">{{ firm.description or "Your trusted legal partner for comprehensive legal solutions." }}</p>
+                    {% else %}
+                    <p class="lead mb-4">Streamline your legal practice with our comprehensive management system.</p>
+                    {% endif %}
+                    
+                    <div class="d-flex flex-column flex-sm-row gap-3">
+                        <a href="{{ url_for('replit_auth.login') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Client Portal
+                        </a>
+                        <a href="{{ url_for('public.landing') }}" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-info-circle me-2"></i>Learn More
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-body p-5">
+                            <div class="text-center mb-4">
+                                <i class="fas fa-balance-scale fa-3x text-primary mb-3"></i>
+                                <h3 class="card-title">Access Your Account</h3>
+                                <p class="text-muted">Secure client portal and team collaboration</p>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <a href="{{ url_for('replit_auth.login') }}" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-lock me-2"></i>Secure Login
+                                </a>
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <small class="text-muted">
+                                    <i class="fas fa-shield-alt me-1"></i>
+                                    Your data is protected with enterprise-grade security
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-lg-8 mx-auto">
+                    <h2 class="h1 fw-bold text-gradient">Why Choose LawFirmOS?</h2>
+                    <p class="lead">Comprehensive legal practice management designed for modern law firms</p>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                            <h4>Client Management</h4>
+                            <p class="text-muted">Organize client information, case details, and communication history in one secure platform.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-briefcase fa-3x text-primary mb-3"></i>
+                            <h4>Project Tracking</h4>
+                            <p class="text-muted">Track case progress, deadlines, and team assignments with real-time collaboration tools.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+                            <h4>Secure & Compliant</h4>
+                            <p class="text-muted">Bank-level security with legal industry compliance standards and data protection.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endif %}
+{% endblock %}

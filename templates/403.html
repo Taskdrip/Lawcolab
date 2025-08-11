@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Access Denied - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-shield-alt fa-5x text-muted"></i>
+                </div>
+                
+                <h1 class="display-4 fw-bold text-gradient mb-3">403</h1>
+                <h2 class="h4 mb-4">Access Denied</h2>
+                
+                <p class="lead text-muted mb-4">
+                    You don't have permission to access this resource. This may be because:
+                </p>
+                
+                <div class="alert alert-light text-start">
+                    <ul class="mb-0">
+                        <li>You need to log in to access this page</li>
+                        <li>Your account doesn't have the required permissions</li>
+                        <li>This resource is restricted to certain user roles</li>
+                        <li>The page you're looking for doesn't exist</li>
+                    </ul>
+                </div>
+                
+                <div class="d-flex flex-column flex-sm-row justify-content-center gap-3 mt-4">
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('index') }}" class="btn btn-primary">
+                            <i class="fas fa-home me-2"></i>Go to Dashboard
+                        </a>
+                        <button onclick="history.back()" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Go Back
+                        </button>
+                    {% else %}
+                        <a href="{{ url_for('replit_auth.login') }}" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </a>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-home me-2"></i>Home
+                        </a>
+                    {% endif %}
+                </div>
+                
+                <div class="mt-5">
+                    <p class="text-muted small">
+                        <i class="fas fa-question-circle me-1"></i>
+                        If you believe this is an error, please contact your administrator or 
+                        <a href="{{ url_for('public.landing') }}" class="text-decoration-none">visit our public page</a>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Professional Footer Note -->
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-light border">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h6 class="alert-heading mb-1">
+                            <i class="fas fa-shield-alt me-2 text-primary"></i>Secure Legal Platform
+                        </h6>
+                        <p class="mb-0 small text-muted">
+                            LawFirmOS uses role-based access control to protect sensitive legal information and ensure compliance with confidentiality requirements.
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <a href="{{ url_for('public.landing') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-info-circle me-2"></i>Learn More
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 text-gradient">
+                    <i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard
+                </h1>
+                <div>
+                    <a href="{{ url_for('projects.create_project') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>New Project
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overview Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-2">Total Projects</h6>
+                            <h2 class="mb-0">{{ total_projects }}</h2>
+                        </div>
+                        <div class="icon-circle bg-primary">
+                            <i class="fas fa-briefcase text-white"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-2">Active Projects</h6>
+                            <h2 class="mb-0">{{ active_projects }}</h2>
+                        </div>
+                        <div class="icon-circle bg-success">
+                            <i class="fas fa-play text-white"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-2">Total Clients</h6>
+                            <h2 class="mb-0">{{ total_clients }}</h2>
+                        </div>
+                        <div class="icon-circle bg-info">
+                            <i class="fas fa-users text-white"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-2">Team Members</h6>
+                            <h2 class="mb-0">{{ total_team_members }}</h2>
+                        </div>
+                        <div class="icon-circle bg-warning">
+                            <i class="fas fa-user-tie text-white"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pb-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clock me-2"></i>Recent Projects
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_projects %}
+                        {% for project in recent_projects %}
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="flex-shrink-0">
+                                <div class="status-badge status-{{ project.status }}"></div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-1">
+                                    <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="text-decoration-none">
+                                        {{ project.title }}
+                                    </a>
+                                </h6>
+                                <small class="text-muted">Created {{ project.created_at.strftime('%b %d, %Y') }}</small>
+                            </div>
+                            <span class="badge bg-{{ 'success' if project.status == 'active' else 'secondary' }}">
+                                {{ project.status.title() }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-4">
+                            <i class="fas fa-inbox fa-2x mb-3 d-block"></i>
+                            No projects created yet.
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pb-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-file-alt me-2"></i>Recent Activity
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% set all_activity = [] %}
+                    
+                    {% for file in recent_files %}
+                        {% set _ = all_activity.append({
+                            'type': 'file',
+                            'icon': 'fas fa-file-upload',
+                            'text': file.uploaded_by.full_name + ' uploaded ' + file.original_filename,
+                            'time': file.uploaded_at,
+                            'link': url_for('projects.project_detail', project_id=file.project_id)
+                        }) %}
+                    {% endfor %}
+                    
+                    {% for note in recent_notes %}
+                        {% set _ = all_activity.append({
+                            'type': 'note',
+                            'icon': 'fas fa-sticky-note',
+                            'text': note.created_by_user.full_name + ' added a note for ' + note.client.full_name,
+                            'time': note.created_at,
+                            'link': url_for('clients.client_profile', client_id=note.client_id)
+                        }) %}
+                    {% endfor %}
+                    
+                    {% set sorted_activity = all_activity|sort(attribute='time', reverse=true) %}
+                    
+                    {% if sorted_activity %}
+                        {% for activity in sorted_activity[:5] %}
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="flex-shrink-0">
+                                <i class="{{ activity.icon }} text-primary"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <p class="mb-1">
+                                    <a href="{{ activity.link }}" class="text-decoration-none">
+                                        {{ activity.text }}
+                                    </a>
+                                </p>
+                                <small class="text-muted">{{ activity.time.strftime('%b %d, %Y at %I:%M %p') }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-4">
+                            <i class="fas fa-history fa-2x mb-3 d-block"></i>
+                            No recent activity.
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

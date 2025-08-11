@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if firm %}{{ firm.name }} - Professional Legal Services{% else %}Professional Legal Services{% endif %}
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section bg-gradient-dark text-white">
+    <div class="container">
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-8 mx-auto text-center">
+                {% if firm and firm.logo_url %}
+                <img src="{{ firm.logo_url }}" alt="{{ firm.name }}" class="img-fluid mb-4" style="max-height: 100px;">
+                {% endif %}
+                
+                <h1 class="display-4 fw-bold mb-4">
+                    {{ firm.name if firm else "Professional Legal Services" }}
+                </h1>
+                
+                <p class="lead mb-4">
+                    {{ firm.description if firm else "Comprehensive legal solutions with personalized attention and proven results." }}
+                </p>
+                
+                {% if not current_user.is_authenticated %}
+                <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+                    <a href="{{ url_for('replit_auth.login') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>Client Portal
+                    </a>
+                    <a href="#contact" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-phone me-2"></i>Contact Us
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Practice Areas -->
+{% if firm and firm.practice_areas %}
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="h1 fw-bold text-gradient">Practice Areas</h2>
+                <p class="lead">We provide comprehensive legal services across multiple practice areas</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            {% set practice_areas = firm.practice_areas.split('\n') %}
+            {% for area in practice_areas[:6] %}
+            {% if area.strip() %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 border-0 shadow-sm practice-area-card">
+                    <div class="card-body text-center p-4">
+                        <div class="practice-icon mb-3">
+                            <i class="fas fa-balance-scale fa-2x text-primary"></i>
+                        </div>
+                        <h5 class="card-title">{{ area.strip() }}</h5>
+                        <p class="text-muted">Expert legal representation and counsel in {{ area.strip().lower() }} matters.</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Team Section -->
+{% if team_members %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="h1 fw-bold text-gradient">Our Legal Team</h2>
+                <p class="lead">Experienced professionals dedicated to achieving the best outcomes for our clients</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            {% for member in team_members[:3] %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        {% if member.profile_image_url %}
+                            <img src="{{ member.profile_image_url }}" alt="{{ member.full_name }}" class="rounded-circle mb-3" width="100" height="100" style="object-fit: cover;">
+                        {% else %}
+                            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 100px; height: 100px;">
+                                <i class="fas fa-user text-white fa-2x"></i>
+                            </div>
+                        {% endif %}
+                        
+                        <h5 class="card-title">{{ member.full_name }}</h5>
+                        <p class="text-muted mb-3">{{ member.role.replace('_', ' ').title() }}</p>
+                        
+                        {% if member.bio %}
+                        <p class="card-text small">{{ member.bio[:100] }}{% if member.bio|length > 100 %}...{% endif %}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if team_members|length > 3 %}
+        <div class="text-center mt-4">
+            <a href="{{ url_for('team.list_team') }}" class="btn btn-primary">
+                <i class="fas fa-users me-2"></i>View Full Team
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+<!-- About Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h2 class="h1 fw-bold text-gradient mb-4">Why Choose Us?</h2>
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                    <i class="fas fa-award text-white"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5>Proven Experience</h5>
+                                <p class="text-muted">Years of successful legal practice with a track record of positive outcomes.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                    <i class="fas fa-users text-white"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5>Client-Focused Approach</h5>
+                                <p class="text-muted">Personalized attention and tailored legal strategies for each client's unique needs.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                    <i class="fas fa-shield-alt text-white"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5>Trusted & Reliable</h5>
+                                <p class="text-muted">Confidential, professional service with the highest ethical standards.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-5 text-center">
+                        <i class="fas fa-balance-scale fa-4x text-primary mb-4"></i>
+                        <h4 class="card-title">Professional Legal Representation</h4>
+                        <p class="text-muted">We combine legal expertise with modern technology to provide efficient, effective legal services.</p>
+                        {% if not current_user.is_authenticated %}
+                        <a href="{{ url_for('replit_auth.login') }}" class="btn btn-primary">
+                            <i class="fas fa-arrow-right me-2"></i>Get Started
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section id="contact" class="py-5 bg-light">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="h1 fw-bold text-gradient">Contact Us</h2>
+                <p class="lead">Get in touch for a consultation or to learn more about our services</p>
+            </div>
+        </div>
+        
+        {% if firm %}
+        <div class="row g-4 justify-content-center">
+            {% if firm.address %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-map-marker-alt fa-2x text-primary mb-3"></i>
+                        <h5>Office Address</h5>
+                        <p class="text-muted">{{ firm.address|replace('\n', '<br>')|safe }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if firm.phone %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-phone fa-2x text-primary mb-3"></i>
+                        <h5>Phone</h5>
+                        <p class="text-muted">
+                            <a href="tel:{{ firm.phone }}" class="text-decoration-none">{{ firm.phone }}</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if firm.email %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-envelope fa-2x text-primary mb-3"></i>
+                        <h5>Email</h5>
+                        <p class="text-muted">
+                            <a href="mailto:{{ firm.email }}" class="text-decoration-none">{{ firm.email }}</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <div class="row mt-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <div class="alert alert-primary">
+                    <h5 class="alert-heading">
+                        <i class="fas fa-calendar-check me-2"></i>Schedule a Consultation
+                    </h5>
+                    <p class="mb-0">
+                        Ready to discuss your legal needs? Contact us today to schedule a confidential consultation with our experienced legal team.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
