@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Messages - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row g-4">
+        <!-- Sidebar with conversations -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-gradient bg-primary text-white border-0">
+                    <h5 class="card-title mb-0 d-flex align-items-center">
+                        <i class="fas fa-comments me-2"></i>Messages
+                        {% if conversations|length > 0 %}
+                        <span class="badge bg-light text-primary ms-auto">{{ conversations|length }}</span>
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body p-0" style="max-height: 600px; overflow-y: auto;">
+                    <!-- Recent Conversations -->
+                    {% if conversations %}
+                    <div class="list-group list-group-flush">
+                        {% for conversation in conversations %}
+                        {% set other_user = conversation.get_other_user(current_user.id) %}
+                        <a href="{{ url_for('chat.conversation', user_id=other_user.id) }}" 
+                           class="list-group-item list-group-item-action border-0 py-3 px-4">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 me-3 position-relative">
+                                    {% if other_user.profile_image_url %}
+                                        <img src="/uploads/{{ other_user.profile_image_url }}" alt="{{ other_user.display_name }}" 
+                                             class="rounded-circle border shadow-sm" width="50" height="50" style="object-fit: cover;">
+                                    {% else %}
+                                        <div class="bg-gradient bg-{{ 'danger' if other_user.role == 'admin' else 'success' if other_user.role == 'team_member' else 'primary' }} rounded-circle d-flex align-items-center justify-content-center shadow-sm" 
+                                             style="width: 50px; height: 50px;">
+                                            <i class="fas fa-{{ 'shield-alt' if other_user.role == 'admin' else 'briefcase' if other_user.role == 'team_member' else 'building' if other_user.company_name else 'user' }} text-white"></i>
+                                        </div>
+                                    {% endif %}
+                                    {% if unread_counts.get(other_user.id, 0) > 0 %}
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        {{ unread_counts[other_user.id] }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1 min-w-0">
+                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                        <h6 class="mb-0 fw-bold text-truncate">{{ other_user.display_name }}</h6>
+                                        {% if conversation.last_message_at %}
+                                        <small class="text-muted">{{ conversation.last_message_at.strftime('%I:%M %p') }}</small>
+                                        {% endif %}
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <span class="badge bg-{{ 'danger' if other_user.role == 'admin' else 'success' if other_user.role == 'team_member' else 'primary' }} bg-opacity-10 text-{{ 'danger' if other_user.role == 'admin' else 'success' if other_user.role == 'team_member' else 'primary' }} small">
+                                            {{ other_user.role.replace('_', ' ').title() }}
+                                        </span>
+                                        {% if other_user.specialization %}
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary small">{{ other_user.specialization }}</span>
+                                        {% endif %}
+                                    </div>
+                                    {% if conversation.last_message %}
+                                    <p class="text-muted small mb-0 text-truncate" style="max-width: 200px;">
+                                        {{ conversation.last_message[:40] }}{% if conversation.last_message|length > 40 %}...{% endif %}
+                                    </p>
+                                    {% else %}
+                                    <p class="text-muted small mb-0 fst-italic">Start a conversation</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                        <h6 class="text-muted">No conversations yet</h6>
+                        <p class="text-muted small">Start chatting with your team below</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Main chat area -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center text-center p-5">
+                    <div class="mb-5">
+                        <i class="fas fa-comment-dots fa-4x text-primary mb-4"></i>
+                        <h3 class="text-dark mb-3">Welcome to LawFirm Chat</h3>
+                        <p class="text-muted mb-0 fs-5">Select a conversation or start a new one to begin messaging</p>
+                    </div>
+                    
+                    <!-- Start New Conversation Section -->
+                    <div class="w-100" style="max-width: 500px;">
+                        <div class="card border-0 bg-light">
+                            <div class="card-header bg-transparent border-0 text-center">
+                                <h5 class="mb-0 text-dark">
+                                    <i class="fas fa-user-plus me-2"></i>Start New Conversation
+                                </h5>
+                            </div>
+                            <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
+                                {% if all_users %}
+                                <div class="list-group list-group-flush">
+                                    {% for user in all_users %}
+                                    <a href="{{ url_for('chat.conversation', user_id=user.id) }}" 
+                                       class="list-group-item list-group-item-action border-0 py-3 px-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-shrink-0 me-3">
+                                                {% if user.profile_image_url %}
+                                                    <img src="/uploads/{{ user.profile_image_url }}" alt="{{ user.display_name }}" 
+                                                         class="rounded-circle border shadow-sm" width="45" height="45" style="object-fit: cover;">
+                                                {% else %}
+                                                    <div class="bg-gradient bg-{{ 'danger' if user.role == 'admin' else 'success' if user.role == 'team_member' else 'primary' }} rounded-circle d-flex align-items-center justify-content-center shadow-sm" 
+                                                         style="width: 45px; height: 45px;">
+                                                        <i class="fas fa-{{ 'shield-alt' if user.role == 'admin' else 'briefcase' if user.role == 'team_member' else 'building' if user.company_name else 'user' }} text-white"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="flex-grow-1 text-start">
+                                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                                    <h6 class="mb-0 fw-bold">{{ user.display_name }}</h6>
+                                                    <i class="fas fa-chevron-right text-muted small"></i>
+                                                </div>
+                                                <p class="text-muted small mb-1">{{ user.email }}</p>
+                                                <div class="d-flex gap-2">
+                                                    <span class="badge bg-{{ 'danger' if user.role == 'admin' else 'success' if user.role == 'team_member' else 'primary' }}">
+                                                        {{ user.role.replace('_', ' ').title() }}
+                                                    </span>
+                                                    {% if user.specialization %}
+                                                    <span class="badge bg-secondary">{{ user.specialization }}</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="p-4 text-center">
+                                    <i class="fas fa-info-circle text-info fa-2x mb-3"></i>
+                                    <h6 class="text-muted">No team members available</h6>
+                                    {% if current_user.is_client() %}
+                                    <p class="text-muted small mb-0">You can chat with lawyers and admins assigned to your cases</p>
+                                    {% else %}
+                                    <p class="text-muted small mb-0">No active users found to start conversations with</p>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

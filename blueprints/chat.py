@@ -21,10 +21,34 @@ def chat_home():
         )
     ).order_by(desc(ChatConversation.last_message_at)).all()
     
-    # Get all users except current user for starting new conversations
-    all_users = User.query.filter(
-        and_(User.id != current_user.id, User.active == True)
-    ).order_by(User.first_name, User.last_name).all()
+    # Get relevant users based on current user's role and assignments
+    if current_user.is_client():
+        # Clients can only chat with team members/admins assigned to their projects
+        from models import ProjectAssignment, Project
+        
+        # Get projects where current user is assigned
+        client_projects = db.session.query(Project).join(ProjectAssignment).filter(
+            ProjectAssignment.user_id == current_user.id
+        ).all()
+        
+        # Get all team members and admins assigned to these projects
+        assigned_user_ids = set()
+        for project in client_projects:
+            for assignment in project.assignments:
+                if assignment.user.role in ['admin', 'team_member'] and assignment.user_id != current_user.id:
+                    assigned_user_ids.add(assignment.user_id)
+        
+        all_users = User.query.filter(
+            and_(
+                User.id.in_(assigned_user_ids),
+                User.active == True
+            )
+        ).order_by(User.role, User.first_name, User.last_name).all()
+    else:
+        # Team members and admins can chat with all active users
+        all_users = User.query.filter(
+            and_(User.id != current_user.id, User.active == True)
+        ).order_by(User.role, User.first_name, User.last_name).all()
     
     # Get unread message counts
     unread_counts = {}
@@ -39,12 +63,12 @@ def chat_home():
         ).count()
         unread_counts[other_user.id] = unread_count
     
-    return render_template('chat/home.html', 
+    return render_template('chat/home_enhanced.html', 
                          conversations=conversations, 
                          all_users=all_users,
                          unread_counts=unread_counts)
 
-@chat_bp.route('/conversation/<user_id>')
+@chat_bp.route('/conversation/<user_id>', methods=['GET', 'POST'])
 @require_login
 def conversation(user_id):
     """View conversation with a specific user"""
@@ -53,6 +77,49 @@ def conversation(user_id):
     if other_user.id == current_user.id:
         flash("You can't chat with yourself!", 'warning')
         return redirect(url_for('chat.chat_home'))
+    
+    # Handle message sending via POST
+    if request.method == 'POST':
+        message_text = request.form.get('message', '').strip()
+        if message_text:
+            # Create new message
+            message = ChatMessage(
+                sender_id=current_user.id,
+                receiver_id=user_id,
+                message=message_text
+            )
+            db.session.add(message)
+            
+            # Update or create conversation
+            conversation = ChatConversation.query.filter(
+                or_(
+                    and_(ChatConversation.user1_id == current_user.id, ChatConversation.user2_id == user_id),
+                    and_(ChatConversation.user1_id == user_id, ChatConversation.user2_id == current_user.id)
+                )
+            ).first()
+            
+            if conversation:
+                conversation.last_message_at = datetime.now()
+                conversation.last_message = message_text
+            else:
+                conversation = ChatConversation(
+                    user1_id=min(current_user.id, user_id),
+                    user2_id=max(current_user.id, user_id),
+                    last_message_at=datetime.now(),
+                    last_message=message_text
+                )
+                db.session.add(conversation)
+            
+            try:
+                db.session.commit()
+                flash('Message sent successfully!', 'success')
+            except Exception as e:
+                db.session.rollback()
+                flash('Failed to send message. Please try again.', 'error')
+        else:
+            flash('Please enter a message.', 'warning')
+        
+        return redirect(url_for('chat.conversation', user_id=user_id))
     
     # Get or create conversation
     conversation = ChatConversation.query.filter(
@@ -77,7 +144,7 @@ def conversation(user_id):
             and_(ChatMessage.sender_id == current_user.id, ChatMessage.receiver_id == user_id),
             and_(ChatMessage.sender_id == user_id, ChatMessage.receiver_id == current_user.id)
         )
-    ).order_by(ChatMessage.timestamp.asc()).all()
+    ).order_by(ChatMessage.created_at.asc()).all()
     
     # Mark messages from other user as read
     ChatMessage.query.filter(
@@ -89,7 +156,7 @@ def conversation(user_id):
     ).update({'is_read': True})
     db.session.commit()
     
-    return render_template('chat/conversation.html', 
+    return render_template('chat/conversation_enhanced.html', 
                          other_user=other_user, 
                          messages=messages,
                          conversation=conversation)

@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Chat with {{ other_user.display_name }} - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Chat Header -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <a href="{{ url_for('chat.chat_home') }}" class="btn btn-outline-secondary me-3">
+                                <i class="fas fa-arrow-left"></i>
+                            </a>
+                            <div class="flex-shrink-0 me-3">
+                                {% if other_user.profile_image_url %}
+                                    <img src="/uploads/{{ other_user.profile_image_url }}" alt="{{ other_user.display_name }}" 
+                                         class="rounded-circle border shadow-sm" width="50" height="50" style="object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-gradient bg-{{ 'danger' if other_user.role == 'admin' else 'success' if other_user.role == 'team_member' else 'primary' }} rounded-circle d-flex align-items-center justify-content-center shadow-sm" 
+                                         style="width: 50px; height: 50px;">
+                                        <i class="fas fa-{{ 'shield-alt' if other_user.role == 'admin' else 'briefcase' if other_user.role == 'team_member' else 'building' if other_user.company_name else 'user' }} text-white"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h4 class="mb-1 fw-bold">{{ other_user.display_name }}</h4>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <span class="badge bg-{{ 'danger' if other_user.role == 'admin' else 'success' if other_user.role == 'team_member' else 'primary' }}">
+                                        {{ other_user.role.replace('_', ' ').title() }}
+                                    </span>
+                                    {% if other_user.specialization %}
+                                    <span class="badge bg-secondary">{{ other_user.specialization }}</span>
+                                    {% endif %}
+                                    <span class="text-success small">
+                                        <i class="fas fa-circle me-1"></i>Online
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            {% if other_user.is_client() %}
+                            <a href="{{ url_for('clients.client_profile', client_id=other_user.id) }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-user me-1"></i>Profile
+                            </a>
+                            {% else %}
+                            <a href="{{ url_for('team.team_member_profile', member_id=other_user.id) }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-user me-1"></i>Profile
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="card border-0 shadow-sm" style="height: 600px;">
+                <div class="card-body d-flex flex-column p-0">
+                    <!-- Messages area -->
+                    <div class="flex-grow-1 p-4" style="overflow-y: auto;" id="messages-area">
+                        {% if messages %}
+                        {% for message in messages %}
+                        <div class="d-flex {% if message.sender_id == current_user.id %}justify-content-end{% else %}justify-content-start{% endif %} mb-4">
+                            {% if message.sender_id != current_user.id %}
+                            <div class="flex-shrink-0 me-3">
+                                {% if other_user.profile_image_url %}
+                                    <img src="/uploads/{{ other_user.profile_image_url }}" alt="{{ other_user.display_name }}" 
+                                         class="rounded-circle border shadow-sm" width="32" height="32" style="object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-gradient bg-{{ 'danger' if other_user.role == 'admin' else 'success' if other_user.role == 'team_member' else 'primary' }} rounded-circle d-flex align-items-center justify-content-center shadow-sm" 
+                                         style="width: 32px; height: 32px;">
+                                        <i class="fas fa-{{ 'shield-alt' if other_user.role == 'admin' else 'briefcase' if other_user.role == 'team_member' else 'building' if other_user.company_name else 'user' }} text-white small"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            
+                            <div class="message-bubble {% if message.sender_id == current_user.id %}sent{% else %}received{% endif %} p-3 rounded-3 shadow-sm" 
+                                 style="max-width: 70%; {% if message.sender_id == current_user.id %}background: linear-gradient(135deg, #007bff, #0056b3); color: white;{% else %}background-color: #f8f9fa; color: #333; border: 1px solid #e9ecef;{% endif %}">
+                                <p class="mb-2 lh-sm">{{ message.message }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="{% if message.sender_id == current_user.id %}text-light{% else %}text-muted{% endif %} opacity-75" style="font-size: 0.75rem;">
+                                        {{ message.created_at.strftime('%I:%M %p') }}
+                                    </small>
+                                    {% if message.sender_id == current_user.id %}
+                                    <i class="fas fa-check-double {% if message.is_read %}text-light{% else %}text-light opacity-50{% endif %}" 
+                                       title="{% if message.is_read %}Read{% else %}Delivered{% endif %}"></i>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if message.sender_id == current_user.id %}
+                            <div class="flex-shrink-0 ms-3">
+                                {% if current_user.profile_image_url %}
+                                    <img src="/uploads/{{ current_user.profile_image_url }}" alt="{{ current_user.display_name }}" 
+                                         class="rounded-circle border shadow-sm" width="32" height="32" style="object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-gradient bg-{{ 'danger' if current_user.role == 'admin' else 'success' if current_user.role == 'team_member' else 'primary' }} rounded-circle d-flex align-items-center justify-content-center shadow-sm" 
+                                         style="width: 32px; height: 32px;">
+                                        <i class="fas fa-{{ 'shield-alt' if current_user.role == 'admin' else 'briefcase' if current_user.role == 'team_member' else 'building' if current_user.company_name else 'user' }} text-white small"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-comment-dots fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Start the conversation</h5>
+                            <p class="text-muted">Send your first message to {{ other_user.display_name }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Message Input -->
+                    <div class="border-top bg-light p-4">
+                        <form method="POST" id="message-form" class="d-flex gap-3 align-items-end">
+                            <div class="flex-grow-1">
+                                <textarea name="message" 
+                                         id="message-input"
+                                         class="form-control border-0 shadow-sm"
+                                         rows="2"
+                                         placeholder="Type your message..."
+                                         maxlength="1000"
+                                         required
+                                         style="resize: none;"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="fas fa-paper-plane me-2"></i>Send
+                            </button>
+                        </form>
+                        <div class="mt-2 d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Press Shift+Enter for new line
+                            </small>
+                            <small class="text-muted">
+                                <span id="char-count">0</span>/1000 characters
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-scroll to bottom
+document.addEventListener('DOMContentLoaded', function() {
+    const messagesArea = document.getElementById('messages-area');
+    const messageInput = document.getElementById('message-input');
+    const charCount = document.getElementById('char-count');
+    
+    // Scroll to bottom
+    messagesArea.scrollTop = messagesArea.scrollHeight;
+    
+    // Character counter
+    messageInput.addEventListener('input', function() {
+        charCount.textContent = this.value.length;
+    });
+    
+    // Handle Shift+Enter for new lines
+    messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            document.getElementById('message-form').submit();
+        }
+    });
+    
+    // Focus on message input
+    messageInput.focus();
+});
+</script>
+{% endblock %}
