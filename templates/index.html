@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome - LawFirmOS{% endblock %}
+{% block title %}Welcome - LawFirmOS by Taskdrip{% endblock %}
 
 {% block content %}
 {% if current_user.is_authenticated %}
@@ -25,12 +25,8 @@
                     <h1 class="display-4 fw-bold text-gradient mb-4">
                         Professional Legal Practice Management
                     </h1>
-                    {% if firm %}
-                    <h2 class="h3 mb-4">{{ firm.name }}</h2>
-                    <p class="lead mb-4">{{ firm.description or "Your trusted legal partner for comprehensive legal solutions." }}</p>
-                    {% else %}
-                    <p class="lead mb-4">Streamline your legal practice with our comprehensive management system.</p>
-                    {% endif %}
+                    <h2 class="h3 mb-4">Powered by Taskdrip</h2>
+                    <p class="lead mb-4">Built by lawyers for lawyers globally to streamline legal practice, operations, clients, teams, and different projects in one place.</p>
                     
                     <div class="d-flex flex-column flex-sm-row gap-3">
                         <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">
@@ -159,8 +155,8 @@
         <div class="container">
             <div class="row text-center mb-5">
                 <div class="col-lg-8 mx-auto">
-                    <h2 class="h1 fw-bold text-gradient">Why Choose LawFirmOS?</h2>
-                    <p class="lead">Comprehensive legal practice management designed for modern law firms</p>
+                    <h2 class="h1 fw-bold text-gradient">Why Choose LawFirmOS by Taskdrip?</h2>
+                    <p class="lead">Built by lawyers for lawyers - comprehensive legal practice management designed to streamline operations globally</p>
                 </div>
             </div>
             
@@ -203,8 +199,8 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-4 mb-4">
-                    <h5><i class="fas fa-balance-scale me-2"></i>LawFirmOS</h5>
-                    <p class="text-muted">Professional legal practice management system designed for modern law firms. Streamline your operations and grow your practice with confidence.</p>
+                    <h5><i class="fas fa-balance-scale me-2"></i>LawFirmOS by Taskdrip</h5>
+                    <p class="text-muted">Built by lawyers for lawyers globally. Streamline your legal practice, operations, clients, teams, and different projects in one comprehensive platform.</p>
                     <div class="d-flex gap-3">
                         <a href="#" class="text-decoration-none"><i class="fab fa-linkedin"></i></a>
                         <a href="#" class="text-decoration-none"><i class="fab fa-twitter"></i></a>
@@ -257,10 +253,10 @@
             
             <div class="row align-items-center">
                 <div class="col-md-6">
-                    <p class="mb-0 text-muted">&copy; 2025 LawFirmOS. All rights reserved.</p>
+                    <p class="mb-0 text-muted">&copy; 2025 LawFirmOS by Taskdrip. All rights reserved.</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <small class="text-muted">Made with <i class="fas fa-heart text-danger"></i> for legal professionals</small>
+                    <small class="text-muted">Made with <i class="fas fa-heart text-danger"></i> by lawyers for lawyers globally</small>
                 </div>
             </div>
         </div>
