@@ -24,6 +24,21 @@ class User(UserMixin, db.Model):
     active = db.Column(db.Boolean, default=True)
     password_hash = db.Column(db.String(256), nullable=True)  # For email/password login
     
+    # Company-specific fields for client organizations
+    company_name = db.Column(db.String(200), nullable=True)
+    company_description = db.Column(db.Text, nullable=True)
+    industry = db.Column(db.String(100), nullable=True)
+    website_url = db.Column(db.String(255), nullable=True)
+    company_size = db.Column(db.String(50), nullable=True)  # Small, Medium, Large, Enterprise
+    headquarters = db.Column(db.String(200), nullable=True)
+    founded_year = db.Column(db.Integer, nullable=True)
+    
+    # Professional fields for lawyers/team members
+    specialization = db.Column(db.String(200), nullable=True)
+    years_experience = db.Column(db.Integer, nullable=True)
+    education = db.Column(db.Text, nullable=True)
+    certifications = db.Column(db.Text, nullable=True)
+    
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
@@ -38,13 +53,23 @@ class User(UserMixin, db.Model):
 
     @property
     def full_name(self):
-        if self.first_name and self.last_name:
+        # For clients with company names, prefer company name
+        if self.is_client() and self.company_name:
+            return self.company_name
+        elif self.first_name and self.last_name:
             return f"{self.first_name} {self.last_name}"
         elif self.first_name:
             return self.first_name
         elif self.last_name:
             return self.last_name
         return self.email or "Unknown User"
+    
+    @property
+    def display_name(self):
+        """Display name for UI - shows company or personal name"""
+        if self.is_client() and self.company_name:
+            return self.company_name
+        return self.full_name
 
     def has_role(self, role):
         return self.role == role

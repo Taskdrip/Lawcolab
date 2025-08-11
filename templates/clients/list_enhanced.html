@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Clients - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-users me-2"></i>Clients
+        </h2>
+        {% if current_user.is_admin() %}
+        <a href="{{ url_for('admin.add_user') }}?role=client" class="btn btn-primary">
+            <i class="fas fa-user-plus me-2"></i>Add New Client
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Search Bar -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-10">
+                    <input type="text" class="form-control" name="search" 
+                           value="{{ search }}" placeholder="Search clients by name, company, email, or industry...">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-2"></i>Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if clients %}
+    <div class="row g-4">
+        {% for client in clients %}
+        <div class="col-lg-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="flex-shrink-0 me-3">
+                            {% if client.profile_image_url %}
+                                <img src="/uploads/{{ client.profile_image_url }}" alt="{{ client.display_name }}" 
+                                     class="rounded-3 border shadow-sm" width="80" height="80" style="object-fit: cover;">
+                            {% else %}
+                                <div class="bg-gradient bg-primary rounded-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-{{ 'building' if client.company_name else 'user' }} text-white fa-2x"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-2">
+                                <a href="{{ url_for('clients.client_profile', client_id=client.id) }}" class="text-decoration-none">
+                                    {{ client.display_name }}
+                                </a>
+                            </h5>
+                            
+                            {% if client.company_name and (client.first_name or client.last_name) %}
+                            <p class="text-muted mb-1 small">
+                                <i class="fas fa-user me-1"></i>{{ client.first_name }} {{ client.last_name or '' }}
+                            </p>
+                            {% endif %}
+                            
+                            <p class="text-muted mb-2 small">
+                                <i class="fas fa-envelope me-1"></i>{{ client.email }}
+                            </p>
+                            
+                            {% if client.phone %}
+                            <p class="text-muted mb-2 small">
+                                <i class="fas fa-phone me-1"></i>{{ client.phone }}
+                            </p>
+                            {% endif %}
+                            
+                            {% if client.website_url %}
+                            <p class="text-muted mb-2 small">
+                                <i class="fas fa-globe me-1"></i>
+                                <a href="{{ client.website_url }}" target="_blank" class="text-decoration-none">Website</a>
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if client.industry or client.company_size %}
+                    <div class="mb-3">
+                        {% if client.industry %}
+                        <span class="badge bg-info me-1">{{ client.industry }}</span>
+                        {% endif %}
+                        {% if client.company_size %}
+                        <span class="badge bg-secondary">{{ client.company_size }}</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    {% if client.company_description %}
+                    <p class="text-muted small mb-3">
+                        {{ client.company_description[:100] }}{% if client.company_description|length > 100 %}...{% endif %}
+                    </p>
+                    {% elif client.bio %}
+                    <p class="text-muted small mb-3">
+                        {{ client.bio[:100] }}{% if client.bio|length > 100 %}...{% endif %}
+                    </p>
+                    {% endif %}
+                    
+                    <!-- Quick Stats -->
+                    <div class="row text-center mb-3">
+                        <div class="col-4">
+                            <div class="p-2 bg-light rounded">
+                                <small class="text-muted d-block">Active Cases</small>
+                                <strong class="text-primary">{{ client.project_count or 0 }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2 bg-light rounded">
+                                <small class="text-muted d-block">Status</small>
+                                <span class="badge bg-{{ 'success' if client.active else 'secondary' }} small">
+                                    {{ 'Active' if client.active else 'Inactive' }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2 bg-light rounded">
+                                <small class="text-muted d-block">Since</small>
+                                <strong class="text-warning">{{ client.created_at.strftime('%Y') }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('clients.client_profile', client_id=client.id) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-eye me-1"></i>View Profile
+                        </a>
+                        <div class="btn-group" role="group">
+                            <a href="{{ url_for('chat.conversation', user_id=client.id) }}" class="btn btn-outline-success btn-sm">
+                                <i class="fas fa-comments me-1"></i>Chat
+                            </a>
+                            {% if current_user.is_admin() %}
+                            <a href="{{ url_for('admin.edit_user', user_id=client.id) }}" class="btn btn-outline-warning btn-sm">
+                                <i class="fas fa-edit me-1"></i>Edit
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if clients|length == 0 and search %}
+    <div class="text-center py-5">
+        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">No clients found</h4>
+        <p class="text-muted">Try adjusting your search terms or browse all clients.</p>
+        <a href="{{ url_for('clients.list_clients') }}" class="btn btn-primary">View All Clients</a>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">No clients yet</h4>
+        <p class="text-muted">Get started by adding your first client to the system.</p>
+        {% if current_user.is_admin() %}
+        <a href="{{ url_for('admin.add_user') }}?role=client" class="btn btn-primary">
+            <i class="fas fa-user-plus me-2"></i>Add First Client
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

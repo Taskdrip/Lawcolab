@@ -1,7 +1,8 @@
-from flask import session, render_template, redirect, url_for
+from flask import session, render_template, redirect, url_for, send_from_directory
 from flask_login import current_user
 from app import app, db
 from models import User, LawFirm, Project, ProjectAssignment
+import os
 
 # Import blueprint modules
 from auth import auth_bp
@@ -48,6 +49,12 @@ def index():
 def landing():
     """Comprehensive landing page"""
     return render_template('landing.html')
+
+# Add route to serve uploaded files
+@app.route('/uploads/<path:filename>')
+def uploaded_file(filename):
+    """Serve uploaded files"""
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 @app.errorhandler(403)
 def forbidden(e):

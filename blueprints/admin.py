@@ -158,7 +158,47 @@ def edit_user(user_id):
             db.session.rollback()
             flash('Failed to update user. Please try again.', 'error')
     
-    return render_template('admin/edit_user.html', form=form, user=user)
+    # Handle form submission for enhanced profile
+    if request.method == 'POST':
+        user.first_name = request.form.get('first_name')
+        user.last_name = request.form.get('last_name')
+        user.email = request.form.get('email')
+        user.phone = request.form.get('phone')
+        user.role = request.form.get('role')
+        user.active = 'active' in request.form
+        
+        # Company-specific fields
+        user.company_name = request.form.get('company_name')
+        user.industry = request.form.get('industry')
+        user.company_size = request.form.get('company_size')
+        user.website_url = request.form.get('website_url')
+        user.headquarters = request.form.get('headquarters')
+        founded_year = request.form.get('founded_year')
+        user.founded_year = int(founded_year) if founded_year else None
+        
+        # Professional fields
+        user.specialization = request.form.get('specialization')
+        years_exp = request.form.get('years_experience')
+        user.years_experience = int(years_exp) if years_exp else None
+        user.education = request.form.get('education')
+        user.certifications = request.form.get('certifications')
+        
+        # Bio/Description handling
+        bio_description = request.form.get('bio_description')
+        if user.role == 'client':
+            user.company_description = bio_description
+        else:
+            user.bio = bio_description
+        
+        try:
+            db.session.commit()
+            flash(f'User {user.display_name} updated successfully!', 'success')
+            return redirect(url_for('admin.manage_users'))
+        except Exception as e:
+            db.session.rollback()
+            flash('Failed to update user. Please try again.', 'error')
+    
+    return render_template('admin/edit_user_enhanced.html', user=user)
 
 @admin_bp.route('/users/<user_id>/grant-admin')
 @require_admin

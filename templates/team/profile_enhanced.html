@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}{{ team_member.display_name }} - Team Member Profile - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Enhanced Team Member Information Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user-tie me-2"></i>
+                        {{ 'Attorney' if team_member.is_team_member() else 'Administrator' }} Profile
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-start mb-4">
+                        <div class="col-auto">
+                            {% if team_member.profile_image_url %}
+                                <img src="/uploads/{{ team_member.profile_image_url }}" alt="{{ team_member.display_name }}" class="rounded-3 border shadow-sm" width="120" height="120" style="object-fit: cover;">
+                            {% else %}
+                                <div class="bg-gradient bg-success rounded-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 120px; height: 120px;">
+                                    <i class="fas fa-user-tie text-white fa-4x"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Profile Image Upload Form -->
+                            {% if current_user.is_admin() or current_user.id == team_member.id %}
+                            <div class="mt-3">
+                                <form method="POST" action="{{ url_for('team.upload_profile_image', member_id=team_member.id) }}" enctype="multipart/form-data">
+                                    <div class="mb-2">
+                                        <input type="file" name="profile_image" accept="image/*" class="form-control form-control-sm" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-outline-success btn-sm w-100">
+                                        <i class="fas fa-camera me-1"></i>Update Photo
+                                    </button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col">
+                            <h2 class="mb-2 fw-bold">{{ team_member.display_name }}</h2>
+                            <p class="text-muted mb-3 fs-5">
+                                <i class="fas fa-{{ 'shield-alt' if team_member.is_admin() else 'briefcase' }} me-2"></i>
+                                {{ team_member.role.replace('_', ' ').title() }}
+                            </p>
+                            
+                            {% if team_member.specialization %}
+                            <p class="text-primary mb-2 fs-6 fw-bold">
+                                <i class="fas fa-star me-2"></i>{{ team_member.specialization }}
+                            </p>
+                            {% endif %}
+                            
+                            <p class="text-muted mb-2 fs-5">
+                                <i class="fas fa-envelope me-2"></i>{{ team_member.email }}
+                            </p>
+                            
+                            {% if team_member.phone %}
+                            <p class="text-muted mb-2 fs-5">
+                                <i class="fas fa-phone me-2"></i>{{ team_member.phone }}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Professional Details -->
+                    <div class="row g-4 mb-4">
+                        {% if team_member.years_experience %}
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <i class="fas fa-clock text-primary fa-2x mb-2"></i>
+                                <h6 class="text-muted mb-1">Experience</h6>
+                                <span class="fw-bold">{{ team_member.years_experience }} Years</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <i class="fas fa-briefcase text-success fa-2x mb-2"></i>
+                                <h6 class="text-muted mb-1">Active Cases</h6>
+                                <span class="fw-bold">{{ projects|length }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <i class="fas fa-users text-info fa-2x mb-2"></i>
+                                <h6 class="text-muted mb-1">Clients</h6>
+                                <span class="fw-bold">{{ client_count }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <i class="fas fa-calendar-alt text-warning fa-2x mb-2"></i>
+                                <h6 class="text-muted mb-1">Member Since</h6>
+                                <span class="fw-bold">{{ team_member.created_at.strftime('%Y') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Education & Bio Section -->
+                    {% if team_member.education or team_member.bio %}
+                    <div class="mb-4">
+                        {% if team_member.education %}
+                        <h5 class="text-dark mb-3">
+                            <i class="fas fa-graduation-cap me-2"></i>Education
+                        </h5>
+                        <div class="p-3 bg-light rounded mb-3">
+                            <p class="mb-0 fs-6">{{ team_member.education }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if team_member.bio %}
+                        <h5 class="text-dark mb-3">
+                            <i class="fas fa-info-circle me-2"></i>Professional Background
+                        </h5>
+                        <div class="p-3 bg-light rounded">
+                            <p class="mb-0 fs-6">{{ team_member.bio }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Certifications -->
+                    {% if team_member.certifications %}
+                    <div class="mb-4">
+                        <h5 class="text-dark mb-3">
+                            <i class="fas fa-certificate me-2"></i>Certifications & Licenses
+                        </h5>
+                        <div class="p-3 bg-light rounded">
+                            <p class="mb-0 fs-6">{{ team_member.certifications }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Account Status -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-{{ 'success' if team_member.active else 'secondary' }} fs-6 px-3 py-2">
+                                <i class="fas fa-{{ 'check-circle' if team_member.active else 'times-circle' }} me-1"></i>
+                                {{ 'Active' if team_member.active else 'Inactive' }}
+                            </span>
+                        </div>
+                        <small class="text-muted">
+                            Last updated: {{ team_member.updated_at.strftime('%B %d, %Y') }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Cases -->
+            {% if projects %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-briefcase me-2"></i>Active Cases
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for project in projects %}
+                    <div class="card mb-3 border-start border-success border-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="card-title mb-2">
+                                        <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="text-decoration-none">
+                                            {{ project.title }}
+                                        </a>
+                                    </h6>
+                                    {% if project.description %}
+                                    <p class="card-text text-muted mb-2">{{ project.description[:100] }}{% if project.description|length > 100 %}...{% endif %}</p>
+                                    {% endif %}
+                                    <div class="d-flex gap-2">
+                                        <span class="badge bg-{{ 'success' if project.status == 'active' else 'warning' if project.status == 'on_hold' else 'secondary' }}">
+                                            {{ project.status.replace('_', ' ').title() }}
+                                        </span>
+                                        <span class="badge bg-{{ 'danger' if project.priority == 'high' else 'warning' if project.priority == 'medium' else 'secondary' }}">
+                                            {{ project.priority.title() }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    {% if project.deadline %}
+                                    <small class="text-muted d-block">Due: {{ project.deadline.strftime('%b %d, %Y') }}</small>
+                                    {% endif %}
+                                    <div class="mt-2">
+                                        <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="btn btn-outline-primary btn-sm">
+                                            View Details
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-3">
+                        <a href="{{ url_for('chat.conversation', user_id=team_member.id) }}" class="btn btn-success">
+                            <i class="fas fa-comments me-2"></i>Start Chat
+                        </a>
+                        
+                        {% if current_user.is_admin() %}
+                        <a href="{{ url_for('projects.create_project') }}?assigned_lawyer={{ team_member.id }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Assign New Case
+                        </a>
+                        
+                        <a href="{{ url_for('admin.edit_user', user_id=team_member.id) }}" class="btn btn-outline-warning">
+                            <i class="fas fa-edit me-2"></i>Edit Profile
+                        </a>
+                        {% endif %}
+                        
+                        <a href="{{ url_for('projects.list_projects') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-briefcase me-2"></i>View All Projects
+                        </a>
+                        
+                        <a href="{{ url_for('team.list_team') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Team
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-address-card me-2"></i>Contact Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i class="fas fa-envelope text-primary me-2"></i>
+                        <a href="mailto:{{ team_member.email }}" class="text-decoration-none">{{ team_member.email }}</a>
+                    </div>
+                    {% if team_member.phone %}
+                    <div class="mb-3">
+                        <i class="fas fa-phone text-success me-2"></i>
+                        <a href="tel:{{ team_member.phone }}" class="text-decoration-none">{{ team_member.phone }}</a>
+                    </div>
+                    {% endif %}
+                    <div class="mb-0">
+                        <i class="fas fa-calendar text-info me-2"></i>
+                        <span class="text-muted">Joined {{ team_member.created_at.strftime('%B %Y') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
