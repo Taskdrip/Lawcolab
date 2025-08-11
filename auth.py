@@ -17,7 +17,7 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data.lower()).first()
         if user and user.password_hash and user.check_password(form.password.data):
-            if not user.active:
+            if not user.is_active:
                 flash('Your account has been deactivated. Please contact support.', 'error')
                 return render_template('auth/login.html', form=form)
             
@@ -53,7 +53,7 @@ def signup():
         user.phone = form.phone.data
         user.role = form.role.data
         user.set_password(form.password.data)
-        user.active = True
+        user.is_active = True
         
         try:
             db.session.add(user)

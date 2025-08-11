@@ -104,7 +104,7 @@ def add_user():
         user.email = form.email.data.lower()
         user.phone = form.phone.data
         user.role = form.role.data
-        user.is_active = form.is_active.data
+        user.active = form.is_active.data
         
         if form.password.data:
             user.set_password(form.password.data)
@@ -126,7 +126,7 @@ def edit_user(user_id):
     """Edit user"""
     user = User.query.get_or_404(user_id)
     form = AdminUserForm(obj=user)
-    form.is_active.data = user.is_active
+    form.is_active.data = user.active
     
     if form.validate_on_submit():
         # Check if email is being changed and if it's already taken
@@ -141,7 +141,7 @@ def edit_user(user_id):
         user.email = form.email.data.lower()
         user.phone = form.phone.data
         user.role = form.role.data
-        user.is_active = form.is_active.data
+        user.active = form.is_active.data
         
         if form.password.data:
             user.set_password(form.password.data)
@@ -166,8 +166,8 @@ def toggle_user_status(user_id):
         flash('You cannot deactivate your own account.', 'error')
         return redirect(url_for('admin.manage_users'))
     
-    user.is_active = not user.is_active
-    status = 'activated' if user.is_active else 'deactivated'
+    user.active = not user.active
+    status = 'activated' if user.active else 'deactivated'
     
     try:
         db.session.commit()
@@ -177,3 +177,28 @@ def toggle_user_status(user_id):
         flash('Failed to update user status.', 'error')
     
     return redirect(url_for('admin.manage_users'))
+
+@admin_bp.route('/user/<user_id>/profile', methods=['GET', 'POST'])
+@require_admin
+def edit_user_profile(user_id):
+    """Edit user profile"""
+    user = User.query.get_or_404(user_id)
+    form = UserProfileForm()
+    
+    if form.validate_on_submit():
+        user.first_name = form.first_name.data
+        user.last_name = form.last_name.data
+        user.phone = form.phone.data
+        user.bio = form.bio.data
+        
+        db.session.commit()
+        flash('User profile updated successfully!', 'success')
+        return redirect(url_for('admin.team_management'))
+    
+    # Pre-populate form
+    form.first_name.data = user.first_name
+    form.last_name.data = user.last_name
+    form.phone.data = user.phone
+    form.bio.data = user.bio
+    
+    return render_template('admin/edit_user_profile.html', form=form, user=user)
