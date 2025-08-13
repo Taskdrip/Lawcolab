@@ -25,7 +25,7 @@
                             <!-- Client and Project Selection -->
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Client <span class="text-danger">*</span></label>
-                                <select name="client_id" class="form-select" required>
+                                <select name="client_id" id="clientSelect" class="form-select" required>
                                     <option value="">Select a client...</option>
                                     {% for client in clients %}
                                     <option value="{{ client.id }}">{{ client.display_name }} ({{ client.email }})</option>
@@ -34,7 +34,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Project <span class="text-muted">(Optional)</span></label>
-                                <select name="project_id" class="form-select">
+                                <select name="project_id" id="projectSelect" class="form-select">
                                     <option value="">No specific project</option>
                                     {% for project in projects %}
                                     <option value="{{ project.id }}">{{ project.name }}</option>
@@ -176,6 +176,34 @@ function addLineItem() {
 function removeLineItem(itemId) {
     document.getElementById(`lineItem${itemId}`).remove();
 }
+
+// Client change handler to load projects
+document.getElementById('clientSelect').addEventListener('change', function() {
+    const clientId = this.value;
+    const projectSelect = document.getElementById('projectSelect');
+    
+    // Clear existing project options
+    projectSelect.innerHTML = '<option value="">No specific project</option>';
+    
+    if (clientId) {
+        // Load projects for selected client
+        fetch(`/invoices/api/client-projects/${clientId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.projects.length > 0) {
+                    data.projects.forEach(project => {
+                        const option = document.createElement('option');
+                        option.value = project.id;
+                        option.textContent = project.name;
+                        projectSelect.appendChild(option);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading projects:', error);
+            });
+    }
+});
 
 // Form validation
 document.getElementById('invoiceForm').addEventListener('submit', function(e) {

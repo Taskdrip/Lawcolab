@@ -143,6 +143,34 @@ def create_invoice():
     
     return render_template('invoices/create.html', clients=clients, projects=projects)
 
+@invoices_bp.route('/api/client-projects/<client_id>')
+@login_required
+@role_required(['admin', 'team_member'])
+def get_client_projects(client_id):
+    """API endpoint to get projects for a specific client"""
+    from models import ProjectAssignment
+    
+    # Get projects where the client is assigned
+    project_assignments = ProjectAssignment.query.filter_by(
+        user_id=client_id,
+        law_firm_id=current_user.law_firm_id
+    ).all()
+    
+    # Format projects for JSON response
+    project_data = []
+    for assignment in project_assignments:
+        if assignment.project:
+            project_data.append({
+                'id': assignment.project.id,
+                'name': assignment.project.title,  # Use 'title' instead of 'name'
+                'status': assignment.project.status
+            })
+    
+    return jsonify({
+        'success': True,
+        'projects': project_data
+    })
+
 @invoices_bp.route('/<int:id>')
 @login_required
 def view_invoice(id):
