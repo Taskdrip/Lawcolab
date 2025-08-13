@@ -6,8 +6,8 @@ import os
 from werkzeug.middleware.proxy_fix import ProxyFix
 import logging
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
+# Configure logging for production performance
+logging.basicConfig(level=logging.INFO)
 
 class Base(DeclarativeBase):
     pass
@@ -17,12 +17,15 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
-# Database configuration
+# Database configuration optimized for performance
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     'pool_pre_ping': True,
-    "pool_recycle": 300,
+    'pool_recycle': 300,
+    'pool_size': 10,
+    'max_overflow': 20,
+    'echo': False  # Disable SQL logging for performance
 }
 
 # Upload configuration

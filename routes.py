@@ -55,9 +55,8 @@ def index():
         else:
             return redirect(url_for('dashboard.client_dashboard'))
     
-    # Show public landing page
-    firm = LawFirm.query.first()
-    return render_template('index.html', firm=firm)
+    # Show public landing page - avoid database query for performance
+    return render_template('index.html')
 
 @app.route('/landing')
 def landing():
