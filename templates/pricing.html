@@ -1,0 +1,350 @@
+{% extends "base.html" %}
+
+{% block title %}Pricing Plans - LawFirmOS{% endblock %}
+
+{% block content %}
+<style>
+/* Clean Pricing Page Styling */
+.pricing-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.pricing-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.pricing-header h1 {
+    font-size: 42px;
+    font-weight: 700;
+    color: #24292e;
+    margin-bottom: 16px;
+}
+
+.pricing-header p {
+    font-size: 20px;
+    color: #6a737d;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin-bottom: 50px;
+}
+
+.pricing-card {
+    background: #ffffff;
+    border: 2px solid #e1e4e8;
+    border-radius: 12px;
+    padding: 32px 24px;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.pricing-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    border-color: #0366d6;
+}
+
+.pricing-card.featured {
+    border-color: #28a745;
+    background: linear-gradient(135deg, #ffffff, #f8fff9);
+    transform: scale(1.05);
+}
+
+.pricing-card.featured:hover {
+    transform: scale(1.05) translateY(-4px);
+}
+
+.pricing-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: #28a745;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.pricing-badge.popular {
+    background: #28a745;
+}
+
+.pricing-badge.save {
+    background: #fd7e14;
+}
+
+.pricing-badge.best {
+    background: #d73a49;
+}
+
+.plan-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: #24292e;
+    margin-bottom: 8px;
+}
+
+.plan-price {
+    font-size: 48px;
+    font-weight: 800;
+    color: #0366d6;
+    margin-bottom: 8px;
+}
+
+.plan-price .currency {
+    font-size: 24px;
+    vertical-align: top;
+}
+
+.plan-period {
+    font-size: 16px;
+    color: #6a737d;
+    margin-bottom: 24px;
+}
+
+.plan-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 32px 0;
+    text-align: left;
+}
+
+.plan-features li {
+    padding: 8px 0;
+    font-size: 16px;
+    color: #24292e;
+    display: flex;
+    align-items: center;
+}
+
+.plan-features li i {
+    color: #28a745;
+    margin-right: 12px;
+    font-size: 16px;
+}
+
+.plan-button {
+    width: 100%;
+    padding: 16px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.plan-button.primary {
+    background: #0366d6;
+    color: white;
+}
+
+.plan-button.primary:hover {
+    background: #0550ae;
+    color: white;
+    text-decoration: none;
+}
+
+.plan-button.secondary {
+    background: #f6f8fa;
+    color: #24292e;
+    border: 2px solid #e1e4e8;
+}
+
+.plan-button.secondary:hover {
+    background: #e1e4e8;
+    color: #24292e;
+    text-decoration: none;
+}
+
+.pricing-footer {
+    text-align: center;
+    padding: 40px 20px;
+    background: #f6f8fa;
+    border-radius: 12px;
+}
+
+.pricing-footer h3 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #24292e;
+    margin-bottom: 16px;
+}
+
+.pricing-footer p {
+    font-size: 16px;
+    color: #6a737d;
+    margin-bottom: 24px;
+}
+
+.contact-button {
+    background: #6f42c1;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.contact-button:hover {
+    background: #5a32a3;
+    color: white;
+    text-decoration: none;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .pricing-header h1 {
+        font-size: 32px;
+    }
+    
+    .pricing-header p {
+        font-size: 18px;
+    }
+    
+    .pricing-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .pricing-card.featured {
+        transform: none;
+    }
+    
+    .pricing-card.featured:hover {
+        transform: translateY(-4px);
+    }
+}
+</style>
+
+<div class="pricing-container">
+    <!-- Header -->
+    <div class="pricing-header">
+        <h1>Choose Your LawFirmOS Plan</h1>
+        <p>Select the perfect plan for your law firm and start managing cases efficiently</p>
+    </div>
+
+    <!-- Pricing Grid -->
+    <div class="pricing-grid">
+        <!-- Trial Plan -->
+        <div class="pricing-card featured">
+            <div class="pricing-badge popular">Most Popular</div>
+            <div class="plan-name">3-Day Trial</div>
+            <div class="plan-price">FREE</div>
+            <div class="plan-period">Perfect for testing all features</div>
+            <ul class="plan-features">
+                <li><i class="fas fa-check"></i> Complete feature access</li>
+                <li><i class="fas fa-check"></i> Unlimited users</li>
+                <li><i class="fas fa-check"></i> Project management</li>
+                <li><i class="fas fa-check"></i> Client portal</li>
+                <li><i class="fas fa-check"></i> Document management</li>
+                <li><i class="fas fa-check"></i> Support chat</li>
+            </ul>
+            <a href="{{ url_for('enhanced_chat.support_chat') }}" class="plan-button primary">
+                Start Free Trial
+            </a>
+        </div>
+
+        <!-- 1 Month Plan -->
+        <div class="pricing-card">
+            <div class="plan-name">1 Month</div>
+            <div class="plan-price"><span class="currency">$</span>70</div>
+            <div class="plan-period">Great for small firms</div>
+            <ul class="plan-features">
+                <li><i class="fas fa-check"></i> All trial features</li>
+                <li><i class="fas fa-check"></i> Priority support</li>
+                <li><i class="fas fa-check"></i> Custom branding</li>
+                <li><i class="fas fa-check"></i> Advanced reports</li>
+                <li><i class="fas fa-check"></i> Data backup</li>
+                <li><i class="fas fa-check"></i> Mobile access</li>
+            </ul>
+            <a href="{{ url_for('enhanced_chat.support_chat') }}" class="plan-button secondary">
+                Get Started
+            </a>
+        </div>
+
+        <!-- 3 Months Plan -->
+        <div class="pricing-card">
+            <div class="pricing-badge save">Save $20</div>
+            <div class="plan-name">3 Months</div>
+            <div class="plan-price"><span class="currency">$</span>190</div>
+            <div class="plan-period">$63 per month</div>
+            <ul class="plan-features">
+                <li><i class="fas fa-check"></i> All monthly features</li>
+                <li><i class="fas fa-check"></i> Extended storage</li>
+                <li><i class="fas fa-check"></i> API access</li>
+                <li><i class="fas fa-check"></i> Custom integrations</li>
+                <li><i class="fas fa-check"></i> Training sessions</li>
+                <li><i class="fas fa-check"></i> Phone support</li>
+            </ul>
+            <a href="{{ url_for('enhanced_chat.support_chat') }}" class="plan-button secondary">
+                Get Started
+            </a>
+        </div>
+
+        <!-- 6 Months Plan -->
+        <div class="pricing-card">
+            <div class="pricing-badge save">Save $70</div>
+            <div class="plan-name">6 Months</div>
+            <div class="plan-price"><span class="currency">$</span>400</div>
+            <div class="plan-period">$67 per month</div>
+            <ul class="plan-features">
+                <li><i class="fas fa-check"></i> All 3-month features</li>
+                <li><i class="fas fa-check"></i> Advanced analytics</li>
+                <li><i class="fas fa-check"></i> White-label option</li>
+                <li><i class="fas fa-check"></i> Dedicated support</li>
+                <li><i class="fas fa-check"></i> Custom workflows</li>
+                <li><i class="fas fa-check"></i> Priority updates</li>
+            </ul>
+            <a href="{{ url_for('enhanced_chat.support_chat') }}" class="plan-button secondary">
+                Get Started
+            </a>
+        </div>
+
+        <!-- 1 Year Plan -->
+        <div class="pricing-card">
+            <div class="pricing-badge best">Best Value - Save $190</div>
+            <div class="plan-name">1 Year</div>
+            <div class="plan-price"><span class="currency">$</span>750</div>
+            <div class="plan-period">$62.50 per month - Maximum savings</div>
+            <ul class="plan-features">
+                <li><i class="fas fa-check"></i> All premium features</li>
+                <li><i class="fas fa-check"></i> Unlimited everything</li>
+                <li><i class="fas fa-check"></i> Personal account manager</li>
+                <li><i class="fas fa-check"></i> Custom development</li>
+                <li><i class="fas fa-check"></i> 24/7 support</li>
+                <li><i class="fas fa-check"></i> Enterprise features</li>
+            </ul>
+            <a href="{{ url_for('enhanced_chat.support_chat') }}" class="plan-button primary">
+                Get Started
+            </a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="pricing-footer">
+        <h3>Need a Custom Solution?</h3>
+        <p>We offer custom enterprise solutions for large law firms with specific requirements.</p>
+        <a href="{{ url_for('enhanced_chat.support_chat') }}" class="contact-button">
+            <i class="fas fa-envelope me-2"></i>Contact Sales
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -13,6 +13,39 @@ import uuid
 
 enhanced_chat_bp = Blueprint('enhanced_chat', __name__, template_folder='../templates')
 
+@enhanced_chat_bp.route('/support-send', methods=['POST'])
+@require_login
+def support_send():
+    """Send message to support chat"""
+    if not current_user.law_firm_id:
+        flash('You are not associated with a law firm.', 'error')
+        return redirect(url_for('index'))
+    
+    message_text = request.form.get('message', '').strip()
+    if not message_text:
+        flash('Please enter a message.', 'warning')
+        return redirect(url_for('enhanced_chat.support_chat'))
+    
+    # Get support room
+    support_room = current_user.law_firm.get_support_chat_room()
+    
+    # Create message
+    message = ChatMessage(
+        room_id=support_room.id,
+        sender_id=current_user.id,
+        message_content=message_text
+    )
+    
+    try:
+        db.session.add(message)
+        db.session.commit()
+        flash('Message sent successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Failed to send message. Please try again.', 'error')
+    
+    return redirect(url_for('enhanced_chat.support_chat'))
+
 @enhanced_chat_bp.route('/support')
 @require_login
 def support_chat():
@@ -42,7 +75,7 @@ def support_chat():
         participant.last_read_at = datetime.now()
         db.session.commit()
     
-    return render_template('chat/support_chat.html', 
+    return render_template('chat/support_messages.html', 
                          room=support_room, 
                          messages=messages,
                          current_user=current_user)
