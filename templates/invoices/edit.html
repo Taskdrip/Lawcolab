@@ -100,7 +100,7 @@
                                             <td>{{ item.description }}</td>
                                             <td class="text-center">{{ "%.2f"|format(item.quantity) }}</td>
                                             <td class="text-end">${{ "%.2f"|format(item.rate) }}</td>
-                                            <td class="text-end fw-bold">${{ "%.2f"|format(item.total_amount) }}</td>
+                                            <td class="text-end fw-bold">${{ "%.2f"|format(item.amount) }}</td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -263,7 +263,7 @@
                 </div>
                 <p>Are you sure you want to delete invoice <strong>{{ invoice.invoice_number }}</strong>?</p>
                 <p><strong>Title:</strong> {{ invoice.title }}</p>
-                <p><strong>Amount:</strong> ${{ "%.2f"|format(invoice.amount) }}</p>
+                <p><strong>Amount:</strong> ${{ "%.2f"|format(invoice.total_amount) }}</p>
                 <p><strong>Client:</strong> {{ invoice.client.display_name }}</p>
             </div>
             <div class="modal-footer">

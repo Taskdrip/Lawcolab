@@ -488,7 +488,7 @@ class Invoice(db.Model):
     def total_amount(self):
         """Calculate total amount including line items"""
         if self.line_items:
-            return sum(item.total_amount for item in self.line_items)
+            return sum(item.amount for item in self.line_items)
         return float(self.amount)
     
     def generate_invoice_number(self):
