@@ -17,8 +17,8 @@
 }
 
 .chat-header {
-    background: #f8fafc;
-    color: #374151;
+    background: #ffffff;
+    color: #000000;
     padding: 16px 20px;
     border-bottom: 1px solid #e5e7eb;
     display: flex;
@@ -28,22 +28,25 @@
 
 .chat-header h4 {
     margin: 0;
-    font-weight: 700;
-    font-size: 20px;
+    font-weight: 500;
+    font-size: 16px;
+    color: #000000;
 }
 
 .chat-header .badge {
-    background: rgba(255,255,255,0.2);
-    color: white;
-    padding: 8px 12px;
-    border-radius: 20px;
+    background: #f3f4f6;
+    color: #374151;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
 }
 
 .chat-messages {
     flex: 1;
     overflow-y: auto;
     padding: 20px;
-    background: #f8f9fa;
+    background: #ffffff;
 }
 
 .message {
@@ -69,15 +72,16 @@
 }
 
 .message.sent .message-content {
-    background: #007bff;
-    color: white;
+    background: #f3f4f6;
+    color: #000000;
+    border: 1px solid #e5e7eb;
     border-bottom-right-radius: 4px;
 }
 
 .message.received .message-content {
-    background: white;
-    color: #333;
-    border: 1px solid #e9ecef;
+    background: #ffffff;
+    color: #000000;
+    border: 1px solid #e5e7eb;
     border-bottom-left-radius: 4px;
 }
 
@@ -123,7 +127,7 @@
 
 .input-container {
     position: relative;
-    background: #f8fafc;
+    background: #ffffff;
     border: 1px solid #d1d5db;
     border-radius: 8px;
     transition: all 0.2s ease;
@@ -181,7 +185,7 @@
     display: flex;
     justify-content: flex-end;
     padding: 8px 12px;
-    background: #f8fafc;
+    background: #ffffff;
 }
 
 .file-upload-input {
@@ -189,11 +193,11 @@
 }
 
 .btn-send {
-    background: #3b82f6;
+    background: #000000;
     border: none;
     border-radius: 6px;
     padding: 8px 16px;
-    color: white;
+    color: #ffffff;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
@@ -204,7 +208,7 @@
 }
 
 .btn-send:hover {
-    background: #2563eb;
+    background: #374151;
 }
 
 .btn-send:disabled {
@@ -229,40 +233,97 @@
 }
 
 .back-button {
-    color: white;
+    color: #374151;
     text-decoration: none;
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 12px;
-    border-radius: 8px;
-    transition: background 0.3s ease;
+    padding: 6px 8px;
+    border-radius: 6px;
+    transition: background 0.2s ease;
+    font-size: 14px;
 }
 
 .back-button:hover {
-    background: rgba(255,255,255,0.1);
-    color: white;
+    background: #f3f4f6;
+    color: #000000;
     text-decoration: none;
 }
 
-/* Mobile responsiveness */
+/* Responsive design for all screen sizes */
+@media (max-width: 1200px) {
+    .chat-container {
+        max-width: 95%;
+        margin: 0 auto;
+    }
+}
+
 @media (max-width: 768px) {
     .chat-container {
         height: 100vh;
         border-radius: 0;
         margin: 0;
+        max-width: 100%;
     }
     
     .message-content {
         max-width: 85%;
+        font-size: 14px;
     }
     
     .chat-header {
-        padding: 15px;
+        padding: 12px 16px;
     }
     
     .chat-header h4 {
-        font-size: 18px;
+        font-size: 14px;
+    }
+    
+    .chat-input {
+        padding: 12px 16px;
+    }
+    
+    .input-toolbar {
+        padding: 6px 8px;
+    }
+    
+    .chat-input textarea {
+        font-size: 14px;
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .chat-container {
+        height: 100vh;
+        border: none;
+    }
+    
+    .message-content {
+        max-width: 90%;
+        font-size: 13px;
+        padding: 8px 12px;
+    }
+    
+    .chat-header {
+        padding: 10px 12px;
+    }
+    
+    .chat-header h4 {
+        font-size: 13px;
+    }
+    
+    .back-button span {
+        display: none;
+    }
+    
+    .input-toolbar {
+        padding: 4px 6px;
+    }
+    
+    .btn-send {
+        padding: 6px 12px;
+        font-size: 13px;
     }
 }
 </style>
