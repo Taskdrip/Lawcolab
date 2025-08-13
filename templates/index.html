@@ -26,14 +26,14 @@
                         Professional Legal Practice Management
                     </h1>
                     <h2 class="h3 mb-4 text-gradient-taskdrip">Powered by Taskdrip</h2>
-                    <p class="lead mb-4">Built by lawyers for law firms and legal practitioners globally to seamlessly manage all their operations and transactions from one comprehensive dashboard.</p>
+                    <p class="lead mb-4">Complete law firm management platform featuring multi-tiered communication, project collaboration, client management, team administration, secure file handling, and intelligent workflow automation—all unified in one powerful dashboard.</p>
                     
                     <div class="d-flex flex-column flex-sm-row gap-3">
                         <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">
-                            <i class="fas fa-sign-in-alt me-2"></i>Client Portal
+                            <i class="fas fa-sign-in-alt me-2"></i>Access Dashboard
                         </a>
                         <a href="{{ url_for('auth.signup') }}" class="btn btn-outline-primary btn-lg">
-                            <i class="fas fa-user-plus me-2"></i>Sign Up
+                            <i class="fas fa-user-plus me-2"></i>Start Free Trial
                         </a>
                     </div>
                 </div>
@@ -43,16 +43,16 @@
                         <div class="card-body p-5">
                             <div class="text-center mb-4">
                                 <i class="fas fa-balance-scale fa-3x mb-3" style="color: #000000;"></i>
-                                <h3 class="card-title">Access Your Account</h3>
-                                <p style="color: #333333; font-weight: 500;">Secure client portal and team collaboration</p>
+                                <h3 class="card-title">Access Your Workspace</h3>
+                                <p style="color: #333333; font-weight: 500;">Role-based dashboards with full law firm management</p>
                             </div>
                             
                             <div class="d-grid gap-2">
                                 <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">
-                                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                                    <i class="fas fa-sign-in-alt me-2"></i>Access Dashboard
                                 </a>
                                 <a href="{{ url_for('auth.signup') }}" class="btn btn-outline-primary">
-                                    <i class="fas fa-user-plus me-2"></i>Create Account
+                                    <i class="fas fa-user-plus me-2"></i>Start Free Trial
                                 </a>
                             </div>
                             
@@ -63,8 +63,8 @@
                                             <div class="feature-icon" style="background-color: #000000; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
                                                 <i class="fas fa-users" style="color: #ffffff; font-size: 1.5rem;"></i>
                                             </div>
-                                            <h6 style="color: #000000; font-weight: 600;">Clients</h6>
-                                            <span style="color: #333333; font-weight: 500;">Portal Access</span>
+                                            <h6 style="color: #000000; font-weight: 600;">Multi-Role</h6>
+                                            <span style="color: #333333; font-weight: 500;">Access Control</span>
                                         </div>
                                     </div>
                                     <div class="col-6">
@@ -72,8 +72,8 @@
                                             <div class="feature-icon" style="background-color: #000000; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
                                                 <i class="fas fa-user-tie" style="color: #ffffff; font-size: 1.5rem;"></i>
                                             </div>
-                                            <h6 style="color: #000000; font-weight: 600;">Lawyers</h6>
-                                            <span style="color: #333333; font-weight: 500;">Team Management</span>
+                                            <h6 style="color: #000000; font-weight: 600;">Real-Time</h6>
+                                            <span style="color: #333333; font-weight: 500;">Collaboration</span>
                                         </div>
                                     </div>
                                 </div>
@@ -161,32 +161,174 @@
             </div>
             
             <div class="row g-4">
-                <div class="col-md-4">
+                <div class="col-lg-4 col-md-6">
                     <div class="card h-100 border-0 shadow-sm">
                         <div class="card-body text-center p-4">
                             <i class="fas fa-users fa-3x text-primary mb-3"></i>
-                            <h4>Client Management</h4>
-                            <p class="text-muted">Centralize client relationships, case portfolios, and communication workflows in one intelligent, secure platform designed for legal excellence.</p>
+                            <h4>Client & Team Management</h4>
+                            <p class="text-muted">Complete user management system with role-based access, team administration, client portals, and secure profile management for law firms of any size.</p>
                         </div>
                     </div>
                 </div>
                 
-                <div class="col-md-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-comments fa-3x text-primary mb-3"></i>
+                            <h4>Multi-Tiered Communication</h4>
+                            <p class="text-muted">Advanced chat system with project-based messaging, law firm support channels, super admin broadcasts, and real-time file sharing capabilities.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
                     <div class="card h-100 border-0 shadow-sm">
                         <div class="card-body text-center p-4">
                             <i class="fas fa-briefcase fa-3x text-primary mb-3"></i>
-                            <h4>Project Orchestration</h4>
-                            <p class="text-muted">Master case progression, critical deadlines, and team coordination through advanced real-time collaboration technology.</p>
+                            <h4>Project Collaboration</h4>
+                            <p class="text-muted">Intelligent case management with team assignments, client access, document sharing, and deadline tracking for seamless project execution.</p>
                         </div>
                     </div>
                 </div>
                 
-                <div class="col-md-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-users-cog fa-3x text-primary mb-3"></i>
+                            <h4>Administrative Control</h4>
+                            <p class="text-muted">Comprehensive admin dashboard with user management, law firm settings, statistics overview, and powerful tools for complete organizational control.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                            <h4>Secure File Management</h4>
+                            <p class="text-muted">Enterprise-grade document handling with project-based organization, secure uploads, version control, and access management for confidential legal files.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
                     <div class="card h-100 border-0 shadow-sm">
                         <div class="card-body text-center p-4">
                             <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
                             <h4>Enterprise Security</h4>
-                            <p class="text-muted">Military-grade security protocols with comprehensive legal industry compliance, ensuring absolute confidentiality and data integrity.</p>
+                            <p class="text-muted">Multi-tenant architecture with complete data isolation, role-based permissions, secure authentication, and comprehensive compliance for legal industry standards.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Advanced Features Section -->
+    <section class="py-5 bg-white">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-lg-8 mx-auto">
+                    <h2 class="h1 fw-bold">Advanced Platform Capabilities</h2>
+                    <p class="lead">Discover the comprehensive features that make LawFirmOS the ultimate legal practice management solution</p>
+                </div>
+            </div>
+            
+            <div class="row g-4 mb-5">
+                <div class="col-lg-6">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle p-3 me-3" style="background-color: #667eea; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-crown text-white fa-lg"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold">Super Admin Platform Management</h5>
+                            <p class="text-muted mb-0">Centralized platform oversight with law firm creation, subscription management, support request handling, and broadcast messaging capabilities for comprehensive platform administration.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle p-3 me-3" style="background-color: #28a745; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-credit-card text-white fa-lg"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold">Subscription & Billing Management</h5>
+                            <p class="text-muted mb-0">Flexible subscription tiers with automated billing, payment processing, subscription requests, and transparent pricing structure designed specifically for legal practices.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle p-3 me-3" style="background-color: #17a2b8; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-database text-white fa-lg"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold">Multi-Tenant Data Isolation</h5>
+                            <p class="text-muted mb-0">Complete data separation between law firms with enterprise-grade security, ensuring absolute confidentiality and compliance with legal industry privacy requirements.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle p-3 me-3" style="background-color: #ffc107; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-chart-line text-white fa-lg"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold">Analytics & Reporting Dashboard</h5>
+                            <p class="text-muted mb-0">Comprehensive statistics and insights with user metrics, project tracking, communication analytics, and performance indicators for data-driven law firm management.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pricing Preview -->
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-body text-center p-5">
+                            <h3 class="fw-bold mb-3">Flexible Subscription Plans</h3>
+                            <p class="text-muted mb-4">Choose the perfect plan for your law firm with transparent pricing and immediate activation</p>
+                            
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-3">
+                                    <div class="border rounded p-3">
+                                        <div class="fw-bold">1 Month</div>
+                                        <div class="h4 text-primary">$70</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="border rounded p-3">
+                                        <div class="fw-bold">3 Months</div>
+                                        <div class="h4 text-success">$190</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="border rounded p-3">
+                                        <div class="fw-bold">6 Months</div>
+                                        <div class="h4 text-warning">$400</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="border rounded p-3 bg-primary text-white">
+                                        <div class="fw-bold">1 Year</div>
+                                        <div class="h4">$750</div>
+                                        <small>Best Value</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <p class="small text-muted">Lightning-fast activation • Immediate payment processing • No setup fees</p>
                         </div>
                     </div>
                 </div>
@@ -202,7 +344,7 @@
                     <a href="{{ url_for('index') }}" class="text-decoration-none">
                         <h5><i class="fas fa-balance-scale me-2"></i>LawFirm<span class="text-blue-os">OS</span> <small class="text-gradient-taskdrip">by Taskdrip</small></h5>
                     </a>
-                    <p class="text-muted">Empowering legal professionals worldwide with cutting-edge technology. Streamline practice management, client relations, team collaboration, and operational excellence—all from one intelligent dashboard.</p>
+                    <p class="text-muted">Comprehensive law firm management platform with multi-tiered communication, user administration, project collaboration, subscription management, and enterprise-grade security. Built specifically for legal professionals to streamline practice management, client relations, team coordination, and operational excellence.</p>
                     <div class="d-flex gap-3">
                         <a href="#" class="text-decoration-none"><i class="fab fa-linkedin"></i></a>
                         <a href="#" class="text-decoration-none"><i class="fab fa-twitter"></i></a>
