@@ -129,7 +129,7 @@ def chat_home():
         project = room.project if hasattr(room, 'project') and room.project else None
         chat_list.append({
             'room': room,
-            'name': f'Project: {project.name}' if project else f'Chat Room #{room.id}',
+            'name': f'Project: {project.title}' if project else f'Chat Room #{room.id}',
             'type': 'project',
             'last_message': last_message.message_content[:60] + '...' if last_message and len(last_message.message_content) > 60 else last_message.message_content if last_message else 'Start the conversation...',
             'last_time': last_message.created_at if last_message else room.created_at,

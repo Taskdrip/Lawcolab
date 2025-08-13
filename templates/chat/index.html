@@ -1,297 +1,268 @@
 {% extends "base.html" %}
 
+{% block title %}Chat - All Conversations{% endblock %}
+
 {% block content %}
 <style>
-.chat-container {
-    max-width: 1200px;
+/* Clean White Chat List Interface */
+.clean-chat-container {
+    max-width: 900px;
     margin: 0 auto;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #e1e4e8;
     overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
-.chat-header {
-    background: linear-gradient(135deg, #007bff, #0056b3);
-    color: white;
-    padding: 20px;
+.clean-chat-header {
+    background: #ffffff;
+    border-bottom: 1px solid #e1e4e8;
+    padding: 24px;
     text-align: center;
 }
 
-.chat-header h2 {
+.clean-chat-header h2 {
     margin: 0;
-    font-weight: 700;
+    font-weight: 600;
     font-size: 24px;
+    color: #24292e;
 }
 
-.chat-header p {
-    margin: 5px 0 0 0;
-    opacity: 0.9;
-    font-size: 14px;
+.clean-chat-header p {
+    margin: 8px 0 0 0;
+    color: #6a737d;
+    font-size: 16px;
 }
 
-.chat-list {
+.clean-chat-list {
     max-height: 70vh;
     overflow-y: auto;
 }
 
-.chat-item {
+.clean-chat-item {
     display: flex;
     align-items: center;
-    padding: 16px 20px;
-    border-bottom: 1px solid #f0f0f0;
-    transition: all 0.3s ease;
+    padding: 16px 24px;
+    border-bottom: 1px solid #f6f8fa;
+    transition: all 0.2s ease;
     cursor: pointer;
     text-decoration: none;
     color: inherit;
 }
 
-.chat-item:hover {
-    background-color: #f8f9fa;
+.clean-chat-item:hover {
+    background-color: #f6f8fa;
     text-decoration: none;
     color: inherit;
-    transform: translateX(5px);
 }
 
-.chat-item:last-child {
+.clean-chat-item:last-child {
     border-bottom: none;
 }
 
-.chat-avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
+.clean-chat-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 18px;
     color: white;
-    margin-right: 15px;
-    position: relative;
+    margin-right: 16px;
     flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.2);
 }
 
-.chat-avatar .online-indicator {
-    position: absolute;
-    bottom: 2px;
-    right: 2px;
-    width: 12px;
-    height: 12px;
+.clean-chat-avatar.support {
+    background: #0366d6;
+}
+
+.clean-chat-avatar.project {
     background: #28a745;
-    border: 2px solid white;
-    border-radius: 50%;
-    animation: pulse 2s infinite;
 }
 
-.chat-content {
-    flex: 1;
+.clean-chat-avatar.direct {
+    background: #6f42c1;
+}
+
+.clean-chat-avatar.broadcast {
+    background: #fd7e14;
+}
+
+.clean-chat-info {
+    flex-grow: 1;
     min-width: 0;
 }
 
-.chat-name {
+.clean-chat-name {
     font-weight: 600;
     font-size: 16px;
+    color: #24292e;
     margin: 0 0 4px 0;
-    color: #212529;
-}
-
-.chat-last-message {
-    color: #6c757d;
-    font-size: 14px;
-    margin: 0;
-    overflow: hidden;
     text-overflow: ellipsis;
+    overflow: hidden;
     white-space: nowrap;
 }
 
-.chat-meta {
+.clean-chat-last-message {
+    font-size: 14px;
+    color: #6a737d;
+    margin: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.clean-chat-meta {
+    text-align: right;
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    margin-left: 15px;
-    flex-shrink: 0;
-}
-
-.chat-time {
-    font-size: 12px;
-    color: #adb5bd;
-    margin-bottom: 5px;
-}
-
-.chat-unread {
-    background: #007bff;
-    color: white;
-    border-radius: 50%;
-    min-width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
     justify-content: center;
+    margin-left: 16px;
+}
+
+.clean-chat-time {
+    font-size: 12px;
+    color: #6a737d;
+    margin-bottom: 4px;
+}
+
+.clean-chat-badge {
+    background-color: #d73a49;
+    color: white;
+    border-radius: 12px;
+    padding: 2px 8px;
     font-size: 11px;
     font-weight: 600;
-}
-
-.empty-state {
+    min-width: 18px;
     text-align: center;
-    padding: 60px 20px;
-    color: #6c757d;
+    line-height: 1.4;
 }
 
-.empty-state i {
-    font-size: 64px;
-    color: #dee2e6;
+.clean-empty-state {
+    text-align: center;
+    padding: 60px 24px;
+    color: #6a737d;
+}
+
+.clean-empty-state i {
+    font-size: 48px;
+    color: #d1d5da;
     margin-bottom: 20px;
 }
 
-.empty-state h4 {
+.clean-empty-state h3 {
+    color: #24292e;
     margin-bottom: 10px;
-    color: #495057;
-}
-
-.empty-state p {
-    margin-bottom: 30px;
-}
-
-.btn-start-chat {
-    background: linear-gradient(135deg, #007bff, #0056b3);
-    border: none;
-    padding: 12px 30px;
-    border-radius: 25px;
-    color: white;
     font-weight: 600;
-    transition: all 0.3s ease;
 }
 
-.btn-start-chat:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0,123,255,0.3);
-    color: white;
+.clean-empty-state p {
+    color: #6a737d;
+    margin-bottom: 0;
 }
 
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
+/* Scrollbar styling */
+.clean-chat-list::-webkit-scrollbar {
+    width: 8px;
 }
 
-/* Mobile responsiveness */
+.clean-chat-list::-webkit-scrollbar-track {
+    background: #f6f8fa;
+}
+
+.clean-chat-list::-webkit-scrollbar-thumb {
+    background: #d1d5da;
+    border-radius: 4px;
+}
+
+.clean-chat-list::-webkit-scrollbar-thumb:hover {
+    background: #959da5;
+}
+
+/* Responsive design */
 @media (max-width: 768px) {
-    .chat-container {
-        margin: 0;
-        border-radius: 0;
-        min-height: 100vh;
+    .clean-chat-container {
+        margin: 10px;
+        border-radius: 6px;
     }
     
-    .chat-item {
-        padding: 12px 15px;
+    .clean-chat-item {
+        padding: 12px 16px;
     }
     
-    .chat-avatar {
-        width: 45px;
-        height: 45px;
-        font-size: 18px;
+    .clean-chat-avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+        margin-right: 12px;
     }
     
-    .chat-name {
+    .clean-chat-name {
         font-size: 15px;
     }
     
-    .chat-last-message {
+    .clean-chat-last-message {
         font-size: 13px;
     }
 }
-
-/* Support chat special styling */
-.chat-item.support-chat {
-    background: linear-gradient(135deg, rgba(0,123,255,0.05), rgba(0,86,179,0.05));
-    border-left: 4px solid #007bff;
-}
-
-.chat-item.support-chat:hover {
-    background: linear-gradient(135deg, rgba(0,123,255,0.1), rgba(0,86,179,0.1));
-}
 </style>
 
-<div class="container-fluid p-0">
-    <div class="chat-container">
-        <!-- Header -->
-        <div class="chat-header">
+<div class="container py-4">
+    <div class="clean-chat-container">
+        <div class="clean-chat-header">
             <h2><i class="fas fa-comments me-2"></i>Messages</h2>
-            <p>Stay connected with your team and support</p>
+            <p>All your conversations in one place</p>
         </div>
-
-        <!-- Chat List -->
-        <div class="chat-list">
-            {% if chat_list %}
-                {% for chat in chat_list %}
-                <a href="{% if chat.type == 'support' %}{% if current_user.is_super_admin() %}{{ url_for('enhanced_chat.superadmin_support_chat', room_id=chat.room.id) }}{% else %}{{ url_for('chat.support_messages') }}{% endif %}{% else %}{{ url_for('chat.project_chat', room_id=chat.room.id) }}{% endif %}" 
-                   class="chat-item {% if chat.type == 'support' %}support-chat{% endif %}">
-                    
-                    <!-- Avatar -->
-                    <div class="chat-avatar {{ chat.avatar_color }}">
-                        <i class="{{ chat.avatar }}"></i>
-                        {% if chat.is_online %}
-                        <div class="online-indicator"></div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Content -->
-                    <div class="chat-content">
-                        <h6 class="chat-name">{{ chat.name }}</h6>
-                        <p class="chat-last-message">{{ chat.last_message }}</p>
-                    </div>
-
-                    <!-- Meta -->
-                    <div class="chat-meta">
-                        <div class="chat-time">
-                            {% if chat.last_time %}
-                                {{ chat.last_time.strftime('%I:%M %p') }}
-                            {% endif %}
-                        </div>
-                        {% if chat.unread_count > 0 %}
-                        <div class="chat-unread">{{ chat.unread_count }}</div>
-                        {% endif %}
-                    </div>
-                </a>
-                {% endfor %}
-            {% else %}
-                <!-- Empty State -->
-                <div class="empty-state">
-                    <i class="fas fa-comment-dots"></i>
-                    <h4>No conversations yet</h4>
-                    <p>Start chatting with your team members or get support from our team.</p>
-                    <a href="{{ url_for('chat.support_messages') }}" class="btn btn-start-chat">
-                        <i class="fas fa-headset me-2"></i>Contact Support
-                    </a>
+        
+        {% if chat_list %}
+        <div class="clean-chat-list">
+            {% for chat in chat_list %}
+            <a href="{{ url_for('chat.conversation', room_id=chat.room.id) }}" class="clean-chat-item">
+                <div class="clean-chat-avatar {{ chat.type }}">
+                    {% if chat.type == 'support' %}
+                        <i class="fas fa-headset"></i>
+                    {% elif chat.type == 'project' %}
+                        <i class="fas fa-folder-open"></i>
+                    {% elif chat.type == 'direct' %}
+                        <i class="fas fa-user"></i>
+                    {% elif chat.type == 'broadcast' %}
+                        <i class="fas fa-bullhorn"></i>
+                    {% endif %}
                 </div>
-            {% endif %}
+                <div class="clean-chat-info">
+                    <h6 class="clean-chat-name">{{ chat.name }}</h6>
+                    <p class="clean-chat-last-message">{{ chat.last_message }}</p>
+                </div>
+                <div class="clean-chat-meta">
+                    <div class="clean-chat-time">
+                        {% if chat.last_time %}
+                            {% set now = moment() %}
+                            {% if chat.last_time.date() == now.date() %}
+                                {{ chat.last_time.strftime('%I:%M %p') }}
+                            {% else %}
+                                {{ chat.last_time.strftime('%m/%d') }}
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                    {% if chat.unread_count > 0 %}
+                    <span class="clean-chat-badge">{{ chat.unread_count }}</span>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
         </div>
+        {% else %}
+        <div class="clean-empty-state">
+            <i class="fas fa-comments"></i>
+            <h3>No conversations yet</h3>
+            <p>Start chatting with your team members or create a new conversation.</p>
+        </div>
+        {% endif %}
     </div>
 </div>
-
-<script>
-// Add real-time updates (can be enhanced with WebSocket later)
-function updateChatTimes() {
-    const timeElements = document.querySelectorAll('.chat-time');
-    timeElements.forEach(element => {
-        // Update relative times if needed
-    });
-}
-
-// Update every minute
-setInterval(updateChatTimes, 60000);
-
-// Add loading states for chat items
-document.querySelectorAll('.chat-item').forEach(item => {
-    item.addEventListener('click', function() {
-        // Add loading state
-        this.style.opacity = '0.7';
-        
-        // Remove loading state after navigation
-        setTimeout(() => {
-            this.style.opacity = '1';
-        }, 2000);
-    });
-});
-</script>
 {% endblock %}
