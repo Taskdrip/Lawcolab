@@ -65,6 +65,10 @@ def signup():
             db.session.add(user)
             db.session.commit()
             
+            # Create law firm if this user is an admin
+            if user.is_admin():
+                user.create_law_firm_if_admin()
+            
             flash('Registration successful! Please log in to your account.', 'success')
             return redirect(url_for('auth.login'))
         except Exception as e:

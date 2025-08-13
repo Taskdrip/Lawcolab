@@ -23,6 +23,7 @@ class User(UserMixin, db.Model):
     bio = db.Column(db.Text, nullable=True)
     active = db.Column(db.Boolean, default=True)
     password_hash = db.Column(db.String(256), nullable=True)  # For email/password login
+    law_firm_id = db.Column(db.Integer, db.ForeignKey('law_firms.id'), nullable=True)  # Multi-tenancy
     
     # Company-specific fields for client organizations
     company_name = db.Column(db.String(200), nullable=True)
@@ -43,6 +44,7 @@ class User(UserMixin, db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
     # Relationships
+    law_firm = db.relationship('LawFirm', back_populates='users')
     assigned_projects = db.relationship('ProjectAssignment', back_populates='user', foreign_keys='ProjectAssignment.user_id', cascade='all, delete-orphan')
     client_notes = db.relationship('ClientNote', back_populates='client', foreign_keys='ClientNote.client_id')
     created_notes = db.relationship('ClientNote', back_populates='created_by_user', foreign_keys='ClientNote.created_by_id')
@@ -94,6 +96,49 @@ class User(UserMixin, db.Model):
         if not self.password_hash:
             return False
         return check_password_hash(self.password_hash, password)
+    
+    def create_law_firm_if_admin(self):
+        """Create a law firm if this user is an admin and doesn't have one"""
+        if self.is_admin() and not self.law_firm_id:
+            # Create a new law firm for this admin
+            firm_name = f"{self.full_name}'s Law Firm"
+            new_firm = LawFirm(
+                name=firm_name,
+                description=f"Legal practice managed by {self.full_name}",
+                email=self.email
+            )
+            db.session.add(new_firm)
+            db.session.flush()  # Get the ID
+            
+            # Associate the admin with this firm
+            self.law_firm_id = new_firm.id
+            db.session.commit()
+            return new_firm
+        return self.law_firm
+    
+    def get_firm_users(self, role=None):
+        """Get all users from the same law firm, optionally filtered by role"""
+        if not self.law_firm_id:
+            return []
+        
+        query = User.query.filter_by(law_firm_id=self.law_firm_id)
+        if role:
+            query = query.filter_by(role=role)
+        return query.all()
+    
+    def get_firm_clients(self):
+        """Get all clients from the same law firm"""
+        return self.get_firm_users(ROLE_CLIENT)
+    
+    def get_firm_team_members(self):
+        """Get all team members from the same law firm"""
+        return self.get_firm_users(ROLE_TEAM_MEMBER)
+    
+    def get_firm_projects(self):
+        """Get all projects from the same law firm"""
+        if not self.law_firm_id:
+            return []
+        return Project.query.filter_by(law_firm_id=self.law_firm_id).all()
 
 # (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
 class OAuth(OAuthConsumerMixin, db.Model):
@@ -122,6 +167,10 @@ class LawFirm(db.Model):
     
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    
+    # Multi-tenancy relationships
+    users = db.relationship('User', back_populates='law_firm')
+    projects = db.relationship('Project', back_populates='law_firm')
 
 class Project(db.Model):
     __tablename__ = 'projects'
@@ -132,11 +181,13 @@ class Project(db.Model):
     priority = db.Column(db.String(20), default='medium')  # low, medium, high
     deadline = db.Column(db.Date)
     created_by_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    law_firm_id = db.Column(db.Integer, db.ForeignKey('law_firms.id'), nullable=False)  # Multi-tenancy
     
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
     # Relationships
+    law_firm = db.relationship('LawFirm', back_populates='projects')
     created_by = db.relationship('User', foreign_keys=[created_by_id])
     assignments = db.relationship('ProjectAssignment', back_populates='project', cascade='all, delete-orphan')
     files = db.relationship('ProjectFile', back_populates='project', cascade='all, delete-orphan')

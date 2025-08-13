@@ -49,6 +49,29 @@ class ChangePasswordForm(FlaskForm):
         EqualTo('new_password', message='Passwords must match')
     ])
 
+class ClientForm(FlaskForm):
+    first_name = StringField('First Name', validators=[DataRequired(), Length(min=2, max=50)])
+    last_name = StringField('Last Name', validators=[DataRequired(), Length(min=2, max=50)])
+    email = EmailField('Email Address', validators=[Optional(), Email()])
+    phone = StringField('Phone Number', validators=[Optional(), Length(max=20)])
+    company_name = StringField('Company Name', validators=[Optional(), Length(max=200)])
+    company_description = TextAreaField('Company Description', validators=[Optional(), Length(max=500)])
+    industry = StringField('Industry', validators=[Optional(), Length(max=100)])
+    website_url = StringField('Website URL', validators=[Optional(), Length(max=255)])
+    password = PasswordField('Password', validators=[Optional(), Length(min=8)])
+
+class TeamMemberForm(FlaskForm):
+    first_name = StringField('First Name', validators=[DataRequired(), Length(min=2, max=50)])
+    last_name = StringField('Last Name', validators=[DataRequired(), Length(min=2, max=50)])
+    email = EmailField('Email Address', validators=[DataRequired(), Email()])
+    phone = StringField('Phone Number', validators=[Optional(), Length(max=20)])
+    bio = TextAreaField('Bio/About', validators=[Optional(), Length(max=500)])
+    specialization = StringField('Specialization', validators=[Optional(), Length(max=200)])
+    years_experience = StringField('Years of Experience', validators=[Optional()])
+    education = TextAreaField('Education', validators=[Optional(), Length(max=500)])
+    certifications = TextAreaField('Certifications', validators=[Optional(), Length(max=500)])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
+
 class AdminUserForm(FlaskForm):
     first_name = StringField('First Name', validators=[DataRequired(), Length(min=2, max=50)])
     last_name = StringField('Last Name', validators=[DataRequired(), Length(min=2, max=50)])

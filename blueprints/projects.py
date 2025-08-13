@@ -14,16 +14,16 @@ projects_bp = Blueprint('projects', __name__)
 @projects_bp.route('/')
 @require_login
 def list_projects():
-    """List projects based on user role"""
+    """List projects based on user role - only from same law firm"""
     if current_user.is_admin():
-        # Admins see all projects
-        projects = Project.query.order_by(Project.created_at.desc()).all()
+        # Admins see all projects from their law firm
+        projects = Project.query.filter_by(law_firm_id=current_user.law_firm_id).order_by(Project.created_at.desc()).all()
     elif current_user.is_team_member():
-        # Team members see assigned projects
-        projects = Project.query.join(Project.assignments).filter_by(user_id=current_user.id).all()
+        # Team members see assigned projects from their law firm
+        projects = Project.query.filter_by(law_firm_id=current_user.law_firm_id).join(ProjectAssignment).filter_by(user_id=current_user.id).all()
     else:
-        # Clients see their assigned projects
-        projects = Project.query.join(Project.assignments).filter_by(user_id=current_user.id).all()
+        # Clients see their assigned projects from their law firm
+        projects = Project.query.filter_by(law_firm_id=current_user.law_firm_id).join(ProjectAssignment).filter_by(user_id=current_user.id).all()
     
     return render_template('projects/list.html', projects=projects)
 
@@ -34,14 +34,14 @@ def create_project():
     form = ProjectForm()
     
     if form.validate_on_submit():
-        project = Project(
-            title=form.title.data,
-            description=form.description.data,
-            status=form.status.data,
-            priority=form.priority.data,
-            deadline=form.deadline.data,
-            created_by_id=current_user.id
-        )
+        project = Project()
+        project.title = form.title.data
+        project.description = form.description.data
+        project.status = form.status.data
+        project.priority = form.priority.data
+        project.deadline = form.deadline.data
+        project.created_by_id = current_user.id
+        project.law_firm_id = current_user.law_firm_id
         
         db.session.add(project)
         db.session.commit()
@@ -78,10 +78,16 @@ def project_detail(project_id):
                 flash('You do not have access to this project.', 'error')
                 return redirect(url_for('projects.list_projects'))
     
-    # Get all users for assignment (admin/team member only)
+    # Get users from same law firm for assignment (admin/team member only)
     all_users = []
     if current_user.is_admin() or current_user.is_team_member():
-        all_users = User.query.filter_by(active=True).order_by(User.role, User.first_name, User.last_name).all()
+        # Only show users from the same law firm, excluding already assigned users
+        assigned_user_ids = [assignment.user_id for assignment in project.assignments]
+        all_users = User.query.filter(
+            User.law_firm_id == current_user.law_firm_id,
+            User.active == True,
+            ~User.id.in_(assigned_user_ids) if assigned_user_ids else True
+        ).order_by(User.role, User.first_name, User.last_name).all()
     
     from datetime import date
     return render_template('projects/detail.html', 
@@ -111,11 +117,10 @@ def assign_user(project_id):
     if existing:
         flash(f'{user.full_name} is already assigned to this project.', 'warning')
     else:
-        assignment = ProjectAssignment(
-            project_id=project_id,
-            user_id=user_id,
-            assigned_by_id=current_user.id
-        )
+        assignment = ProjectAssignment()
+        assignment.project_id = project_id
+        assignment.user_id = user_id
+        assignment.assigned_by_id = current_user.id
         db.session.add(assignment)
         
         # Implement seamless tagging for lawyer-client connections
@@ -143,10 +148,9 @@ def assign_user(project_id):
                         ).first()
                         
                         if not existing_conversation:
-                            conversation = ChatConversation(
-                                user1_id=min(user.id, lawyer.id),
-                                user2_id=max(user.id, lawyer.id)
-                            )
+                            conversation = ChatConversation()
+                            conversation.user1_id = min(user.id, lawyer.id)
+                            conversation.user2_id = max(user.id, lawyer.id)
                             db.session.add(conversation)
             elif user.role in ['admin', 'team_member']:
                 # New lawyer assigned, connect to all existing clients
@@ -163,10 +167,9 @@ def assign_user(project_id):
                         ).first()
                         
                         if not existing_conversation:
-                            conversation = ChatConversation(
-                                user1_id=min(user.id, client.id),
-                                user2_id=max(user.id, client.id)
-                            )
+                            conversation = ChatConversation()
+                            conversation.user1_id = min(user.id, client.id)
+                            conversation.user2_id = max(user.id, client.id)
                             db.session.add(conversation)
             
             db.session.commit()
@@ -230,8 +233,12 @@ def upload_file(project_id):
     
     if file:
         # Generate unique filename
-        original_filename = secure_filename(file.filename)
-        file_extension = os.path.splitext(original_filename)[1]
+        if file.filename:
+            original_filename = secure_filename(file.filename)
+            file_extension = os.path.splitext(original_filename)[1]
+        else:
+            flash('Invalid filename.', 'error')
+            return redirect(url_for('projects.project_detail', project_id=project_id))
         unique_filename = str(uuid.uuid4()) + file_extension
         
         # Save file
@@ -239,14 +246,13 @@ def upload_file(project_id):
         file.save(file_path)
         
         # Create database record
-        project_file = ProjectFile(
-            project_id=project_id,
-            filename=unique_filename,
-            original_filename=original_filename,
-            file_size=os.path.getsize(file_path),
-            file_type=file_extension,
-            uploaded_by_id=current_user.id
-        )
+        project_file = ProjectFile()
+        project_file.project_id = project_id
+        project_file.filename = unique_filename
+        project_file.original_filename = original_filename
+        project_file.file_size = os.path.getsize(file_path)
+        project_file.file_type = file_extension
+        project_file.uploaded_by_id = current_user.id
         
         db.session.add(project_file)
         db.session.commit()
@@ -318,11 +324,10 @@ def send_message(project_id):
                 return redirect(url_for('projects.list_projects'))
     
     # Create message
-    message = ProjectMessage(
-        project_id=project_id,
-        user_id=current_user.id,
-        message=message_text
-    )
+    message = ProjectMessage()
+    message.project_id = project_id
+    message.user_id = current_user.id
+    message.message = message_text
     
     db.session.add(message)
     db.session.commit()

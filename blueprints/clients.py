@@ -12,17 +12,19 @@ clients_bp = Blueprint('clients', __name__)
 @clients_bp.route('/')
 @require_team_member_or_admin
 def list_clients():
-    """List all clients with search functionality"""
+    """List clients from the same law firm with search functionality"""
     search = request.args.get('search', '')
     
-    query = User.query.filter_by(role='client')
+    # Only show clients from the current user's law firm
+    query = User.query.filter_by(role='client', law_firm_id=current_user.law_firm_id)
     
     if search:
         query = query.filter(
             db.or_(
                 User.first_name.contains(search),
                 User.last_name.contains(search),
-                User.email.contains(search)
+                User.email.contains(search),
+                User.company_name.contains(search)
             )
         )
     
@@ -40,8 +42,8 @@ def client_profile(client_id):
         flash('You can only view your own profile.', 'error')
         return redirect(url_for('dashboard.client_dashboard'))
     
-    # Get client's projects
-    projects = Project.query.join(Project.assignments).filter_by(user_id=client_id).all()
+    # Get client's projects (from same law firm)
+    projects = Project.query.filter_by(law_firm_id=current_user.law_firm_id).join(ProjectAssignment).filter_by(user_id=client_id).all()
     
     # Get client notes (only for team members and admins)
     notes = []
@@ -64,11 +66,10 @@ def add_client_note(client_id):
     form = ClientNoteForm()
     
     if form.validate_on_submit():
-        note = ClientNote(
-            client_id=client_id,
-            note=form.note.data,
-            created_by_id=current_user.id
-        )
+        note = ClientNote()
+        note.client_id = client_id
+        note.note = form.note.data
+        note.created_by_id = current_user.id
         db.session.add(note)
         db.session.commit()
         flash('Note added successfully!', 'success')
