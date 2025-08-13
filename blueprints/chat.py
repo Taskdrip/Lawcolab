@@ -16,6 +16,36 @@ def support():
     """Redirect to support chat"""
     return redirect('/support/chat')
 
+@chat_bp.route('/support-messages')
+@require_login
+def support_messages():
+    """View support chat messages without subscription interface"""
+    # Ensure user has a law firm
+    if not current_user.law_firm_id:
+        if current_user.is_admin():
+            current_user.create_law_firm_if_admin()
+        else:
+            flash('You are not associated with a law firm.', 'error')
+            return redirect(url_for('index'))
+    
+    # Get or create support chat room
+    room = current_user.law_firm.get_support_chat_room()
+    
+    # Get recent messages for the support room
+    try:
+        from models_chat import ChatMessage
+        recent_messages = ChatMessage.query.filter_by(room_id=room.id)\
+                                         .order_by(ChatMessage.created_at.desc())\
+                                         .limit(50).all()
+        recent_messages.reverse()  # Show oldest first
+    except ImportError:
+        recent_messages = []
+    
+    return render_template('chat/support_messages.html', 
+                         room=room, 
+                         recent_messages=recent_messages,
+                         current_user=current_user)
+
 @chat_bp.route('/')
 @require_login
 def chat_home():

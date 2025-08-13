@@ -224,7 +224,7 @@
         <div class="chat-list">
             {% if chat_list %}
                 {% for chat in chat_list %}
-                <a href="{% if chat.type == 'support' %}/support/chat{% else %}/enhanced-chat/room/{{ chat.room.id }}{% endif %}" 
+                <a href="{% if chat.type == 'support' %}/chat/support-messages{% else %}/enhanced-chat/room/{{ chat.room.id }}{% endif %}" 
                    class="chat-item {% if chat.type == 'support' %}support-chat{% endif %}">
                     
                     <!-- Avatar -->

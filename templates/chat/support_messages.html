@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+.chat-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.chat-header h4 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 20px;
+}
+
+.chat-header .badge {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #f8f9fa;
+}
+
+.message {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: flex-start;
+}
+
+.message.sent {
+    justify-content: flex-end;
+}
+
+.message.received {
+    justify-content: flex-start;
+}
+
+.message-content {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    position: relative;
+    word-wrap: break-word;
+}
+
+.message.sent .message-content {
+    background: #007bff;
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.message.received .message-content {
+    background: white;
+    color: #333;
+    border: 1px solid #e9ecef;
+    border-bottom-left-radius: 4px;
+}
+
+.message-time {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-top: 4px;
+    text-align: right;
+}
+
+.message.received .message-time {
+    text-align: left;
+}
+
+.message-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: white;
+    margin: 0 10px;
+    flex-shrink: 0;
+}
+
+.message.sent .message-avatar {
+    background: #28a745;
+    order: 2;
+}
+
+.message.received .message-avatar {
+    background: #6c757d;
+    order: 1;
+}
+
+.chat-input {
+    padding: 20px;
+    background: white;
+    border-top: 1px solid #e9ecef;
+}
+
+.chat-input form {
+    display: flex;
+    gap: 10px;
+    align-items: end;
+}
+
+.chat-input textarea {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    padding: 12px 16px;
+    resize: none;
+    max-height: 100px;
+    font-size: 14px;
+}
+
+.chat-input textarea:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.btn-send {
+    background: #007bff;
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.btn-send:hover {
+    background: #0056b3;
+    transform: scale(1.05);
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #6c757d;
+    text-align: center;
+}
+
+.empty-state i {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.back-button {
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: background 0.3s ease;
+}
+
+.back-button:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    text-decoration: none;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .chat-container {
+        height: 100vh;
+        border-radius: 0;
+        margin: 0;
+    }
+    
+    .message-content {
+        max-width: 85%;
+    }
+    
+    .chat-header {
+        padding: 15px;
+    }
+    
+    .chat-header h4 {
+        font-size: 18px;
+    }
+}
+</style>
+
+<div class="container-fluid p-0">
+    <div class="chat-container">
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="d-flex align-items-center">
+                <a href="/chat/" class="back-button me-3">
+                    <i class="fas fa-arrow-left"></i>
+                    <span class="d-none d-md-inline">Back</span>
+                </a>
+                <div>
+                    <h4><i class="fas fa-headset me-2"></i>Support Team</h4>
+                    <small style="opacity: 0.9;">Get help from our support team</small>
+                </div>
+            </div>
+            <div class="text-end">
+                <span class="badge">
+                    <i class="fas fa-circle me-2" style="animation: pulse 2s infinite;"></i>Online
+                </span>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="chat-messages" id="chatMessages">
+            {% if recent_messages %}
+                {% for message in recent_messages %}
+                <div class="message {% if message.sender_id == current_user.id %}sent{% else %}received{% endif %}">
+                    {% if message.sender_id != current_user.id %}
+                    <div class="message-avatar">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="message-content">
+                        {{ message.message_content }}
+                        <div class="message-time">
+                            {{ message.created_at.strftime('%I:%M %p') if message.created_at else '' }}
+                        </div>
+                    </div>
+                    
+                    {% if message.sender_id == current_user.id %}
+                    <div class="message-avatar">
+                        {{ current_user.first_name[0] if current_user.first_name else 'U' }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-comment-dots"></i>
+                    <h5>No messages yet</h5>
+                    <p>Start a conversation with our support team</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Input -->
+        <div class="chat-input">
+            <form id="messageForm">
+                <input type="hidden" id="roomId" value="{{ room.id if room else '' }}">
+                <textarea id="messageInput" placeholder="Type your message..." rows="1" required></textarea>
+                <button type="submit" class="btn-send">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messageForm = document.getElementById('messageForm');
+    const messageInput = document.getElementById('messageInput');
+    const chatMessages = document.getElementById('chatMessages');
+    const roomId = document.getElementById('roomId').value;
+
+    // Auto-resize textarea
+    messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+    });
+
+    // Handle message sending
+    messageForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        // Add message to chat immediately
+        addMessageToChat(message, true);
+        
+        // Clear input
+        messageInput.value = '';
+        messageInput.style.height = 'auto';
+
+        // Send to server
+        fetch('/enhanced-chat/send-message', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                room_id: roomId,
+                message: message
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                console.error('Failed to send message:', data.message);
+                // Could add error handling here
+            }
+        })
+        .catch(error => {
+            console.error('Error sending message:', error);
+        });
+    });
+
+    // Add message to chat UI
+    function addMessageToChat(message, isSent) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+        
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        messageDiv.innerHTML = `
+            ${!isSent ? '<div class="message-avatar"><i class="fas fa-headset"></i></div>' : ''}
+            <div class="message-content">
+                ${message}
+                <div class="message-time">${timeStr}</div>
+            </div>
+            ${isSent ? '<div class="message-avatar">${{ current_user.first_name[0] if current_user.first_name else "U" }}</div>' : ''}
+        `;
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Auto-scroll to bottom
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // Handle Enter key
+    messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            messageForm.dispatchEvent(new Event('submit'));
+        }
+    });
+});
+
+// Pulse animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}
