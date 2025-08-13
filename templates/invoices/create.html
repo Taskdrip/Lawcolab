@@ -23,7 +23,7 @@
             <div class="card border-0" style="background: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-radius: 16px; overflow: hidden;">
                 <div class="card-body p-4 p-md-5">
                     <form method="POST" id="invoiceForm">
-                        {{ csrf_token() }}
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         
                         <!-- Client and Project Selection -->
                         <div class="row g-3 mb-4">
@@ -109,6 +109,61 @@
                                     <option value="GBP">GBP (£)</option>
                                     <option value="CAD">CAD ($)</option>
                                 </select>
+                            </div>
+                        </div>
+
+                        <!-- Bank Details Section -->
+                        <div class="mb-5" style="border-top: 1px solid #e1e5e9; padding-top: 1.5rem;">
+                            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3">
+                                <h5 class="fw-bold mb-2 mb-sm-0" style="color: #1a1a1a; font-size: 1rem;">
+                                    <i class="fas fa-university me-2" style="color: #667eea;"></i>Payment Information
+                                </h5>
+                                <button type="button" class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#bankDetailsModal" style="background: #ffffff; border: 1px solid #667eea; color: #667eea; font-size: 0.8rem;">
+                                    <i class="fas fa-edit me-1" style="font-size: 0.7rem;"></i>Update Bank Details
+                                </button>
+                            </div>
+                            
+                            <div class="p-4" style="background: #f8f9fc; border: 1px solid #e1e5e9; border-radius: 8px;">
+                                {% if current_user.law_firm.bank_name or current_user.law_firm.account_number %}
+                                <div class="row g-3">
+                                    {% if current_user.law_firm.bank_name %}
+                                    <div class="col-12 col-md-6">
+                                        <small style="color: #6c757d; font-size: 0.75rem; display: block;">Bank Name</small>
+                                        <strong style="color: #1a1a1a; font-size: 0.9rem;">{{ current_user.law_firm.bank_name }}</strong>
+                                    </div>
+                                    {% endif %}
+                                    {% if current_user.law_firm.account_holder_name %}
+                                    <div class="col-12 col-md-6">
+                                        <small style="color: #6c757d; font-size: 0.75rem; display: block;">Account Holder</small>
+                                        <strong style="color: #1a1a1a; font-size: 0.9rem;">{{ current_user.law_firm.account_holder_name }}</strong>
+                                    </div>
+                                    {% endif %}
+                                    {% if current_user.law_firm.account_number %}
+                                    <div class="col-12 col-md-6">
+                                        <small style="color: #6c757d; font-size: 0.75rem; display: block;">Account Number</small>
+                                        <strong style="color: #1a1a1a; font-size: 0.9rem;">{{ current_user.law_firm.account_number }}</strong>
+                                    </div>
+                                    {% endif %}
+                                    {% if current_user.law_firm.routing_number %}
+                                    <div class="col-12 col-md-6">
+                                        <small style="color: #6c757d; font-size: 0.75rem; display: block;">Routing Number</small>
+                                        <strong style="color: #1a1a1a; font-size: 0.9rem;">{{ current_user.law_firm.routing_number }}</strong>
+                                    </div>
+                                    {% endif %}
+                                    {% if current_user.law_firm.swift_code %}
+                                    <div class="col-12 col-md-6">
+                                        <small style="color: #6c757d; font-size: 0.75rem; display: block;">SWIFT Code</small>
+                                        <strong style="color: #1a1a1a; font-size: 0.9rem;">{{ current_user.law_firm.swift_code }}</strong>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% else %}
+                                <div class="text-center py-3">
+                                    <i class="fas fa-university mb-2" style="font-size: 2rem; color: #dee2e6;"></i>
+                                    <p style="color: #6c757d; font-size: 0.9rem; margin-bottom: 0.5rem;">No bank details configured</p>
+                                    <small style="color: #6c757d; font-size: 0.8rem;">Click "Update Bank Details" to add payment information that will appear on your invoices.</small>
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
 
@@ -276,5 +331,62 @@ document.getElementById('invoiceForm').addEventListener('submit', function(e) {
     }
 });
 </script>
+
+<!-- Bank Details Modal -->
+<div class="modal fade" id="bankDetailsModal" tabindex="-1" aria-labelledby="bankDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="border: none; border-radius: 16px; overflow: hidden;">
+            <div class="modal-header" style="background: #f8f9fc; border-bottom: 1px solid #e1e5e9;">
+                <h5 class="modal-title fw-bold" id="bankDetailsModalLabel" style="color: #1a1a1a;">Update Bank Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="bankDetailsForm" action="{{ url_for('invoices.update_bank_details') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold" style="color: #1a1a1a; font-size: 0.9rem;">
+                                Bank Name <span style="color: #dc3545;">*</span>
+                            </label>
+                            <input type="text" name="bank_name" class="form-control" value="{{ current_user.law_firm.bank_name or '' }}" required style="border: 1px solid #e1e5e9; font-size: 0.9rem;">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold" style="color: #1a1a1a; font-size: 0.9rem;">
+                                Account Holder Name <span style="color: #dc3545;">*</span>
+                            </label>
+                            <input type="text" name="account_holder_name" class="form-control" value="{{ current_user.law_firm.account_holder_name or '' }}" required style="border: 1px solid #e1e5e9; font-size: 0.9rem;">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold" style="color: #1a1a1a; font-size: 0.9rem;">
+                                Account Number <span style="color: #dc3545;">*</span>
+                            </label>
+                            <input type="text" name="account_number" class="form-control" value="{{ current_user.law_firm.account_number or '' }}" required style="border: 1px solid #e1e5e9; font-size: 0.9rem;">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold" style="color: #1a1a1a; font-size: 0.9rem;">Routing Number</label>
+                            <input type="text" name="routing_number" class="form-control" value="{{ current_user.law_firm.routing_number or '' }}" style="border: 1px solid #e1e5e9; font-size: 0.9rem;">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold" style="color: #1a1a1a; font-size: 0.9rem;">
+                                SWIFT Code <span style="color: #6c757d; font-size: 0.8rem;">(For international transfers)</span>
+                            </label>
+                            <input type="text" name="swift_code" class="form-control" value="{{ current_user.law_firm.swift_code or '' }}" style="border: 1px solid #e1e5e9; font-size: 0.9rem;">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold" style="color: #1a1a1a; font-size: 0.9rem;">Tax ID</label>
+                            <input type="text" name="tax_id" class="form-control" value="{{ current_user.law_firm.tax_id or '' }}" style="border: 1px solid #e1e5e9; font-size: 0.9rem;">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="background: #f8f9fc; border-top: 1px solid #e1e5e9;">
+                    <button type="button" class="btn" data-bs-dismiss="modal" style="background: #ffffff; border: 1px solid #dee2e6; color: #495057; font-size: 0.9rem;">Cancel</button>
+                    <button type="submit" class="btn" style="background: #667eea; border: 1px solid #667eea; color: #ffffff; font-size: 0.9rem;">
+                        <i class="fas fa-save me-1" style="font-size: 0.8rem;"></i>Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 {% endblock %}
