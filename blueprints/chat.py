@@ -21,14 +21,56 @@ def chat_home():
             flash('You are not associated with a law firm.', 'error')
             return redirect(url_for('index'))
     
-    # Get conversations only with users from same law firm
-    conversations = db.session.query(ChatConversation).filter(
-        or_(
-            ChatConversation.user1_id == current_user.id,
-            ChatConversation.user2_id == current_user.id
-        ),
-        ChatConversation.law_firm_id == current_user.law_firm_id
-    ).order_by(desc(ChatConversation.last_message_at)).all()
+    # Get support chat room
+    support_room = current_user.law_firm.get_support_chat_room()
+    
+    # Get project chat rooms for the user
+    from models_chat import ChatRoom, ChatParticipant, ChatMessage
+    
+    project_rooms = db.session.query(ChatRoom).join(ChatParticipant).filter(
+        ChatParticipant.user_id == current_user.id,
+        ChatRoom.room_type == 'project',
+        ChatRoom.is_active == True
+    ).all()
+    
+    # Create beautiful chat list like Email/Telegram
+    chat_list = []
+    
+    # Add support chat
+    if support_room:
+        last_message = ChatMessage.query.filter_by(room_id=support_room.id)\
+                                       .order_by(ChatMessage.created_at.desc()).first()
+        chat_list.append({
+            'room': support_room,
+            'name': 'Support Team',
+            'type': 'support',
+            'last_message': last_message.message_content[:60] + '...' if last_message and len(last_message.message_content) > 60 else last_message.message_content if last_message else 'No messages yet',
+            'last_time': last_message.created_at if last_message else support_room.created_at,
+            'unread_count': 0,
+            'avatar': 'fas fa-headset',
+            'avatar_color': 'bg-primary',
+            'is_online': True
+        })
+    
+    # Add project chats
+    for room in project_rooms:
+        last_message = ChatMessage.query.filter_by(room_id=room.id)\
+                                       .order_by(ChatMessage.created_at.desc()).first()
+        project = room.project if hasattr(room, 'project') and room.project else None
+        chat_list.append({
+            'room': room,
+            'name': f'Project: {project.name}' if project else f'Chat Room #{room.id}',
+            'type': 'project',
+            'last_message': last_message.message_content[:60] + '...' if last_message and len(last_message.message_content) > 60 else last_message.message_content if last_message else 'Start the conversation...',
+            'last_time': last_message.created_at if last_message else room.created_at,
+            'unread_count': 0,
+            'avatar': 'fas fa-folder-open',
+            'avatar_color': 'bg-success',
+            'is_online': False
+        })
+    
+    # Sort by last activity (most recent first)
+    chat_list.sort(key=lambda x: x['last_time'], reverse=True)
     
     # Get relevant users based on current user's role and assignments
     if current_user.is_client():
@@ -61,23 +103,14 @@ def chat_home():
             User.active == True
         ).order_by(User.role.desc(), User.first_name, User.last_name).all()
     
-    # Get unread message counts
+    # Get unread message counts (simplified for now)
     unread_counts = {}
-    for conversation in conversations:
-        other_user = conversation.get_other_user(current_user.id)
-        unread_count = DirectMessage.query.filter(
-            and_(
-                DirectMessage.sender_id == other_user.id,
-                DirectMessage.receiver_id == current_user.id,
-                DirectMessage.is_read == False
-            )
-        ).count()
-        unread_counts[other_user.id] = unread_count
     
-    return render_template('chat/home_enhanced.html', 
-                         conversations=conversations, 
+    return render_template('chat/index.html', 
+                         chat_list=chat_list, 
                          all_users=all_users,
-                         unread_counts=unread_counts)
+                         unread_counts=unread_counts,
+                         current_user=current_user)
 
 @chat_bp.route('/conversation/<user_id>', methods=['GET', 'POST'])
 @require_login

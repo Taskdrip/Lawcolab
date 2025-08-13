@@ -1,0 +1,303 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<style>
+.chat-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.chat-header {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+.chat-header h2 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 24px;
+}
+
+.chat-header p {
+    margin: 5px 0 0 0;
+    opacity: 0.9;
+    font-size: 14px;
+}
+
+.chat-list {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.chat-item {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+}
+
+.chat-item:hover {
+    background-color: #f8f9fa;
+    text-decoration: none;
+    color: inherit;
+    transform: translateX(5px);
+}
+
+.chat-item:last-child {
+    border-bottom: none;
+}
+
+.chat-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: white;
+    margin-right: 15px;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.chat-avatar .online-indicator {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    background: #28a745;
+    border: 2px solid white;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.chat-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.chat-name {
+    font-weight: 600;
+    font-size: 16px;
+    margin: 0 0 4px 0;
+    color: #212529;
+}
+
+.chat-last-message {
+    color: #6c757d;
+    font-size: 14px;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-left: 15px;
+    flex-shrink: 0;
+}
+
+.chat-time {
+    font-size: 12px;
+    color: #adb5bd;
+    margin-bottom: 5px;
+}
+
+.chat-unread {
+    background: #007bff;
+    color: white;
+    border-radius: 50%;
+    min-width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 64px;
+    color: #dee2e6;
+    margin-bottom: 20px;
+}
+
+.empty-state h4 {
+    margin-bottom: 10px;
+    color: #495057;
+}
+
+.empty-state p {
+    margin-bottom: 30px;
+}
+
+.btn-start-chat {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    color: white;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-start-chat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+    color: white;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .chat-container {
+        margin: 0;
+        border-radius: 0;
+        min-height: 100vh;
+    }
+    
+    .chat-item {
+        padding: 12px 15px;
+    }
+    
+    .chat-avatar {
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+    }
+    
+    .chat-name {
+        font-size: 15px;
+    }
+    
+    .chat-last-message {
+        font-size: 13px;
+    }
+}
+
+/* Support chat special styling */
+.chat-item.support-chat {
+    background: linear-gradient(135deg, rgba(0,123,255,0.05), rgba(0,86,179,0.05));
+    border-left: 4px solid #007bff;
+}
+
+.chat-item.support-chat:hover {
+    background: linear-gradient(135deg, rgba(0,123,255,0.1), rgba(0,86,179,0.1));
+}
+</style>
+
+<div class="container-fluid p-0">
+    <div class="chat-container">
+        <!-- Header -->
+        <div class="chat-header">
+            <h2><i class="fas fa-comments me-2"></i>Messages</h2>
+            <p>Stay connected with your team and support</p>
+        </div>
+
+        <!-- Chat List -->
+        <div class="chat-list">
+            {% if chat_list %}
+                {% for chat in chat_list %}
+                <a href="{% if chat.type == 'support' %}/chat/support{% else %}/enhanced-chat/room/{{ chat.room.id }}{% endif %}" 
+                   class="chat-item {% if chat.type == 'support' %}support-chat{% endif %}">
+                    
+                    <!-- Avatar -->
+                    <div class="chat-avatar {{ chat.avatar_color }}">
+                        <i class="{{ chat.avatar }}"></i>
+                        {% if chat.is_online %}
+                        <div class="online-indicator"></div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Content -->
+                    <div class="chat-content">
+                        <h6 class="chat-name">{{ chat.name }}</h6>
+                        <p class="chat-last-message">{{ chat.last_message }}</p>
+                    </div>
+
+                    <!-- Meta -->
+                    <div class="chat-meta">
+                        <div class="chat-time">
+                            {% if chat.last_time %}
+                                {% if chat.last_time.date() == moment().date() %}
+                                    {{ chat.last_time.strftime('%I:%M %p') }}
+                                {% elif chat.last_time.date() == (moment() - timedelta(days=1)).date() %}
+                                    Yesterday
+                                {% else %}
+                                    {{ chat.last_time.strftime('%m/%d') }}
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        {% if chat.unread_count > 0 %}
+                        <div class="chat-unread">{{ chat.unread_count }}</div>
+                        {% endif %}
+                    </div>
+                </a>
+                {% endfor %}
+            {% else %}
+                <!-- Empty State -->
+                <div class="empty-state">
+                    <i class="fas fa-comment-dots"></i>
+                    <h4>No conversations yet</h4>
+                    <p>Start chatting with your team members or get support from our team.</p>
+                    <a href="/chat/support" class="btn btn-start-chat">
+                        <i class="fas fa-headset me-2"></i>Contact Support
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Add real-time updates (can be enhanced with WebSocket later)
+function updateChatTimes() {
+    const timeElements = document.querySelectorAll('.chat-time');
+    timeElements.forEach(element => {
+        // Update relative times if needed
+    });
+}
+
+// Update every minute
+setInterval(updateChatTimes, 60000);
+
+// Add loading states for chat items
+document.querySelectorAll('.chat-item').forEach(item => {
+    item.addEventListener('click', function() {
+        // Add loading state
+        this.style.opacity = '0.7';
+        
+        // Remove loading state after navigation
+        setTimeout(() => {
+            this.style.opacity = '1';
+        }, 2000);
+    });
+});
+</script>
+{% endblock %}
