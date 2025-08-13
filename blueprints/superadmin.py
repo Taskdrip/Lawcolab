@@ -65,7 +65,7 @@ def manage_law_firms():
     law_firms = query.order_by(LawFirm.created_at.desc()).paginate(
         page=page, per_page=20, error_out=False)
     
-    return render_template('superadmin/law_firms.html', 
+    return render_template('superadmin/lawfirms.html', 
                          law_firms=law_firms, 
                          search=search)
 
