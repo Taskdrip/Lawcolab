@@ -222,7 +222,17 @@
         {% if chat_list %}
         <div class="clean-chat-list">
             {% for chat in chat_list %}
-            <a href="{{ url_for('chat.conversation', room_id=chat.room.id) }}" class="clean-chat-item">
+            {% if chat.type == 'support' %}
+                <a href="{{ url_for('enhanced_chat.support_chat') }}" class="clean-chat-item">
+            {% elif chat.type == 'project' %}
+                <a href="{{ url_for('enhanced_chat.project_chat', project_id=chat.room.project_id) }}" class="clean-chat-item">
+            {% elif chat.type == 'direct' %}
+                <a href="{{ url_for('chat.conversation', user_id=chat.other_user_id) }}" class="clean-chat-item">
+            {% elif chat.type == 'broadcast' %}
+                <a href="{{ url_for('enhanced_chat.support_chat') }}" class="clean-chat-item">
+            {% else %}
+                <a href="#" class="clean-chat-item">
+            {% endif %}
                 <div class="clean-chat-avatar {{ chat.type }}">
                     {% if chat.type == 'support' %}
                         <i class="fas fa-headset"></i>
@@ -241,8 +251,8 @@
                 <div class="clean-chat-meta">
                     <div class="clean-chat-time">
                         {% if chat.last_time %}
-                            {% set now = moment() %}
-                            {% if chat.last_time.date() == now.date() %}
+                            {% set today = chat.last_time.now().date() %}
+                            {% if chat.last_time.date() == today %}
                                 {{ chat.last_time.strftime('%I:%M %p') }}
                             {% else %}
                                 {{ chat.last_time.strftime('%m/%d') }}

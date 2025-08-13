@@ -136,7 +136,8 @@ def chat_home():
             'unread_count': 0,
             'avatar': 'fas fa-folder-open',
             'avatar_color': 'bg-success',
-            'is_online': False
+            'is_online': False,
+            'project_id': room.project_id
         })
     
     # Sort by last activity (most recent first)
