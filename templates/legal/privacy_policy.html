@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="mb-5">
+                <h1 class="display-4 fw-bold text-dark mb-3">Privacy Policy</h1>
+                <p class="lead text-muted">Last updated: January 2025</p>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-5">
+                    <section class="mb-5">
+                        <h2 class="h4 fw-bold text-dark mb-3">1. Information We Collect</h2>
+                        <p class="text-muted mb-4">LawFirmOS collects information to provide better services to all our users. We collect information in the following ways:</p>
+                        <ul class="text-muted">
+                            <li><strong>Account Information:</strong> Name, email address, phone number, and law firm details</li>
+                            <li><strong>Usage Data:</strong> How you interact with our platform, features used, and performance metrics</li>
+                            <li><strong>Communications:</strong> Messages, support tickets, and feedback you send to us</li>
+                            <li><strong>Legal Documents:</strong> Files and documents you upload to manage your practice</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-5">
+                        <h2 class="h4 fw-bold text-dark mb-3">2. How We Use Your Information</h2>
+                        <p class="text-muted mb-4">We use the information we collect to:</p>
+                        <ul class="text-muted">
+                            <li>Provide, maintain, and improve our legal practice management services</li>
+                            <li>Process transactions and send related information</li>
+                            <li>Send technical notices, updates, security alerts, and support messages</li>
+                            <li>Respond to comments, questions, and requests for customer service</li>
+                            <li>Develop new features and services</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-5">
+                        <h2 class="h4 fw-bold text-dark mb-3">3. Information Sharing and Disclosure</h2>
+                        <p class="text-muted mb-4">We do not sell, trade, or otherwise transfer your personal information to third parties except in the following circumstances:</p>
+                        <ul class="text-muted">
+                            <li><strong>With your consent:</strong> When you explicitly agree to share information</li>
+                            <li><strong>Service providers:</strong> Trusted third parties who assist in operating our platform</li>
+                            <li><strong>Legal requirements:</strong> When required by law or to protect our rights</li>
+                            <li><strong>Business transfers:</strong> In connection with mergers or acquisitions</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-5">
+                        <h2 class="h4 fw-bold text-dark mb-3">4. Data Security</h2>
+                        <p class="text-muted mb-4">We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.</p>
+                        <ul class="text-muted">
+                            <li>End-to-end encryption for sensitive data</li>
+                            <li>Regular security audits and assessments</li>
+                            <li>Secure data centers with 24/7 monitoring</li>
+                            <li>Employee training on data protection practices</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-5">
+                        <h2 class="h4 fw-bold text-dark mb-3">5. Data Retention</h2>
+                        <p class="text-muted">We retain your information only as long as necessary to provide services and fulfill legal obligations. When you delete your account, we will delete your personal information within 30 days, except where retention is required by law.</p>
+                    </section>
+
+                    <section class="mb-5">
+                        <h2 class="h4 fw-bold text-dark mb-3">6. Your Rights</h2>
+                        <p class="text-muted mb-4">You have the following rights regarding your personal information:</p>
+                        <ul class="text-muted">
+                            <li><strong>Access:</strong> Request a copy of your personal information</li>
+                            <li><strong>Correction:</strong> Update or correct inaccurate information</li>
+                            <li><strong>Deletion:</strong> Request deletion of your personal information</li>
+                            <li><strong>Portability:</strong> Request transfer of your data to another service</li>
+                            <li><strong>Objection:</strong> Object to certain processing activities</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-5">
+                        <h2 class="h4 fw-bold text-dark mb-3">7. Contact Information</h2>
+                        <p class="text-muted mb-4">If you have questions about this Privacy Policy or our data practices, please contact us:</p>
+                        <div class="bg-light p-4 rounded">
+                            <p class="mb-2"><strong>Email:</strong> <a href="mailto:taskdrip@gmail.com" class="text-primary text-decoration-none">taskdrip@gmail.com</a></p>
+                            <p class="mb-2"><strong>WhatsApp:</strong> <a href="https://wa.me/2348036622568" class="text-primary text-decoration-none">+234 803 662 2568</a></p>
+                            <p class="mb-0"><strong>Support:</strong> Available 24/7 through our platform</p>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2 class="h4 fw-bold text-dark mb-3">8. Changes to This Policy</h2>
+                        <p class="text-muted">We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the new policy on this page and updating the "Last updated" date.</p>
+                    </section>
+                </div>
+            </div>
+
+            <div class="text-center mt-5">
+                <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-home me-2"></i>Back to Homepage
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

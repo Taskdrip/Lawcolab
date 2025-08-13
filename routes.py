@@ -101,6 +101,32 @@ def chat_support():
         return redirect(url_for('auth.login'))
     return redirect(url_for('enhanced_chat.support_chat'))
 
+# Legal pages routes
+@app.route('/privacy-policy')
+def privacy_policy():
+    """Privacy Policy page"""
+    return render_template('legal/privacy_policy.html')
+
+@app.route('/terms-of-service')
+def terms_of_service():
+    """Terms of Service page"""
+    return render_template('legal/terms_of_service.html')
+
+@app.route('/cookie-policy')
+def cookie_policy():
+    """Cookie Policy page"""
+    return render_template('legal/cookie_policy.html')
+
+@app.route('/gdpr')
+def gdpr():
+    """GDPR page"""
+    return render_template('legal/gdpr.html')
+
+@app.route('/features')
+def features():
+    """Features page"""
+    return render_template('features.html')
+
 # Test route to verify pages are working
 @app.route('/test-pages')
 def test_pages():
