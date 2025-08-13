@@ -26,16 +26,16 @@
                 <!-- Chat Area -->
                 <div class="col-lg-8">
                     <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-white border-bottom">
+                        <div class="card-header bg-primary bg-gradient text-white border-0">
                             <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
                                 <div>
-                                    <h5 class="fw-bold mb-0">
-                                        <i class="fas fa-comments text-primary me-2"></i>Invoice Discussion
+                                    <h5 class="fw-bold mb-0 text-white">
+                                        <i class="fas fa-comments me-2"></i>Invoice Discussion
                                     </h5>
-                                    <small class="text-muted">Professional communication about invoice {{ invoice.invoice_number }}</small>
+                                    <small class="text-white opacity-75">Professional communication about invoice {{ invoice.invoice_number }}</small>
                                 </div>
                                 <div class="d-flex align-items-center">
-                                    <span class="badge bg-{{ 'success' if invoice.status == 'paid' else 'warning' if invoice.status == 'sent' else 'secondary' }}">
+                                    <span class="badge bg-light text-dark fw-semibold">
                                         {{ invoice.status.title() }}
                                     </span>
                                 </div>
@@ -99,17 +99,17 @@
                         </div>
                         
                         <!-- Message Input -->
-                        <div class="card-footer bg-light">
+                        <div class="card-footer bg-white border-top-2 border-primary">
                             <form id="messageForm" class="d-flex gap-2">
                                 <div class="flex-grow-1">
-                                    <textarea id="messageInput" class="form-control" rows="2" placeholder="Type your message about this invoice..." required></textarea>
+                                    <textarea id="messageInput" class="form-control border-2" rows="2" placeholder="Type your professional message about this invoice..." required style="resize: none;"></textarea>
                                 </div>
                                 <div class="d-flex flex-column gap-2">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-paper-plane"></i>
+                                    <button type="submit" class="btn btn-primary shadow-sm">
+                                        <i class="fas fa-paper-plane me-1"></i>Send
                                     </button>
-                                    <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('fileInput').click()">
-                                        <i class="fas fa-paperclip"></i>
+                                    <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click()">
+                                        <i class="fas fa-paperclip me-1"></i>File
                                     </button>
                                 </div>
                             </form>
@@ -131,8 +131,8 @@
                 <!-- Invoice Summary & Banking Details -->
                 <div class="col-lg-4">
                     <!-- Invoice Summary -->
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-header bg-primary text-white">
+                    <div class="card border-2 border-primary shadow-sm mb-4">
+                        <div class="card-header bg-primary bg-gradient text-white border-0">
                             <h6 class="fw-bold mb-0">
                                 <i class="fas fa-file-invoice me-2"></i>Invoice Summary
                             </h6>
@@ -175,8 +175,8 @@
 
                     <!-- Banking Details -->
                     {% if invoice.law_firm.bank_name or invoice.law_firm.account_number %}
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-header bg-success text-white">
+                    <div class="card border-2 border-success shadow-sm mb-4">
+                        <div class="card-header bg-success bg-gradient text-white border-0">
                             <h6 class="fw-bold mb-0">
                                 <i class="fas fa-university me-2"></i>Payment Information
                             </h6>
@@ -231,8 +231,8 @@
 
                     <!-- Participants -->
                     {% if participants %}
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-light">
+                    <div class="card border-2 border-info shadow-sm">
+                        <div class="card-header bg-info bg-gradient text-white border-0">
                             <h6 class="fw-bold mb-0">
                                 <i class="fas fa-users me-2"></i>Chat Participants
                             </h6>
