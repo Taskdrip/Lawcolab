@@ -58,23 +58,51 @@
     color: #000000 !important;
     font-weight: 500 !important;
 }
+
+/* Pulse animation for online indicator */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* Enhanced header styling */
+.card-header.bg-dark {
+    background: linear-gradient(135deg, #343a40, #495057) !important;
+    border-bottom: 3px solid #007bff !important;
+}
+
+.card-header.bg-dark h5 {
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3) !important;
+}
+
+.card-header.bg-dark p,
+.card-header.bg-dark small {
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.2) !important;
+}
 </style>
 <div class="container-fluid mt-4">
     <div class="row">
         <div class="col-md-12">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-headset me-2 text-primary"></i>Support Chat
+                <div class="card-header bg-dark text-white d-flex flex-column flex-md-row justify-content-between align-items-center p-4">
+                    <div class="text-center text-md-start mb-3 mb-md-0">
+                        <h5 class="card-title mb-2 fw-bold" style="color: #ffffff !important; font-weight: 700 !important; font-size: 22px; text-shadow: none !important;">
+                            <i class="fas fa-headset me-2 text-warning" style="font-size: 20px;"></i>Support Chat
                         </h5>
-                        <small class="text-muted">Get help from our support team</small>
+                        <p class="mb-0" style="color: #e9ecef !important; font-weight: 500 !important; font-size: 15px; opacity: 0.95;">
+                            Get help from our support team
+                        </p>
                     </div>
-                    <div class="d-flex align-items-center">
-                        <span class="badge bg-success me-2">
-                            <i class="fas fa-circle" style="font-size: 8px;"></i> Online
-                        </span>
-                        <span class="text-muted small">Response time: 2-4 hours</span>
+                    <div class="text-center text-md-end">
+                        <div class="d-flex flex-column align-items-center align-items-md-end gap-2">
+                            <span class="badge bg-success px-3 py-2" style="font-size: 13px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                                <i class="fas fa-circle me-2" style="color: #90ee90; animation: pulse 2s infinite;"></i>Online
+                            </span>
+                            <small style="color: #e9ecef !important; font-weight: 500 !important; font-size: 13px; opacity: 0.95;">
+                                <i class="fas fa-clock me-1 text-info"></i>Response time: 2-4 hours
+                            </small>
+                        </div>
                     </div>
                 </div>
                 
