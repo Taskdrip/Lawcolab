@@ -268,13 +268,22 @@ def update_bank_details():
 
 @invoices_bp.route('/<int:id>/mark-paid', methods=['POST'])
 @login_required
-@role_required(['admin', 'team_member'])
 def mark_paid(id):
-    """Mark invoice as paid"""
-    invoice = Invoice.query.filter_by(
-        id=id,
-        law_firm_id=current_user.law_firm_id
-    ).first_or_404()
+    """Mark invoice as paid - available to law firm staff and clients"""
+    # Get invoice with proper access control
+    if current_user.is_client():
+        # Clients can only mark their own invoices as paid
+        invoice = Invoice.query.filter_by(
+            id=id,
+            client_id=current_user.id,
+            law_firm_id=current_user.law_firm_id
+        ).first_or_404()
+    else:
+        # Law firm staff can mark any invoice from their firm as paid
+        invoice = Invoice.query.filter_by(
+            id=id,
+            law_firm_id=current_user.law_firm_id
+        ).first_or_404()
     
     if invoice.status not in ['sent', 'overdue']:
         flash('Only sent or overdue invoices can be marked as paid.', 'error')
