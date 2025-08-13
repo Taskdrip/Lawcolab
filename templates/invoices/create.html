@@ -97,17 +97,18 @@
                                     Total Amount <span style="color: #dc3545;">*</span>
                                 </label>
                                 <div class="input-group">
-                                    <span class="input-group-text" style="background: #f8f9fc; border: 1px solid #e1e5e9; color: #6c757d;">$</span>
+                                    <span class="input-group-text" id="currencySymbol" style="background: #f8f9fc; border: 1px solid #e1e5e9; color: #6c757d;">$</span>
                                     <input type="number" name="amount" class="form-control" step="0.01" min="0.01" placeholder="0.00" required style="border: 1px solid #e1e5e9; font-size: 0.9rem;">
                                 </div>
                             </div>
                             <div class="col-12 col-md-6">
                                 <label class="form-label fw-bold" style="color: #1a1a1a; font-size: 0.9rem;">Currency</label>
-                                <select name="currency" class="form-select" style="border: 1px solid #e1e5e9; font-size: 0.9rem;">
+                                <select name="currency" id="currencySelect" class="form-select" style="border: 1px solid #e1e5e9; font-size: 0.9rem;">
                                     <option value="USD">USD ($)</option>
                                     <option value="EUR">EUR (€)</option>
                                     <option value="GBP">GBP (£)</option>
                                     <option value="CAD">CAD ($)</option>
+                                    <option value="NGN">NGN (₦)</option>
                                 </select>
                             </div>
                         </div>
@@ -261,7 +262,9 @@ function addLineItem() {
         const quantity = parseFloat(quantityInput.value) || 0;
         const rate = parseFloat(rateInput.value) || 0;
         const total = quantity * rate;
-        totalInput.value = '$' + total.toFixed(2);
+        const currencySelect = document.getElementById('currencySelect');
+        const currencySymbol = currencySymbols[currencySelect.value] || '$';
+        totalInput.value = currencySymbol + total.toFixed(2);
     }
     
     quantityInput.addEventListener('input', calculateTotal);
@@ -329,6 +332,37 @@ document.getElementById('invoiceForm').addEventListener('submit', function(e) {
         alert('Please enter an invoice title.');
         return false;
     }
+});
+
+// Currency symbol update functionality
+const currencySymbols = {
+    'USD': '$',
+    'EUR': '€',
+    'GBP': '£',
+    'CAD': '$',
+    'NGN': '₦'
+};
+
+document.getElementById('currencySelect').addEventListener('change', function() {
+    const selectedCurrency = this.value;
+    const currencySymbol = currencySymbols[selectedCurrency] || '$';
+    document.getElementById('currencySymbol').textContent = currencySymbol;
+    
+    // Update line item rate labels and totals
+    document.querySelectorAll('.line-rate').forEach(input => {
+        const label = input.closest('.col-4, .col-md-2').querySelector('.form-label');
+        if (label) {
+            label.textContent = `Rate (${currencySymbol})`;
+        }
+    });
+    
+    // Update line item totals
+    document.querySelectorAll('.line-total').forEach(input => {
+        const quantity = parseFloat(input.closest('.line-item').querySelector('.line-quantity').value) || 0;
+        const rate = parseFloat(input.closest('.line-item').querySelector('.line-rate').value) || 0;
+        const total = quantity * rate;
+        input.value = currencySymbol + total.toFixed(2);
+    });
 });
 </script>
 

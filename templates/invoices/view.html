@@ -199,8 +199,8 @@
                                                 {% endif %}
                                             </td>
                                             <td class="py-3 text-center" style="color: #495057; font-size: 0.85rem;">{{ "%.2f"|format(item.quantity) }}</td>
-                                            <td class="py-3 text-end" style="color: #495057; font-size: 0.85rem;">${{ "%.2f"|format(item.rate) }}</td>
-                                            <td class="py-3 text-end fw-bold" style="color: #1a1a1a; font-size: 0.9rem;">${{ "%.2f"|format(item.amount) }}</td>
+                                            <td class="py-3 text-end" style="color: #495057; font-size: 0.85rem;">{{ invoice.currency|currency_symbol }}{{ "%.2f"|format(item.rate) }}</td>
+                                            <td class="py-3 text-end fw-bold" style="color: #1a1a1a; font-size: 0.9rem;">{{ invoice.currency|currency_symbol }}{{ "%.2f"|format(item.amount) }}</td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -268,19 +268,19 @@
                                 <div class="p-4 rounded-3" style="background: #f8f9fc; border: 1px solid #e1e5e9;">
                                     <div class="d-flex justify-content-between mb-3 pb-2" style="border-bottom: 1px solid #dee2e6;">
                                         <span style="color: #6c757d; font-size: 0.85rem;">Subtotal:</span>
-                                        <span class="fw-semibold" style="color: #1a1a1a; font-size: 0.85rem;">${{ "%.2f"|format(invoice.total_amount) }}</span>
+                                        <span class="fw-semibold" style="color: #1a1a1a; font-size: 0.85rem;">{{ invoice.currency|currency_symbol }}{{ "%.2f"|format(invoice.total_amount) }}</span>
                                     </div>
                                     {% if invoice.tax_amount and invoice.tax_amount > 0 %}
                                     <div class="d-flex justify-content-between mb-3 pb-2" style="border-bottom: 1px solid #dee2e6;">
                                         <span style="color: #6c757d; font-size: 0.85rem;">Tax:</span>
-                                        <span class="fw-semibold" style="color: #1a1a1a; font-size: 0.85rem;">${{ "%.2f"|format(invoice.tax_amount) }}</span>
+                                        <span class="fw-semibold" style="color: #1a1a1a; font-size: 0.85rem;">{{ invoice.currency|currency_symbol }}{{ "%.2f"|format(invoice.tax_amount) }}</span>
                                     </div>
                                     {% endif %}
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span class="h6 fw-bold" style="color: #1a1a1a;">Total Amount Due:</span>
                                         <div class="text-end">
-                                            <div class="h4 fw-bold mb-0" style="color: #667eea;">${{ "%.2f"|format(invoice.total_amount) }}</div>
-                                            <small style="color: #6c757d;">USD</small>
+                                            <div class="h4 fw-bold mb-0" style="color: #667eea;">{{ invoice.currency|currency_symbol }}{{ "%.2f"|format(invoice.total_amount) }}</div>
+                                            <small style="color: #6c757d;">{{ invoice.currency }}</small>
                                         </div>
                                     </div>
                                     
@@ -311,7 +311,7 @@
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <div><strong>Amount Paid:</strong> ${{ "%.2f"|format(payment.amount_paid) }}</div>
+                                        <div><strong>Amount Paid:</strong> {{ invoice.currency|currency_symbol }}{{ "%.2f"|format(payment.amount_paid) }}</div>
                                         <div><strong>Payment Date:</strong> {{ payment.payment_date.strftime('%B %d, %Y') }}</div>
                                     </div>
                                     <div class="col-md-6">

@@ -63,6 +63,19 @@ def nl2br_filter(text):
         return ''
     return text.replace('\n', '<br>')
 
+# Custom template filter for currency symbols
+@app.template_filter('currency_symbol')
+def currency_symbol_filter(currency_code):
+    """Convert currency code to symbol"""
+    symbols = {
+        'USD': '$',
+        'EUR': '€',
+        'GBP': '£',
+        'CAD': '$',
+        'NGN': '₦'
+    }
+    return symbols.get(currency_code, '$')
+
 # Create tables
 with app.app_context():
     import models  # noqa: F401

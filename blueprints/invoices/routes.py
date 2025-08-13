@@ -64,6 +64,7 @@ def create_invoice():
             title = request.form.get('title')
             description = request.form.get('description', '')
             amount = Decimal(request.form.get('amount', '0'))
+            currency = request.form.get('currency', 'USD')
             invoice_type = request.form.get('invoice_type', 'service')
             billing_period = request.form.get('billing_period')
             due_days = int(request.form.get('due_days', 30))
@@ -93,6 +94,7 @@ def create_invoice():
             invoice.title = title
             invoice.description = description
             invoice.amount = amount
+            invoice.currency = currency
             invoice.invoice_type = invoice_type
             invoice.billing_period = billing_period
             invoice.issue_date = date.today()
