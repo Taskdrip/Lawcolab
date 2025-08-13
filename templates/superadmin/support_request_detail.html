@@ -20,7 +20,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="{{ url_for('support_requests.list_support_requests') }}">
+                        <a class="nav-link active" href="{{ url_for('support.list_support_requests') }}">
                             <i class="fas fa-life-ring me-2"></i>Support Requests
                         </a>
                     </li>
@@ -38,7 +38,7 @@
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2">Support Request Details</h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
-                    <a href="{{ url_for('support_requests.list_support_requests') }}" class="btn btn-outline-secondary">
+                    <a href="{{ url_for('support.list_support_requests') }}" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left me-1"></i>Back to List
                     </a>
                 </div>
@@ -151,7 +151,7 @@
 <script>
 function resolveRequest(requestId) {
     if (confirm('Are you sure you want to mark this support request as resolved?')) {
-        fetch('{{ url_for("support_requests.resolve_support_request") }}', {
+        fetch('{{ url_for("support.resolve_support_request") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
