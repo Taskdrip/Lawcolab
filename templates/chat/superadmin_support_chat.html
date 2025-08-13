@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Support Chat - {{ room.law_firm.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 style="color: #000000; font-weight: 700;">
+                <i class="fas fa-comments me-2 text-primary"></i>Support Chat
+            </h2>
+            <p style="color: #1a1a1a; font-weight: 500;">{{ room.law_firm.name }}</p>
+        </div>
+        <div>
+            <a href="{{ url_for('enhanced_chat.superadmin_support_rooms') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Support Rooms
+            </a>
+            <a href="{{ url_for('superadmin.view_law_firm', firm_id=room.law_firm.id) }}" class="btn btn-primary">
+                <i class="fas fa-building me-2"></i>View Law Firm
+            </a>
+        </div>
+    </div>
+
+    <!-- Chat Container -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm" style="height: 70vh;">
+                <!-- Chat Header -->
+                <div class="card-header bg-transparent border-bottom">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <i class="fas fa-building"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0" style="color: #000000; font-weight: 600;">{{ room.law_firm.name }}</h6>
+                            <small style="color: #1a1a1a; font-weight: 500;">Support Conversation</small>
+                        </div>
+                        <div>
+                            <span class="badge {% if room.law_firm.admin_access_granted %}bg-success{% else %}bg-warning{% endif %}">
+                                {% if room.law_firm.admin_access_granted %}Active{% else %}Pending{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages Area -->
+                <div class="card-body p-0" style="overflow-y: auto; height: calc(100% - 140px);">
+                    <div id="messages-container" class="p-3">
+                        {% if messages %}
+                            {% for message in messages %}
+                            <div class="message mb-3 {% if message.sender_id == current_user.id %}text-end{% endif %}">
+                                <div class="d-inline-block max-width-75 {% if message.sender_id == current_user.id %}bg-primary text-white{% else %}bg-light{% endif %} rounded p-3">
+                                    <div class="message-content">
+                                        {{ message.message_content | replace('\n', '<br>') | safe }}
+                                    </div>
+                                    <small class="{% if message.sender_id == current_user.id %}text-white-50{% else %}text-muted{% endif %} d-block mt-1">
+                                        {{ message.sender.first_name }} {{ message.sender.last_name }} • {{ message.created_at.strftime('%b %d at %I:%M %p') }}
+                                    </small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-comments fa-3x mb-3"></i>
+                            <h6>No messages yet</h6>
+                            <p>Start the conversation with this law firm</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Message Input -->
+                <div class="card-footer bg-transparent border-top">
+                    <form id="message-form" method="POST" action="{{ url_for('enhanced_chat.send_support_message') }}">
+                        <input type="hidden" name="room_id" value="{{ room.id }}">
+                        <div class="input-group">
+                            <textarea class="form-control border-0" 
+                                    name="message" 
+                                    id="message-input"
+                                    placeholder="Type your message..." 
+                                    rows="2" 
+                                    style="resize: none; box-shadow: none;"
+                                    required></textarea>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.max-width-75 {
+    max-width: 75%;
+}
+
+.message {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.avatar {
+    min-width: 40px;
+    min-height: 40px;
+}
+
+.card {
+    border-radius: 12px !important;
+}
+
+.card-header, .card-footer {
+    border-radius: 12px 12px 0 0 !important;
+}
+
+.card-footer {
+    border-radius: 0 0 12px 12px !important;
+}
+
+#message-input:focus {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Auto-resize textarea */
+#message-input {
+    min-height: 45px;
+    max-height: 120px;
+}
+</style>
+
+<script>
+// Auto-resize textarea like Replit
+const messageInput = document.getElementById('message-input');
+messageInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+
+// Auto-scroll to bottom
+function scrollToBottom() {
+    const container = document.getElementById('messages-container');
+    container.scrollTop = container.scrollHeight;
+}
+
+// Handle form submission
+document.getElementById('message-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const messageText = formData.get('message').trim();
+    
+    if (!messageText) return;
+    
+    fetch(this.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Add message to chat
+            addMessageToChat(data.message, true);
+            // Clear input
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+        } else {
+            alert('Failed to send message: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to send message');
+    });
+});
+
+function addMessageToChat(message, isOwn) {
+    const container = document.getElementById('messages-container');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message mb-3 ${isOwn ? 'text-end' : ''}`;
+    
+    messageDiv.innerHTML = `
+        <div class="d-inline-block max-width-75 ${isOwn ? 'bg-primary text-white' : 'bg-light'} rounded p-3">
+            <div class="message-content">
+                ${message.content.replace(/\n/g, '<br>')}
+            </div>
+            <small class="${isOwn ? 'text-white-50' : 'text-muted'} d-block mt-1">
+                ${message.sender_name} • ${message.time}
+            </small>
+        </div>
+    `;
+    
+    container.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+// Scroll to bottom on load
+document.addEventListener('DOMContentLoaded', scrollToBottom);
+
+// Enter to send (Shift+Enter for new line)
+messageInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        document.getElementById('message-form').dispatchEvent(new Event('submit'));
+    }
+});
+</script>
+{% endblock %}

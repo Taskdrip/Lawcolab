@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import current_user
 from replit_auth import require_login
+from utils.decorators import require_super_admin
 from app import db
 from models import User, LawFirm, Project, ProjectAssignment, ROLE_SUPER_ADMIN, ROLE_ADMIN, ROLE_TEAM_MEMBER, ROLE_CLIENT
 from models_chat import ChatRoom, ChatParticipant, ChatMessage, SuperAdminBroadcast, BroadcastDelivery
@@ -456,3 +457,40 @@ def superadmin_support_chat(room_id):
                          room=room, 
                          messages=messages,
                          current_user=current_user)
+
+@enhanced_chat_bp.route('/send-support-message', methods=['POST'])
+@require_super_admin
+def send_support_message():
+    """Send a message in a support chat room"""
+    room_id = request.form.get('room_id')
+    message_content = request.form.get('message', '').strip()
+    
+    if not room_id or not message_content:
+        return jsonify({'success': False, 'message': 'Invalid data'})
+    
+    room = ChatRoom.query.get_or_404(room_id)
+    
+    if room.room_type != 'support':
+        return jsonify({'success': False, 'message': 'Invalid room type'})
+    
+    # Create new message
+    message = ChatMessage(
+        room_id=room_id,
+        sender_id=current_user.id,
+        message_content=message_content
+    )
+    db.session.add(message)
+    db.session.commit()
+    
+    # Update room last activity
+    room.last_activity = datetime.now()
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'message': {
+            'content': message_content,
+            'sender_name': f"{current_user.first_name} {current_user.last_name}",
+            'time': message.created_at.strftime('%b %d at %I:%M %p')
+        }
+    })
