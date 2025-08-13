@@ -203,7 +203,7 @@ def view_invoice(id):
     
     return render_template('invoices/view.html', invoice=invoice)
 
-@invoices_bp.route('/<int:id>/send', methods=['POST'])
+@invoices_bp.route('/<int:id>/send', methods=['GET', 'POST'])
 @login_required
 @role_required(['admin', 'team_member'])
 def send_invoice(id):
@@ -298,7 +298,7 @@ def mark_paid(id):
         if amount_paid:
             amount_paid = Decimal(amount_paid)
         else:
-            amount_paid = invoice.total_amount
+            amount_paid = invoice.amount
         
         # Update invoice
         invoice.status = 'paid'

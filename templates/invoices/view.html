@@ -162,7 +162,7 @@
                                         </td>
                                         <td class="py-4 text-center">{{ "%.0f"|format(item.quantity) }}</td>
                                         <td class="py-4 text-end">${{ "%.2f"|format(item.rate) }}</td>
-                                        <td class="py-4 text-end fw-bold fs-6">${{ "%.2f"|format(item.total_amount) }}</td>
+                                        <td class="py-4 text-end fw-bold fs-6">${{ "%.2f"|format(item.amount) }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -242,7 +242,7 @@
                                     </h6>
                                     <div class="d-flex justify-content-between mb-3 pb-2">
                                         <span class="text-muted">Subtotal:</span>
-                                        <span class="fw-semibold">${{ "%.2f"|format(invoice.total_amount) }}</span>
+                                        <span class="fw-semibold">${{ "%.2f"|format(invoice.amount) }}</span>
                                     </div>
                                     {% if invoice.tax_amount and invoice.tax_amount > 0 %}
                                     <div class="d-flex justify-content-between mb-3 pb-2">
@@ -254,7 +254,7 @@
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span class="h5 fw-bold text-dark">Total Amount Due:</span>
                                         <div class="text-end">
-                                            <div class="h3 fw-bold text-primary mb-0">${{ "%.2f"|format(invoice.total_amount) }}</div>
+                                            <div class="h3 fw-bold text-primary mb-0">${{ "%.2f"|format(invoice.amount) }}</div>
                                             <small class="text-muted">USD</small>
                                         </div>
                                     </div>
@@ -387,7 +387,7 @@
                         <label class="form-label">Amount Paid</label>
                         <div class="input-group">
                             <span class="input-group-text">$</span>
-                            <input type="number" class="form-control" name="amount_paid" step="0.01" value="{{ invoice.total_amount }}" required>
+                            <input type="number" class="form-control" name="amount_paid" step="0.01" value="{{ invoice.amount }}" required>
                         </div>
                     </div>
                     <div class="mb-3">

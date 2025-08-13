@@ -263,7 +263,7 @@
                 </div>
                 <p>Are you sure you want to delete invoice <strong>{{ invoice.invoice_number }}</strong>?</p>
                 <p><strong>Title:</strong> {{ invoice.title }}</p>
-                <p><strong>Amount:</strong> ${{ "%.2f"|format(invoice.total_amount) }}</p>
+                <p><strong>Amount:</strong> ${{ "%.2f"|format(invoice.amount) }}</p>
                 <p><strong>Client:</strong> {{ invoice.client.display_name }}</p>
             </div>
             <div class="modal-footer">
