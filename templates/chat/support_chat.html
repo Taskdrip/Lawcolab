@@ -241,7 +241,7 @@ Please activate admin access for this law firm. Payment will be processed upon a
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    room_id: '{{ room.id if room else "" }}',
+                    room_id: '{{ room.id if room }}',
                     message: requestMessage
                 })
             })
@@ -277,7 +277,7 @@ document.getElementById('messageForm').addEventListener('submit', function(e) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            room_id: roomId,
+            room_id: roomId || '',
             message: message
         })
     })

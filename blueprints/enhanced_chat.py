@@ -23,11 +23,8 @@ def support_chat():
             flash('You are not associated with a law firm.', 'error')
             return redirect(url_for('index'))
     
-    # Check if this is a new law firm without admin access
-    if not current_user.law_firm.admin_access_granted:
-        return render_template('chat/subscription_request.html')
-    
-    # Get or create support chat room
+    # Always show support chat with subscription form if no admin access
+    # Get or create support chat room first
     support_room = current_user.law_firm.get_support_chat_room()
     
     # Get chat messages
@@ -185,17 +182,41 @@ def send_message():
     if not message_content:
         return jsonify({'success': False, 'message': 'Message content is required'}), 400
     
-    room = ChatRoom.query.get_or_404(room_id)
+    # Handle empty room_id by creating/getting support room
+    if not room_id or room_id == '':
+        if not current_user.law_firm_id:
+            if current_user.is_admin():
+                current_user.create_law_firm_if_admin()
+            else:
+                return jsonify({'success': False, 'message': 'No law firm associated'}), 400
+        
+        # Get or create support room
+        support_room = current_user.law_firm.get_support_chat_room()
+        room_id = support_room.id
     
-    # Check if user is participant in this room
+    try:
+        room = ChatRoom.query.get(room_id)
+        if not room:
+            return jsonify({'success': False, 'message': 'Chat room not found'}), 404
+    except ValueError:
+        return jsonify({'success': False, 'message': 'Invalid room ID'}), 400
+    
+    # Check if user is participant in this room or add them
     participant = ChatParticipant.query.filter_by(
         room_id=room_id,
-        user_id=current_user.id,
-        is_active=True
+        user_id=current_user.id
     ).first()
     
     if not participant:
-        return jsonify({'success': False, 'message': 'Not authorized to send messages in this room'}), 403
+        # Auto-add user to support rooms
+        if room.room_type == 'support':
+            participant = ChatParticipant(
+                room_id=room_id,
+                user_id=current_user.id
+            )
+            db.session.add(participant)
+        else:
+            return jsonify({'success': False, 'message': 'Not authorized to send messages in this room'}), 403
     
     # Create message
     message = ChatMessage(
