@@ -87,7 +87,7 @@
                                 {% if firm.users and firm.users|selectattr("role", "equalto", "admin")|list %}
                                     <span class="badge bg-success" style="color: #ffffff; font-weight: 600;">Active</span>
                                 {% else %}
-                                    <span class="badge bg-warning" style="color: #000000; font-weight: 600;">Incomplete</span>
+                                    <span class="badge bg-warning" style="color: #000000; font-weight: 600;">Pending Payment</span>
                                 {% endif %}
                             </td>
                             <td>

@@ -79,6 +79,7 @@ def view_law_firm(firm_id):
     firm_projects = Project.query.filter_by(law_firm_id=firm_id).all()
     
     return render_template('superadmin/law_firm_detail.html',
+                         law_firm=firm,
                          firm=firm,
                          firm_users=firm_users,
                          firm_admins=firm_admins,
