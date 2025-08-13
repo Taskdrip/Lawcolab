@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}Law Firms Management - Super Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0" style="color: #000000; font-weight: 700;">Law Firms Management</h1>
+            <p style="color: #1a1a1a; font-weight: 500;">Manage all law firms across the platform</p>
+        </div>
+        <div>
+            <button class="btn btn-primary" onclick="showCreateFirmModal()">
+                <i class="fas fa-plus me-2"></i>Create Law Firm
+            </button>
+        </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <form method="GET" class="d-flex">
+                <input type="text" class="form-control me-2" name="search" 
+                       value="{{ search }}" placeholder="Search law firms...">
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Law Firms Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0">
+            <h5 class="card-title mb-0" style="color: #000000; font-weight: 600;">
+                <i class="fas fa-building me-2 text-primary"></i>All Law Firms
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if law_firms.items %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="color: #000000; font-weight: 600;">Law Firm</th>
+                            <th style="color: #000000; font-weight: 600;">Admin</th>
+                            <th style="color: #000000; font-weight: 600;">Users</th>
+                            <th style="color: #000000; font-weight: 600;">Projects</th>
+                            <th style="color: #000000; font-weight: 600;">Created</th>
+                            <th style="color: #000000; font-weight: 600;">Status</th>
+                            <th style="color: #000000; font-weight: 600;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for firm in law_firms.items %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle p-2 me-3" style="background-color: #000000; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-building" style="color: #ffffff;"></i>
+                                    </div>
+                                    <div>
+                                        <div style="color: #000000; font-weight: 600;">{{ firm.name }}</div>
+                                        <small style="color: #1a1a1a; font-weight: 500;">{{ firm.email or 'No email' }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% set admin = firm.users|selectattr("role", "equalto", "admin")|first %}
+                                {% if admin %}
+                                    <span style="color: #1a1a1a; font-weight: 500;">{{ admin.full_name }}</span>
+                                {% else %}
+                                    <span style="color: #dc3545; font-weight: 500;">No Admin</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-primary" style="color: #ffffff; font-weight: 600;">{{ firm.users|length if firm.users else 0 }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-info" style="color: #ffffff; font-weight: 600;">{{ firm.projects|length if firm.projects else 0 }}</span>
+                            </td>
+                            <td>
+                                <small style="color: #1a1a1a; font-weight: 500;">{{ firm.created_at.strftime('%b %d, %Y') if firm.created_at else 'N/A' }}</small>
+                            </td>
+                            <td>
+                                {% if firm.users and firm.users|selectattr("role", "equalto", "admin")|list %}
+                                    <span class="badge bg-success" style="color: #ffffff; font-weight: 600;">Active</span>
+                                {% else %}
+                                    <span class="badge bg-warning" style="color: #000000; font-weight: 600;">Incomplete</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('superadmin.view_law_firm', firm_id=firm.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-danger" 
+                                            onclick="deleteFirm('{{ firm.id }}', '{{ firm.name }}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if law_firms.pages > 1 %}
+            <nav aria-label="Law firms pagination">
+                <ul class="pagination justify-content-center">
+                    {% if law_firms.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('superadmin.lawfirms', page=law_firms.prev_num, search=search) }}">Previous</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for page_num in law_firms.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != law_firms.page %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('superadmin.lawfirms', page=page_num, search=search) }}">{{ page_num }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if law_firms.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('superadmin.lawfirms', page=law_firms.next_num, search=search) }}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-building fa-4x" style="color: #6c757d;"></i>
+                <h4 style="color: #000000; font-weight: 600;">No Law Firms Found</h4>
+                <p style="color: #1a1a1a; font-weight: 500;">No law firms match your search criteria or none have been created yet.</p>
+                <button class="btn btn-primary" onclick="showCreateFirmModal()">
+                    <i class="fas fa-plus me-2"></i>Create First Law Firm
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Create Law Firm Modal -->
+<div class="modal fade" id="createFirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" style="color: #000000; font-weight: 600;">Create New Law Firm</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createFirmForm">
+                    <div class="mb-3">
+                        <label class="form-label" style="color: #000000; font-weight: 500;">Law Firm Name *</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" style="color: #000000; font-weight: 500;">Admin Email *</label>
+                        <input type="email" class="form-control" name="admin_email" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label" style="color: #000000; font-weight: 500;">Admin First Name *</label>
+                                <input type="text" class="form-control" name="admin_first_name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label" style="color: #000000; font-weight: 500;">Admin Last Name *</label>
+                                <input type="text" class="form-control" name="admin_last_name" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" style="color: #000000; font-weight: 500;">Admin Password *</label>
+                        <input type="password" class="form-control" name="admin_password" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="createFirm()">Create Law Firm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showCreateFirmModal() {
+    new bootstrap.Modal(document.getElementById('createFirmModal')).show();
+}
+
+function createFirm() {
+    const form = document.getElementById('createFirmForm');
+    const formData = new FormData(form);
+    
+    const data = {
+        action: 'create',
+        law_firm_name: formData.get('name'),
+        email: formData.get('admin_email'),
+        first_name: formData.get('admin_first_name'),
+        last_name: formData.get('admin_last_name'),
+        password: formData.get('admin_password')
+    };
+    
+    fetch('{{ url_for("superadmin.grant_admin_privileges") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert(result.message);
+            location.reload();
+        } else {
+            alert('Error: ' + result.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    });
+}
+
+function deleteFirm(firmId, firmName) {
+    if (confirm(`Are you sure you want to delete "${firmName}"? This action cannot be undone.`)) {
+        // Implementation for deleting law firm would go here
+        alert('Delete functionality not implemented yet.');
+    }
+}
+</script>
+
+{% endblock %}

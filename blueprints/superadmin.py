@@ -221,6 +221,25 @@ def grant_admin_privileges():
         'message': 'Invalid action.'
     }), 400
 
+@superadmin_bp.route('/lawfirms')
+@require_super_admin
+def lawfirms():
+    """Manage all law firms"""
+    search = request.args.get('search', '')
+    page = request.args.get('page', 1, type=int)
+    
+    query = LawFirm.query
+    
+    if search:
+        query = query.filter(LawFirm.name.contains(search))
+    
+    law_firms = query.order_by(LawFirm.created_at.desc()).paginate(
+        page=page, per_page=20, error_out=False)
+    
+    return render_template('superadmin/lawfirms.html',
+                         law_firms=law_firms,
+                         search=search)
+
 @superadmin_bp.route('/platform-users')
 @require_super_admin
 def platform_users():
