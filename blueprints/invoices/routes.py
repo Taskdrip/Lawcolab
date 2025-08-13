@@ -222,20 +222,9 @@ def send_invoice(id):
         invoice.status = 'sent'
         invoice.sent_date = datetime.now()
         
-        # Basic notification creation without complex scheduling
-        try:
-            notification = InvoiceNotification()
-            notification.invoice_id = invoice.id
-            notification.notification_type = 'invoice_sent'
-            notification.recipient_type = 'client'
-            notification.message = f'Invoice {invoice.invoice_number} has been sent to you.'
-            notification.status = 'sent'
-            notification.sent_date = datetime.now()
-            notification.is_automatic = True
-            db.session.add(notification)
-        except Exception as notification_error:
-            # Log notification error but don't fail the send operation
-            print(f"Notification error: {notification_error}")
+        # Skip notification creation for now to avoid database errors
+        # Will implement proper notification system later
+        pass
         
         db.session.commit()
         
