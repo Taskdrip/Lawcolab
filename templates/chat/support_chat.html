@@ -3,6 +3,62 @@
 {% block title %}Support Chat - LawFirmOS{% endblock %}
 
 {% block content %}
+<style>
+/* Enhanced subscription card styling */
+.subscription-option {
+    border-width: 2px !important;
+    transition: all 0.3s ease !important;
+    background: white !important;
+}
+
+.subscription-option:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15) !important;
+}
+
+.subscription-option.border-primary {
+    background: linear-gradient(135deg, #0d6efd, #6610f2) !important;
+    color: white !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0 8px 25px rgba(13, 110, 253, 0.3) !important;
+}
+
+.subscription-option.border-primary * {
+    color: white !important;
+}
+
+.subscription-option.border-primary .badge {
+    background: rgba(255,255,255,0.2) !important;
+    color: white !important;
+}
+
+/* Enhanced text visibility for subscription panel */
+.subscription-request-panel h5, 
+.subscription-request-panel h4, 
+.subscription-request-panel .fw-bold {
+    color: #000000 !important;
+    font-weight: 700 !important;
+}
+
+.subscription-request-panel .text-muted {
+    color: #666666 !important;
+    font-weight: 500 !important;
+}
+
+.subscription-request-panel .btn {
+    font-weight: 600 !important;
+}
+
+.subscription-request-panel label {
+    color: #000000 !important;
+    font-weight: 600 !important;
+}
+
+.subscription-request-panel select {
+    color: #000000 !important;
+    font-weight: 500 !important;
+}
+</style>
 <div class="container-fluid mt-4">
     <div class="row">
         <div class="col-md-12">
@@ -25,71 +81,97 @@
                 <div class="card-body p-0">
                     <!-- Subscription Request Form (for new law firms) -->
                     {% if not current_user.law_firm.admin_access_granted %}
-                    <div class="subscription-request-panel p-4 border-bottom">
-                        <h6 class="text-primary mb-3">
-                            <i class="fas fa-rocket me-2"></i>Choose Your LawFirmOS Plan
-                        </h6>
+                    <div class="subscription-request-panel p-4 border-bottom bg-white">
+                        <div class="text-center mb-4">
+                            <h5 class="text-dark fw-bold mb-2" style="color: #000000 !important; font-weight: 700 !important;">
+                                <i class="fas fa-rocket me-2 text-primary"></i>Choose Your LawFirmOS Plan
+                            </h5>
+                            <p class="text-dark mb-0" style="color: #333333 !important; font-weight: 500 !important;">Select the perfect plan for your law firm</p>
+                        </div>
+                        
                         <form id="subscriptionForm">
-                            <div class="row g-2 mb-3">
-                                <div class="col-md-4">
-                                    <div class="card border subscription-option" data-plan="trial" style="cursor: pointer;">
-                                        <div class="card-body p-2 text-center">
-                                            <div class="badge bg-success mb-1" style="font-size: 10px;">Most Popular</div>
-                                            <h6 class="fw-bold mb-1" style="font-size: 14px;">3-Day Trial</h6>
-                                            <div class="h6 text-primary mb-0">FREE</div>
+                            <div class="row g-3 mb-4">
+                                <!-- Trial Plan -->
+                                <div class="col-lg-6 col-md-12">
+                                    <div class="card border-2 subscription-option shadow-sm" data-plan="trial" style="cursor: pointer; transition: all 0.3s ease;">
+                                        <div class="card-body p-3 text-center">
+                                            <div class="badge bg-success mb-2" style="font-size: 11px; font-weight: 600;">Most Popular</div>
+                                            <h5 class="fw-bold mb-2 text-dark" style="color: #000000 !important; font-weight: 700 !important; font-size: 18px;">3-Day Trial</h5>
+                                            <div class="h4 text-primary mb-2 fw-bold" style="color: #0d6efd !important; font-weight: 700 !important;">FREE</div>
+                                            <p class="text-muted small mb-0" style="color: #666666 !important; font-weight: 500 !important;">Perfect for testing all features</p>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="card border subscription-option" data-plan="1month" style="cursor: pointer;">
-                                        <div class="card-body p-2 text-center">
-                                            <h6 class="fw-bold mb-1" style="font-size: 14px;">1 Month</h6>
-                                            <div class="h6 text-primary mb-0">$70</div>
+                                
+                                <!-- 1 Month Plan -->
+                                <div class="col-lg-6 col-md-12">
+                                    <div class="card border-2 subscription-option shadow-sm" data-plan="1month" style="cursor: pointer; transition: all 0.3s ease;">
+                                        <div class="card-body p-3 text-center">
+                                            <h5 class="fw-bold mb-2 text-dark" style="color: #000000 !important; font-weight: 700 !important; font-size: 18px;">1 Month</h5>
+                                            <div class="h4 text-primary mb-2 fw-bold" style="color: #0d6efd !important; font-weight: 700 !important;">$70</div>
+                                            <p class="text-muted small mb-0" style="color: #666666 !important; font-weight: 500 !important;">Great for small firms</p>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="card border subscription-option" data-plan="3months" style="cursor: pointer;">
-                                        <div class="card-body p-2 text-center">
-                                            <div class="badge bg-warning mb-1" style="font-size: 10px;">Save $20</div>
-                                            <h6 class="fw-bold mb-1" style="font-size: 14px;">3 Months</h6>
-                                            <div class="h6 text-primary mb-0">$190</div>
+                                
+                                <!-- 3 Months Plan -->
+                                <div class="col-lg-6 col-md-12">
+                                    <div class="card border-2 subscription-option shadow-sm" data-plan="3months" style="cursor: pointer; transition: all 0.3s ease;">
+                                        <div class="card-body p-3 text-center">
+                                            <div class="badge bg-warning text-dark mb-2" style="font-size: 11px; font-weight: 600;">Save $20</div>
+                                            <h5 class="fw-bold mb-2 text-dark" style="color: #000000 !important; font-weight: 700 !important; font-size: 18px;">3 Months</h5>
+                                            <div class="h4 text-primary mb-2 fw-bold" style="color: #0d6efd !important; font-weight: 700 !important;">$190</div>
+                                            <p class="text-muted small mb-0" style="color: #666666 !important; font-weight: 500 !important;">$63 per month</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 6 Months Plan -->
+                                <div class="col-lg-6 col-md-12">
+                                    <div class="card border-2 subscription-option shadow-sm" data-plan="6months" style="cursor: pointer; transition: all 0.3s ease;">
+                                        <div class="card-body p-3 text-center">
+                                            <div class="badge bg-info text-white mb-2" style="font-size: 11px; font-weight: 600;">Save $70</div>
+                                            <h5 class="fw-bold mb-2 text-dark" style="color: #000000 !important; font-weight: 700 !important; font-size: 18px;">6 Months</h5>
+                                            <div class="h4 text-primary mb-2 fw-bold" style="color: #0d6efd !important; font-weight: 700 !important;">$400</div>
+                                            <p class="text-muted small mb-0" style="color: #666666 !important; font-weight: 500 !important;">$67 per month</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 1 Year Plan -->
+                                <div class="col-12">
+                                    <div class="card border-2 subscription-option shadow-sm" data-plan="1year" style="cursor: pointer; transition: all 0.3s ease;">
+                                        <div class="card-body p-3 text-center">
+                                            <div class="badge bg-danger mb-2" style="font-size: 11px; font-weight: 600;">Best Value - Save $190</div>
+                                            <h5 class="fw-bold mb-2 text-dark" style="color: #000000 !important; font-weight: 700 !important; font-size: 18px;">1 Year (12 Months)</h5>
+                                            <div class="h4 text-primary mb-2 fw-bold" style="color: #0d6efd !important; font-weight: 700 !important;">$750</div>
+                                            <p class="text-muted small mb-0" style="color: #666666 !important; font-weight: 500 !important;">$62.50 per month - Maximum savings</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="row g-2 mb-3">
-                                <div class="col-md-6">
-                                    <div class="card border subscription-option" data-plan="6months" style="cursor: pointer;">
-                                        <div class="card-body p-2 text-center">
-                                            <div class="badge bg-info mb-1" style="font-size: 10px;">Save $70</div>
-                                            <h6 class="fw-bold mb-1" style="font-size: 14px;">6 Months</h6>
-                                            <div class="h6 text-primary mb-0">$400</div>
-                                        </div>
-                                    </div>
+                            
+                            <div class="d-flex flex-column flex-md-row gap-3 align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-2">
+                                    <label class="form-label mb-0 fw-semibold text-dark" style="color: #000000 !important; font-weight: 600 !important;">Team Size:</label>
+                                    <select class="form-select" name="team_size" style="max-width: 150px; font-weight: 500 !important; color: #000000 !important;">
+                                        <option value="1-5">1-5 members</option>
+                                        <option value="6-15">6-15 members</option>
+                                        <option value="16-30">16-30 members</option>
+                                        <option value="30+">30+ members</option>
+                                    </select>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="card border subscription-option" data-plan="1year" style="cursor: pointer;">
-                                        <div class="card-body p-2 text-center">
-                                            <div class="badge bg-danger mb-1" style="font-size: 10px;">Best Value</div>
-                                            <h6 class="fw-bold mb-1" style="font-size: 14px;">1 Year</h6>
-                                            <div class="h6 text-primary mb-0">$750</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="d-flex gap-2 align-items-center">
-                                <select class="form-select form-select-sm" name="team_size" style="max-width: 150px;">
-                                    <option value="1-5">1-5 team</option>
-                                    <option value="6-15">6-15 team</option>
-                                    <option value="16-30">16-30 team</option>
-                                    <option value="30+">30+ team</option>
-                                </select>
-                                <button type="submit" class="btn btn-primary btn-sm" id="requestBtn" disabled>
-                                    <i class="fas fa-paper-plane me-1"></i>Request Access
+                                <button type="submit" class="btn btn-primary btn-lg px-4" id="requestBtn" disabled style="font-weight: 600 !important;">
+                                    <i class="fas fa-paper-plane me-2"></i>Send Request to Admin
                                 </button>
                             </div>
                             <input type="hidden" name="selected_plan" id="selectedPlan">
+                            
+                            <div class="text-center mt-3">
+                                <p class="text-muted small mb-0" style="color: #666666 !important; font-weight: 500 !important;">
+                                    <i class="fas fa-clock me-1"></i>Our super admin will review and activate your account within 24 hours
+                                </p>
+                            </div>
                         </form>
                     </div>
                     {% endif %}
@@ -191,10 +273,16 @@ document.addEventListener('DOMContentLoaded', function() {
         subscriptionOptions.forEach(option => {
             option.addEventListener('click', function() {
                 // Remove selected class from all options
-                subscriptionOptions.forEach(opt => opt.classList.remove('border-primary', 'bg-light'));
+                subscriptionOptions.forEach(opt => {
+                    opt.classList.remove('border-primary', 'bg-primary', 'text-white');
+                    opt.style.transform = 'scale(1)';
+                    opt.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+                });
                 
                 // Add selected class to clicked option
-                this.classList.add('border-primary', 'bg-light');
+                this.classList.add('border-primary', 'bg-primary', 'text-white');
+                this.style.transform = 'scale(1.05)';
+                this.style.boxShadow = '0 8px 25px rgba(13, 110, 253, 0.3)';
                 
                 // Set the hidden input value
                 const plan = this.dataset.plan;
@@ -202,6 +290,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Enable request button
                 requestBtn.disabled = false;
+                requestBtn.classList.add('btn-success');
+                requestBtn.classList.remove('btn-primary');
+            });
+            
+            // Add hover effects
+            option.addEventListener('mouseenter', function() {
+                if (!this.classList.contains('bg-primary')) {
+                    this.style.transform = 'translateY(-2px)';
+                    this.style.boxShadow = '0 5px 15px rgba(0,0,0,0.15)';
+                }
+            });
+            
+            option.addEventListener('mouseleave', function() {
+                if (!this.classList.contains('bg-primary')) {
+                    this.style.transform = 'scale(1)';
+                    this.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+                }
             });
         });
         
