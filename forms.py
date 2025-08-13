@@ -21,9 +21,8 @@ class SignupForm(FlaskForm):
         DataRequired(),
         EqualTo('password', message='Passwords must match')
     ])
-    role = SelectField('Account Type', choices=[
-        ('admin', 'Law Firm Owner - Start your own law firm practice')
-    ], validators=[DataRequired()], default='admin')
+    law_firm_name = StringField('Law Firm Name', validators=[DataRequired(), Length(min=2, max=200)])
+    law_firm_description = TextAreaField('Law Firm Description', validators=[Optional(), Length(max=500)])
 
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data.lower()).first()
@@ -111,7 +110,7 @@ class LawFirmForm(FlaskForm):
 class ClientNoteForm(FlaskForm):
     note = TextAreaField('Note', validators=[DataRequired(), Length(max=2000)])
 
-class LawFirmForm(FlaskForm):
+class LawFirmEditForm(FlaskForm):
     name = StringField('Firm Name', validators=[DataRequired(), Length(max=200)])
     description = TextAreaField('Description', validators=[Optional(), Length(max=1000)])
     phone = StringField('Phone Number', validators=[Optional(), Length(max=20)])

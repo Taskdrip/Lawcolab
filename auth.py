@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_login import login_user, logout_user, login_required, current_user
 from urllib.parse import urlparse
-from models import User, ROLE_ADMIN, ROLE_TEAM_MEMBER, ROLE_CLIENT
+from models import User, LawFirm, ROLE_ADMIN, ROLE_TEAM_MEMBER, ROLE_CLIENT
 from forms import LoginForm, SignupForm, ProfileForm, ChangePasswordForm
 from app import db
 import uuid
@@ -49,6 +49,13 @@ def signup():
     
     form = SignupForm()
     if form.validate_on_submit():
+        # Create new law firm first
+        new_firm = LawFirm()
+        new_firm.name = form.law_firm_name.data
+        new_firm.description = form.law_firm_description.data or f"Legal practice managed by {form.first_name.data} {form.last_name.data}"
+        new_firm.email = form.email.data.lower() if form.email.data else None
+        
+        # Create user as law firm admin
         user = User()
         user.id = str(uuid.uuid4())
         user.first_name = form.first_name.data
@@ -57,33 +64,20 @@ def signup():
         if email:
             user.email = email.lower()
         user.phone = form.phone.data
-        user.role = form.role.data
+        user.role = 'admin'  # All signups are law firm admins
         user.set_password(form.password.data)
         user.active = True
         
         try:
-            db.session.add(user)
-            db.session.commit()
-            
-            # Every new signup automatically creates a new law firm and makes the user admin of that firm
-            # This ensures complete isolation between law firms
-            if user.role == 'team_member':  # Convert team_member signups to admin
-                user.role = 'admin'
-            
-            # Create a new law firm for every signup (ensuring complete isolation)
-            firm_name = f"{user.full_name}'s Law Firm"
-            new_firm = LawFirm()
-            new_firm.name = firm_name
-            new_firm.description = f"Legal practice managed by {user.full_name}"
-            new_firm.email = user.email
             db.session.add(new_firm)
-            db.session.flush()  # Get the ID
+            db.session.flush()  # Get the law firm ID
             
             # Associate user with their new law firm
             user.law_firm_id = new_firm.id
+            db.session.add(user)
             db.session.commit()
             
-            flash('Registration successful! You are now the admin of your law firm. Please log in to add team members and clients.', 'success')
+            flash('Registration successful! You are now the owner of your law firm. Please log in to add team members and clients.', 'success')
             return redirect(url_for('auth.login'))
         except Exception as e:
             db.session.rollback()
