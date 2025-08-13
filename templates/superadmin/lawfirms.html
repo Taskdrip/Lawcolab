@@ -84,8 +84,9 @@
                                 <small style="color: #1a1a1a; font-weight: 500;">{{ firm.created_at.strftime('%b %d, %Y') if firm.created_at else 'N/A' }}</small>
                             </td>
                             <td>
-                                {% if firm.users and firm.users|selectattr("role", "equalto", "admin")|list %}
+                                {% if firm.admin_access_granted %}
                                     <span class="badge bg-success" style="color: #ffffff; font-weight: 600;">Active</span>
+                                    <br><small style="color: #1a1a1a;">Expires: {{ firm.admin_access_expires.strftime('%b %d, %Y') if firm.admin_access_expires else 'N/A' }}</small>
                                 {% else %}
                                     <span class="badge bg-warning" style="color: #000000; font-weight: 600;">Pending Payment</span>
                                 {% endif %}
@@ -96,10 +97,23 @@
                                        class="btn btn-sm btn-outline-primary">
                                         <i class="fas fa-eye"></i> View
                                     </a>
-                                    {% if not firm.users|selectattr("role", "equalto", "admin")|list %}
-                                    <button class="btn btn-sm btn-outline-success" 
-                                            onclick="grantAdminAccess('{{ firm.id }}', '{{ firm.name }}')">
-                                        <i class="fas fa-user-shield"></i> Grant Access
+                                    {% if not firm.admin_access_granted %}
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-outline-success dropdown-toggle" 
+                                                data-bs-toggle="dropdown">
+                                            <i class="fas fa-user-shield"></i> Grant Access
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#" onclick="grantAdminAccessFromList('{{ firm.id }}', '{{ firm.name }}', '1month')">1 Month</a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="grantAdminAccessFromList('{{ firm.id }}', '{{ firm.name }}', '3months')">3 Months</a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="grantAdminAccessFromList('{{ firm.id }}', '{{ firm.name }}', '6months')">6 Months</a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="grantAdminAccessFromList('{{ firm.id }}', '{{ firm.name }}', '1year')">1 Year</a></li>
+                                        </ul>
+                                    </div>
+                                    {% else %}
+                                    <button class="btn btn-sm btn-outline-warning" 
+                                            onclick="revokeAdminAccessFromList('{{ firm.id }}', '{{ firm.name }}')">
+                                        <i class="fas fa-user-times"></i> Revoke
                                     </button>
                                     {% endif %}
                                 </div>
@@ -247,8 +261,8 @@ function createFirm() {
     });
 }
 
-function grantAdminAccess(firmId, firmName) {
-    if (confirm(`Grant admin access to "${firmName}"? This will allow them to manage their law firm after payment verification.`)) {
+function grantAdminAccessFromList(firmId, firmName, period) {
+    if (confirm(`Grant admin access to "${firmName}" for ${period}?`)) {
         fetch('/superadmin/grant-admin-access', {
             method: 'POST',
             headers: {
@@ -256,6 +270,35 @@ function grantAdminAccess(firmId, firmName) {
             },
             body: JSON.stringify({
                 action: 'grant_access',
+                firm_id: firmId,
+                period: period
+            })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                alert(result.message);
+                location.reload();
+            } else {
+                alert('Error: ' + result.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
+    }
+}
+
+function revokeAdminAccessFromList(firmId, firmName) {
+    if (confirm(`Revoke admin access for "${firmName}"? This will downgrade their account.`)) {
+        fetch('/superadmin/grant-admin-access', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'revoke_access',
                 firm_id: firmId
             })
         })

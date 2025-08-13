@@ -14,9 +14,21 @@
             <a href="{{ url_for('superadmin.lawfirms') }}" class="btn btn-outline-secondary me-2">
                 <i class="fas fa-arrow-left me-2"></i>Back to Law Firms
             </a>
-            {% if not law_firm.admin_user %}
-            <button class="btn btn-success" onclick="grantAdminAccess('{{ law_firm.id }}', '{{ law_firm.name }}')">
-                <i class="fas fa-user-shield me-2"></i>Grant Admin Access
+            {% if not law_firm.admin_access_granted %}
+            <div class="btn-group">
+                <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-user-shield me-2"></i>Grant Admin Access
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" onclick="grantAdminAccess('{{ law_firm.id }}', '{{ law_firm.name }}', '1month')">1 Month</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="grantAdminAccess('{{ law_firm.id }}', '{{ law_firm.name }}', '3months')">3 Months</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="grantAdminAccess('{{ law_firm.id }}', '{{ law_firm.name }}', '6months')">6 Months</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="grantAdminAccess('{{ law_firm.id }}', '{{ law_firm.name }}', '1year')">1 Year</a></li>
+                </ul>
+            </div>
+            {% else %}
+            <button class="btn btn-warning" onclick="revokeAdminAccess('{{ law_firm.id }}', '{{ law_firm.name }}')">
+                <i class="fas fa-user-times me-2"></i>Revoke Access
             </button>
             {% endif %}
         </div>
@@ -66,13 +78,27 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label text-muted">Status</label>
-                                {% if law_firm.admin_user %}
-                                    <span class="badge bg-success">Active (Admin Assigned)</span>
+                                {% if law_firm.admin_access_granted %}
+                                    <span class="badge bg-success">Active (Admin Access Granted)</span>
                                 {% else %}
-                                    <span class="badge bg-warning">Pending Admin Access</span>
+                                    <span class="badge bg-warning">Pending Payment Verification</span>
                                 {% endif %}
                             </div>
                         </div>
+                        {% if law_firm.admin_access_granted %}
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Subscription Period</label>
+                                <p class="mb-0">{{ law_firm.subscription_period or 'Not set' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Access Expires</label>
+                                <p class="mb-0">{{ law_firm.admin_access_expires.strftime('%B %d, %Y at %I:%M %p') if law_firm.admin_access_expires else 'Not set' }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -209,9 +235,8 @@
 </div>
 
 <script>
-function grantAdminAccess(firmId, firmName) {
-    document.getElementById('confirmGrantAdmin').onclick = function() {
-        // Call API to grant admin access
+function grantAdminAccess(firmId, firmName, period) {
+    if (confirm(`Grant admin access to "${firmName}" for ${period}?`)) {
         fetch('/superadmin/grant-admin-access', {
             method: 'POST',
             headers: {
@@ -219,6 +244,35 @@ function grantAdminAccess(firmId, firmName) {
             },
             body: JSON.stringify({
                 action: 'grant_access',
+                firm_id: firmId,
+                period: period
+            })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                alert(result.message);
+                location.reload();
+            } else {
+                alert('Error: ' + result.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
+    }
+}
+
+function revokeAdminAccess(firmId, firmName) {
+    if (confirm(`Revoke admin access for "${firmName}"? This will downgrade their account.`)) {
+        fetch('/superadmin/grant-admin-access', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'revoke_access',
                 firm_id: firmId
             })
         })
@@ -235,9 +289,7 @@ function grantAdminAccess(firmId, firmName) {
             console.error('Error:', error);
             alert('An error occurred. Please try again.');
         });
-    };
-    
-    new bootstrap.Modal(document.getElementById('grantAdminModal')).show();
+    }
 }
 
 function promoteToAdmin(userId, userName) {

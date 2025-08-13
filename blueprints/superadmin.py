@@ -138,6 +138,8 @@ def grant_admin_access():
     
     if action == 'grant_access':
         firm_id = data.get('firm_id')
+        period = data.get('period', '1year')  # Default to 1 year
+        
         law_firm = LawFirm.query.get_or_404(firm_id)
         
         # Find the owner/first user of the law firm
@@ -149,20 +151,65 @@ def grant_admin_access():
                 'message': 'No users found in this law firm.'
             }), 400
         
+        # Calculate expiry date based on period
+        from datetime import datetime, timedelta
+        now = datetime.now()
+        
+        if period == '1month':
+            expiry = now + timedelta(days=30)
+        elif period == '3months':
+            expiry = now + timedelta(days=90)
+        elif period == '6months':
+            expiry = now + timedelta(days=180)
+        elif period == '1year':
+            expiry = now + timedelta(days=365)
+        else:
+            expiry = now + timedelta(days=365)  # Default to 1 year
+        
         # Grant admin privileges
         owner.role = ROLE_ADMIN
+        law_firm.admin_access_granted = True
+        law_firm.admin_access_expires = expiry
+        law_firm.subscription_period = period
         
         try:
             db.session.commit()
             return jsonify({
                 'success': True,
-                'message': f'Admin access granted to {owner.full_name} for {law_firm.name}.'
+                'message': f'Admin access granted to {owner.full_name} for {law_firm.name} until {expiry.strftime("%B %d, %Y")}.'
             })
         except Exception as e:
             db.session.rollback()
             return jsonify({
                 'success': False,
                 'message': 'Error granting admin access.'
+            }), 500
+    
+    elif action == 'revoke_access':
+        firm_id = data.get('firm_id')
+        law_firm = LawFirm.query.get_or_404(firm_id)
+        
+        # Find the admin user
+        admin = next((u for u in law_firm.users if u.role == ROLE_ADMIN), None)
+        
+        if admin:
+            admin.role = 'lawfirm_owner'  # Downgrade to owner
+        
+        law_firm.admin_access_granted = False
+        law_firm.admin_access_expires = None
+        law_firm.subscription_period = None
+        
+        try:
+            db.session.commit()
+            return jsonify({
+                'success': True,
+                'message': f'Admin access revoked for {law_firm.name}.'
+            })
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({
+                'success': False,
+                'message': 'Error revoking admin access.'
             }), 500
     
     return jsonify({
