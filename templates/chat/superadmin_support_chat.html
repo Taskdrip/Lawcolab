@@ -51,12 +51,12 @@
                     <div id="messages-container" class="p-3">
                         {% if messages %}
                             {% for message in messages %}
-                            <div class="message mb-3 {% if message.sender_id == current_user.id %}text-end{% endif %}">
-                                <div class="d-inline-block max-width-75 {% if message.sender_id == current_user.id %}bg-primary text-white{% else %}bg-light{% endif %} rounded p-3">
+                            <div class="message mb-3 {% if message.sender_id == current_user.id %}message-sent{% else %}message-received{% endif %}">
+                                <div class="message-bubble {% if message.sender_id == current_user.id %}bg-primary text-white ms-auto{% else %}bg-light me-auto{% endif %}">
                                     <div class="message-content">
                                         {{ message.message_content | replace('\n', '<br>') | safe }}
                                     </div>
-                                    <small class="{% if message.sender_id == current_user.id %}text-white-50{% else %}text-muted{% endif %} d-block mt-1">
+                                    <small class="{% if message.sender_id == current_user.id %}text-white-50{% else %}text-muted{% endif %} d-block mt-1 message-meta">
                                         {{ message.sender.first_name }} {{ message.sender.last_name }} • {{ message.created_at.strftime('%b %d at %I:%M %p') }}
                                     </small>
                                 </div>
@@ -96,12 +96,89 @@
 </div>
 
 <style>
-.max-width-75 {
-    max-width: 75%;
-}
-
+/* Message container and bubble styling */
 .message {
     animation: fadeIn 0.3s ease-in;
+    width: 100%;
+    display: flex;
+    margin-bottom: 1rem !important;
+}
+
+.message-sent {
+    justify-content: flex-end;
+}
+
+.message-received {
+    justify-content: flex-start;
+}
+
+.message-bubble {
+    max-width: 85%;
+    min-width: 120px;
+    padding: 12px 16px;
+    border-radius: 18px;
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: pre-wrap;
+    line-height: 1.4;
+    position: relative;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .message-bubble {
+        max-width: 90%;
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+    
+    #messages-container {
+        padding: 12px !important;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+    .message-bubble {
+        max-width: 95%;
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+}
+
+.message-content {
+    margin: 0;
+    font-weight: 500;
+    font-size: 15px;
+}
+
+.message-meta {
+    font-size: 11px !important;
+    margin-top: 4px !important;
+    opacity: 0.8;
+}
+
+/* Sent message styling */
+.message-sent .message-bubble {
+    background: linear-gradient(135deg, #007bff, #0056b3) !important;
+    color: white !important;
+    border-bottom-right-radius: 4px;
+}
+
+.message-sent .message-meta {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Received message styling */
+.message-received .message-bubble {
+    background: #f8f9fa !important;
+    color: #000000 !important;
+    border: 1px solid #e9ecef;
+    border-bottom-left-radius: 4px;
+}
+
+.message-received .message-meta {
+    color: #6c757d !important;
 }
 
 @keyframes fadeIn {
@@ -136,6 +213,46 @@
 #message-input {
     min-height: 45px;
     max-height: 120px;
+    padding: 12px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+/* Mobile input adjustments */
+@media (max-width: 768px) {
+    #message-input {
+        font-size: 16px; /* Prevent zoom on iOS */
+        padding: 10px 14px;
+    }
+    
+    .input-group .btn {
+        padding: 8px 12px;
+    }
+}
+
+/* Ensure proper text flow */
+* {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Container padding adjustments */
+.container-fluid {
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+}
+
+@media (max-width: 576px) {
+    .container-fluid {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+    
+    .card-body {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
 }
 </style>
 
@@ -187,14 +304,14 @@ document.getElementById('message-form').addEventListener('submit', function(e) {
 function addMessageToChat(message, isOwn) {
     const container = document.getElementById('messages-container');
     const messageDiv = document.createElement('div');
-    messageDiv.className = `message mb-3 ${isOwn ? 'text-end' : ''}`;
+    messageDiv.className = `message mb-3 ${isOwn ? 'message-sent' : 'message-received'}`;
     
     messageDiv.innerHTML = `
-        <div class="d-inline-block max-width-75 ${isOwn ? 'bg-primary text-white' : 'bg-light'} rounded p-3">
+        <div class="message-bubble ${isOwn ? 'bg-primary text-white ms-auto' : 'bg-light me-auto'}">
             <div class="message-content">
                 ${message.content.replace(/\n/g, '<br>')}
             </div>
-            <small class="${isOwn ? 'text-white-50' : 'text-muted'} d-block mt-1">
+            <small class="${isOwn ? 'text-white-50' : 'text-muted'} d-block mt-1 message-meta">
                 ${message.sender_name} • ${message.time}
             </small>
         </div>
