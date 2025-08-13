@@ -24,114 +24,145 @@
                 </div>
             </div>
 
-            <!-- Invoice Details -->
-            <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
-                <div class="card-body p-5" style="border-left: 5px solid #007bff;">
-                    <!-- Invoice Header -->
-                    <div class="row mb-5">
-                        <div class="col-md-6">
-                            <div class="p-4 rounded-3" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white;">
-                                <h4 class="fw-bold mb-3">
-                                    <i class="fas fa-balance-scale me-2"></i>{{ invoice.law_firm.name }}
-                                </h4>
-                                <div class="opacity-75">
-                                    {% if invoice.law_firm.email %}
-                                    <div><i class="fas fa-envelope me-2"></i>{{ invoice.law_firm.email }}</div>
-                                    {% endif %}
-                                    {% if invoice.law_firm.phone %}
-                                    <div><i class="fas fa-phone me-2"></i>{{ invoice.law_firm.phone }}</div>
-                                    {% endif %}
+            <!-- Professional Invoice -->
+            <div class="card border-0 shadow-lg" style="background: #ffffff;">
+                <div class="card-body p-0">
+                    <!-- Invoice Header with Brand Colors -->
+                    <div class="p-5" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white;">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="bg-white rounded-circle p-3 me-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-balance-scale text-primary fs-4"></i>
+                                    </div>
+                                    <div>
+                                        <h2 class="mb-1 fw-bold">{{ invoice.law_firm.name }}</h2>
+                                        <p class="mb-0 opacity-75">Professional Legal Services</p>
+                                    </div>
+                                </div>
+                                <div class="row opacity-90">
+                                    <div class="col-md-6">
+                                        {% if invoice.law_firm.email %}
+                                        <div class="mb-2"><i class="fas fa-envelope me-2"></i>{{ invoice.law_firm.email }}</div>
+                                        {% endif %}
+                                        {% if invoice.law_firm.phone %}
+                                        <div class="mb-2"><i class="fas fa-phone me-2"></i>{{ invoice.law_firm.phone }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {% if invoice.law_firm.address %}
+                                        <div class="mb-2"><i class="fas fa-map-marker-alt me-2"></i>{{ invoice.law_firm.address }}</div>
+                                        {% endif %}
+                                        {% if invoice.law_firm.website %}
+                                        <div class="mb-2"><i class="fas fa-globe me-2"></i>{{ invoice.law_firm.website }}</div>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
-
-                        </div>
-                        <div class="col-md-6 text-md-end">
-                            <div class="p-4 rounded-3 border border-2" style="background: #fff; border-color: #007bff !important;">
-                                <div class="h4 fw-bold text-primary mb-3">Invoice {{ invoice.invoice_number }}</div>
-                                <div class="mb-3">
-                                    {% if invoice.status == 'draft' %}
-                                        <span class="badge bg-secondary fs-6 px-3 py-2">Draft</span>
-                                    {% elif invoice.status == 'sent' %}
-                                        <span class="badge bg-warning fs-6 px-3 py-2">Sent</span>
-                                    {% elif invoice.status == 'paid' %}
-                                        <span class="badge bg-success fs-6 px-3 py-2">Paid</span>
-                                    {% elif invoice.status == 'overdue' %}
-                                        <span class="badge bg-danger fs-6 px-3 py-2">Overdue</span>
-                                    {% endif %}
-                                </div>
-                                <div class="text-muted">
-                                    <div><strong>Issue Date:</strong> {{ invoice.issue_date.strftime('%B %d, %Y') }}</div>
-                                    <div><strong>Due Date:</strong> {{ invoice.due_date.strftime('%B %d, %Y') }}</div>
-                                    {% if invoice.paid_date %}
-                                    <div><strong>Paid Date:</strong> {{ invoice.paid_date.strftime('%B %d, %Y') }}</div>
-                                    {% endif %}
+                            <div class="col-md-4 text-end">
+                                <div class="bg-white bg-opacity-15 p-4 rounded-3">
+                                    <h1 class="mb-3 fw-bold">INVOICE</h1>
+                                    <div class="h4 mb-3">{{ invoice.invoice_number }}</div>
+                                    <div class="mb-2">
+                                        {% if invoice.status == 'draft' %}
+                                            <span class="badge bg-light text-dark fs-6 px-3 py-2">Draft</span>
+                                        {% elif invoice.status == 'sent' %}
+                                            <span class="badge bg-warning fs-6 px-3 py-2">Awaiting Payment</span>
+                                        {% elif invoice.status == 'paid' %}
+                                            <span class="badge bg-success fs-6 px-3 py-2">Paid</span>
+                                        {% elif invoice.status == 'overdue' %}
+                                            <span class="badge bg-danger fs-6 px-3 py-2">Overdue</span>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Bill To -->
-                    <div class="row mb-5">
-                        <div class="col-md-6">
-                            <h6 class="fw-bold text-uppercase text-muted mb-2">Bill To</h6>
-                            <div>
-                                <div class="fw-bold">{{ invoice.client.display_name }}</div>
-                                <div class="text-muted">{{ invoice.client.email }}</div>
-                                {% if invoice.client.phone %}
-                                <div class="text-muted">{{ invoice.client.phone }}</div>
-                                {% endif %}
-                                {% if invoice.client.company_name and invoice.client.display_name != invoice.client.company_name %}
-                                <div class="text-muted mt-1">{{ invoice.client.company_name }}</div>
+                    <!-- Invoice Information Section -->
+                    <div class="p-5 bg-light">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <h6 class="text-uppercase fw-bold text-primary mb-3">Bill To</h6>
+                                <div class="bg-white p-4 rounded-3 border">
+                                    <div class="fw-bold h6 mb-2">{{ invoice.client.display_name }}</div>
+                                    <div class="text-muted mb-1">{{ invoice.client.email }}</div>
+                                    {% if invoice.client.phone %}
+                                    <div class="text-muted mb-1">{{ invoice.client.phone }}</div>
+                                    {% endif %}
+                                    {% if invoice.client.company_name and invoice.client.display_name != invoice.client.company_name %}
+                                    <div class="text-muted mt-2 fw-semibold">{{ invoice.client.company_name }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <h6 class="text-uppercase fw-bold text-primary mb-3">Invoice Details</h6>
+                                <div class="bg-white p-4 rounded-3 border">
+                                    <div class="mb-2"><strong>Issue Date:</strong> {{ invoice.issue_date.strftime('%B %d, %Y') }}</div>
+                                    <div class="mb-2"><strong>Due Date:</strong> {{ invoice.due_date.strftime('%B %d, %Y') }}</div>
+                                    {% if invoice.paid_date %}
+                                    <div class="mb-2"><strong>Paid Date:</strong> {{ invoice.paid_date.strftime('%B %d, %Y') }}</div>
+                                    {% endif %}
+                                    <div class="mb-2"><strong>Payment Terms:</strong> Net {{ (invoice.due_date - invoice.issue_date).days }} days</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                {% if invoice.project %}
+                                <h6 class="text-uppercase fw-bold text-primary mb-3">Project</h6>
+                                <div class="bg-white p-4 rounded-3 border">
+                                    <div class="fw-bold mb-2">{{ invoice.project.title }}</div>
+                                    {% if invoice.project.description %}
+                                    <div class="text-muted small">{{ invoice.project.description[:80] }}{% if invoice.project.description|length > 80 %}...{% endif %}</div>
+                                    {% endif %}
+                                </div>
                                 {% endif %}
                             </div>
-                        </div>
-                        <div class="col-md-6">
-                            {% if invoice.project %}
-                            <h6 class="fw-bold text-uppercase text-muted mb-2">Project</h6>
-                            <div>
-                                <div class="fw-bold">{{ invoice.project.title }}</div>
-                                {% if invoice.project.description %}
-                                <div class="text-muted">{{ invoice.project.description[:100] }}{% if invoice.project.description|length > 100 %}...{% endif %}</div>
-                                {% endif %}
-                            </div>
-                            {% endif %}
                         </div>
                     </div>
 
                     <!-- Invoice Description -->
                     {% if invoice.description %}
-                    <div class="mb-4">
-                        <h6 class="fw-bold text-uppercase text-muted mb-2">Description</h6>
-                        <div class="text-muted">{{ invoice.description }}</div>
+                    <div class="px-5 py-3">
+                        <div class="bg-primary bg-opacity-10 p-4 rounded-3 border-start border-primary border-4">
+                            <h6 class="text-uppercase fw-bold text-primary mb-3">
+                                <i class="fas fa-file-alt me-2"></i>Description
+                            </h6>
+                            <p class="mb-0 text-dark">{{ invoice.description }}</p>
+                        </div>
                     </div>
                     {% endif %}
 
-                    <!-- Line Items -->
+                    <!-- Services Section -->
                     {% if invoice.line_items %}
-                    <div class="mb-4">
-                        <h6 class="fw-bold text-uppercase text-muted mb-3">Services</h6>
+                    <div class="px-5 py-4">
+                        <h5 class="text-uppercase fw-bold text-dark mb-4">
+                            <i class="fas fa-briefcase me-2 text-primary"></i>Legal Services
+                        </h5>
                         <div class="table-responsive">
-                            <table class="table">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Description</th>
-                                        <th class="text-center">Quantity</th>
-                                        <th class="text-end">Rate</th>
-                                        <th class="text-end">Amount</th>
+                            <table class="table table-borderless">
+                                <thead>
+                                    <tr style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                                        <th class="py-4 fw-bold text-dark border-0 rounded-start">Service Description</th>
+                                        <th class="py-4 fw-bold text-dark text-center border-0">Qty</th>
+                                        <th class="py-4 fw-bold text-dark text-end border-0">Rate</th>
+                                        <th class="py-4 fw-bold text-dark text-end border-0 rounded-end">Amount</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for item in invoice.line_items %}
-                                    <tr>
-                                        <td>
-                                            <div>{{ item.description }}</div>
+                                    <tr class="border-bottom">
+                                        <td class="py-4">
+                                            <div class="fw-semibold text-dark">{{ item.description }}</div>
                                             {% if item.work_date %}
-                                            <small class="text-muted">Date: {{ item.work_date.strftime('%B %d, %Y') }}</small>
+                                            <small class="text-muted"><i class="fas fa-calendar me-1"></i>{{ item.work_date.strftime('%B %d, %Y') }}</small>
+                                            {% endif %}
+                                            {% if item.hours_worked %}
+                                            <small class="text-muted ms-2"><i class="fas fa-clock me-1"></i>{{ item.hours_worked }} hours</small>
                                             {% endif %}
                                         </td>
-                                        <td class="text-center">{{ "%.2f"|format(item.quantity) }}</td>
-                                        <td class="text-end">${{ "%.2f"|format(item.rate) }}</td>
-                                        <td class="text-end fw-bold">${{ "%.2f"|format(item.total_amount) }}</td>
+                                        <td class="py-4 text-center">{{ "%.0f"|format(item.quantity) }}</td>
+                                        <td class="py-4 text-end">${{ "%.2f"|format(item.rate) }}</td>
+                                        <td class="py-4 text-end fw-bold fs-6">${{ "%.2f"|format(item.total_amount) }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -140,30 +171,107 @@
                     </div>
                     {% endif %}
 
-                    <!-- Total -->
-                    <div class="row justify-content-end">
-                        <div class="col-md-5">
-                            <div class="card border-2 border-primary shadow-sm">
-                                <div class="card-header bg-primary bg-gradient text-white">
-                                    <h6 class="fw-bold mb-0 text-center">
+                    <!-- Invoice Summary and Payment Info -->
+                    <div class="px-5 py-4" style="background: #f8f9fa;">
+                        <div class="row">
+                            <!-- Payment Instructions -->
+                            <div class="col-md-6">
+                                <div class="bg-white p-4 rounded-3 shadow-sm h-100">
+                                    <h6 class="text-uppercase fw-bold text-primary mb-3">
+                                        <i class="fas fa-credit-card me-2"></i>Payment Information
+                                    </h6>
+                                    {% if invoice.law_firm.bank_name %}
+                                    <div class="mb-3">
+                                        <div class="row g-2">
+                                            <div class="col-12">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <span class="text-muted small">Bank Name:</span>
+                                                    <span class="fw-semibold">{{ invoice.law_firm.bank_name }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <span class="text-muted small">Account Holder:</span>
+                                                    <span class="fw-semibold">{{ invoice.law_firm.account_holder_name }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <span class="text-muted small">Account Number:</span>
+                                                    <span class="fw-semibold font-monospace">{{ invoice.law_firm.account_number }}</span>
+                                                </div>
+                                            </div>
+                                            {% if invoice.law_firm.routing_number %}
+                                            <div class="col-12">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <span class="text-muted small">Routing Number:</span>
+                                                    <span class="fw-semibold font-monospace">{{ invoice.law_firm.routing_number }}</span>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            {% if invoice.law_firm.swift_code %}
+                                            <div class="col-12">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <span class="text-muted small">SWIFT Code:</span>
+                                                    <span class="fw-semibold">{{ invoice.law_firm.swift_code }}</span>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="alert alert-info border-0 bg-primary bg-opacity-10">
+                                        <small class="text-dark">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            <strong>Payment Reference:</strong> Please include invoice number {{ invoice.invoice_number }} in your payment reference.
+                                        </small>
+                                    </div>
+                                    {% else %}
+                                    <div class="text-center py-4">
+                                        <i class="fas fa-exclamation-triangle text-warning fs-4 mb-3"></i>
+                                        <p class="text-muted mb-0">Payment details will be provided separately</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Invoice Total -->
+                            <div class="col-md-6">
+                                <div class="bg-white p-4 rounded-3 shadow-sm h-100">
+                                    <h6 class="text-uppercase fw-bold text-primary mb-4">
                                         <i class="fas fa-calculator me-2"></i>Invoice Summary
                                     </h6>
-                                </div>
-                                <div class="card-body p-4">
-                                    <div class="d-flex justify-content-between mb-3 pb-2 border-bottom">
+                                    <div class="d-flex justify-content-between mb-3 pb-2">
                                         <span class="text-muted">Subtotal:</span>
                                         <span class="fw-semibold">${{ "%.2f"|format(invoice.total_amount) }}</span>
                                     </div>
                                     {% if invoice.tax_amount and invoice.tax_amount > 0 %}
-                                    <div class="d-flex justify-content-between mb-3 pb-2 border-bottom">
+                                    <div class="d-flex justify-content-between mb-3 pb-2">
                                         <span class="text-muted">Tax:</span>
                                         <span class="fw-semibold">${{ "%.2f"|format(invoice.tax_amount) }}</span>
                                     </div>
                                     {% endif %}
-                                    <div class="d-flex justify-content-between fw-bold h4 text-primary">
-                                        <span>Total Amount:</span>
-                                        <span class="bg-primary bg-opacity-10 px-3 py-2 rounded">${{ "%.2f"|format(invoice.total_amount) }} USD</span>
+                                    <hr class="my-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="h5 fw-bold text-dark">Total Amount Due:</span>
+                                        <div class="text-end">
+                                            <div class="h3 fw-bold text-primary mb-0">${{ "%.2f"|format(invoice.total_amount) }}</div>
+                                            <small class="text-muted">USD</small>
+                                        </div>
                                     </div>
+                                    
+                                    {% if invoice.status in ['sent', 'overdue'] %}
+                                    <div class="mt-4 text-center">
+                                        <div class="p-3 rounded-3" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white;">
+                                            <small class="fw-bold">
+                                                {% if invoice.days_until_due >= 0 %}
+                                                <i class="fas fa-clock me-2"></i>Due in {{ invoice.days_until_due }} day{{ invoice.days_until_due|pluralize }}
+                                                {% else %}
+                                                <i class="fas fa-exclamation-triangle me-2"></i>{{ (-invoice.days_until_due) }} day{{ (-invoice.days_until_due)|pluralize }} overdue
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -205,27 +313,35 @@
                     </div>
                     {% endif %}
 
-                    <!-- Due Date Warning -->
-                    {% if invoice.status in ['sent', 'overdue'] and invoice.days_until_due is not none %}
-                    <div class="mt-4">
-                        {% if invoice.days_until_due < 0 %}
-                        <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            This invoice is <strong>{{ (-invoice.days_until_due) }} days overdue</strong>. Please process payment immediately.
+                    <!-- Footer Notes and Terms -->
+                    {% if invoice.notes %}
+                    <div class="px-5 py-4 border-top">
+                        <h6 class="text-uppercase fw-bold text-muted mb-3">Additional Notes</h6>
+                        <div class="bg-light p-4 rounded-3">
+                            <p class="mb-0 text-dark">{{ invoice.notes }}</p>
                         </div>
-                        {% elif invoice.days_until_due == 0 %}
-                        <div class="alert alert-warning">
-                            <i class="fas fa-clock me-2"></i>
-                            This invoice is <strong>due today</strong>.
-                        </div>
-                        {% elif invoice.days_until_due <= 7 %}
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            This invoice is due in <strong>{{ invoice.days_until_due }} days</strong>.
-                        </div>
-                        {% endif %}
                     </div>
                     {% endif %}
+                    
+                    <div class="px-5 py-4 border-top" style="background: #f8f9fa;">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6 class="text-uppercase fw-bold text-muted mb-3">Payment Terms & Conditions</h6>
+                                <div class="small text-muted">
+                                    <p class="mb-2">• Payment is due within {{ (invoice.due_date - invoice.issue_date).days }} days of invoice date</p>
+                                    <p class="mb-2">• Late payments may incur additional charges as per our terms of service</p>
+                                    <p class="mb-2">• Please include the invoice number in your payment reference</p>
+                                    <p class="mb-0">• For any billing inquiries, please contact us immediately</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="small text-muted">
+                                    <p class="mb-1"><strong>Thank you for your business!</strong></p>
+                                    <p class="mb-0">{{ invoice.law_firm.name }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Action Buttons -->
                     <div class="d-flex justify-content-end gap-3 mt-5 pt-4 border-top">
