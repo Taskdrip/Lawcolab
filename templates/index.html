@@ -36,17 +36,16 @@
                                 <span style="color: #0066cc;">made simple</span>
                             </h1>
                             <p style="font-size: 1.25rem; color: #64748b; line-height: 1.6; margin-bottom: 2rem; max-width: 480px;">
-                                Complete law firm management platform with multi-tiered communication, 
-                                project collaboration, and intelligent workflow automation.
+                                All-in-one platform for legal practitioners and law firms to manage operations, clients, teams, projects, cases, invoices, communication, and collaboration.
                             </p>
                             <div class="hero-actions" style="display: flex; gap: 1rem; flex-wrap: wrap;">
                                 <a href="{{ url_for('auth.signup') }}" 
                                    style="background: #0066cc; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; border: none; transition: all 0.2s;">
-                                    Start free trial
+                                    <i class="fas fa-rocket me-2"></i>Start Free Trial
                                 </a>
-                                <a href="{{ url_for('auth.login') }}" 
-                                   style="background: transparent; color: #0066cc; padding: 14px 28px; border: 2px solid #e2e8f0; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; transition: all 0.2s;">
-                                    Sign in
+                                <a href="{{ url_for('pricing') }}" 
+                                   style="background: transparent; color: #0066cc; padding: 14px 28px; border: 2px solid #0066cc; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; transition: all 0.2s;">
+                                    <i class="fas fa-tag me-2"></i>View Pricing
                                 </a>
                             </div>
                         </div>
@@ -100,39 +99,85 @@
             <div class="container">
                 <div class="text-center mb-5">
                     <h2 style="font-size: 2.5rem; font-weight: 700; color: #1a1a1a; margin-bottom: 1rem;">
-                        Everything you need to run your practice
+                        Complete Legal Practice Management Solution
                     </h2>
                     <p style="font-size: 1.125rem; color: #64748b; max-width: 600px; margin: 0 auto;">
-                        Built by lawyers for lawyers. Streamline your workflow with intelligent tools designed for legal professionals.
+                        Built by Taskdrip for lawyers globally. Streamline every aspect of your legal practice with our all-in-one platform.
                     </p>
                 </div>
                 
-                <div class="row g-4">
-                    <div class="col-md-4">
+                <!-- Main Features Grid -->
+                <div class="row g-4 mb-5">
+                    <div class="col-lg-4 col-md-6">
                         <div style="background: white; border-radius: 12px; padding: 2rem; height: 100%; border: 1px solid #e2e8f0; transition: all 0.2s;">
                             <div style="background: #eff6ff; border-radius: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
                                 <i class="fas fa-users" style="color: #0066cc; font-size: 1.25rem;"></i>
                             </div>
-                            <h3 style="font-size: 1.25rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Multi-Role Access</h3>
-                            <p style="color: #64748b; line-height: 1.6;">Secure role-based access for admins, lawyers, team members, and clients with complete data isolation.</p>
+                            <h3 style="font-size: 1.25rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Client Management</h3>
+                            <p style="color: #64748b; line-height: 1.6;">Secure client profiles, notes, communication history, and case assignments with complete data isolation between law firms.</p>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-lg-4 col-md-6">
                         <div style="background: white; border-radius: 12px; padding: 2rem; height: 100%; border: 1px solid #e2e8f0; transition: all 0.2s;">
                             <div style="background: #f0fdf4; border-radius: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
-                                <i class="fas fa-comments" style="color: #16a34a; font-size: 1.25rem;"></i>
+                                <i class="fas fa-briefcase" style="color: #16a34a; font-size: 1.25rem;"></i>
                             </div>
-                            <h3 style="font-size: 1.25rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Multi-Tiered Chat</h3>
-                            <p style="color: #64748b; line-height: 1.6;">Project-based collaboration, client communication, and super admin support with real-time messaging.</p>
+                            <h3 style="font-size: 1.25rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Case & Project Tracking</h3>
+                            <p style="color: #64748b; line-height: 1.6;">Comprehensive project management with task assignments, deadline tracking, file organization, and progress monitoring.</p>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-lg-4 col-md-6">
                         <div style="background: white; border-radius: 12px; padding: 2rem; height: 100%; border: 1px solid #e2e8f0; transition: all 0.2s;">
                             <div style="background: #fef3c7; border-radius: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
-                                <i class="fas fa-folder" style="color: #d97706; font-size: 1.25rem;"></i>
+                                <i class="fas fa-users-cog" style="color: #d97706; font-size: 1.25rem;"></i>
                             </div>
-                            <h3 style="font-size: 1.25rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Project Management</h3>
-                            <p style="color: #64748b; line-height: 1.6;">Comprehensive case tracking, file management, and team assignments with secure document handling.</p>
+                            <h3 style="font-size: 1.25rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Team Collaboration</h3>
+                            <p style="color: #64748b; line-height: 1.6;">Role-based access for admins, lawyers, team members, and clients with secure collaboration tools and task management.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div style="background: white; border-radius: 12px; padding: 2rem; height: 100%; border: 1px solid #e2e8f0; transition: all 0.2s;">
+                            <div style="background: #f3e8ff; border-radius: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                                <i class="fas fa-comments" style="color: #8b5cf6; font-size: 1.25rem;"></i>
+                            </div>
+                            <h3 style="font-size: 1.25rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Multi-Tiered Communication</h3>
+                            <p style="color: #64748b; line-height: 1.6;">Project-based chat rooms, client communication portals, support channels, and real-time messaging with message history.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div style="background: white; border-radius: 12px; padding: 2rem; height: 100%; border: 1px solid #e2e8f0; transition: all 0.2s;">
+                            <div style="background: #fee2e2; border-radius: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                                <i class="fas fa-file-contract" style="color: #dc2626; font-size: 1.25rem;"></i>
+                            </div>
+                            <h3 style="font-size: 1.25rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Document Management</h3>
+                            <p style="color: #64748b; line-height: 1.6;">Secure file uploads, document organization, version control, and easy sharing with clients and team members.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div style="background: white; border-radius: 12px; padding: 2rem; height: 100%; border: 1px solid #e2e8f0; transition: all 0.2s;">
+                            <div style="background: #ecfdf5; border-radius: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                                <i class="fas fa-receipt" style="color: #059669; font-size: 1.25rem;"></i>
+                            </div>
+                            <h3 style="font-size: 1.25rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Billing & Invoices</h3>
+                            <p style="color: #64748b; line-height: 1.6;">Integrated billing system with time tracking, expense management, invoice generation, and payment processing capabilities.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Call to Action -->
+                <div class="text-center">
+                    <div style="background: white; border-radius: 16px; padding: 3rem; border: 1px solid #e2e8f0; max-width: 600px; margin: 0 auto;">
+                        <h3 style="font-size: 1.75rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Ready to Transform Your Practice?</h3>
+                        <p style="color: #64748b; font-size: 1.125rem; margin-bottom: 2rem;">Join law firms globally who trust LawFirmOS for their practice management needs.</p>
+                        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                            <a href="{{ url_for('auth.signup') }}" 
+                               style="background: #0066cc; color: white; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1.1rem; display: inline-flex; align-items: center;">
+                                <i class="fas fa-rocket me-2"></i>Start Free Trial
+                            </a>
+                            <a href="{{ url_for('pricing') }}" 
+                               style="background: transparent; color: #0066cc; padding: 16px 32px; border: 2px solid #0066cc; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1.1rem; display: inline-flex; align-items: center;">
+                                <i class="fas fa-tag me-2"></i>View Pricing
+                            </a>
                         </div>
                     </div>
                 </div>
