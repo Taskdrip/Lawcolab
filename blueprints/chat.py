@@ -50,16 +50,23 @@ def support_messages():
 @require_login
 def chat_home():
     """Main chat interface showing conversations list"""
-    # Ensure current user has law firm
-    if not current_user.law_firm_id:
+    # Handle different user types
+    if current_user.is_super_admin():
+        # Super admins can access all chat functionality
+        pass
+    elif not current_user.law_firm_id:
         if current_user.is_admin():
             current_user.create_law_firm_if_admin()
         else:
             flash('You are not associated with a law firm.', 'error')
             return redirect(url_for('index'))
     
-    # Get support chat room
-    support_room = current_user.law_firm.get_support_chat_room()
+    # Get support chat room based on user type
+    if current_user.is_super_admin():
+        # Super admins see all support rooms from all law firms
+        support_room = None  # We'll handle this differently for super admins
+    else:
+        support_room = current_user.law_firm.get_support_chat_room()
     
     # Get project chat rooms for the user
     try:
@@ -82,8 +89,25 @@ def chat_home():
     # Create beautiful chat list like Email/Telegram
     chat_list = []
     
-    # Add support chat
-    if support_room:
+    # Handle support chat based on user type
+    if current_user.is_super_admin():
+        # Super admins see all law firm support chats
+        all_support_rooms = ChatRoom.query.filter_by(room_type='support', is_active=True).all()
+        for support_room in all_support_rooms:
+            last_message = ChatMessage.query.filter_by(room_id=support_room.id)\
+                                           .order_by(ChatMessage.created_at.desc()).first()
+            firm_name = support_room.law_firm.name if support_room.law_firm else "Unknown Firm"
+            chat_list.append({
+                'room': support_room,
+                'name': f'Support - {firm_name}',
+                'type': 'support',
+                'last_message': last_message.message_content[:60] + '...' if last_message and len(last_message.message_content) > 60 else last_message.message_content if last_message else 'No messages yet',
+                'last_time': last_message.created_at if last_message else support_room.created_at,
+                'unread_count': 0,
+                'participants': [p.user for p in support_room.participants]
+            })
+    elif support_room:
+        # Regular users see their law firm's support chat
         last_message = ChatMessage.query.filter_by(room_id=support_room.id)\
                                        .order_by(ChatMessage.created_at.desc()).first()
         chat_list.append({

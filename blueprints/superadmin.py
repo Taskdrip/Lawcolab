@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import current_user
 from utils.decorators import require_super_admin
 from app import db
-from models import User, LawFirm, Project, ROLE_ADMIN, ROLE_SUPER_ADMIN, ROLE_CLIENT, ROLE_TEAM_MEMBER
+from models import User, LawFirm, Project, SupportRequest, ROLE_ADMIN, ROLE_SUPER_ADMIN, ROLE_CLIENT, ROLE_TEAM_MEMBER
 # from utils.forms import LawFirmForm  # Not needed for super admin functions
 import uuid
 from datetime import datetime
@@ -27,6 +27,9 @@ def dashboard():
     # Get recent admin signups
     recent_admins = User.query.filter_by(role=ROLE_ADMIN).order_by(User.created_at.desc()).limit(10).all()
     
+    # Get support requests
+    support_requests = SupportRequest.query.order_by(SupportRequest.created_at.desc()).limit(5).all()
+    
     stats = {
         'total_law_firms': total_law_firms,
         'total_users': total_users,
@@ -39,7 +42,8 @@ def dashboard():
     return render_template('superadmin/dashboard.html', 
                          stats=stats,
                          recent_law_firms=recent_law_firms,
-                         recent_admins=recent_admins)
+                         recent_admins=recent_admins,
+                         support_requests=support_requests)
 
 @superadmin_bp.route('/law-firms')
 @require_super_admin
