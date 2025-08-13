@@ -187,6 +187,14 @@ class LawFirm(db.Model):
     website = db.Column(db.String(200))
     practice_areas = db.Column(db.Text)  # JSON string of practice areas
     
+    # Banking details for receiving payments
+    bank_name = db.Column(db.String(100), nullable=True)
+    account_number = db.Column(db.String(50), nullable=True)
+    routing_number = db.Column(db.String(20), nullable=True)
+    swift_code = db.Column(db.String(20), nullable=True)
+    account_holder_name = db.Column(db.String(100), nullable=True)
+    tax_id = db.Column(db.String(50), nullable=True)
+    
     # Admin access and subscription management
     admin_access_granted = db.Column(db.Boolean, default=False, nullable=False)
     admin_access_expires = db.Column(db.DateTime)
@@ -573,3 +581,96 @@ class PaymentRecord(db.Model):
     invoice = db.relationship('Invoice', backref='payments')
     law_firm = db.relationship('LawFirm', backref='payment_records')
     recorded_by = db.relationship('User', backref='recorded_payments')
+
+
+# Invoice Chat System Models
+class InvoiceChat(db.Model):
+    __tablename__ = 'invoice_chats'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    invoice_id = db.Column(db.Integer, db.ForeignKey('invoices.id'), nullable=False)
+    law_firm_id = db.Column(db.Integer, db.ForeignKey('law_firms.id'), nullable=False)
+    client_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    
+    # Chat metadata
+    is_active = db.Column(db.Boolean, default=True)
+    last_message_at = db.Column(db.DateTime, nullable=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    
+    # Relationships
+    invoice = db.relationship('Invoice', backref='chat')
+    law_firm = db.relationship('LawFirm', backref='invoice_chats')
+    client = db.relationship('User', backref='invoice_chats')
+    messages = db.relationship('InvoiceChatMessage', back_populates='chat', cascade='all, delete-orphan')
+    
+    def get_participants(self):
+        """Get all law firm team members who can participate in this chat"""
+        return User.query.filter_by(
+            law_firm_id=self.law_firm_id,
+            active=True
+        ).filter(
+            User.role.in_(['admin', 'team_member'])
+        ).all()
+
+
+class InvoiceChatMessage(db.Model):
+    __tablename__ = 'invoice_chat_messages'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    chat_id = db.Column(db.Integer, db.ForeignKey('invoice_chats.id'), nullable=False)
+    sender_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    
+    message = db.Column(db.Text, nullable=False)
+    message_type = db.Column(db.String(20), default='text')  # text, file, invoice, payment_update
+    
+    # Message metadata
+    is_system = db.Column(db.Boolean, default=False)  # System-generated messages
+    read_by_client = db.Column(db.Boolean, default=False)
+    read_by_law_firm = db.Column(db.Boolean, default=False)
+    
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    
+    # Relationships
+    chat = db.relationship('InvoiceChat', back_populates='messages')
+    sender = db.relationship('User', backref='invoice_chat_messages')
+    attachments = db.relationship('InvoiceChatAttachment', back_populates='message', cascade='all, delete-orphan')
+    
+    def mark_as_read(self, user):
+        """Mark message as read by user"""
+        if user.is_client():
+            self.read_by_client = True
+        else:
+            self.read_by_law_firm = True
+        db.session.commit()
+
+
+class InvoiceChatAttachment(db.Model):
+    __tablename__ = 'invoice_chat_attachments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    message_id = db.Column(db.Integer, db.ForeignKey('invoice_chat_messages.id'), nullable=False)
+    
+    filename = db.Column(db.String(255), nullable=False)
+    original_filename = db.Column(db.String(255), nullable=False)
+    file_size = db.Column(db.Integer, nullable=False)
+    content_type = db.Column(db.String(100), nullable=False)
+    file_path = db.Column(db.String(500), nullable=False)
+    
+    uploaded_by_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    
+    # Relationships
+    message = db.relationship('InvoiceChatMessage', back_populates='attachments')
+    uploaded_by = db.relationship('User', backref='uploaded_attachments')
+    
+    @property
+    def file_size_formatted(self):
+        """Return human-readable file size"""
+        bytes_size = self.file_size
+        for unit in ['B', 'KB', 'MB', 'GB']:
+            if bytes_size < 1024.0:
+                return f"{bytes_size:.1f} {unit}"
+            bytes_size /= 1024.0
+        return f"{bytes_size:.1f} TB"

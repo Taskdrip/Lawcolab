@@ -236,3 +236,28 @@ def firm_profile():
             flash('Error updating profile. Please try again.', 'error')
     
     return render_template('admin/firm_profile.html', firm=firm)
+
+@admin_bp.route('/banking-settings', methods=['GET', 'POST'])
+@require_admin
+def banking_settings():
+    """Admin can manage banking details for receiving payments"""
+    firm = LawFirm.query.get(current_user.law_firm_id)
+    
+    if request.method == 'POST' and firm:
+        # Update banking details
+        firm.bank_name = request.form.get('bank_name', '').strip()
+        firm.account_holder_name = request.form.get('account_holder_name', '').strip()
+        firm.account_number = request.form.get('account_number', '').strip()
+        firm.routing_number = request.form.get('routing_number', '').strip()
+        firm.swift_code = request.form.get('swift_code', '').strip()
+        firm.tax_id = request.form.get('tax_id', '').strip()
+        
+        try:
+            db.session.commit()
+            flash('Banking details updated successfully! Your clients will now see these payment details on invoices.', 'success')
+            return redirect(url_for('admin.banking_settings'))
+        except Exception as e:
+            db.session.rollback()
+            flash('Error updating banking details. Please try again.', 'error')
+    
+    return render_template('admin/banking_settings.html', firm=firm)

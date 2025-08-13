@@ -213,21 +213,24 @@
                     {% endif %}
 
                     <!-- Action Buttons -->
-                    {% if not current_user.is_client() %}
                     <div class="d-flex justify-content-end gap-3 mt-5 pt-4 border-top">
-                        {% if invoice.status == 'draft' %}
-                        <form method="POST" action="{{ url_for('invoices.send_invoice', id=invoice.id) }}" style="display: inline;">
-                            <button type="submit" class="btn btn-primary" onclick="return confirm('Are you sure you want to send this invoice to the client?')">
-                                <i class="fas fa-paper-plane me-2"></i>Send to Client
+                        <a href="{{ url_for('invoice_chat.chat_view', invoice_id=invoice.id) }}" class="btn btn-outline-info">
+                            <i class="fas fa-comments me-2"></i>Invoice Chat
+                        </a>
+                        {% if not current_user.is_client() %}
+                            {% if invoice.status == 'draft' %}
+                            <form method="POST" action="{{ url_for('invoices.send_invoice', id=invoice.id) }}" style="display: inline;">
+                                <button type="submit" class="btn btn-primary" onclick="return confirm('Are you sure you want to send this invoice to the client?')">
+                                    <i class="fas fa-paper-plane me-2"></i>Send to Client
+                                </button>
+                            </form>
+                            {% elif invoice.status in ['sent', 'overdue'] %}
+                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#markPaidModal">
+                                <i class="fas fa-check me-2"></i>Mark as Paid
                             </button>
-                        </form>
-                        {% elif invoice.status in ['sent', 'overdue'] %}
-                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#markPaidModal">
-                            <i class="fas fa-check me-2"></i>Mark as Paid
-                        </button>
+                            {% endif %}
                         {% endif %}
                     </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
@@ -247,7 +250,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Payment Date</label>
-                        <input type="date" class="form-control" name="payment_date" value="{{ moment().format('YYYY-MM-DD') }}" required>
+                        <input type="date" class="form-control" name="payment_date" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Amount Paid</label>

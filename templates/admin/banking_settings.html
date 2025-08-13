@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Banking Settings - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 fw-bold text-dark mb-2">Banking Settings</h1>
+                    <p class="text-muted mb-0">Configure banking details for receiving client payments</p>
+                </div>
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Admin
+                </a>
+            </div>
+
+            <!-- Banking Settings Form -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form method="POST">
+                        <div class="row g-4">
+                            <!-- Bank Information -->
+                            <div class="col-12">
+                                <h5 class="fw-bold mb-3 text-primary">
+                                    <i class="fas fa-university me-2"></i>Bank Information
+                                </h5>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Bank Name</label>
+                                <input type="text" name="bank_name" class="form-control" 
+                                       value="{{ current_user.law_firm.bank_name or '' }}" 
+                                       placeholder="e.g., Chase Bank, Wells Fargo">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Account Holder Name</label>
+                                <input type="text" name="account_holder_name" class="form-control" 
+                                       value="{{ current_user.law_firm.account_holder_name or '' }}" 
+                                       placeholder="Legal name on bank account">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Account Number</label>
+                                <input type="text" name="account_number" class="form-control" 
+                                       value="{{ current_user.law_firm.account_number or '' }}" 
+                                       placeholder="Bank account number">
+                                <small class="text-muted">This information will be securely stored and only shown to your clients.</small>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Routing Number</label>
+                                <input type="text" name="routing_number" class="form-control" 
+                                       value="{{ current_user.law_firm.routing_number or '' }}" 
+                                       placeholder="9-digit routing number">
+                                <small class="text-muted">Required for domestic transfers (US).</small>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">SWIFT Code</label>
+                                <input type="text" name="swift_code" class="form-control" 
+                                       value="{{ current_user.law_firm.swift_code or '' }}" 
+                                       placeholder="International SWIFT/BIC code">
+                                <small class="text-muted">Required for international transfers.</small>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Tax ID / EIN</label>
+                                <input type="text" name="tax_id" class="form-control" 
+                                       value="{{ current_user.law_firm.tax_id or '' }}" 
+                                       placeholder="Tax identification number">
+                                <small class="text-muted">For invoice documentation purposes.</small>
+                            </div>
+                        </div>
+
+                        <!-- Security Notice -->
+                        <div class="alert alert-info mt-4">
+                            <div class="d-flex">
+                                <i class="fas fa-shield-alt me-3 mt-1"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-2">Security & Privacy</h6>
+                                    <ul class="mb-0 small">
+                                        <li>Banking details are encrypted and securely stored</li>
+                                        <li>Information is only shared with your clients on invoices</li>
+                                        <li>Data is never shared with third parties</li>
+                                        <li>You can update or remove this information at any time</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- How It Works -->
+                        <div class="alert alert-light border mt-4">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-info-circle me-2 text-primary"></i>How Banking Details Work
+                            </h6>
+                            <div class="small">
+                                <p class="mb-2">When you create invoices, your banking details will automatically appear on:</p>
+                                <ul class="mb-2">
+                                    <li><strong>Invoice documents</strong> - Professional invoices with payment instructions</li>
+                                    <li><strong>Invoice chat</strong> - Real-time communication with clients about payments</li>
+                                    <li><strong>Client dashboard</strong> - Easy access to payment information</li>
+                                </ul>
+                                <p class="mb-0">Clients can make direct bank transfers using this information, and you can track payments through the invoice system.</p>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-flex justify-content-end gap-3 mt-5 pt-4 border-top">
+                            <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Banking Details
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

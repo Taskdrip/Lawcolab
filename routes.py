@@ -143,6 +143,10 @@ def uploaded_file(filename):
 from blueprints.invoices.routes import invoices_bp
 app.register_blueprint(invoices_bp)
 
+# Register invoice chat blueprint
+from blueprints.invoice_chat.routes import invoice_chat_bp
+app.register_blueprint(invoice_chat_bp)
+
 @app.errorhandler(403)
 def forbidden(e):
     return render_template('403.html'), 403
