@@ -50,7 +50,7 @@
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h5 class="mb-0">
-                                <i class="fas fa-life-ring me-2"></i>{{ request.subject }}
+                                <i class="fas fa-life-ring me-2"></i>Support Request #{{ request.id }}
                             </h5>
                             <span class="badge {% if request.status == 'pending' %}bg-warning{% elif request.status == 'resolved' %}bg-success{% else %}bg-secondary{% endif %}">
                                 {{ request.status.title() }}
@@ -70,13 +70,31 @@
                                 <div class="col-sm-9">{{ request.user.full_name }} ({{ request.user.email }})</div>
                             </div>
                             <div class="row mb-3">
-                                <div class="col-sm-3"><strong>Priority:</strong></div>
+                                <div class="col-sm-3"><strong>Request Type:</strong></div>
                                 <div class="col-sm-9">
-                                    <span class="badge {% if request.priority == 'high' %}bg-danger{% elif request.priority == 'medium' %}bg-warning{% else %}bg-info{% endif %}">
-                                        {{ request.priority.title() }}
+                                    <span class="badge {% if request.request_type in ['3days', 'trial'] %}bg-info{% elif request.request_type == '1month' %}bg-primary{% elif request.request_type in ['3months', '6months'] %}bg-success{% else %}bg-warning{% endif %}">
+                                        {% if request.request_type == '3days' %}
+                                        3 Day Trial
+                                        {% elif request.request_type == '1month' %}
+                                        1 Month License
+                                        {% elif request.request_type == '3months' %}
+                                        3 Month License
+                                        {% elif request.request_type == '6months' %}
+                                        6 Month License
+                                        {% elif request.request_type == '1year' %}
+                                        1 Year License
+                                        {% else %}
+                                        {{ request.request_type.title() }}
+                                        {% endif %}
                                     </span>
                                 </div>
                             </div>
+                            {% if request.team_size %}
+                            <div class="row mb-3">
+                                <div class="col-sm-3"><strong>Team Size:</strong></div>
+                                <div class="col-sm-9">{{ request.team_size }}</div>
+                            </div>
+                            {% endif %}
                             <div class="row mb-3">
                                 <div class="col-sm-3"><strong>Submitted:</strong></div>
                                 <div class="col-sm-9">{{ request.created_at.strftime('%B %d, %Y at %I:%M %p') }}</div>
