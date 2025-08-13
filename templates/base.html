@@ -17,46 +17,102 @@
     <!-- Custom CSS with cache busting -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/simple.css') }}?v={{ range(1000, 9999) | random }}">
     
-    <!-- Force bright text visibility -->
+    <!-- FORCE MAXIMUM TEXT CONTRAST AND BRIGHTNESS -->
     <style>
-        .text-muted, .text-secondary, .small, span.text-muted, p.text-muted {
-            color: #333333 !important;
-            opacity: 1 !important;
-            font-weight: 500 !important;
+        /* Override ALL Bootstrap text styling with maximum contrast */
+        body, html {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+            color: #000000 !important;
+            background-color: #ffffff !important;
         }
         
+        /* Force ALL text elements to be completely dark and visible */
+        *, *:before, *:after {
+            color: #000000 !important;
+            opacity: 1.0 !important;
+            text-shadow: none !important;
+            filter: none !important;
+        }
+        
+        /* Specific overrides for Bootstrap muted classes */
+        .text-muted, .text-secondary, .small, .muted, .secondary,
+        span.text-muted, p.text-muted, div.text-muted {
+            color: #000000 !important;
+            opacity: 1.0 !important;
+            font-weight: 600 !important;
+        }
+        
+        /* All headings completely black */
         h1, h2, h3, h4, h5, h6 {
             color: #000000 !important;
-            font-weight: 600 !important;
+            font-weight: 700 !important;
+            opacity: 1.0 !important;
         }
         
-        p {
-            color: #333333 !important;
-            font-weight: 400 !important;
-        }
-        
-        .feature-stat h6, .feature-stat span {
-            color: #000000 !important;
-            font-weight: 600 !important;
-        }
-        
-        .card-body * {
-            color: #333333 !important;
-        }
-        
-        .card-body h3, .card-body h4, .card-body h5, .card-body h6 {
-            color: #000000 !important;
-            font-weight: 600 !important;
-        }
-        
-        /* Force all text elements to be dark and crisp */
-        body * {
-            opacity: 1 !important;
-        }
-        
-        .nav-link {
+        /* All paragraphs and text dark */
+        p, span, div, a, label, input, button {
             color: #000000 !important;
             font-weight: 500 !important;
+            opacity: 1.0 !important;
+        }
+        
+        /* Navigation links completely dark */
+        .nav-link, .navbar-nav .nav-link {
+            color: #000000 !important;
+            font-weight: 600 !important;
+            opacity: 1.0 !important;
+        }
+        
+        /* Card content completely dark */
+        .card *, .card-body *, .card-header *, .card-footer * {
+            color: #000000 !important;
+            font-weight: 500 !important;
+            opacity: 1.0 !important;
+        }
+        
+        /* Feature sections completely dark */
+        .feature-stat *, .feature-item *, .feature-card * {
+            color: #000000 !important;
+            font-weight: 600 !important;
+            opacity: 1.0 !important;
+        }
+        
+        /* Remove any transparency or filters */
+        .fade, .show, .collapse, .collapsing {
+            opacity: 1.0 !important;
+            filter: none !important;
+        }
+        
+        /* Icons completely visible */
+        .fas, .far, .fab, i {
+            color: #000000 !important;
+            opacity: 1.0 !important;
+        }
+        
+        /* Form elements dark */
+        .form-control, .form-select, .form-label {
+            color: #000000 !important;
+            background-color: #ffffff !important;
+            border-color: #000000 !important;
+        }
+        
+        /* Buttons dark text */
+        .btn {
+            color: #000000 !important;
+            font-weight: 600 !important;
+            opacity: 1.0 !important;
+        }
+        
+        .btn-primary {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+            border-color: #000000 !important;
+        }
+        
+        .btn-outline-primary {
+            color: #000000 !important;
+            border-color: #000000 !important;
+            background-color: transparent !important;
         }
     </style>
 </head>
