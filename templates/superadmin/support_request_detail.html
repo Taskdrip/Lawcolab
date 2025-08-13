@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Support Request Details - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('superadmin.dashboard') }}">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('superadmin.law_firms') }}">
+                            <i class="fas fa-building me-2"></i>Law Firms
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('support_requests.list_support_requests') }}">
+                            <i class="fas fa-life-ring me-2"></i>Support Requests
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('chat.super_admin_chat') }}">
+                            <i class="fas fa-comments me-2"></i>Platform Chat
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Support Request Details</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ url_for('support_requests.list_support_requests') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Back to List
+                    </a>
+                </div>
+            </div>
+
+            <!-- Support Request Details -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-life-ring me-2"></i>{{ request.subject }}
+                            </h5>
+                            <span class="badge {% if request.status == 'pending' %}bg-warning{% elif request.status == 'resolved' %}bg-success{% else %}bg-secondary{% endif %}">
+                                {{ request.status.title() }}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-sm-3"><strong>Request ID:</strong></div>
+                                <div class="col-sm-9">#{{ request.id }}</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-3"><strong>Law Firm:</strong></div>
+                                <div class="col-sm-9">{{ request.law_firm.name }}</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-3"><strong>Requested by:</strong></div>
+                                <div class="col-sm-9">{{ request.user.full_name }} ({{ request.user.email }})</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-3"><strong>Priority:</strong></div>
+                                <div class="col-sm-9">
+                                    <span class="badge {% if request.priority == 'high' %}bg-danger{% elif request.priority == 'medium' %}bg-warning{% else %}bg-info{% endif %}">
+                                        {{ request.priority.title() }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-3"><strong>Submitted:</strong></div>
+                                <div class="col-sm-9">{{ request.created_at.strftime('%B %d, %Y at %I:%M %p') }}</div>
+                            </div>
+                            {% if request.resolved_at %}
+                            <div class="row mb-3">
+                                <div class="col-sm-3"><strong>Resolved:</strong></div>
+                                <div class="col-sm-9">{{ request.resolved_at.strftime('%B %d, %Y at %I:%M %p') }}</div>
+                            </div>
+                            {% endif %}
+                            
+                            <hr>
+                            <h6><strong>Message:</strong></h6>
+                            <div class="p-3 bg-light rounded">
+                                {{ request.message | nl2br }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Actions Panel -->
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Actions</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if request.status == 'pending' %}
+                            <button class="btn btn-success w-100 mb-2" onclick="resolveRequest({{ request.id }})">
+                                <i class="fas fa-check me-1"></i>Mark as Resolved
+                            </button>
+                            {% endif %}
+                            
+                            <a href="{{ url_for('chat.law_firm_support_chat', law_firm_id=request.law_firm.id) }}" 
+                               class="btn btn-primary w-100 mb-2">
+                                <i class="fas fa-comments me-1"></i>Chat with Law Firm
+                            </a>
+                            
+                            <a href="{{ url_for('superadmin.view_law_firm', law_firm_id=request.law_firm.id) }}" 
+                               class="btn btn-outline-info w-100">
+                                <i class="fas fa-building me-1"></i>View Law Firm
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Request Statistics -->
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">Law Firm Overview</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="small mb-2">
+                                <strong>Subscription:</strong> 
+                                <span class="badge {% if request.law_firm.subscription_status == 'active' %}bg-success{% else %}bg-warning{% endif %}">
+                                    {{ request.law_firm.subscription_status.title() if request.law_firm.subscription_status else 'None' }}
+                                </span>
+                            </p>
+                            <p class="small mb-2">
+                                <strong>Users:</strong> {{ request.law_firm.users | length }}
+                            </p>
+                            <p class="small mb-0">
+                                <strong>Projects:</strong> {{ request.law_firm.projects | length }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+function resolveRequest(requestId) {
+    if (confirm('Are you sure you want to mark this support request as resolved?')) {
+        fetch('{{ url_for("support_requests.resolve_support_request") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                'request_id': requestId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Support request marked as resolved!');
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while resolving the request.');
+        });
+    }
+}
+</script>
+
+<style>
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 48px 0 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar .nav-link {
+    color: #333;
+}
+
+.sidebar .nav-link.active {
+    color: #007bff;
+    background-color: rgba(0, 123, 255, .1);
+}
+
+.sidebar .nav-link:hover {
+    color: #007bff;
+}
+</style>
+{% endblock %}

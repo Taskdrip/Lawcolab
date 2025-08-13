@@ -377,3 +377,34 @@ def get_unread_count():
         
     except Exception as e:
         return jsonify({'error': 'Failed to get unread count'}), 500
+
+@chat_bp.route('/project/<int:room_id>')
+@require_login
+def project_chat(room_id):
+    """Access project chat room"""
+    try:
+        # Get the chat room
+        room = ChatRoom.query.get_or_404(room_id)
+        
+        # Verify user has access to this room
+        participant = ChatParticipant.query.filter_by(
+            room_id=room_id,
+            user_id=current_user.id
+        ).first()
+        
+        if not participant and not current_user.is_super_admin():
+            flash('You do not have access to this chat room.', 'error')
+            return redirect(url_for('chat.chat_home'))
+        
+        # Get messages for this room
+        messages = ChatMessage.query.filter_by(room_id=room_id)\
+                                   .order_by(ChatMessage.created_at.asc()).all()
+        
+        return render_template('chat/project_chat.html', 
+                             room=room, 
+                             messages=messages,
+                             current_user=current_user)
+                             
+    except Exception as e:
+        flash('Error accessing chat room.', 'error')
+        return redirect(url_for('chat.chat_home'))

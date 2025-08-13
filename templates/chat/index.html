@@ -224,7 +224,7 @@
         <div class="chat-list">
             {% if chat_list %}
                 {% for chat in chat_list %}
-                <a href="{% if chat.type == 'support' %}/chat/support-messages{% else %}/enhanced-chat/room/{{ chat.room.id }}{% endif %}" 
+                <a href="{% if chat.type == 'support' %}{{ url_for('chat.support_messages') }}{% else %}{{ url_for('chat.project_chat', room_id=chat.room.id) }}{% endif %}" 
                    class="chat-item {% if chat.type == 'support' %}support-chat{% endif %}">
                     
                     <!-- Avatar -->
@@ -260,7 +260,7 @@
                     <i class="fas fa-comment-dots"></i>
                     <h4>No conversations yet</h4>
                     <p>Start chatting with your team members or get support from our team.</p>
-                    <a href="/support/chat" class="btn btn-start-chat">
+                    <a href="{{ url_for('chat.support_messages') }}" class="btn btn-start-chat">
                         <i class="fas fa-headset me-2"></i>Contact Support
                     </a>
                 </div>
