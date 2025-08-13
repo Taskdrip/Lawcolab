@@ -1,409 +1,238 @@
 {% extends "base.html" %}
 
-{% block title %}LawFirmOS - Built by Lawyers for Legal Professionals Globally{% endblock %}
+{% block title %}LawFirmOS - Professional Legal Practice Management{% endblock %}
 
 {% block content %}
 {% if current_user.is_authenticated %}
-    <!-- This shouldn't normally show as authenticated users are redirected -->
-    <div class="container mt-5">
-        <div class="alert alert-info">
-            <h4>Welcome back, {{ current_user.full_name }}!</h4>
-            <p>You are being redirected to your dashboard...</p>
-            <script>
-                setTimeout(function() {
-                    window.location.href = '{{ url_for("index") }}';
-                }, 2000);
-            </script>
+    <!-- Authenticated users are redirected to dashboard -->
+    <div class="container-fluid" style="min-height: 100vh; background: #fafbfc;">
+        <div class="row justify-content-center align-items-center min-vh-100">
+            <div class="col-md-6 text-center">
+                <div class="mb-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                <h4 class="fw-normal text-dark">Welcome back, {{ current_user.full_name }}</h4>
+                <p class="text-muted">Redirecting you to your workspace...</p>
+                <script>
+                    setTimeout(() => window.location.href = '{{ url_for("index") }}', 1500);
+                </script>
+            </div>
         </div>
     </div>
 {% else %}
-    <!-- Public Landing Page -->
-    <div class="hero-section">
-        <div class="container">
-            <div class="row align-items-center min-vh-100">
-                <div class="col-lg-6">
-                    <h1 class="display-4 fw-bold mb-4">
-                        Professional Legal Practice Management
-                    </h1>
-                    <h2 class="h3 mb-4 text-gradient-taskdrip">Powered by Taskdrip</h2>
-                    <p class="lead mb-4">Complete law firm management platform featuring multi-tiered communication, project collaboration, client management, team administration, secure file handling, and intelligent workflow automation—all unified in one powerful dashboard.</p>
-                    
-                    <div class="d-flex flex-column flex-sm-row gap-3">
-                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">
-                            <i class="fas fa-sign-in-alt me-2"></i>Access Dashboard
-                        </a>
-                        <a href="{{ url_for('auth.signup') }}" class="btn btn-outline-primary btn-lg">
-                            <i class="fas fa-user-plus me-2"></i>Start Free Trial
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="col-lg-6">
-                    <div class="card shadow-lg border-0">
-                        <div class="card-body p-5">
-                            <div class="text-center mb-4">
-                                <i class="fas fa-balance-scale fa-3x mb-3" style="color: #000000;"></i>
-                                <h3 class="card-title">Access Your Workspace</h3>
-                                <p style="color: #333333; font-weight: 500;">Role-based dashboards with full law firm management</p>
-                            </div>
-                            
-                            <div class="d-grid gap-2">
-                                <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">
-                                    <i class="fas fa-sign-in-alt me-2"></i>Access Dashboard
+    <!-- Clean, Replit-inspired Landing Page -->
+    <div style="background: #ffffff; min-height: 100vh;">
+        
+        <!-- Hero Section -->
+        <section class="hero" style="padding: 80px 0; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-6 mb-5 mb-lg-0">
+                        <div class="hero-content">
+                            <h1 style="font-size: 3.5rem; font-weight: 700; line-height: 1.1; color: #1a1a1a; margin-bottom: 1.5rem;">
+                                Legal practice <br>
+                                <span style="color: #0066cc;">made simple</span>
+                            </h1>
+                            <p style="font-size: 1.25rem; color: #64748b; line-height: 1.6; margin-bottom: 2rem; max-width: 480px;">
+                                Complete law firm management platform with multi-tiered communication, 
+                                project collaboration, and intelligent workflow automation.
+                            </p>
+                            <div class="hero-actions" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                                <a href="{{ url_for('auth.signup') }}" 
+                                   style="background: #0066cc; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; border: none; transition: all 0.2s;">
+                                    Start free trial
                                 </a>
-                                <a href="{{ url_for('auth.signup') }}" class="btn btn-outline-primary">
-                                    <i class="fas fa-user-plus me-2"></i>Start Free Trial
+                                <a href="{{ url_for('auth.login') }}" 
+                                   style="background: transparent; color: #0066cc; padding: 14px 28px; border: 2px solid #e2e8f0; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; transition: all 0.2s;">
+                                    Sign in
                                 </a>
                             </div>
-                            
-                            <div class="text-center mt-4">
-                                <div class="row">
-                                    <div class="col-6">
-                                        <div class="feature-stat">
-                                            <div class="feature-icon" style="background-color: #000000; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
-                                                <i class="fas fa-users" style="color: #ffffff; font-size: 1.5rem;"></i>
-                                            </div>
-                                            <h6 style="color: #000000; font-weight: 600;">Multi-Role</h6>
-                                            <span style="color: #333333; font-weight: 500;">Access Control</span>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="hero-visual" style="position: relative;">
+                            <div style="background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1); padding: 2rem; max-width: 500px; margin-left: auto;">
+                                <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
+                                    <div style="background: #0066cc; border-radius: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
+                                        <i class="fas fa-balance-scale" style="color: white; font-size: 1.5rem;"></i>
+                                    </div>
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 1.25rem; color: #1a1a1a;">LawFirmOS</h4>
+                                        <p style="margin: 0; color: #64748b; font-size: 0.9rem;">Professional workspace</p>
+                                    </div>
+                                </div>
+                                
+                                <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem;">
+                                    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                                        <div style="background: #f1f5f9; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem;">
+                                            <i class="fas fa-users" style="color: #0066cc; font-size: 0.9rem;"></i>
                                         </div>
+                                        <span style="color: #334155; font-weight: 500;">Team Management</span>
                                     </div>
-                                    <div class="col-6">
-                                        <div class="feature-stat">
-                                            <div class="feature-icon" style="background-color: #000000; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
-                                                <i class="fas fa-user-tie" style="color: #ffffff; font-size: 1.5rem;"></i>
-                                            </div>
-                                            <h6 style="color: #000000; font-weight: 600;">Real-Time</h6>
-                                            <span style="color: #333333; font-weight: 500;">Collaboration</span>
+                                    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                                        <div style="background: #f1f5f9; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem;">
+                                            <i class="fas fa-comments" style="color: #0066cc; font-size: 0.9rem;"></i>
                                         </div>
+                                        <span style="color: #334155; font-weight: 500;">Real-time Chat</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center;">
+                                        <div style="background: #f1f5f9; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem;">
+                                            <i class="fas fa-folder" style="color: #0066cc; font-size: 0.9rem;"></i>
+                                        </div>
+                                        <span style="color: #334155; font-weight: 500;">Project Collaboration</span>
                                     </div>
                                 </div>
+                                
+                                <button style="background: #0066cc; color: white; width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                                    Access Dashboard
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <!-- Diverse Team Showcase -->
-    <section class="py-5">
-        <div class="container">
-            <div class="row align-items-center mb-5">
-                <div class="col-lg-6">
-                    <img src="{{ url_for('static', filename='images/Professional_legal_consultation_scene_0650a100.png') }}" 
-                         alt="Professional Legal Consultation" 
-                         class="img-fluid rounded shadow">
-                </div>
-                <div class="col-lg-6">
-                    <h2 class="h1 fw-bold mb-4">Professional Excellence</h2>
-                    <p class="lead mb-4">
-                        Transform your legal practice with intelligent technology that adapts to your workflow. Experience seamless case management, enhanced client relationships, and optimized operational efficiency—all powered by innovation designed specifically for legal professionals.
+        <!-- Features Section -->
+        <section style="padding: 80px 0; background: #fafbfc;">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 style="font-size: 2.5rem; font-weight: 700; color: #1a1a1a; margin-bottom: 1rem;">
+                        Everything you need to run your practice
+                    </h2>
+                    <p style="font-size: 1.125rem; color: #64748b; max-width: 600px; margin: 0 auto;">
+                        Built by lawyers for lawyers. Streamline your workflow with intelligent tools designed for legal professionals.
                     </p>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="feature-item">
-                                <i class="fas fa-handshake mb-2" style="color: #000000; font-size: 2rem;"></i>
-                                <h6 style="color: #000000; font-weight: 600;">Client-Focused</h6>
-                                <p class="small" style="color: #333333; font-weight: 500;">Personalized attention for every client</p>
+                </div>
+                
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div style="background: white; border-radius: 12px; padding: 2rem; height: 100%; border: 1px solid #e2e8f0; transition: all 0.2s;">
+                            <div style="background: #eff6ff; border-radius: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                                <i class="fas fa-users" style="color: #0066cc; font-size: 1.25rem;"></i>
                             </div>
+                            <h3 style="font-size: 1.25rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Multi-Role Access</h3>
+                            <p style="color: #64748b; line-height: 1.6;">Secure role-based access for admins, lawyers, team members, and clients with complete data isolation.</p>
                         </div>
-                        <div class="col-md-6">
-                            <div class="feature-item">
-                                <i class="fas fa-users mb-2" style="color: #000000; font-size: 2rem;"></i>
-                                <h6 style="color: #000000; font-weight: 600;">Diverse Team</h6>
-                                <p class="small" style="color: #333333; font-weight: 500;">Varied perspectives, better outcomes</p>
+                    </div>
+                    <div class="col-md-4">
+                        <div style="background: white; border-radius: 12px; padding: 2rem; height: 100%; border: 1px solid #e2e8f0; transition: all 0.2s;">
+                            <div style="background: #f0fdf4; border-radius: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                                <i class="fas fa-comments" style="color: #16a34a; font-size: 1.25rem;"></i>
                             </div>
+                            <h3 style="font-size: 1.25rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Multi-Tiered Chat</h3>
+                            <p style="color: #64748b; line-height: 1.6;">Project-based collaboration, client communication, and super admin support with real-time messaging.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div style="background: white; border-radius: 12px; padding: 2rem; height: 100%; border: 1px solid #e2e8f0; transition: all 0.2s;">
+                            <div style="background: #fef3c7; border-radius: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                                <i class="fas fa-folder" style="color: #d97706; font-size: 1.25rem;"></i>
+                            </div>
+                            <h3 style="font-size: 1.25rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Project Management</h3>
+                            <p style="color: #64748b; line-height: 1.6;">Comprehensive case tracking, file management, and team assignments with secure document handling.</p>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <div class="row align-items-center">
-                <div class="col-lg-6 order-lg-2">
-                    <img src="{{ url_for('static', filename='images/Modern_diverse_law_office_43d2990c.png') }}" 
-                         alt="Modern Law Office Collaboration" 
-                         class="img-fluid rounded shadow">
-                </div>
-                <div class="col-lg-6 order-lg-1">
-                    <h2 class="h1 fw-bold mb-4">Collaborative Intelligence</h2>
-                    <p class="lead mb-4">
-                        Unite your legal team through advanced collaboration tools that break down silos and amplify productivity. Foster innovation, streamline communication, and deliver coordinated excellence that sets your firm apart in today's competitive legal landscape.
+        </section>
+
+        <!-- Pricing Section -->
+        <section style="padding: 80px 0; background: white;">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 style="font-size: 2.5rem; font-weight: 700; color: #1a1a1a; margin-bottom: 1rem;">
+                        Simple, transparent pricing
+                    </h2>
+                    <p style="font-size: 1.125rem; color: #64748b; max-width: 500px; margin: 0 auto;">
+                        Start with a free trial. Scale as your practice grows. Cancel anytime.
                     </p>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="feature-item">
-                                <i class="fas fa-laptop text-primary mb-2"></i>
-                                <h6>Modern Technology</h6>
-                                <p class="small text-muted">Cutting-edge tools and systems</p>
+                </div>
+                
+                <div class="row justify-content-center g-4">
+                    <div class="col-lg-3 col-md-6">
+                        <div style="background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 2rem; text-align: center; height: 100%; position: relative; transition: all 0.2s;">
+                            <div style="background: #f1f5f9; color: #0066cc; padding: 8px 16px; border-radius: 20px; font-size: 0.875rem; font-weight: 600; margin-bottom: 1.5rem; display: inline-block;">
+                                3-Day Trial
                             </div>
+                            <h3 style="font-size: 2rem; font-weight: 700; color: #1a1a1a; margin-bottom: 0.5rem;">Free</h3>
+                            <p style="color: #64748b; margin-bottom: 2rem;">Full access trial</p>
+                            <a href="{{ url_for('auth.signup') }}" 
+                               style="background: #0066cc; color: white; width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 600; text-decoration: none; display: block; text-align: center;">
+                                Start trial
+                            </a>
                         </div>
-                        <div class="col-md-6">
-                            <div class="feature-item">
-                                <i class="fas fa-comments text-primary mb-2"></i>
-                                <h6>Open Communication</h6>
-                                <p class="small text-muted">Transparent client relationships</p>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div style="background: white; border: 2px solid #0066cc; border-radius: 12px; padding: 2rem; text-align: center; height: 100%; position: relative; transition: all 0.2s;">
+                            <div style="background: #0066cc; color: white; padding: 8px 16px; border-radius: 20px; font-size: 0.875rem; font-weight: 600; margin-bottom: 1.5rem; display: inline-block;">
+                                Most Popular
                             </div>
+                            <h3 style="font-size: 2rem; font-weight: 700; color: #1a1a1a; margin-bottom: 0.5rem;">$70</h3>
+                            <p style="color: #64748b; margin-bottom: 2rem;">per month</p>
+                            <a href="{{ url_for('auth.signup') }}" 
+                               style="background: #0066cc; color: white; width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 600; text-decoration: none; display: block; text-align: center;">
+                                Get started
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div style="background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 2rem; text-align: center; height: 100%; position: relative; transition: all 0.2s;">
+                            <div style="background: #f0fdf4; color: #16a34a; padding: 8px 16px; border-radius: 20px; font-size: 0.875rem; font-weight: 600; margin-bottom: 1.5rem; display: inline-block;">
+                                Best Value
+                            </div>
+                            <h3 style="font-size: 2rem; font-weight: 700; color: #1a1a1a; margin-bottom: 0.5rem;">$190</h3>
+                            <p style="color: #64748b; margin-bottom: 2rem;">per 3 months</p>
+                            <a href="{{ url_for('auth.signup') }}" 
+                               style="background: #16a34a; color: white; width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 600; text-decoration: none; display: block; text-align: center;">
+                                Save 10%
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div style="background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 2rem; text-align: center; height: 100%; position: relative; transition: all 0.2s;">
+                            <div style="background: #fef3c7; color: #d97706; padding: 8px 16px; border-radius: 20px; font-size: 0.875rem; font-weight: 600; margin-bottom: 1.5rem; display: inline-block;">
+                                Enterprise
+                            </div>
+                            <h3 style="font-size: 2rem; font-weight: 700; color: #1a1a1a; margin-bottom: 0.5rem;">$750</h3>
+                            <p style="color: #64748b; margin-bottom: 2rem;">per year</p>
+                            <a href="{{ url_for('auth.signup') }}" 
+                               style="background: #d97706; color: white; width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 600; text-decoration: none; display: block; text-align: center;">
+                                Save 20%
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Features Section -->
-    <section class="py-5 bg-light">
-        <div class="container">
-            <div class="row text-center mb-5">
-                <div class="col-lg-8 mx-auto">
-                    <h2 class="h1 fw-bold">Why Choose LawFirm<span class="text-blue-os">OS</span>?</h2>
-                    <p class="lead">Engineered by legal professionals for the global legal community - transforming how modern law firms operate, collaborate, and excel</p>
-                </div>
-            </div>
-            
-            <div class="row g-4">
-                <div class="col-lg-4 col-md-6">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-body text-center p-4">
-                            <i class="fas fa-users fa-3x text-primary mb-3"></i>
-                            <h4>Client & Team Management</h4>
-                            <p class="text-muted">Complete user management system with role-based access, team administration, client portals, and secure profile management for law firms of any size.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-4 col-md-6">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-body text-center p-4">
-                            <i class="fas fa-comments fa-3x text-primary mb-3"></i>
-                            <h4>Multi-Tiered Communication</h4>
-                            <p class="text-muted">Advanced chat system with project-based messaging, law firm support channels, super admin broadcasts, and real-time file sharing capabilities.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-4 col-md-6">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-body text-center p-4">
-                            <i class="fas fa-briefcase fa-3x text-primary mb-3"></i>
-                            <h4>Project Collaboration</h4>
-                            <p class="text-muted">Intelligent case management with team assignments, client access, document sharing, and deadline tracking for seamless project execution.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-4 col-md-6">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-body text-center p-4">
-                            <i class="fas fa-users-cog fa-3x text-primary mb-3"></i>
-                            <h4>Administrative Control</h4>
-                            <p class="text-muted">Comprehensive admin dashboard with user management, law firm settings, statistics overview, and powerful tools for complete organizational control.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-4 col-md-6">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-body text-center p-4">
-                            <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
-                            <h4>Secure File Management</h4>
-                            <p class="text-muted">Enterprise-grade document handling with project-based organization, secure uploads, version control, and access management for confidential legal files.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-4 col-md-6">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-body text-center p-4">
-                            <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
-                            <h4>Enterprise Security</h4>
-                            <p class="text-muted">Multi-tenant architecture with complete data isolation, role-based permissions, secure authentication, and comprehensive compliance for legal industry standards.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Advanced Features Section -->
-    <section class="py-5 bg-white">
-        <div class="container">
-            <div class="row text-center mb-5">
-                <div class="col-lg-8 mx-auto">
-                    <h2 class="h1 fw-bold">Advanced Platform Capabilities</h2>
-                    <p class="lead">Discover the comprehensive features that make LawFirmOS the ultimate legal practice management solution</p>
-                </div>
-            </div>
-            
-            <div class="row g-4 mb-5">
-                <div class="col-lg-6">
-                    <div class="d-flex align-items-start">
-                        <div class="flex-shrink-0">
-                            <div class="rounded-circle p-3 me-3" style="background-color: #667eea; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-crown text-white fa-lg"></i>
-                            </div>
-                        </div>
-                        <div>
-                            <h5 class="fw-bold">Super Admin Platform Management</h5>
-                            <p class="text-muted mb-0">Centralized platform oversight with law firm creation, subscription management, support request handling, and broadcast messaging capabilities for comprehensive platform administration.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-6">
-                    <div class="d-flex align-items-start">
-                        <div class="flex-shrink-0">
-                            <div class="rounded-circle p-3 me-3" style="background-color: #28a745; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-credit-card text-white fa-lg"></i>
-                            </div>
-                        </div>
-                        <div>
-                            <h5 class="fw-bold">Subscription & Billing Management</h5>
-                            <p class="text-muted mb-0">Flexible subscription tiers with automated billing, payment processing, subscription requests, and transparent pricing structure designed specifically for legal practices.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-6">
-                    <div class="d-flex align-items-start">
-                        <div class="flex-shrink-0">
-                            <div class="rounded-circle p-3 me-3" style="background-color: #17a2b8; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-database text-white fa-lg"></i>
-                            </div>
-                        </div>
-                        <div>
-                            <h5 class="fw-bold">Multi-Tenant Data Isolation</h5>
-                            <p class="text-muted mb-0">Complete data separation between law firms with enterprise-grade security, ensuring absolute confidentiality and compliance with legal industry privacy requirements.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-6">
-                    <div class="d-flex align-items-start">
-                        <div class="flex-shrink-0">
-                            <div class="rounded-circle p-3 me-3" style="background-color: #ffc107; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-chart-line text-white fa-lg"></i>
-                            </div>
-                        </div>
-                        <div>
-                            <h5 class="fw-bold">Analytics & Reporting Dashboard</h5>
-                            <p class="text-muted mb-0">Comprehensive statistics and insights with user metrics, project tracking, communication analytics, and performance indicators for data-driven law firm management.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Pricing Preview -->
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="card shadow-lg border-0">
-                        <div class="card-body text-center p-5">
-                            <h3 class="fw-bold mb-3">Flexible Subscription Plans</h3>
-                            <p class="text-muted mb-4">Choose the perfect plan for your law firm with transparent pricing and immediate activation</p>
-                            
-                            <div class="row g-3 mb-4">
-                                <div class="col-md-3">
-                                    <div class="border rounded p-3">
-                                        <div class="fw-bold">1 Month</div>
-                                        <div class="h4 text-primary">$70</div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="border rounded p-3">
-                                        <div class="fw-bold">3 Months</div>
-                                        <div class="h4 text-success">$190</div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="border rounded p-3">
-                                        <div class="fw-bold">6 Months</div>
-                                        <div class="h4 text-warning">$400</div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="border rounded p-3 bg-primary text-white">
-                                        <div class="fw-bold">1 Year</div>
-                                        <div class="h4">$750</div>
-                                        <small>Best Value</small>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <p class="small text-muted">Lightning-fast activation • Immediate payment processing • No setup fees</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer mt-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-4 mb-4">
-                    <a href="{{ url_for('index') }}" class="text-decoration-none">
-                        <h5><i class="fas fa-balance-scale me-2"></i>LawFirm<span class="text-blue-os">OS</span> <small class="text-gradient-taskdrip">by Taskdrip</small></h5>
+        <!-- Footer CTA -->
+        <section style="padding: 80px 0; background: #f8fafc;">
+            <div class="container text-center">
+                <h2 style="font-size: 2.5rem; font-weight: 700; color: #1a1a1a; margin-bottom: 1rem;">
+                    Ready to transform your practice?
+                </h2>
+                <p style="font-size: 1.125rem; color: #64748b; margin-bottom: 2rem; max-width: 500px; margin-left: auto; margin-right: auto;">
+                    Join thousands of legal professionals who trust LawFirmOS to manage their practice efficiently.
+                </p>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <a href="{{ url_for('auth.signup') }}" 
+                       style="background: #0066cc; color: white; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1.125rem; display: inline-flex; align-items: center;">
+                        Start your free trial
                     </a>
-                    <p class="text-muted">Comprehensive law firm management platform with multi-tiered communication, user administration, project collaboration, subscription management, and enterprise-grade security. Built specifically for legal professionals to streamline practice management, client relations, team coordination, and operational excellence.</p>
-                    <div class="d-flex gap-3">
-                        <a href="#" class="text-decoration-none"><i class="fab fa-linkedin"></i></a>
-                        <a href="#" class="text-decoration-none"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-decoration-none"><i class="fas fa-envelope"></i></a>
-                    </div>
+                    <a href="#contact" 
+                       style="background: transparent; color: #0066cc; padding: 16px 32px; border: 2px solid #e2e8f0; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1.125rem; display: inline-flex; align-items: center;">
+                        Contact sales
+                    </a>
                 </div>
-                
-                <div class="col-lg-2 col-md-6 mb-4">
-                    <h6>Product</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="{{ url_for('landing') }}">Features</a></li>
-                        <li><a href="#pricing">Pricing</a></li>
-                        <li><a href="#security">Security</a></li>
-                        <li><a href="#integrations">Integrations</a></li>
-                    </ul>
-                </div>
-                
-                <div class="col-lg-2 col-md-6 mb-4">
-                    <h6>Company</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="#about">About Us</a></li>
-                        <li><a href="#careers">Careers</a></li>
-                        <li><a href="#blog">Blog</a></li>
-                        <li><a href="#contact">Contact</a></li>
-                    </ul>
-                </div>
-                
-                <div class="col-lg-2 col-md-6 mb-4">
-                    <h6>Support</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="#help">Help Center</a></li>
-                        <li><a href="#documentation">Documentation</a></li>
-                        <li><a href="#community">Community</a></li>
-                        <li><a href="#status">System Status</a></li>
-                    </ul>
-                </div>
-                
-                <div class="col-lg-2 col-md-6 mb-4">
-                    <h6>Legal</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="#privacy">Privacy Policy</a></li>
-                        <li><a href="#terms">Terms of Service</a></li>
-                        <li><a href="#cookies">Cookie Policy</a></li>
-                        <li><a href="#compliance">Compliance</a></li>
-                    </ul>
-                </div>
+                <p style="margin-top: 1.5rem; color: #64748b; font-size: 0.875rem;">
+                    Built by <strong>Taskdrip</strong> for legal professionals worldwide
+                </p>
             </div>
-            
-            <hr class="my-4">
-            
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <p class="mb-0 text-muted">&copy; 2025 LawFirmOS by Taskdrip. All rights reserved.</p>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <small class="text-muted">Engineered with <i class="fas fa-heart text-danger"></i> by legal professionals for the global legal community</small>
-                </div>
-            </div>
-        </div>
-    </footer>
+        </section>
+
+    </div>
 {% endif %}
 {% endblock %}
