@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import current_user
 from replit_auth import require_login
 from app import db
-from models import User, ChatMessage, ChatConversation
+from models import User, DirectMessage, ChatConversation
 from sqlalchemy import or_, and_, desc
 from datetime import datetime
 import json
@@ -65,11 +65,11 @@ def chat_home():
     unread_counts = {}
     for conversation in conversations:
         other_user = conversation.get_other_user(current_user.id)
-        unread_count = ChatMessage.query.filter(
+        unread_count = DirectMessage.query.filter(
             and_(
-                ChatMessage.sender_id == other_user.id,
-                ChatMessage.receiver_id == current_user.id,
-                ChatMessage.is_read == False
+                DirectMessage.sender_id == other_user.id,
+                DirectMessage.receiver_id == current_user.id,
+                DirectMessage.is_read == False
             )
         ).count()
         unread_counts[other_user.id] = unread_count

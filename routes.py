@@ -14,6 +14,7 @@ from blueprints.team import team_bp
 from blueprints.public import public_bp
 from blueprints.chat import chat_bp
 from blueprints.superadmin import superadmin_bp
+from blueprints.enhanced_chat import enhanced_chat_bp
 from blueprints.support_requests import support_bp
 
 # Register blueprints
@@ -27,6 +28,7 @@ app.register_blueprint(public_bp, url_prefix="/public")
 app.register_blueprint(chat_bp, url_prefix="/chat")
 app.register_blueprint(superadmin_bp, url_prefix="/superadmin")
 app.register_blueprint(support_bp, url_prefix="/support")
+app.register_blueprint(enhanced_chat_bp, url_prefix='/enhanced-chat')
 
 # Make session permanent
 @app.before_request

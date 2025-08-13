@@ -51,8 +51,8 @@ class User(UserMixin, db.Model):
     created_notes = db.relationship('ClientNote', back_populates='created_by_user', foreign_keys='ClientNote.created_by_id')
     
     # Chat relationships
-    sent_messages = db.relationship('ChatMessage', back_populates='sender', foreign_keys='ChatMessage.sender_id')
-    received_messages = db.relationship('ChatMessage', back_populates='receiver', foreign_keys='ChatMessage.receiver_id')
+    sent_messages = db.relationship('DirectMessage', back_populates='sender', foreign_keys='DirectMessage.sender_id')
+    received_messages = db.relationship('DirectMessage', back_populates='receiver', foreign_keys='DirectMessage.receiver_id')
 
     @property
     def full_name(self):
@@ -213,6 +213,40 @@ class LawFirm(db.Model):
     # Multi-tenancy relationships
     users = db.relationship('User', back_populates='law_firm')
     projects = db.relationship('Project', back_populates='law_firm')
+    
+    def get_support_chat_room(self):
+        """Get or create support chat room with super admin"""
+        from models_chat import ChatRoom, ChatParticipant
+        
+        # Look for existing support room
+        support_room = ChatRoom.query.filter_by(
+            law_firm_id=self.id,
+            room_type='support',
+            is_active=True
+        ).first()
+        
+        if not support_room:
+            # Create new support chat room
+            admin_user = next((u for u in self.users if u.role == 'admin'), None)
+            if admin_user:
+                support_room = ChatRoom(
+                    name=f"Support - {self.name}",
+                    room_type='support',
+                    law_firm_id=self.id,
+                    created_by_id=admin_user.id
+                )
+                db.session.add(support_room)
+                db.session.flush()
+                
+                # Add admin as participant
+                participant = ChatParticipant(
+                    room_id=support_room.id,
+                    user_id=admin_user.id
+                )
+                db.session.add(participant)
+                db.session.commit()
+        
+        return support_room
 
 class Project(db.Model):
     __tablename__ = 'projects'
@@ -309,8 +343,8 @@ class SupportRequest(db.Model):
     law_firm = db.relationship('LawFirm', foreign_keys=[law_firm_id])
     resolved_by = db.relationship('User', foreign_keys=[resolved_by_id])
 
-class ChatMessage(db.Model):
-    __tablename__ = 'chat_messages'
+class DirectMessage(db.Model):
+    __tablename__ = 'direct_messages'
     
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
@@ -329,7 +363,7 @@ class ChatMessage(db.Model):
     receiver = db.relationship('User', back_populates='received_messages', foreign_keys=[receiver_id])
     
     def __repr__(self):
-        return f'<ChatMessage from {self.sender_id} to {self.receiver_id}>'
+        return f'<DirectMessage from {self.sender_id} to {self.receiver_id}>'
 
 class ChatConversation(db.Model):
     __tablename__ = 'chat_conversations'

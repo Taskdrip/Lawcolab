@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Support Rooms - Super Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gradient">Support Chat Rooms</h1>
+            <p class="text-muted">Manage support conversations with law firms</p>
+        </div>
+        <a href="{{ url_for('enhanced_chat.superadmin_broadcast') }}" class="btn btn-warning">
+            <i class="fas fa-bullhorn me-2"></i>Send Broadcast
+        </a>
+    </div>
+
+    <!-- Support Rooms List -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-headset me-2 text-primary"></i>Active Support Rooms
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if room_data %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Law Firm</th>
+                            <th>Last Message</th>
+                            <th>Subscription Status</th>
+                            <th>Unread</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in room_data %}
+                        {% set room = item.room %}
+                        {% set unread_count = item.unread_count %}
+                        {% set last_message = item.last_message %}
+                        <tr class="{% if unread_count > 0 %}table-warning{% endif %}">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle p-2 me-3" style="background-color: #e3f2fd; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-building text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">{{ room.law_firm.name }}</div>
+                                        <small class="text-muted">{{ room.law_firm.email or 'No email' }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if last_message %}
+                                <div class="message-preview">
+                                    <div class="text-truncate" style="max-width: 300px;">
+                                        <small><strong>{{ last_message.sender.full_name }}:</strong> {{ last_message.message_content }}</small>
+                                    </div>
+                                    <small class="text-muted">{{ last_message.created_at.strftime('%b %d at %I:%M %p') }}</small>
+                                </div>
+                                {% else %}
+                                <span class="text-muted">No messages yet</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if room.law_firm.subscription_status == "Active" %}
+                                    <span class="badge bg-success">{{ room.law_firm.subscription_status }}</span>
+                                {% elif room.law_firm.subscription_status == "Expired" %}
+                                    <span class="badge bg-danger">{{ room.law_firm.subscription_status }}</span>
+                                {% elif "Expires in" in room.law_firm.subscription_status %}
+                                    <span class="badge bg-warning">{{ room.law_firm.subscription_status }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ room.law_firm.subscription_status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if unread_count > 0 %}
+                                <span class="badge bg-danger">{{ unread_count }}</span>
+                                {% else %}
+                                <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('enhanced_chat.superadmin_support_chat', room_id=room.id) }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-comment me-1"></i>Open Chat
+                                    </a>
+                                    <a href="{{ url_for('superadmin.law_firm_detail', firm_id=room.law_firm.id) }}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-eye me-1"></i>View Firm
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                <h6>No Support Conversations</h6>
+                <p class="text-muted">Law firms will appear here when they start support conversations</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.table-warning {
+    --bs-table-bg: rgba(255, 193, 7, 0.1);
+}
+
+.message-preview {
+    max-width: 250px;
+}
+</style>
+{% endblock %}

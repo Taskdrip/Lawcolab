@@ -59,5 +59,6 @@ def nl2br_filter(text):
 # Create tables
 with app.app_context():
     import models  # noqa: F401
+    import models_chat  # noqa: F401
     db.create_all()
     logging.info("Database tables created")

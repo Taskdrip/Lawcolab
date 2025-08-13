@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.title }} - Project Chat{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-project-diagram me-2 text-primary"></i>{{ project.title }}
+                            </h5>
+                            <small class="text-muted">Project Team Chat - Only assigned members can see this</small>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-arrow-left me-1"></i>Back to Project
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Team Members -->
+                    <div class="mt-2">
+                        <small class="text-muted">Team Members: </small>
+                        {% for assignment in project.assignments %}
+                        <span class="badge {% if assignment.user.role == 'admin' %}bg-success{% elif assignment.user.role == 'team_member' %}bg-warning{% else %}bg-info{% endif %} me-1">
+                            {{ assignment.user.full_name }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="card-body p-0">
+                    <!-- Messages Container -->
+                    <div class="chat-messages" id="messagesContainer" style="height: 450px; overflow-y: auto; padding: 20px;">
+                        {% for message in messages %}
+                        <div class="message-bubble mb-3 {% if message.sender_id == current_user.id %}sent{% else %}received{% endif %}">
+                            <div class="d-flex {% if message.sender_id == current_user.id %}justify-content-end{% else %}justify-content-start{% endif %}">
+                                <div class="message-content" style="max-width: 70%;">
+                                    <!-- Sender Info -->
+                                    <div class="sender-info mb-1 d-flex align-items-center">
+                                        <div class="rounded-circle me-2" 
+                                             style="background-color: {% if message.sender.role == 'admin' %}#e8f5e8{% elif message.sender.role == 'team_member' %}#fff3e0{% else %}#f3e5f5{% endif %}; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas {% if message.sender.role == 'admin' %}fa-user-shield text-success{% elif message.sender.role == 'team_member' %}fa-user-tie text-warning{% else %}fa-user text-info{% endif %}" style="font-size: 12px;"></i>
+                                        </div>
+                                        <small class="text-muted me-2">{{ message.sender.full_name }}</small>
+                                        <small class="text-muted">{{ message.created_at.strftime('%b %d at %I:%M %p') }}</small>
+                                    </div>
+                                    
+                                    <!-- Message Content -->
+                                    <div class="message-text p-3 rounded {% if message.sender_id == current_user.id %}bg-primary text-white{% else %}bg-light{% endif %}">
+                                        {% if message.message_type == 'file' %}
+                                        <div class="file-message">
+                                            <i class="fas fa-file-alt me-2"></i>
+                                            <a href="/download/{{ message.file_path }}" class="{% if message.sender_id == current_user.id %}text-white{% else %}text-primary{% endif %}" target="_blank">
+                                                {{ message.file_name }}
+                                            </a>
+                                        </div>
+                                        {% else %}
+                                        {{ message.message_content|nl2br|safe }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        {% if not messages %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-users fa-3x mb-3"></i>
+                            <h6>Team Chat</h6>
+                            <p>Start collaborating with your project team</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Message Input -->
+                    <div class="chat-input border-top p-3">
+                        <form id="messageForm" class="d-flex align-items-end">
+                            <input type="hidden" id="roomId" value="{{ room.id }}">
+                            <div class="flex-grow-1 me-2">
+                                <textarea class="form-control" id="messageInput" rows="2" placeholder="Send a message to the team..." required></textarea>
+                            </div>
+                            <div class="d-flex flex-column gap-2">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="uploadBtn" title="Upload File">
+                                    <i class="fas fa-paperclip"></i>
+                                </button>
+                                <button type="submit" class="btn btn-primary btn-sm" title="Send Message">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <!-- Hidden file input -->
+                        <input type="file" id="fileInput" style="display: none;" accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-scroll to bottom
+function scrollToBottom() {
+    const container = document.getElementById('messagesContainer');
+    container.scrollTop = container.scrollHeight;
+}
+
+// Send message
+document.getElementById('messageForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const messageInput = document.getElementById('messageInput');
+    const roomId = document.getElementById('roomId').value;
+    const message = messageInput.value.trim();
+    
+    if (!message) return;
+    
+    fetch('/enhanced-chat/send-message', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            room_id: roomId,
+            message: message
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            messageInput.value = '';
+            location.reload(); // Refresh to show new message
+        } else {
+            alert('Failed to send message: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while sending the message.');
+    });
+});
+
+// File upload
+document.getElementById('uploadBtn').addEventListener('click', function() {
+    document.getElementById('fileInput').click();
+});
+
+document.getElementById('fileInput').addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('room_id', document.getElementById('roomId').value);
+    
+    fetch('/enhanced-chat/upload-file', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload(); // Refresh to show uploaded file
+        } else {
+            alert('Failed to upload file: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while uploading the file.');
+    });
+});
+
+// Initial scroll to bottom
+scrollToBottom();
+</script>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Broadcast Messages - Super Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gradient">Broadcast Messages</h1>
+            <p class="text-muted">Send announcements to all law firms</p>
+        </div>
+        <a href="{{ url_for('enhanced_chat.superadmin_support_rooms') }}" class="btn btn-outline-primary">
+            <i class="fas fa-headset me-2"></i>Support Rooms
+        </a>
+    </div>
+
+    <!-- Broadcast Form -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-transparent border-0">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-bullhorn me-2 text-warning"></i>Send Broadcast Message
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label class="form-label">Title</label>
+                            <input type="text" class="form-control" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Message</label>
+                            <textarea class="form-control" name="message" rows="4" required placeholder="Enter your announcement message..."></textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Target Audience</label>
+                            <select class="form-select" name="target_type">
+                                <option value="all">All Law Firms</option>
+                                <option value="active">Active Subscribers Only</option>
+                                <option value="expired">Expired Subscriptions</option>
+                                <option value="pending">Pending Payment</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_urgent" id="urgentCheck">
+                                <label class="form-check-label" for="urgentCheck">
+                                    Mark as Urgent
+                                </label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-warning w-100">
+                            <i class="fas fa-broadcast-tower me-2"></i>Send Broadcast
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Recent Broadcasts -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-history me-2 text-primary"></i>Recent Broadcasts
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if broadcasts %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Title</th>
+                            <th>Target</th>
+                            <th>Sent</th>
+                            <th>Delivered To</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for broadcast in broadcasts %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if broadcast.is_urgent %}
+                                    <i class="fas fa-exclamation-triangle text-warning me-2" title="Urgent"></i>
+                                    {% endif %}
+                                    <div>
+                                        <div class="fw-semibold">{{ broadcast.title }}</div>
+                                        <small class="text-muted">{{ broadcast.message_content[:100] }}{% if broadcast.message_content|length > 100 %}...{% endif %}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge {% if broadcast.target_type == 'all' %}bg-primary{% elif broadcast.target_type == 'active' %}bg-success{% elif broadcast.target_type == 'expired' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                    {{ broadcast.target_type|title }}
+                                </span>
+                            </td>
+                            <td>{{ broadcast.created_at.strftime('%b %d, %Y at %I:%M %p') }}</td>
+                            <td>
+                                <span class="badge bg-info">{{ broadcast.deliveries|length }} firms</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-success">Delivered</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-bullhorn fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No broadcasts sent yet</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
