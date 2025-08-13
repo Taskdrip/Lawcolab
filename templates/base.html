@@ -14,8 +14,51 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/simple.css') }}">
+    <!-- Custom CSS with cache busting -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/simple.css') }}?v={{ range(1000, 9999) | random }}">
+    
+    <!-- Force bright text visibility -->
+    <style>
+        .text-muted, .text-secondary, .small, span.text-muted, p.text-muted {
+            color: #333333 !important;
+            opacity: 1 !important;
+            font-weight: 500 !important;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: #000000 !important;
+            font-weight: 600 !important;
+        }
+        
+        p {
+            color: #333333 !important;
+            font-weight: 400 !important;
+        }
+        
+        .feature-stat h6, .feature-stat span {
+            color: #000000 !important;
+            font-weight: 600 !important;
+        }
+        
+        .card-body * {
+            color: #333333 !important;
+        }
+        
+        .card-body h3, .card-body h4, .card-body h5, .card-body h6 {
+            color: #000000 !important;
+            font-weight: 600 !important;
+        }
+        
+        /* Force all text elements to be dark and crisp */
+        body * {
+            opacity: 1 !important;
+        }
+        
+        .nav-link {
+            color: #000000 !important;
+            font-weight: 500 !important;
+        }
+    </style>
 </head>
 <body>
     <!-- Simple Header Navigation -->
