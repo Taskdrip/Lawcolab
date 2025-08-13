@@ -2,22 +2,25 @@
 
 {% block content %}
 <style>
+/* Replit-style chat interface */
 .chat-container {
     max-width: 1000px;
     margin: 0 auto;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
     overflow: hidden;
-    height: 80vh;
+    height: 85vh;
     display: flex;
     flex-direction: column;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .chat-header {
-    background: linear-gradient(135deg, #007bff, #0056b3);
-    color: white;
-    padding: 20px;
+    background: #f8fafc;
+    color: #374151;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e5e7eb;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -113,56 +116,100 @@
 }
 
 .chat-input {
-    padding: 20px;
-    background: white;
-    border-top: 1px solid #e9ecef;
+    padding: 16px 20px;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
 }
 
-.chat-input form {
+.input-container {
+    position: relative;
+    background: #f8fafc;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.input-container:focus-within {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.input-toolbar {
     display: flex;
-    gap: 10px;
-    align-items: end;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e5e7eb;
+    gap: 8px;
+}
+
+.input-toolbar button {
+    background: none;
+    border: none;
+    padding: 6px 8px;
+    border-radius: 4px;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.input-toolbar button:hover {
+    background: #e5e7eb;
+    color: #374151;
 }
 
 .chat-input textarea {
-    flex: 1;
-    border: 2px solid #e9ecef;
-    border-radius: 12px;
-    padding: 12px 16px;
+    width: 100%;
+    border: none;
+    background: transparent;
+    padding: 12px;
     resize: none;
     min-height: 44px;
-    max-height: 120px;
+    max-height: 150px;
     font-size: 14px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    line-height: 1.4;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    background: #ffffff;
-    overflow-y: auto;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.5;
+    color: #374151;
+    outline: none;
 }
 
-.chat-input textarea:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
-    background: #ffffff;
+.chat-input textarea::placeholder {
+    color: #9ca3af;
+}
+
+.send-container {
+    display: flex;
+    justify-content: flex-end;
+    padding: 8px 12px;
+    background: #f8fafc;
+}
+
+.file-upload-input {
+    display: none;
 }
 
 .btn-send {
-    background: #007bff;
+    background: #3b82f6;
     border: none;
-    border-radius: 50%;
-    width: 44px;
-    height: 44px;
+    border-radius: 6px;
+    padding: 8px 16px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
-    justify-content: center;
-    color: white;
-    transition: all 0.3s ease;
+    gap: 6px;
 }
 
 .btn-send:hover {
-    background: #0056b3;
-    transform: scale(1.05);
+    background: #2563eb;
+}
+
+.btn-send:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
 }
 
 .empty-state {
@@ -279,10 +326,29 @@
         <div class="chat-input">
             <form id="messageForm">
                 <input type="hidden" id="roomId" value="{{ room.id if room else '' }}">
-                <textarea id="messageInput" placeholder="Type your message..." rows="1" required></textarea>
-                <button type="submit" class="btn-send">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
+                <input type="file" id="fileInput" class="file-upload-input" multiple accept="image/*,.pdf,.doc,.docx,.txt">
+                
+                <div class="input-container">
+                    <div class="input-toolbar">
+                        <button type="button" id="fileUploadBtn" title="Attach file">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        <button type="button" id="imageUploadBtn" title="Upload image">
+                            <i class="fas fa-image"></i>
+                        </button>
+                        <div class="flex-grow-1"></div>
+                        <span class="text-muted small" id="fileStatus"></span>
+                    </div>
+                    
+                    <textarea id="messageInput" placeholder="Type your message..." rows="1" required></textarea>
+                    
+                    <div class="send-container">
+                        <button type="submit" class="btn-send" id="sendBtn">
+                            <i class="fas fa-paper-plane"></i>
+                            Send
+                        </button>
+                    </div>
+                </div>
             </form>
         </div>
     </div>
@@ -295,17 +361,60 @@ document.addEventListener('DOMContentLoaded', function() {
     const chatMessages = document.getElementById('chatMessages');
     const roomId = document.getElementById('roomId').value;
 
+    // File upload elements
+    const fileInput = document.getElementById('fileInput');
+    const fileUploadBtn = document.getElementById('fileUploadBtn');
+    const imageUploadBtn = document.getElementById('imageUploadBtn');
+    const fileStatus = document.getElementById('fileStatus');
+    const sendBtn = document.getElementById('sendBtn');
+    
+    let selectedFiles = [];
+
     // Auto-resize textarea like Replit
     function autoResize() {
         messageInput.style.height = 'auto';
-        const newHeight = Math.min(messageInput.scrollHeight, 120);
+        const newHeight = Math.min(messageInput.scrollHeight, 150);
         messageInput.style.height = newHeight + 'px';
     }
     
-    messageInput.addEventListener('input', autoResize);
+    messageInput.addEventListener('input', function() {
+        autoResize();
+        updateSendButton();
+    });
+    
     messageInput.addEventListener('paste', function() {
         setTimeout(autoResize, 10);
     });
+
+    // File upload handlers
+    fileUploadBtn.addEventListener('click', function() {
+        fileInput.click();
+    });
+
+    imageUploadBtn.addEventListener('click', function() {
+        fileInput.setAttribute('accept', 'image/*');
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', function() {
+        selectedFiles = Array.from(this.files);
+        updateFileStatus();
+        updateSendButton();
+    });
+
+    function updateFileStatus() {
+        if (selectedFiles.length > 0) {
+            fileStatus.textContent = `${selectedFiles.length} file(s) selected`;
+        } else {
+            fileStatus.textContent = '';
+        }
+    }
+
+    function updateSendButton() {
+        const hasMessage = messageInput.value.trim().length > 0;
+        const hasFiles = selectedFiles.length > 0;
+        sendBtn.disabled = !hasMessage && !hasFiles;
+    }
 
     // Handle message sending
     messageForm.addEventListener('submit', function(e) {
@@ -320,6 +429,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Clear input and reset height
         messageInput.value = '';
         messageInput.style.height = '44px';
+        selectedFiles = [];
+        fileInput.value = '';
+        updateFileStatus();
+        updateSendButton();
 
         // Send to server
         fetch('/enhanced-chat/send-message', {
