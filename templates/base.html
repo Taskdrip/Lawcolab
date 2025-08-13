@@ -186,10 +186,139 @@
         {% block content %}{% endblock %}
     </main>
 
+    <!-- Footer -->
+    <footer class="footer mt-auto py-5" style="background: #1a1a1a; color: #ffffff;">
+        <div class="container">
+            <div class="row">
+                <!-- About Section -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <h5 style="color: #ffffff; font-weight: 700; margin-bottom: 1.5rem;">
+                        <i class="fas fa-balance-scale me-2" style="color: #0066cc;"></i>LawFirm<span style="color: #0066cc;">OS</span>
+                    </h5>
+                    <p style="color: #a0a0a0; line-height: 1.6; margin-bottom: 1.5rem;">
+                        Professional legal practice management platform built by lawyers, for lawyers worldwide. 
+                        Streamline your practice with intelligent automation and seamless collaboration.
+                    </p>
+                    <div class="social-links">
+                        <a href="https://www.youtube.com/@Taskdriper" target="_blank" class="me-3" style="color: #a0a0a0; font-size: 1.2rem; transition: color 0.3s;">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                        <a href="#" target="_blank" class="me-3" style="color: #a0a0a0; font-size: 1.2rem; transition: color 0.3s;">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" target="_blank" class="me-3" style="color: #a0a0a0; font-size: 1.2rem; transition: color 0.3s;">
+                            <i class="fab fa-telegram"></i>
+                        </a>
+                        <a href="#" target="_blank" style="color: #a0a0a0; font-size: 1.2rem; transition: color 0.3s;">
+                            <i class="fab fa-tiktok"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h6 style="color: #ffffff; font-weight: 600; margin-bottom: 1.5rem;">Platform</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <a href="{{ url_for('about') }}" style="color: #a0a0a0; text-decoration: none; transition: color 0.3s;">About Us</a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{{ url_for('contact') }}" style="color: #a0a0a0; text-decoration: none; transition: color 0.3s;">Contact</a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="#" style="color: #a0a0a0; text-decoration: none; transition: color 0.3s;">Features</a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="#" style="color: #a0a0a0; text-decoration: none; transition: color 0.3s;">Pricing</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Legal -->
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h6 style="color: #ffffff; font-weight: 600; margin-bottom: 1.5rem;">Legal</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <a href="#" style="color: #a0a0a0; text-decoration: none; transition: color 0.3s;">Privacy Policy</a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="#" style="color: #a0a0a0; text-decoration: none; transition: color 0.3s;">Terms of Service</a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="#" style="color: #a0a0a0; text-decoration: none; transition: color 0.3s;">Cookie Policy</a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="#" style="color: #a0a0a0; text-decoration: none; transition: color 0.3s;">GDPR</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Support -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <h6 style="color: #ffffff; font-weight: 600; margin-bottom: 1.5rem;">Get in Touch</h6>
+                    <div class="contact-info">
+                        <div class="mb-3">
+                            <i class="fas fa-envelope me-2" style="color: #0066cc;"></i>
+                            <a href="mailto:taskdrip@gmail.com" style="color: #a0a0a0; text-decoration: none;">taskdrip@gmail.com</a>
+                        </div>
+                        <div class="mb-3">
+                            <i class="fab fa-whatsapp me-2" style="color: #25d366;"></i>
+                            <a href="https://wa.me/2348036622568" target="_blank" style="color: #a0a0a0; text-decoration: none;">+234 803 662 2568</a>
+                        </div>
+                        <div class="mb-3">
+                            <i class="fas fa-clock me-2" style="color: #0066cc;"></i>
+                            <span style="color: #a0a0a0;">24/7 Support Available</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Section -->
+            <div class="row mt-4 pt-4" style="border-top: 1px solid #404040;">
+                <div class="col-md-6">
+                    <p style="color: #a0a0a0; margin: 0; font-size: 0.9rem;">
+                        © 2025 LawFirmOS. All rights reserved.
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p style="color: #a0a0a0; margin: 0; font-size: 0.9rem;">
+                        Built by <strong style="color: #0066cc;">Taskdrip</strong> for legal professionals worldwide
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Custom JS -->
     {% block javascript %}{% endblock %}
+
+    <!-- Footer Hover Effects -->
+    <style>
+    .footer .social-links a:hover {
+        color: #0066cc !important;
+    }
+    
+    .footer ul li a:hover {
+        color: #ffffff !important;
+        padding-left: 5px;
+    }
+    
+    .contact-info a:hover {
+        color: #ffffff !important;
+    }
+    
+    body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+    
+    main {
+        flex: 1;
+    }
+    </style>
 </body>
 </html>
