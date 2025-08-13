@@ -19,9 +19,6 @@
         }
         
         html, body {
-            height: 100vh;
-            height: 100dvh; /* Use dynamic viewport height for mobile */
-            overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: white;
             color: #000;
@@ -31,10 +28,8 @@
         
         /* Main chat container */
         .chat-container {
-            height: 100vh;
-            height: 100dvh; /* Use dynamic viewport height for mobile */
-            max-height: 100vh;
-            max-height: 100dvh;
+            min-height: 100vh;
+            min-height: 100dvh; /* Use dynamic viewport height for mobile */
             display: flex;
             flex-direction: column;
             background: white;
@@ -53,12 +48,10 @@
         /* Messages area */
         .chat-messages {
             flex: 1;
-            overflow-y: auto;
+            min-height: 60vh; /* Minimum height to show messages */
             padding: 1rem;
-            padding-bottom: 2rem; /* Extra bottom padding for better scrolling */
+            padding-bottom: 2rem;
             background: white;
-            min-height: 0;
-            overscroll-behavior: contain; /* Prevent bounce scrolling on mobile */
         }
         
         /* Custom scrollbar */
@@ -81,12 +74,21 @@
             background: white;
             border-top: 1px solid #dee2e6;
             padding: 1rem 1.5rem;
-            padding-bottom: max(1rem, env(safe-area-inset-bottom)); /* Account for mobile notch */
+            padding-bottom: max(1rem, env(safe-area-inset-bottom));
             flex-shrink: 0;
             position: sticky;
             bottom: 0;
             z-index: 100;
-            min-height: 80px; /* Ensure minimum height for proper display */
+            min-height: 80px;
+        }
+        
+        /* Footer section that can be scrolled to */
+        .chat-footer {
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            color: #6c757d;
         }
         
         /* Message styling */
@@ -360,6 +362,67 @@
                     <div class="progress-bar" role="progressbar" style="width: 0%"></div>
                 </div>
                 <small class="text-muted">Uploading file...</small>
+            </div>
+        </div>
+        
+        <!-- Footer Section -->
+        <div class="chat-footer">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <h6 class="fw-bold text-dark">Invoice Details</h6>
+                    <p class="mb-1"><strong>Number:</strong> {{ invoice.invoice_number }}</p>
+                    <p class="mb-1"><strong>Amount:</strong> ${{ "%.2f"|format(invoice.total_amount) }}</p>
+                    <p class="mb-1"><strong>Status:</strong> {{ invoice.status.title() }}</p>
+                    <p class="mb-0"><strong>Due Date:</strong> {{ invoice.due_date.strftime('%b %d, %Y') }}</p>
+                </div>
+                
+                <div class="col-md-4">
+                    <h6 class="fw-bold text-dark">Quick Actions</h6>
+                    <div class="d-flex flex-column gap-2">
+                        <a href="{{ url_for('invoices.view_invoice', id=invoice.id) }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-file-invoice me-1"></i>View Full Invoice
+                        </a>
+                        {% if not current_user.is_client() and invoice.status == 'draft' %}
+                        <form method="POST" action="{{ url_for('invoices.send_invoice', id=invoice.id) }}">
+                            <button type="submit" class="btn btn-outline-success btn-sm w-100" onclick="return confirm('Send this invoice to the client?')">
+                                <i class="fas fa-paper-plane me-1"></i>Send Invoice
+                            </button>
+                        </form>
+                        {% elif not current_user.is_client() and invoice.status in ['sent', 'overdue'] %}
+                        <button type="button" class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#markPaidModal">
+                            <i class="fas fa-check me-1"></i>Mark as Paid
+                        </button>
+                        {% endif %}
+                        <a href="{{ url_for('invoices.list_invoices') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-list me-1"></i>All Invoices
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    {% if invoice.law_firm.bank_name or invoice.law_firm.account_number %}
+                    <h6 class="fw-bold text-dark">Payment Information</h6>
+                    {% if invoice.law_firm.bank_name %}
+                    <p class="mb-1"><strong>Bank:</strong> {{ invoice.law_firm.bank_name }}</p>
+                    {% endif %}
+                    {% if invoice.law_firm.account_number %}
+                    <p class="mb-1"><strong>Account:</strong> {{ invoice.law_firm.account_number }}</p>
+                    {% endif %}
+                    {% if invoice.law_firm.routing_number %}
+                    <p class="mb-1"><strong>Routing:</strong> {{ invoice.law_firm.routing_number }}</p>
+                    {% endif %}
+                    <small class="text-muted">Include invoice {{ invoice.invoice_number }} in payment reference</small>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <hr class="my-4">
+            <div class="text-center">
+                <small class="text-muted">
+                    <i class="fas fa-lock me-1"></i>Secure communication powered by LawFirmOS
+                    <br>
+                    <a href="{{ url_for('invoices.list_invoices') }}" class="text-decoration-none">← Back to Invoices</a>
+                </small>
             </div>
         </div>
     </div>
