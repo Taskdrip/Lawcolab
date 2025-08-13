@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Support Requests</h2>
+        <a href="{{ url_for('superadmin.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+    
+    <div class="card">
+        <div class="card-body">
+            {% if requests %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Law Firm</th>
+                            <th>User</th>
+                            <th>Request Type</th>
+                            <th>Team Size</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in requests %}
+                        <tr class="{% if req.status == 'pending' %}table-warning{% elif req.status == 'resolved' %}table-success{% endif %}">
+                            <td>{{ req.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                <strong>{{ req.law_firm.name }}</strong>
+                                {% if req.request_type == '3days' %}
+                                <span class="badge bg-info ms-2">Trial Request</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ req.user.full_name }}</td>
+                            <td>
+                                {% if req.request_type == '3days' %}
+                                3-Day Trial (FREE)
+                                {% elif req.request_type == '1month' %}
+                                1 Month License
+                                {% elif req.request_type == '3months' %}
+                                3 Month License
+                                {% elif req.request_type == '6months' %}
+                                6 Month License
+                                {% elif req.request_type == '1year' %}
+                                1 Year License
+                                {% else %}
+                                {{ req.request_type.title() }}
+                                {% endif %}
+                            </td>
+                            <td>{{ req.team_size or 'Not specified' }}</td>
+                            <td>
+                                {% if req.status == 'pending' %}
+                                <span class="badge bg-warning">Pending</span>
+                                {% elif req.status == 'resolved' %}
+                                <span class="badge bg-success">Resolved</span>
+                                {% else %}
+                                <span class="badge bg-info">{{ req.status.title() }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('support.view_support_request', request_id=req.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i>View
+                                </a>
+                                {% if req.request_type in ['3days', '1month', '3months', '6months', '1year'] %}
+                                <a href="{{ url_for('superadmin.law_firm_detail', firm_id=req.law_firm.id) }}" class="btn btn-sm btn-success">
+                                    <i class="fas fa-user-shield me-1"></i>Grant Access
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-inbox" style="font-size: 3rem;"></i>
+                <h5 class="mt-3">No Support Requests</h5>
+                <p>New user requests will appear here.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

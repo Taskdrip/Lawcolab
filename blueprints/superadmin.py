@@ -155,7 +155,9 @@ def grant_admin_access():
         from datetime import datetime, timedelta
         now = datetime.now()
         
-        if period == '1month':
+        if period == '3days':
+            expiry = now + timedelta(days=3)
+        elif period == '1month':
             expiry = now + timedelta(days=30)
         elif period == '3months':
             expiry = now + timedelta(days=90)

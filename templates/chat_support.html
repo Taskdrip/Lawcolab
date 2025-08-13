@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-headset me-2"></i>Support Chat - License Request
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Contact our super admin team to request your LawFirmOS license and admin privileges.
+                    </div>
+                    
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Law Firm Name</label>
+                            <input type="text" class="form-control" value="{{ current_user.law_firm.name if current_user.law_firm else '' }}" readonly>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Contact Email</label>
+                            <input type="email" class="form-control" value="{{ current_user.email }}" readonly>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Request Type</label>
+                            <select class="form-select" name="request_type" required>
+                                <option value="">Select Request Type</option>
+                                <option value="3days">3-Day Trial License (Free)</option>
+                                <option value="1month">1 Month License</option>
+                                <option value="3months">3 Month License</option>
+                                <option value="6months">6 Month License</option>
+                                <option value="1year">1 Year License</option>
+                                <option value="support">General Support & Questions</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Message</label>
+                            <textarea class="form-control" rows="5" name="message" placeholder="Describe your request, payment confirmation, or any questions you have..." required></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Team Size (Optional)</label>
+                            <select class="form-select" name="team_size">
+                                <option value="">Select team size</option>
+                                <option value="1-5">1-5 lawyers</option>
+                                <option value="6-15">6-15 lawyers</option>
+                                <option value="16-50">16-50 lawyers</option>
+                                <option value="50+">50+ lawyers</option>
+                            </select>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Send Request to Super Admin
+                            </button>
+                            <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clock me-2"></i>Response Times
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <i class="fas fa-bolt text-warning" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2">Trial Requests</h6>
+                            <p class="text-muted">Usually within 2-4 hours</p>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-credit-card text-success" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2">Paid Plans</h6>
+                            <p class="text-muted">Within 1-2 hours after payment</p>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-question-circle text-info" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2">Support</h6>
+                            <p class="text-muted">Within 24 hours</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

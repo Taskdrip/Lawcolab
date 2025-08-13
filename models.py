@@ -256,6 +256,25 @@ class ClientNote(db.Model):
 
 
 
+class SupportRequest(db.Model):
+    __tablename__ = 'support_requests'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    law_firm_id = db.Column(db.Integer, db.ForeignKey('law_firms.id'), nullable=False)
+    request_type = db.Column(db.String(50), nullable=False)  # trial, 1month, 3months, etc.
+    message = db.Column(db.Text, nullable=False)
+    team_size = db.Column(db.String(20))  # Optional: 1-5, 6-15, etc.
+    status = db.Column(db.String(20), default='pending')  # pending, processing, resolved
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    resolved_at = db.Column(db.DateTime)
+    resolved_by_id = db.Column(db.String, db.ForeignKey('users.id'))  # Super admin who resolved
+    
+    # Relationships
+    user = db.relationship('User', foreign_keys=[user_id])
+    law_firm = db.relationship('LawFirm', foreign_keys=[law_firm_id])
+    resolved_by = db.relationship('User', foreign_keys=[resolved_by_id])
+
 class ChatMessage(db.Model):
     __tablename__ = 'chat_messages'
     

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid vh-100 d-flex align-items-center justify-content-center">
+    <div class="row justify-content-center w-100">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-body text-center p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    
+                    <h2 class="card-title mb-3">Thank You for Registering!</h2>
+                    <p class="text-muted mb-4">Welcome to <strong>LawFirmOS</strong> - Your comprehensive legal practice management solution.</p>
+                    
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Your law firm account has been created successfully. To start managing clients, team members, and projects, you'll need admin privileges.
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5>Next Steps:</h5>
+                        <ul class="list-unstyled text-start">
+                            <li class="mb-2"><i class="fas fa-arrow-right text-primary me-2"></i>Contact our support team to request your license</li>
+                            <li class="mb-2"><i class="fas fa-arrow-right text-primary me-2"></i>Choose from trial (3 days) or paid plans (1-12 months)</li>
+                            <li class="mb-2"><i class="fas fa-arrow-right text-primary me-2"></i>Get admin access to unlock all features</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="/chat-support" class="btn btn-primary btn-lg">
+                            <i class="fas fa-comments me-2"></i>Chat with Support Team
+                        </a>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                        </a>
+                    </div>
+                    
+                    <div class="mt-4 text-muted">
+                        <small>
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Built by <strong>Taskdrip</strong> for lawyers globally
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -77,8 +77,10 @@ def signup():
             db.session.add(user)
             db.session.commit()
             
-            flash('Registration successful! You are now the owner of your law firm. Please log in to add team members and clients.', 'success')
-            return redirect(url_for('auth.login'))
+            # Login the user immediately after successful registration
+            login_user(user)
+            flash('Registration successful! Welcome to LawFirmOS.', 'success')
+            return redirect(url_for('registration_success'))
         except Exception as e:
             db.session.rollback()
             flash('Registration failed. Please try again.', 'error')
