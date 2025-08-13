@@ -3,167 +3,147 @@
 {% block title %}Create Invoice - LawFirmOS{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<!-- Clean White Background Mobile-Optimized Create Invoice -->
+<div class="container-fluid" style="background: #ffffff; min-height: 100vh; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;">
     <div class="row justify-content-center">
-        <div class="col-xl-8 col-lg-10">
-            <!-- Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h1 class="h3 fw-bold text-dark mb-2">Create Invoice</h1>
-                    <p class="text-muted mb-0">Generate a new invoice for your client</p>
+        <div class="col-12 col-lg-8 col-xl-6">
+            
+            <!-- Mobile-Friendly Header -->
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 p-3" style="background: #f8f9fc; border-radius: 12px; border: 1px solid #e1e5e9;">
+                <div class="mb-3 mb-sm-0">
+                    <h1 class="h4 fw-bold mb-1" style="color: #1a1a1a; font-weight: 700;">Create Invoice</h1>
+                    <p class="mb-0" style="color: #6c757d; font-size: 0.9rem;">Generate a new invoice for your client</p>
                 </div>
-                <a href="{{ url_for('invoices.list_invoices') }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Back to Invoices
+                <a href="{{ url_for('invoices.list_invoices') }}" class="btn btn-sm" style="background: #ffffff; border: 1px solid #dee2e6; color: #495057; font-size: 0.85rem;">
+                    <i class="fas fa-arrow-left me-1" style="font-size: 0.75rem;"></i>Back
                 </a>
             </div>
 
-            <!-- Create Invoice Form -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4">
+            <!-- Clean Create Invoice Form -->
+            <div class="card border-0" style="background: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-radius: 16px; overflow: hidden;">
+                <div class="card-body p-4 p-md-5">
                     <form method="POST" id="invoiceForm">
-                        <div class="row g-4">
-                            <!-- Client and Project Selection -->
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Client <span class="text-danger">*</span></label>
-                                <select name="client_id" id="clientSelect" class="form-select" required>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        
+                        <!-- Client and Project Selection -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-bold" style="color: #1a1a1a; font-size: 0.9rem;">
+                                    Client <span style="color: #dc3545;">*</span>
+                                </label>
+                                <select name="client_id" id="clientSelect" class="form-select" required style="border: 1px solid #e1e5e9; font-size: 0.9rem;">
                                     <option value="">Select a client...</option>
                                     {% for client in clients %}
                                     <option value="{{ client.id }}">{{ client.display_name }} ({{ client.email }})</option>
                                     {% endfor %}
                                 </select>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Project <span class="text-muted">(Optional)</span></label>
-                                <select name="project_id" id="projectSelect" class="form-select">
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-bold" style="color: #1a1a1a; font-size: 0.9rem;">
+                                    Project <span style="color: #6c757d; font-size: 0.8rem;">(Optional)</span>
+                                </label>
+                                <select name="project_id" id="projectSelect" class="form-select" style="border: 1px solid #e1e5e9; font-size: 0.9rem;">
                                     <option value="">No specific project</option>
                                     {% for project in projects %}
                                     <option value="{{ project.id }}">{{ project.title }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
+                        </div>
 
-                            <!-- Invoice Details -->
-                            <div class="col-12">
-                                <label class="form-label fw-bold">Invoice Title <span class="text-danger">*</span></label>
-                                <input type="text" name="title" class="form-control" placeholder="e.g., Legal Services - January 2025" required>
-                            </div>
-                            
-                            <div class="col-12">
-                                <label class="form-label fw-bold">Description</label>
-                                <textarea name="description" class="form-control" rows="3" placeholder="Detailed description of services provided..."></textarea>
-                            </div>
+                        <!-- Invoice Details -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold" style="color: #1a1a1a; font-size: 0.9rem;">
+                                Invoice Title <span style="color: #dc3545;">*</span>
+                            </label>
+                            <input type="text" name="title" class="form-control" placeholder="e.g., Legal Services - January 2025" required style="border: 1px solid #e1e5e9; font-size: 0.9rem;">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold" style="color: #1a1a1a; font-size: 0.9rem;">Description</label>
+                            <textarea name="description" class="form-control" rows="3" placeholder="Detailed description of services provided..." style="border: 1px solid #e1e5e9; font-size: 0.9rem;"></textarea>
+                        </div>
 
-                            <!-- Invoice Type and Billing -->
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">Invoice Type</label>
-                                <select name="invoice_type" class="form-select">
+                        <!-- Invoice Type and Billing -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-bold" style="color: #1a1a1a; font-size: 0.9rem;">Invoice Type</label>
+                                <select name="invoice_type" class="form-select" style="border: 1px solid #e1e5e9; font-size: 0.9rem;">
                                     <option value="service">Legal Services</option>
                                     <option value="retainer">Retainer</option>
                                     <option value="renewal">Renewal</option>
                                     <option value="expense">Expenses</option>
                                 </select>
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">Billing Period</label>
-                                <select name="billing_period" class="form-select">
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-bold" style="color: #1a1a1a; font-size: 0.9rem;">Billing Period</label>
+                                <select name="billing_period" class="form-select" style="border: 1px solid #e1e5e9; font-size: 0.9rem;">
                                     <option value="">One-time</option>
                                     <option value="monthly">Monthly</option>
                                     <option value="quarterly">Quarterly</option>
                                     <option value="yearly">Yearly</option>
                                 </select>
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">Due in (Days)</label>
-                                <input type="number" name="due_days" class="form-control" value="30" min="1" max="365" required>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-bold" style="color: #1a1a1a; font-size: 0.9rem;">Due in (Days)</label>
+                                <input type="number" name="due_days" class="form-control" value="30" min="1" max="365" required style="border: 1px solid #e1e5e9; font-size: 0.9rem;">
                             </div>
+                        </div>
 
-                            <!-- Amount -->
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Total Amount <span class="text-danger">*</span></label>
+                        <!-- Amount -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-bold" style="color: #1a1a1a; font-size: 0.9rem;">
+                                    Total Amount <span style="color: #dc3545;">*</span>
+                                </label>
                                 <div class="input-group">
-                                    <span class="input-group-text">$</span>
-                                    <input type="number" name="amount" class="form-control" step="0.01" min="0" placeholder="0.00" required>
+                                    <span class="input-group-text" style="background: #f8f9fc; border: 1px solid #e1e5e9; color: #6c757d;">$</span>
+                                    <input type="number" name="amount" class="form-control" step="0.01" min="0.01" placeholder="0.00" required style="border: 1px solid #e1e5e9; font-size: 0.9rem;">
                                 </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-bold" style="color: #1a1a1a; font-size: 0.9rem;">Currency</label>
+                                <select name="currency" class="form-select" style="border: 1px solid #e1e5e9; font-size: 0.9rem;">
+                                    <option value="USD">USD ($)</option>
+                                    <option value="EUR">EUR (€)</option>
+                                    <option value="GBP">GBP (£)</option>
+                                    <option value="CAD">CAD ($)</option>
+                                </select>
                             </div>
                         </div>
 
-                        <!-- Bank Details Section -->
-                        <div class="mt-5">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="fw-bold mb-0">Payment Information</h5>
-                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#bankDetailsModal">
-                                    <i class="fas fa-edit me-1"></i>Update Bank Details
-                                </button>
-                            </div>
-                            
-                            <div class="card bg-light border-0">
-                                <div class="card-body">
-                                    {% if current_user.law_firm.bank_name or current_user.law_firm.account_number %}
-                                    <div class="row g-3">
-                                        {% if current_user.law_firm.bank_name %}
-                                        <div class="col-md-6">
-                                            <small class="text-muted d-block">Bank Name</small>
-                                            <strong>{{ current_user.law_firm.bank_name }}</strong>
-                                        </div>
-                                        {% endif %}
-                                        {% if current_user.law_firm.account_holder_name %}
-                                        <div class="col-md-6">
-                                            <small class="text-muted d-block">Account Holder</small>
-                                            <strong>{{ current_user.law_firm.account_holder_name }}</strong>
-                                        </div>
-                                        {% endif %}
-                                        {% if current_user.law_firm.account_number %}
-                                        <div class="col-md-6">
-                                            <small class="text-muted d-block">Account Number</small>
-                                            <strong>{{ current_user.law_firm.account_number }}</strong>
-                                        </div>
-                                        {% endif %}
-                                        {% if current_user.law_firm.routing_number %}
-                                        <div class="col-md-6">
-                                            <small class="text-muted d-block">Routing Number</small>
-                                            <strong>{{ current_user.law_firm.routing_number }}</strong>
-                                        </div>
-                                        {% endif %}
-                                        {% if current_user.law_firm.swift_code %}
-                                        <div class="col-md-6">
-                                            <small class="text-muted d-block">SWIFT Code</small>
-                                            <strong>{{ current_user.law_firm.swift_code }}</strong>
-                                        </div>
-                                        {% endif %}
-                                    </div>
-                                    {% else %}
-                                    <div class="text-center py-3">
-                                        <i class="fas fa-university text-muted mb-2" style="font-size: 2rem;"></i>
-                                        <p class="text-muted mb-2">No bank details configured</p>
-                                        <small class="text-muted">Click "Update Bank Details" to add payment information that will appear on your invoices.</small>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Line Items Section -->
-                        <div class="mt-5">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="fw-bold mb-0">Line Items <span class="text-muted">(Optional)</span></h5>
-                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addLineItem()">
-                                    <i class="fas fa-plus me-2"></i>Add Line Item
+                        <!-- Line Items Section (Optional) -->
+                        <div class="mb-5" style="border-top: 1px solid #e1e5e9; padding-top: 1.5rem;">
+                            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3">
+                                <h5 class="fw-bold mb-2 mb-sm-0" style="color: #1a1a1a; font-size: 1rem;">
+                                    <i class="fas fa-list me-2" style="color: #667eea;"></i>Line Items 
+                                    <span style="color: #6c757d; font-size: 0.8rem; font-weight: normal;">(Optional)</span>
+                                </h5>
+                                <button type="button" class="btn btn-sm" onclick="addLineItem()" style="background: #667eea; border: 1px solid #667eea; color: #ffffff; font-size: 0.8rem;">
+                                    <i class="fas fa-plus me-1" style="font-size: 0.7rem;"></i>Add Line Item
                                 </button>
                             </div>
                             
                             <div id="lineItemsContainer">
                                 <!-- Line items will be added here dynamically -->
                             </div>
+                            
+                            <div class="text-center py-3" id="emptyLineItems" style="background: #f8f9fc; border: 1px dashed #e1e5e9; border-radius: 8px; color: #6c757d; font-size: 0.85rem;">
+                                <i class="fas fa-plus-circle mb-2" style="font-size: 1.5rem; opacity: 0.5;"></i>
+                                <p class="mb-0">Click "Add Line Item" to itemize services</p>
+                            </div>
                         </div>
 
                         <!-- Submit Buttons -->
-                        <div class="d-flex justify-content-end gap-3 mt-5 pt-4 border-top">
-                            <a href="{{ url_for('invoices.list_invoices') }}" class="btn btn-outline-secondary">Cancel</a>
-                            <button type="submit" name="action" value="save_draft" class="btn btn-outline-primary">
-                                <i class="fas fa-save me-2"></i>Save as Draft
+                        <div class="d-flex flex-column flex-sm-row justify-content-end gap-2 gap-sm-3">
+                            <a href="{{ url_for('invoices.list_invoices') }}" class="btn order-3 order-sm-1" style="background: #ffffff; border: 1px solid #dee2e6; color: #495057; font-size: 0.9rem;">
+                                Cancel
+                            </a>
+                            <button type="submit" name="action" value="save_draft" class="btn order-2" style="background: #ffffff; border: 1px solid #667eea; color: #667eea; font-size: 0.9rem;">
+                                <i class="fas fa-save me-1" style="font-size: 0.8rem;"></i>Save as Draft
                             </button>
-                            <button type="submit" name="action" value="create_and_send" class="btn btn-primary">
-                                <i class="fas fa-paper-plane me-2"></i>Create & Send
+                            <button type="submit" name="action" value="create_and_send" class="btn order-1" style="background: #667eea; border: 1px solid #667eea; color: #ffffff; font-size: 0.9rem;">
+                                <i class="fas fa-paper-plane me-1" style="font-size: 0.8rem;"></i>Create & Send
                             </button>
                         </div>
                     </form>
@@ -179,32 +159,37 @@ let lineItemCount = 0;
 function addLineItem() {
     lineItemCount++;
     const container = document.getElementById('lineItemsContainer');
+    const emptyState = document.getElementById('emptyLineItems');
+    
+    // Hide empty state
+    if (emptyState) {
+        emptyState.style.display = 'none';
+    }
+    
     const lineItemHtml = `
-        <div class="line-item card mb-3" id="lineItem${lineItemCount}">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0 fw-bold">Line Item ${lineItemCount}</h6>
-                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeLineItem(${lineItemCount})">
-                        <i class="fas fa-trash"></i>
-                    </button>
+        <div class="line-item mb-3" id="lineItem${lineItemCount}" style="background: #f8f9fc; border: 1px solid #e1e5e9; border-radius: 8px; padding: 1rem;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0 fw-bold" style="color: #1a1a1a; font-size: 0.9rem;">Line Item ${lineItemCount}</h6>
+                <button type="button" class="btn btn-sm" onclick="removeLineItem(${lineItemCount})" style="background: #ffffff; border: 1px solid #dc3545; color: #dc3545; font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                    <i class="fas fa-trash" style="font-size: 0.7rem;"></i>
+                </button>
+            </div>
+            <div class="row g-2">
+                <div class="col-12 col-md-6">
+                    <label class="form-label" style="color: #1a1a1a; font-size: 0.8rem;">Description</label>
+                    <input type="text" name="line_description[]" class="form-control" placeholder="Service description" style="border: 1px solid #e1e5e9; font-size: 0.85rem;">
                 </div>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Description</label>
-                        <input type="text" name="line_description[]" class="form-control" placeholder="Service description">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Quantity</label>
-                        <input type="number" name="line_quantity[]" class="form-control" value="1" step="0.01" min="0">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Rate ($)</label>
-                        <input type="number" name="line_rate[]" class="form-control" step="0.01" min="0" placeholder="0.00">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Total</label>
-                        <input type="text" class="form-control bg-light" readonly placeholder="$0.00">
-                    </div>
+                <div class="col-4 col-md-2">
+                    <label class="form-label" style="color: #1a1a1a; font-size: 0.8rem;">Qty</label>
+                    <input type="number" name="line_quantity[]" class="form-control line-quantity" value="1" step="0.01" min="0" style="border: 1px solid #e1e5e9; font-size: 0.85rem;">
+                </div>
+                <div class="col-4 col-md-2">
+                    <label class="form-label" style="color: #1a1a1a; font-size: 0.8rem;">Rate ($)</label>
+                    <input type="number" name="line_rate[]" class="form-control line-rate" step="0.01" min="0" placeholder="0.00" style="border: 1px solid #e1e5e9; font-size: 0.85rem;">
+                </div>
+                <div class="col-4 col-md-2">
+                    <label class="form-label" style="color: #1a1a1a; font-size: 0.8rem;">Total</label>
+                    <input type="text" class="form-control line-total" readonly placeholder="$0.00" style="background: #ffffff; border: 1px solid #e1e5e9; font-size: 0.85rem; color: #667eea; font-weight: 600;">
                 </div>
             </div>
         </div>
@@ -213,9 +198,9 @@ function addLineItem() {
     
     // Add event listeners for automatic total calculation
     const newItem = document.getElementById(`lineItem${lineItemCount}`);
-    const quantityInput = newItem.querySelector('input[name="line_quantity[]"]');
-    const rateInput = newItem.querySelector('input[name="line_rate[]"]');
-    const totalInput = newItem.querySelector('input[readonly]');
+    const quantityInput = newItem.querySelector('.line-quantity');
+    const rateInput = newItem.querySelector('.line-rate');
+    const totalInput = newItem.querySelector('.line-total');
     
     function calculateTotal() {
         const quantity = parseFloat(quantityInput.value) || 0;
@@ -230,6 +215,13 @@ function addLineItem() {
 
 function removeLineItem(itemId) {
     document.getElementById(`lineItem${itemId}`).remove();
+    
+    // Show empty state if no line items left
+    const container = document.getElementById('lineItemsContainer');
+    const emptyState = document.getElementById('emptyLineItems');
+    if (container.children.length === 0 && emptyState) {
+        emptyState.style.display = 'block';
+    }
 }
 
 // Client change handler to load projects
@@ -263,94 +255,26 @@ document.getElementById('clientSelect').addEventListener('change', function() {
 // Form validation
 document.getElementById('invoiceForm').addEventListener('submit', function(e) {
     const amount = parseFloat(document.querySelector('input[name="amount"]').value);
-    if (amount <= 0) {
+    if (!amount || amount <= 0) {
         e.preventDefault();
         alert('Please enter a valid amount greater than 0.');
+        return false;
+    }
+    
+    const clientId = document.querySelector('select[name="client_id"]').value;
+    if (!clientId) {
+        e.preventDefault();
+        alert('Please select a client.');
+        return false;
+    }
+    
+    const title = document.querySelector('input[name="title"]').value.trim();
+    if (!title) {
+        e.preventDefault();
+        alert('Please enter an invoice title.');
         return false;
     }
 });
 </script>
 
-<!-- Bank Details Modal -->
-<div class="modal fade" id="bankDetailsModal" tabindex="-1" aria-labelledby="bankDetailsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="bankDetailsModalLabel">Update Bank Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="bankDetailsForm" action="{{ url_for('invoices.update_bank_details') }}" method="POST">
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Bank Name <span class="text-danger">*</span></label>
-                            <input type="text" name="bank_name" class="form-control" value="{{ current_user.law_firm.bank_name or '' }}" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Account Holder Name <span class="text-danger">*</span></label>
-                            <input type="text" name="account_holder_name" class="form-control" value="{{ current_user.law_firm.account_holder_name or '' }}" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Account Number <span class="text-danger">*</span></label>
-                            <input type="text" name="account_number" class="form-control" value="{{ current_user.law_firm.account_number or '' }}" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Routing Number</label>
-                            <input type="text" name="routing_number" class="form-control" value="{{ current_user.law_firm.routing_number or '' }}">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">SWIFT Code <span class="text-muted">(For international transfers)</span></label>
-                            <input type="text" name="swift_code" class="form-control" value="{{ current_user.law_firm.swift_code or '' }}">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Tax ID / EIN</label>
-                            <input type="text" name="tax_id" class="form-control" value="{{ current_user.law_firm.tax_id or '' }}">
-                        </div>
-                    </div>
-                    <div class="alert alert-info mt-3">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <strong>Note:</strong> This information will appear on your invoices to help clients make payments directly to your firm.
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-2"></i>Save Bank Details
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<script>
-// Handle bank details form submission
-document.getElementById('bankDetailsForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    
-    fetch(this.action, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Close modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('bankDetailsModal'));
-            modal.hide();
-            
-            // Reload page to show updated bank details
-            location.reload();
-        } else {
-            alert('Error updating bank details: ' + (data.error || 'Please try again.'));
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error updating bank details. Please try again.');
-    });
-});
-</script>
 {% endblock %}

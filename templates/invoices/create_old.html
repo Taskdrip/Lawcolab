@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+
+{% block title %}Create Invoice - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 fw-bold text-dark mb-2">Create Invoice</h1>
+                    <p class="text-muted mb-0">Generate a new invoice for your client</p>
+                </div>
+                <a href="{{ url_for('invoices.list_invoices') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Invoices
+                </a>
+            </div>
+
+            <!-- Create Invoice Form -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form method="POST" id="invoiceForm">
+                        {{ csrf_token() }}
+                        <div class="row g-4">
+                            <!-- Client and Project Selection -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Client <span class="text-danger">*</span></label>
+                                <select name="client_id" id="clientSelect" class="form-select" required>
+                                    <option value="">Select a client...</option>
+                                    {% for client in clients %}
+                                    <option value="{{ client.id }}">{{ client.display_name }} ({{ client.email }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Project <span class="text-muted">(Optional)</span></label>
+                                <select name="project_id" id="projectSelect" class="form-select">
+                                    <option value="">No specific project</option>
+                                    {% for project in projects %}
+                                    <option value="{{ project.id }}">{{ project.title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Invoice Details -->
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Invoice Title <span class="text-danger">*</span></label>
+                                <input type="text" name="title" class="form-control" placeholder="e.g., Legal Services - January 2025" required>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Description</label>
+                                <textarea name="description" class="form-control" rows="3" placeholder="Detailed description of services provided..."></textarea>
+                            </div>
+
+                            <!-- Invoice Type and Billing -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Invoice Type</label>
+                                <select name="invoice_type" class="form-select">
+                                    <option value="service">Legal Services</option>
+                                    <option value="retainer">Retainer</option>
+                                    <option value="renewal">Renewal</option>
+                                    <option value="expense">Expenses</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Billing Period</label>
+                                <select name="billing_period" class="form-select">
+                                    <option value="">One-time</option>
+                                    <option value="monthly">Monthly</option>
+                                    <option value="quarterly">Quarterly</option>
+                                    <option value="yearly">Yearly</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Due in (Days)</label>
+                                <input type="number" name="due_days" class="form-control" value="30" min="1" max="365" required>
+                            </div>
+
+                            <!-- Amount -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Total Amount <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" name="amount" class="form-control" step="0.01" min="0" placeholder="0.00" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bank Details Section -->
+                        <div class="mt-5">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="fw-bold mb-0">Payment Information</h5>
+                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#bankDetailsModal">
+                                    <i class="fas fa-edit me-1"></i>Update Bank Details
+                                </button>
+                            </div>
+                            
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    {% if current_user.law_firm.bank_name or current_user.law_firm.account_number %}
+                                    <div class="row g-3">
+                                        {% if current_user.law_firm.bank_name %}
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">Bank Name</small>
+                                            <strong>{{ current_user.law_firm.bank_name }}</strong>
+                                        </div>
+                                        {% endif %}
+                                        {% if current_user.law_firm.account_holder_name %}
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">Account Holder</small>
+                                            <strong>{{ current_user.law_firm.account_holder_name }}</strong>
+                                        </div>
+                                        {% endif %}
+                                        {% if current_user.law_firm.account_number %}
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">Account Number</small>
+                                            <strong>{{ current_user.law_firm.account_number }}</strong>
+                                        </div>
+                                        {% endif %}
+                                        {% if current_user.law_firm.routing_number %}
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">Routing Number</small>
+                                            <strong>{{ current_user.law_firm.routing_number }}</strong>
+                                        </div>
+                                        {% endif %}
+                                        {% if current_user.law_firm.swift_code %}
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">SWIFT Code</small>
+                                            <strong>{{ current_user.law_firm.swift_code }}</strong>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    {% else %}
+                                    <div class="text-center py-3">
+                                        <i class="fas fa-university text-muted mb-2" style="font-size: 2rem;"></i>
+                                        <p class="text-muted mb-2">No bank details configured</p>
+                                        <small class="text-muted">Click "Update Bank Details" to add payment information that will appear on your invoices.</small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Line Items Section -->
+                        <div class="mt-5">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="fw-bold mb-0">Line Items <span class="text-muted">(Optional)</span></h5>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addLineItem()">
+                                    <i class="fas fa-plus me-2"></i>Add Line Item
+                                </button>
+                            </div>
+                            
+                            <div id="lineItemsContainer">
+                                <!-- Line items will be added here dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex justify-content-end gap-3 mt-5 pt-4 border-top">
+                            <a href="{{ url_for('invoices.list_invoices') }}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" name="action" value="save_draft" class="btn btn-outline-primary">
+                                <i class="fas fa-save me-2"></i>Save as Draft
+                            </button>
+                            <button type="submit" name="action" value="create_and_send" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Create & Send
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let lineItemCount = 0;
+
+function addLineItem() {
+    lineItemCount++;
+    const container = document.getElementById('lineItemsContainer');
+    const lineItemHtml = `
+        <div class="line-item card mb-3" id="lineItem${lineItemCount}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0 fw-bold">Line Item ${lineItemCount}</h6>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeLineItem(${lineItemCount})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Description</label>
+                        <input type="text" name="line_description[]" class="form-control" placeholder="Service description">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Quantity</label>
+                        <input type="number" name="line_quantity[]" class="form-control" value="1" step="0.01" min="0">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Rate ($)</label>
+                        <input type="number" name="line_rate[]" class="form-control" step="0.01" min="0" placeholder="0.00">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Total</label>
+                        <input type="text" class="form-control bg-light" readonly placeholder="$0.00">
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', lineItemHtml);
+    
+    // Add event listeners for automatic total calculation
+    const newItem = document.getElementById(`lineItem${lineItemCount}`);
+    const quantityInput = newItem.querySelector('input[name="line_quantity[]"]');
+    const rateInput = newItem.querySelector('input[name="line_rate[]"]');
+    const totalInput = newItem.querySelector('input[readonly]');
+    
+    function calculateTotal() {
+        const quantity = parseFloat(quantityInput.value) || 0;
+        const rate = parseFloat(rateInput.value) || 0;
+        const total = quantity * rate;
+        totalInput.value = '$' + total.toFixed(2);
+    }
+    
+    quantityInput.addEventListener('input', calculateTotal);
+    rateInput.addEventListener('input', calculateTotal);
+}
+
+function removeLineItem(itemId) {
+    document.getElementById(`lineItem${itemId}`).remove();
+}
+
+// Client change handler to load projects
+document.getElementById('clientSelect').addEventListener('change', function() {
+    const clientId = this.value;
+    const projectSelect = document.getElementById('projectSelect');
+    
+    // Clear existing project options
+    projectSelect.innerHTML = '<option value="">No specific project</option>';
+    
+    if (clientId) {
+        // Load projects for selected client
+        fetch(`/invoices/api/client-projects/${clientId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.projects.length > 0) {
+                    data.projects.forEach(project => {
+                        const option = document.createElement('option');
+                        option.value = project.id;
+                        option.textContent = project.name;
+                        projectSelect.appendChild(option);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading projects:', error);
+            });
+    }
+});
+
+// Form validation
+document.getElementById('invoiceForm').addEventListener('submit', function(e) {
+    const amount = parseFloat(document.querySelector('input[name="amount"]').value);
+    if (amount <= 0) {
+        e.preventDefault();
+        alert('Please enter a valid amount greater than 0.');
+        return false;
+    }
+});
+</script>
+
+<!-- Bank Details Modal -->
+<div class="modal fade" id="bankDetailsModal" tabindex="-1" aria-labelledby="bankDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bankDetailsModalLabel">Update Bank Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="bankDetailsForm" action="{{ url_for('invoices.update_bank_details') }}" method="POST">
+                {{ csrf_token() }}
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Bank Name <span class="text-danger">*</span></label>
+                            <input type="text" name="bank_name" class="form-control" value="{{ current_user.law_firm.bank_name or '' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Account Holder Name <span class="text-danger">*</span></label>
+                            <input type="text" name="account_holder_name" class="form-control" value="{{ current_user.law_firm.account_holder_name or '' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Account Number <span class="text-danger">*</span></label>
+                            <input type="text" name="account_number" class="form-control" value="{{ current_user.law_firm.account_number or '' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Routing Number</label>
+                            <input type="text" name="routing_number" class="form-control" value="{{ current_user.law_firm.routing_number or '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">SWIFT Code <span class="text-muted">(For international transfers)</span></label>
+                            <input type="text" name="swift_code" class="form-control" value="{{ current_user.law_firm.swift_code or '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tax ID / EIN</label>
+                            <input type="text" name="tax_id" class="form-control" value="{{ current_user.law_firm.tax_id or '' }}">
+                        </div>
+                    </div>
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong> This information will appear on your invoices to help clients make payments directly to your firm.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Save Bank Details
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Handle bank details form submission
+document.getElementById('bankDetailsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch(this.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('bankDetailsModal'));
+            modal.hide();
+            
+            // Reload page to show updated bank details
+            location.reload();
+        } else {
+            alert('Error updating bank details: ' + (data.error || 'Please try again.'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error updating bank details. Please try again.');
+    });
+});
+</script>
+{% endblock %}
