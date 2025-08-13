@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Create Invoice - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 fw-bold text-dark mb-2">Create Invoice</h1>
+                    <p class="text-muted mb-0">Generate a new invoice for your client</p>
+                </div>
+                <a href="{{ url_for('invoices.list_invoices') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Invoices
+                </a>
+            </div>
+
+            <!-- Create Invoice Form -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form method="POST" id="invoiceForm">
+                        <div class="row g-4">
+                            <!-- Client and Project Selection -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Client <span class="text-danger">*</span></label>
+                                <select name="client_id" class="form-select" required>
+                                    <option value="">Select a client...</option>
+                                    {% for client in clients %}
+                                    <option value="{{ client.id }}">{{ client.display_name }} ({{ client.email }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Project <span class="text-muted">(Optional)</span></label>
+                                <select name="project_id" class="form-select">
+                                    <option value="">No specific project</option>
+                                    {% for project in projects %}
+                                    <option value="{{ project.id }}">{{ project.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Invoice Details -->
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Invoice Title <span class="text-danger">*</span></label>
+                                <input type="text" name="title" class="form-control" placeholder="e.g., Legal Services - January 2025" required>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Description</label>
+                                <textarea name="description" class="form-control" rows="3" placeholder="Detailed description of services provided..."></textarea>
+                            </div>
+
+                            <!-- Invoice Type and Billing -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Invoice Type</label>
+                                <select name="invoice_type" class="form-select">
+                                    <option value="service">Legal Services</option>
+                                    <option value="retainer">Retainer</option>
+                                    <option value="renewal">Renewal</option>
+                                    <option value="expense">Expenses</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Billing Period</label>
+                                <select name="billing_period" class="form-select">
+                                    <option value="">One-time</option>
+                                    <option value="monthly">Monthly</option>
+                                    <option value="quarterly">Quarterly</option>
+                                    <option value="yearly">Yearly</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Due in (Days)</label>
+                                <input type="number" name="due_days" class="form-control" value="30" min="1" max="365" required>
+                            </div>
+
+                            <!-- Amount -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Total Amount <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" name="amount" class="form-control" step="0.01" min="0" placeholder="0.00" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Line Items Section -->
+                        <div class="mt-5">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="fw-bold mb-0">Line Items <span class="text-muted">(Optional)</span></h5>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addLineItem()">
+                                    <i class="fas fa-plus me-2"></i>Add Line Item
+                                </button>
+                            </div>
+                            
+                            <div id="lineItemsContainer">
+                                <!-- Line items will be added here dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex justify-content-end gap-3 mt-5 pt-4 border-top">
+                            <a href="{{ url_for('invoices.list_invoices') }}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" name="action" value="save_draft" class="btn btn-outline-primary">
+                                <i class="fas fa-save me-2"></i>Save as Draft
+                            </button>
+                            <button type="submit" name="action" value="create_and_send" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Create & Send
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let lineItemCount = 0;
+
+function addLineItem() {
+    lineItemCount++;
+    const container = document.getElementById('lineItemsContainer');
+    const lineItemHtml = `
+        <div class="line-item card mb-3" id="lineItem${lineItemCount}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0 fw-bold">Line Item ${lineItemCount}</h6>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeLineItem(${lineItemCount})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Description</label>
+                        <input type="text" name="line_description[]" class="form-control" placeholder="Service description">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Quantity</label>
+                        <input type="number" name="line_quantity[]" class="form-control" value="1" step="0.01" min="0">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Rate ($)</label>
+                        <input type="number" name="line_rate[]" class="form-control" step="0.01" min="0" placeholder="0.00">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Total</label>
+                        <input type="text" class="form-control bg-light" readonly placeholder="$0.00">
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', lineItemHtml);
+    
+    // Add event listeners for automatic total calculation
+    const newItem = document.getElementById(`lineItem${lineItemCount}`);
+    const quantityInput = newItem.querySelector('input[name="line_quantity[]"]');
+    const rateInput = newItem.querySelector('input[name="line_rate[]"]');
+    const totalInput = newItem.querySelector('input[readonly]');
+    
+    function calculateTotal() {
+        const quantity = parseFloat(quantityInput.value) || 0;
+        const rate = parseFloat(rateInput.value) || 0;
+        const total = quantity * rate;
+        totalInput.value = '$' + total.toFixed(2);
+    }
+    
+    quantityInput.addEventListener('input', calculateTotal);
+    rateInput.addEventListener('input', calculateTotal);
+}
+
+function removeLineItem(itemId) {
+    document.getElementById(`lineItem${itemId}`).remove();
+}
+
+// Form validation
+document.getElementById('invoiceForm').addEventListener('submit', function(e) {
+    const amount = parseFloat(document.querySelector('input[name="amount"]').value);
+    if (amount <= 0) {
+        e.preventDefault();
+        alert('Please enter a valid amount greater than 0.');
+        return false;
+    }
+});
+</script>
+{% endblock %}

@@ -47,3 +47,22 @@ def require_client_or_admin(f):
             abort(403)
         return f(*args, **kwargs)
     return decorated_function
+
+def role_required(roles):
+    """
+    Decorator to require specific roles for access
+    Args:
+        roles: List of allowed roles or single role string
+    """
+    if isinstance(roles, str):
+        roles = [roles]
+    
+    def decorator(f):
+        @wraps(f)
+        @simple_login_required
+        def decorated_function(*args, **kwargs):
+            if current_user.role not in roles:
+                abort(403)
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator

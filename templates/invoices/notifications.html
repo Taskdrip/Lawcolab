@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Invoice Notifications - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 fw-bold text-dark mb-2">Invoice Notifications</h1>
+                    <p class="text-muted mb-0">Payment reminders, due dates, and renewal notifications</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('invoices.dashboard') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-chart-line me-2"></i>Dashboard
+                    </a>
+                    <a href="{{ url_for('invoices.list_invoices') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Invoices
+                    </a>
+                </div>
+            </div>
+
+            <!-- Notifications -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    {% if notifications.items %}
+                    <div class="list-group list-group-flush">
+                        {% for notification in notifications.items %}
+                        <div class="list-group-item p-4">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <!-- Notification Type Icon -->
+                                        {% if notification.notification_type == 'reminder' %}
+                                            <i class="fas fa-clock text-warning me-2"></i>
+                                        {% elif notification.notification_type == 'overdue' %}
+                                            <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                                        {% elif notification.notification_type == 'payment_received' %}
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                        {% elif notification.notification_type == 'renewal_reminder' %}
+                                            <i class="fas fa-refresh text-info me-2"></i>
+                                        {% elif notification.notification_type == 'invoice_sent' %}
+                                            <i class="fas fa-paper-plane text-primary me-2"></i>
+                                        {% else %}
+                                            <i class="fas fa-bell text-muted me-2"></i>
+                                        {% endif %}
+                                        
+                                        <!-- Notification Type Badge -->
+                                        {% if notification.notification_type == 'reminder' %}
+                                            <span class="badge bg-warning text-dark me-2">Reminder</span>
+                                        {% elif notification.notification_type == 'overdue' %}
+                                            <span class="badge bg-danger me-2">Overdue</span>
+                                        {% elif notification.notification_type == 'payment_received' %}
+                                            <span class="badge bg-success me-2">Payment</span>
+                                        {% elif notification.notification_type == 'renewal_reminder' %}
+                                            <span class="badge bg-info me-2">Renewal</span>
+                                        {% elif notification.notification_type == 'invoice_sent' %}
+                                            <span class="badge bg-primary me-2">Sent</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary me-2">{{ notification.notification_type.replace('_', ' ').title() }}</span>
+                                        {% endif %}
+                                        
+                                        <!-- Status -->
+                                        {% if notification.status == 'pending' %}
+                                            <span class="badge bg-light text-dark">Scheduled</span>
+                                        {% elif notification.status == 'sent' %}
+                                            <span class="badge bg-success">Sent</span>
+                                        {% elif notification.status == 'failed' %}
+                                            <span class="badge bg-danger">Failed</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Invoice Information -->
+                                    <div class="fw-bold mb-2">
+                                        <a href="{{ url_for('invoices.view_invoice', id=notification.invoice.id) }}" class="text-decoration-none">
+                                            Invoice {{ notification.invoice.invoice_number }}
+                                        </a>
+                                        - {{ notification.invoice.title }}
+                                    </div>
+                                    
+                                    <!-- Notification Message -->
+                                    <div class="text-muted mb-2">{{ notification.message }}</div>
+                                    
+                                    <!-- Invoice Details -->
+                                    <div class="small text-muted">
+                                        <span><strong>Amount:</strong> ${{ "%.2f"|format(notification.invoice.total_amount) }}</span>
+                                        <span class="ms-3"><strong>Due:</strong> {{ notification.invoice.due_date.strftime('%b %d, %Y') }}</span>
+                                        {% if not current_user.is_client() %}
+                                        <span class="ms-3"><strong>Client:</strong> {{ notification.invoice.client.display_name }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <!-- Notification Timing -->
+                                <div class="text-end text-muted small">
+                                    {% if notification.status == 'pending' %}
+                                        <div><strong>Scheduled:</strong></div>
+                                        <div>{{ notification.scheduled_date.strftime('%b %d, %Y at %I:%M %p') }}</div>
+                                    {% elif notification.sent_date %}
+                                        <div><strong>Sent:</strong></div>
+                                        <div>{{ notification.sent_date.strftime('%b %d, %Y at %I:%M %p') }}</div>
+                                    {% else %}
+                                        <div>{{ notification.created_at.strftime('%b %d, %Y') }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if notifications.pages > 1 %}
+                    <div class="card-footer bg-light">
+                        <nav aria-label="Notification pagination">
+                            <ul class="pagination pagination-sm mb-0 justify-content-center">
+                                {% if notifications.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('invoices.notifications', page=notifications.prev_num) }}">Previous</a>
+                                </li>
+                                {% endif %}
+                                
+                                {% for page_num in notifications.iter_pages() %}
+                                    {% if page_num %}
+                                        {% if page_num != notifications.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('invoices.notifications', page=page_num) }}">{{ page_num }}</a>
+                                        </li>
+                                        {% else %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                        {% endif %}
+                                    {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if notifications.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('invoices.notifications', page=notifications.next_num) }}">Next</a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-bell-slash text-muted fa-3x mb-3"></i>
+                        <h5 class="text-muted">No notifications</h5>
+                        <p class="text-muted">You don't have any invoice notifications yet.</p>
+                        <a href="{{ url_for('invoices.list_invoices') }}" class="btn btn-outline-primary mt-3">
+                            <i class="fas fa-list me-2"></i>View Invoices
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

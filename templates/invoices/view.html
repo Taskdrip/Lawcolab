@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Invoice {{ invoice.invoice_number }} - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 fw-bold text-dark mb-2">Invoice {{ invoice.invoice_number }}</h1>
+                    <p class="text-muted mb-0">{{ invoice.title }}</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('invoices.list_invoices') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Invoices
+                    </a>
+                    {% if not current_user.is_client() and invoice.status == 'draft' %}
+                    <a href="{{ url_for('invoices.edit_invoice', id=invoice.id) }}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit me-2"></i>Edit
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Invoice Details -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-5">
+                    <!-- Invoice Header -->
+                    <div class="row mb-5">
+                        <div class="col-md-6">
+                            <h4 class="fw-bold text-primary mb-3">
+                                <i class="fas fa-balance-scale me-2"></i>{{ invoice.law_firm.name }}
+                            </h4>
+                            <div class="text-muted">
+                                {% if invoice.law_firm.email %}
+                                <div><i class="fas fa-envelope me-2"></i>{{ invoice.law_firm.email }}</div>
+                                {% endif %}
+                                {% if invoice.law_firm.description %}
+                                <div class="mt-2">{{ invoice.law_firm.description }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <div class="mb-3">
+                                <div class="h5 fw-bold">Invoice {{ invoice.invoice_number }}</div>
+                                {% if invoice.status == 'draft' %}
+                                    <span class="badge bg-secondary fs-6">Draft</span>
+                                {% elif invoice.status == 'sent' %}
+                                    <span class="badge bg-warning fs-6">Sent</span>
+                                {% elif invoice.status == 'paid' %}
+                                    <span class="badge bg-success fs-6">Paid</span>
+                                {% elif invoice.status == 'overdue' %}
+                                    <span class="badge bg-danger fs-6">Overdue</span>
+                                {% endif %}
+                            </div>
+                            <div class="text-muted">
+                                <div><strong>Issue Date:</strong> {{ invoice.issue_date.strftime('%B %d, %Y') }}</div>
+                                <div><strong>Due Date:</strong> {{ invoice.due_date.strftime('%B %d, %Y') }}</div>
+                                {% if invoice.paid_date %}
+                                <div><strong>Paid Date:</strong> {{ invoice.paid_date.strftime('%B %d, %Y') }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bill To -->
+                    <div class="row mb-5">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-uppercase text-muted mb-2">Bill To</h6>
+                            <div>
+                                <div class="fw-bold">{{ invoice.client.display_name }}</div>
+                                <div class="text-muted">{{ invoice.client.email }}</div>
+                                {% if invoice.client.phone %}
+                                <div class="text-muted">{{ invoice.client.phone }}</div>
+                                {% endif %}
+                                {% if invoice.client.company_name and invoice.client.display_name != invoice.client.company_name %}
+                                <div class="text-muted mt-1">{{ invoice.client.company_name }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            {% if invoice.project %}
+                            <h6 class="fw-bold text-uppercase text-muted mb-2">Project</h6>
+                            <div>
+                                <div class="fw-bold">{{ invoice.project.name }}</div>
+                                {% if invoice.project.description %}
+                                <div class="text-muted">{{ invoice.project.description[:100] }}{% if invoice.project.description|length > 100 %}...{% endif %}</div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Invoice Description -->
+                    {% if invoice.description %}
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-uppercase text-muted mb-2">Description</h6>
+                        <div class="text-muted">{{ invoice.description }}</div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Line Items -->
+                    {% if invoice.line_items %}
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-uppercase text-muted mb-3">Services</h6>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Description</th>
+                                        <th class="text-center">Quantity</th>
+                                        <th class="text-end">Rate</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in invoice.line_items %}
+                                    <tr>
+                                        <td>
+                                            <div>{{ item.description }}</div>
+                                            {% if item.work_date %}
+                                            <small class="text-muted">Date: {{ item.work_date.strftime('%B %d, %Y') }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">{{ "%.2f"|format(item.quantity) }}</td>
+                                        <td class="text-end">${{ "%.2f"|format(item.rate) }}</td>
+                                        <td class="text-end fw-bold">${{ "%.2f"|format(item.total_amount) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Total -->
+                    <div class="row justify-content-end">
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Subtotal:</span>
+                                        <span>${{ "%.2f"|format(invoice.total_amount) }}</span>
+                                    </div>
+                                    <hr class="my-2">
+                                    <div class="d-flex justify-content-between fw-bold h5">
+                                        <span>Total:</span>
+                                        <span>${{ "%.2f"|format(invoice.total_amount) }} {{ invoice.currency }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Information -->
+                    {% if invoice.status == 'paid' and invoice.payments %}
+                    <div class="mt-4">
+                        <h6 class="fw-bold text-uppercase text-muted mb-3">Payment Information</h6>
+                        {% for payment in invoice.payments %}
+                        <div class="card bg-success bg-opacity-10 border-success">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div><strong>Amount Paid:</strong> ${{ "%.2f"|format(payment.amount_paid) }}</div>
+                                        <div><strong>Payment Date:</strong> {{ payment.payment_date.strftime('%B %d, %Y') }}</div>
+                                        <div><strong>Method:</strong> {{ payment.payment_method.replace('_', ' ').title() }}</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        {% if payment.reference_number %}
+                                        <div><strong>Reference:</strong> {{ payment.reference_number }}</div>
+                                        {% endif %}
+                                        {% if payment.notes %}
+                                        <div><strong>Notes:</strong> {{ payment.notes }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Invoice Notes -->
+                    {% if invoice.notes %}
+                    <div class="mt-4">
+                        <h6 class="fw-bold text-uppercase text-muted mb-2">Notes</h6>
+                        <div class="text-muted">{{ invoice.notes }}</div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Due Date Warning -->
+                    {% if invoice.status in ['sent', 'overdue'] and invoice.days_until_due is not none %}
+                    <div class="mt-4">
+                        {% if invoice.days_until_due < 0 %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            This invoice is <strong>{{ (-invoice.days_until_due) }} days overdue</strong>. Please process payment immediately.
+                        </div>
+                        {% elif invoice.days_until_due == 0 %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-clock me-2"></i>
+                            This invoice is <strong>due today</strong>.
+                        </div>
+                        {% elif invoice.days_until_due <= 7 %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            This invoice is due in <strong>{{ invoice.days_until_due }} days</strong>.
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Action Buttons -->
+                    {% if not current_user.is_client() %}
+                    <div class="d-flex justify-content-end gap-3 mt-5 pt-4 border-top">
+                        {% if invoice.status == 'draft' %}
+                        <form method="POST" action="{{ url_for('invoices.send_invoice', id=invoice.id) }}" style="display: inline;">
+                            <button type="submit" class="btn btn-primary" onclick="return confirm('Are you sure you want to send this invoice to the client?')">
+                                <i class="fas fa-paper-plane me-2"></i>Send to Client
+                            </button>
+                        </form>
+                        {% elif invoice.status in ['sent', 'overdue'] %}
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#markPaidModal">
+                            <i class="fas fa-check me-2"></i>Mark as Paid
+                        </button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mark Paid Modal -->
+{% if not current_user.is_client() and invoice.status in ['sent', 'overdue'] %}
+<div class="modal fade" id="markPaidModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Mark Invoice as Paid</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('invoices.mark_paid', id=invoice.id) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Payment Date</label>
+                        <input type="date" class="form-control" name="payment_date" value="{{ moment().format('YYYY-MM-DD') }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Amount Paid</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" name="amount_paid" step="0.01" value="{{ invoice.total_amount }}" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Payment Method</label>
+                        <select class="form-select" name="payment_method" required>
+                            <option value="bank_transfer">Bank Transfer</option>
+                            <option value="check">Check</option>
+                            <option value="cash">Cash</option>
+                            <option value="credit_card">Credit Card</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Reference Number</label>
+                        <input type="text" class="form-control" name="payment_reference" placeholder="Transaction ID, Check number, etc.">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-control" name="notes" rows="2" placeholder="Additional payment notes"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Mark as Paid</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

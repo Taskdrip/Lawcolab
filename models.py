@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from app import db
 from flask_dance.consumer.storage.sqla import OAuthConsumerMixin
 from flask_login import UserMixin
@@ -412,3 +412,164 @@ class ProjectMessage(db.Model):
     # Relationships
     project = db.relationship('Project', backref='project_messages')
     user = db.relationship('User', backref='sent_project_messages')
+
+
+# Invoice System Models
+class Invoice(db.Model):
+    __tablename__ = 'invoices'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    invoice_number = db.Column(db.String(50), unique=True, nullable=False)
+    law_firm_id = db.Column(db.Integer, db.ForeignKey('law_firms.id'), nullable=False)
+    client_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=True)
+    created_by_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    
+    # Invoice details
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
+    currency = db.Column(db.String(3), default='USD', nullable=False)
+    
+    # Invoice type and billing information
+    invoice_type = db.Column(db.String(20), default='service')  # service, retainer, renewal, expense
+    billing_period = db.Column(db.String(20), nullable=True)  # monthly, quarterly, yearly, one-time
+    
+    # Status and dates
+    status = db.Column(db.String(20), default='draft')  # draft, sent, paid, overdue, cancelled
+    issue_date = db.Column(db.Date, nullable=False)
+    due_date = db.Column(db.Date, nullable=False)
+    paid_date = db.Column(db.Date, nullable=True)
+    
+    # Notification settings
+    reminder_sent = db.Column(db.Boolean, default=False)
+    overdue_notifications_sent = db.Column(db.Integer, default=0)
+    
+    # Payment information
+    payment_method = db.Column(db.String(50), nullable=True)
+    payment_reference = db.Column(db.String(100), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    
+    # Relationships
+    law_firm = db.relationship('LawFirm', backref='invoices')
+    client = db.relationship('User', foreign_keys=[client_id], backref='client_invoices')
+    created_by = db.relationship('User', foreign_keys=[created_by_id], backref='created_invoices')
+    project = db.relationship('Project', backref='invoices')
+    line_items = db.relationship('InvoiceLineItem', back_populates='invoice', cascade='all, delete-orphan')
+    notifications = db.relationship('InvoiceNotification', back_populates='invoice', cascade='all, delete-orphan')
+    
+    @property
+    def is_overdue(self):
+        """Check if invoice is overdue"""
+        from datetime import date
+        return self.status in ['sent'] and self.due_date < date.today()
+    
+    @property
+    def days_until_due(self):
+        """Calculate days until due date"""
+        from datetime import date
+        if self.status == 'paid':
+            return None
+        delta = self.due_date - date.today()
+        return delta.days
+    
+    @property
+    def total_amount(self):
+        """Calculate total amount including line items"""
+        if self.line_items:
+            return sum(item.total_amount for item in self.line_items)
+        return float(self.amount)
+    
+    def generate_invoice_number(self):
+        """Generate unique invoice number"""
+        from datetime import date
+        today = date.today()
+        prefix = f"INV-{today.year}-{today.month:02d}"
+        
+        # Find the next sequential number for this month
+        existing = db.session.query(Invoice).filter(
+            Invoice.law_firm_id == self.law_firm_id,
+            Invoice.invoice_number.like(f"{prefix}-%")
+        ).count()
+        
+        self.invoice_number = f"{prefix}-{existing + 1:04d}"
+
+
+class InvoiceLineItem(db.Model):
+    __tablename__ = 'invoice_line_items'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    invoice_id = db.Column(db.Integer, db.ForeignKey('invoices.id'), nullable=False)
+    
+    description = db.Column(db.String(500), nullable=False)
+    quantity = db.Column(db.Numeric(10, 2), default=1, nullable=False)
+    rate = db.Column(db.Numeric(10, 2), nullable=False)
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
+    
+    # Time tracking for legal services
+    hours_worked = db.Column(db.Numeric(5, 2), nullable=True)
+    work_date = db.Column(db.Date, nullable=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    
+    # Relationships
+    invoice = db.relationship('Invoice', back_populates='line_items')
+    
+    @property
+    def total_amount(self):
+        """Calculate total amount for this line item"""
+        return float(self.quantity) * float(self.rate)
+
+
+class InvoiceNotification(db.Model):
+    __tablename__ = 'invoice_notifications'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    invoice_id = db.Column(db.Integer, db.ForeignKey('invoices.id'), nullable=False)
+    
+    notification_type = db.Column(db.String(30), nullable=False)  # reminder, overdue, renewal, payment_received
+    recipient_type = db.Column(db.String(20), nullable=False)  # client, law_firm, both
+    message = db.Column(db.Text, nullable=False)
+    
+    scheduled_date = db.Column(db.DateTime, nullable=False)
+    sent_date = db.Column(db.DateTime, nullable=True)
+    status = db.Column(db.String(20), default='pending')  # pending, sent, failed
+    
+    # Auto-generated or manual
+    is_automatic = db.Column(db.Boolean, default=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    
+    # Relationships
+    invoice = db.relationship('Invoice', back_populates='notifications')
+    
+    @property
+    def is_due(self):
+        """Check if notification should be sent"""
+        return self.status == 'pending' and self.scheduled_date <= datetime.now()
+
+
+class PaymentRecord(db.Model):
+    __tablename__ = 'payment_records'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    invoice_id = db.Column(db.Integer, db.ForeignKey('invoices.id'), nullable=False)
+    law_firm_id = db.Column(db.Integer, db.ForeignKey('law_firms.id'), nullable=False)
+    
+    amount_paid = db.Column(db.Numeric(10, 2), nullable=False)
+    payment_date = db.Column(db.Date, nullable=False)
+    payment_method = db.Column(db.String(50), nullable=False)  # cash, check, bank_transfer, credit_card, etc.
+    reference_number = db.Column(db.String(100), nullable=True)
+    
+    notes = db.Column(db.Text, nullable=True)
+    recorded_by_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    
+    # Relationships
+    invoice = db.relationship('Invoice', backref='payments')
+    law_firm = db.relationship('LawFirm', backref='payment_records')
+    recorded_by = db.relationship('User', backref='recorded_payments')

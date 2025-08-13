@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Invoice {{ invoice.invoice_number }} - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 fw-bold text-dark mb-2">Edit Invoice {{ invoice.invoice_number }}</h1>
+                    <p class="text-muted mb-0">Modify invoice details</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('invoices.view_invoice', id=invoice.id) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-eye me-2"></i>View Invoice
+                    </a>
+                    <a href="{{ url_for('invoices.list_invoices') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Invoices
+                    </a>
+                </div>
+            </div>
+
+            <!-- Edit Invoice Form -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form method="POST" id="invoiceForm">
+                        <div class="row g-4">
+                            <!-- Invoice Details -->
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Invoice Title <span class="text-danger">*</span></label>
+                                <input type="text" name="title" class="form-control" value="{{ invoice.title }}" required>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Description</label>
+                                <textarea name="description" class="form-control" rows="3">{{ invoice.description or '' }}</textarea>
+                            </div>
+
+                            <!-- Invoice Type and Billing -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Invoice Type</label>
+                                <select name="invoice_type" class="form-select">
+                                    <option value="service" {% if invoice.invoice_type == 'service' %}selected{% endif %}>Legal Services</option>
+                                    <option value="retainer" {% if invoice.invoice_type == 'retainer' %}selected{% endif %}>Retainer</option>
+                                    <option value="renewal" {% if invoice.invoice_type == 'renewal' %}selected{% endif %}>Renewal</option>
+                                    <option value="expense" {% if invoice.invoice_type == 'expense' %}selected{% endif %}>Expenses</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Billing Period</label>
+                                <select name="billing_period" class="form-select">
+                                    <option value="" {% if not invoice.billing_period %}selected{% endif %}>One-time</option>
+                                    <option value="monthly" {% if invoice.billing_period == 'monthly' %}selected{% endif %}>Monthly</option>
+                                    <option value="quarterly" {% if invoice.billing_period == 'quarterly' %}selected{% endif %}>Quarterly</option>
+                                    <option value="yearly" {% if invoice.billing_period == 'yearly' %}selected{% endif %}>Yearly</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Due in (Days)</label>
+                                {% set due_days = (invoice.due_date - invoice.issue_date).days %}
+                                <input type="number" name="due_days" class="form-control" value="{{ due_days }}" min="1" max="365" required>
+                            </div>
+
+                            <!-- Amount -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Total Amount <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" name="amount" class="form-control" step="0.01" min="0" value="{{ invoice.amount }}" required>
+                                </div>
+                            </div>
+
+                            <!-- Current Due Date -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Current Due Date</label>
+                                <input type="text" class="form-control bg-light" value="{{ invoice.due_date.strftime('%B %d, %Y') }}" readonly>
+                                <small class="text-muted">Due date will update based on 'Due in (Days)' field</small>
+                            </div>
+                        </div>
+
+                        <!-- Current Line Items Display -->
+                        {% if invoice.line_items %}
+                        <div class="mt-5">
+                            <h5 class="fw-bold mb-3">Current Line Items</h5>
+                            <div class="table-responsive">
+                                <table class="table table-borderless bg-light">
+                                    <thead>
+                                        <tr>
+                                            <th>Description</th>
+                                            <th class="text-center">Quantity</th>
+                                            <th class="text-end">Rate</th>
+                                            <th class="text-end">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in invoice.line_items %}
+                                        <tr>
+                                            <td>{{ item.description }}</td>
+                                            <td class="text-center">{{ "%.2f"|format(item.quantity) }}</td>
+                                            <td class="text-end">${{ "%.2f"|format(item.rate) }}</td>
+                                            <td class="text-end fw-bold">${{ "%.2f"|format(item.total_amount) }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Note:</strong> Line items cannot be edited after invoice creation. To modify line items, create a new invoice.
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex justify-content-end gap-3 mt-5 pt-4 border-top">
+                            <a href="{{ url_for('invoices.view_invoice', id=invoice.id) }}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Update Invoice
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Form validation
+document.getElementById('invoiceForm').addEventListener('submit', function(e) {
+    const amount = parseFloat(document.querySelector('input[name="amount"]').value);
+    if (amount <= 0) {
+        e.preventDefault();
+        alert('Please enter a valid amount greater than 0.');
+        return false;
+    }
+});
+</script>
+{% endblock %}

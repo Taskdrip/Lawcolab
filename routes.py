@@ -139,6 +139,10 @@ def uploaded_file(filename):
     """Serve uploaded files"""
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
+# Register invoice blueprint
+from blueprints.invoices.routes import invoices_bp
+app.register_blueprint(invoices_bp)
+
 @app.errorhandler(403)
 def forbidden(e):
     return render_template('403.html'), 403
