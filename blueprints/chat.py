@@ -10,6 +10,12 @@ import json
 
 chat_bp = Blueprint('chat', __name__, template_folder='../templates')
 
+@chat_bp.route('/support')
+@require_login  
+def support():
+    """Redirect to support chat"""
+    return redirect('/support/chat')
+
 @chat_bp.route('/')
 @require_login
 def chat_home():

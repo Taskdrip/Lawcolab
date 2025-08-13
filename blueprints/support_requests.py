@@ -1,10 +1,17 @@
 from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for
 from flask_login import login_required, current_user
+from replit_auth import require_login
 from models import SupportRequest, User, LawFirm
 from app import db
 from utils.decorators import require_super_admin
 
 support_bp = Blueprint('support', __name__)
+
+@support_bp.route('/chat')
+@require_login
+def chat():
+    """Support chat interface"""
+    return render_template('chat/support_chat.html')
 
 @support_bp.route('/support-requests')
 @require_super_admin
