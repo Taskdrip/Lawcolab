@@ -119,8 +119,9 @@ def project_chat(project_id):
     """Project-based team chat - only assigned members can access"""
     project = Project.query.get_or_404(project_id)
     
-    # Check if user is assigned to this project
-    if not current_user.is_assigned_to_project(project_id):
+    # Check if user is assigned to this project or is admin of the law firm
+    if not (current_user.is_assigned_to_project(project_id) or 
+            (current_user.is_admin() and current_user.law_firm_id == project.law_firm_id)):
         flash('You are not assigned to this project.', 'error')
         return redirect(url_for('projects.list_projects'))
     

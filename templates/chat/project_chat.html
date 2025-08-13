@@ -106,12 +106,13 @@
 
 .message-input {
     flex: 1;
-    border: 2px solid #e9ecef;
-    border-radius: 25px;
-    padding: 12px 20px;
-    resize: none;
+    border: 2px solid #e9ecef !important;
+    border-radius: 25px !important;
+    padding: 12px 20px !important;
     transition: all 0.3s ease;
     font-size: 14px;
+    outline: none;
+    font-family: inherit;
 }
 
 .message-input:focus {
@@ -283,7 +284,7 @@
                 <button type="button" class="upload-button" id="uploadBtn" title="Upload File">
                     <i class="fas fa-paperclip"></i>
                 </button>
-                <textarea class="message-input" id="messageInput" rows="1" placeholder="Type your message..." required></textarea>
+                <input type="text" class="message-input" id="messageInput" placeholder="Type your message..." required style="border-radius: 25px; padding: 12px 20px; border: 2px solid #e9ecef;">
                 <button type="submit" class="send-button" title="Send Message">
                     <i class="fas fa-paper-plane"></i>
                 </button>
@@ -302,15 +303,16 @@ function scrollToBottom() {
     container.scrollTop = container.scrollHeight;
 }
 
-// Send message
-document.getElementById('messageForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
+// Send message function
+function sendMessage() {
     const messageInput = document.getElementById('messageInput');
     const roomId = document.getElementById('roomId').value;
     const message = messageInput.value.trim();
     
-    if (!message) return;
+    if (!message) return false;
+    
+    // Disable input while sending
+    messageInput.disabled = true;
     
     fetch('/enhanced-chat/send-message', {
         method: 'POST',
@@ -334,7 +336,29 @@ document.getElementById('messageForm').addEventListener('submit', function(e) {
     .catch(error => {
         console.error('Error:', error);
         alert('An error occurred while sending the message.');
+    })
+    .finally(() => {
+        messageInput.disabled = false;
+        messageInput.focus();
     });
+    
+    return false;
+}
+
+// Form submit handler
+document.getElementById('messageForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    sendMessage();
+    return false;
+});
+
+// Enter key handler
+document.getElementById('messageInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
 });
 
 // File upload
