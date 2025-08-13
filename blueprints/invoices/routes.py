@@ -123,7 +123,13 @@ def create_invoice():
             db.session.commit()
             
             flash(f'Invoice {invoice.invoice_number} created successfully.', 'success')
-            return redirect(url_for('invoices.view_invoice', id=invoice.id))
+            
+            # Determine action
+            action = request.form.get('action', 'save_draft')
+            if action == 'create_and_send':
+                return redirect(url_for('invoices.send_invoice', id=invoice.id))
+            else:
+                return redirect(url_for('invoices.view_invoice', id=invoice.id))
             
         except Exception as e:
             db.session.rollback()
@@ -263,6 +269,36 @@ def send_invoice(id):
         flash(f'Error sending invoice: {str(e)}', 'error')
     
     return redirect(url_for('invoices.view_invoice', id=id))
+
+@invoices_bp.route('/update-bank-details', methods=['POST'])
+@login_required
+@role_required(['admin', 'team_member'])
+def update_bank_details():
+    """Update law firm bank details"""
+    try:
+        law_firm = current_user.law_firm
+        if not law_firm:
+            return jsonify({'success': False, 'error': 'No law firm associated with user.'})
+        
+        # Update bank details
+        law_firm.bank_name = request.form.get('bank_name', '').strip()
+        law_firm.account_holder_name = request.form.get('account_holder_name', '').strip()
+        law_firm.account_number = request.form.get('account_number', '').strip()
+        law_firm.routing_number = request.form.get('routing_number', '').strip()
+        law_firm.swift_code = request.form.get('swift_code', '').strip()
+        law_firm.tax_id = request.form.get('tax_id', '').strip()
+        
+        # Validate required fields
+        if not all([law_firm.bank_name, law_firm.account_holder_name, law_firm.account_number]):
+            return jsonify({'success': False, 'error': 'Bank name, account holder name, and account number are required.'})
+        
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Bank details updated successfully.'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)})
 
 @invoices_bp.route('/<int:id>/mark-paid', methods=['POST'])
 @login_required

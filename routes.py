@@ -139,6 +139,33 @@ def test_pages():
     """Simple test page to verify About and Contact pages"""
     return send_from_directory('.', 'test_pages.html')
 
+@app.route('/demo-invoice-create')
+def demo_invoice_create():
+    """Demo route to show invoice creation with bank details - bypasses auth for testing"""
+    from models import User, Project
+    
+    # Get the first admin user and their law firm
+    admin_user = User.query.filter_by(role='admin', active=True).first()
+    if not admin_user or not admin_user.law_firm:
+        return "No admin user or law firm found for demo", 404
+    
+    # Simulate login
+    from flask_login import login_user
+    login_user(admin_user)
+    
+    # Get clients and projects for the form
+    clients = User.query.filter_by(
+        law_firm_id=admin_user.law_firm_id,
+        role='client',
+        active=True
+    ).all()
+    
+    projects = Project.query.filter_by(
+        law_firm_id=admin_user.law_firm_id
+    ).all()
+    
+    return render_template('invoices/create.html', clients=clients, projects=projects)
+
 # Add route to serve uploaded files
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
