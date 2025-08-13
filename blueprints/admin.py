@@ -115,13 +115,98 @@ def manage_projects():
     projects = Project.query.filter_by(law_firm_id=current_user.law_firm_id).order_by(Project.created_at.desc()).all()
     return render_template('admin/manage_projects.html', projects=projects)
 
+@admin_bp.route('/manage-users')
+@require_admin
+def manage_users():
+    """Admin user management page with beautiful interface"""
+    # Get all users in the admin's law firm
+    users = User.query.filter_by(law_firm_id=current_user.law_firm_id).order_by(User.created_at.desc()).all()
+    
+    # Get statistics
+    total_users = len(users)
+    active_users = len([u for u in users if u.active])
+    inactive_users = total_users - active_users
+    
+    # Separate by role
+    admins = [u for u in users if u.role == ROLE_ADMIN]
+    team_members = [u for u in users if u.role == ROLE_TEAM_MEMBER]
+    clients = [u for u in users if u.role == ROLE_CLIENT]
+    
+    return render_template('admin/manage_users.html', 
+                         users=users,
+                         total_users=total_users,
+                         active_users=active_users,
+                         inactive_users=inactive_users,
+                         admins=admins,
+                         team_members=team_members,
+                         clients=clients)
+
+@admin_bp.route('/delete-user/<user_id>', methods=['POST'])
+@require_admin
+def delete_user(user_id):
+    """Delete a user from the database"""
+    user = User.query.get_or_404(user_id)
+    
+    # Security check: ensure user belongs to admin's law firm
+    if user.law_firm_id != current_user.law_firm_id:
+        flash('You can only delete users from your own law firm.', 'error')
+        return redirect(url_for('admin.manage_users'))
+    
+    # Prevent admin from deleting themselves
+    if user.id == current_user.id:
+        flash('You cannot delete your own account.', 'error')
+        return redirect(url_for('admin.manage_users'))
+    
+    try:
+        # Store name for confirmation message
+        user_name = user.full_name
+        
+        # Delete user
+        db.session.delete(user)
+        db.session.commit()
+        
+        flash(f'User {user_name} has been permanently deleted.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Failed to delete user. Please try again.', 'error')
+    
+    return redirect(url_for('admin.manage_users'))
+
+@admin_bp.route('/toggle-user-status/<user_id>', methods=['POST'])
+@require_admin
+def toggle_user_status(user_id):
+    """Toggle user active/inactive status"""
+    user = User.query.get_or_404(user_id)
+    
+    # Security check: ensure user belongs to admin's law firm
+    if user.law_firm_id != current_user.law_firm_id:
+        flash('You can only manage users from your own law firm.', 'error')
+        return redirect(url_for('admin.manage_users'))
+    
+    # Prevent admin from deactivating themselves
+    if user.id == current_user.id:
+        flash('You cannot deactivate your own account.', 'error')
+        return redirect(url_for('admin.manage_users'))
+    
+    try:
+        user.active = not user.active
+        status = 'activated' if user.active else 'deactivated'
+        db.session.commit()
+        
+        flash(f'User {user.full_name} has been {status}.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Failed to update user status. Please try again.', 'error')
+    
+    return redirect(url_for('admin.manage_users'))
+
 @admin_bp.route('/firm-profile', methods=['GET', 'POST'])
 @require_admin
 def firm_profile():
     """Admin can manage law firm profile"""
     firm = LawFirm.query.get(current_user.law_firm_id)
     
-    if request.method == 'POST':
+    if request.method == 'POST' and firm:
         firm.name = request.form.get('name')
         firm.description = request.form.get('description')
         firm.phone = request.form.get('phone')

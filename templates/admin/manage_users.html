@@ -1,106 +1,535 @@
 {% extends "base.html" %}
 
-{% block title %}Manage Users - Admin{% endblock %}
+{% block title %}Manage Users - LawFirmOS{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>
-            <i class="fas fa-users me-2"></i>
-            Manage Users
-        </h2>
-        <a href="{{ url_for('admin.add_user') }}" class="btn btn-primary">
-            <i class="fas fa-plus me-1"></i>Add User
-        </a>
-    </div>
+<style>
+/* Beautiful admin interface styling */
+.admin-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+}
 
-    {% if users %}
-    <div class="card">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>User</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th>Created</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for user in users %}
-                        <tr>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="me-2">
-                                        {% with user=user, size='xs', show_badge=true %}
-                                            {% include 'components/user_avatar.html' %}
-                                        {% endwith %}
-                                    </div>
-                                    <div>
-                                        <div class="fw-medium">{{ user.full_name }}</div>
-                                        {% if user.phone %}
-                                            <small class="text-muted">{{ user.phone }}</small>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </td>
-                            <td>{{ user.email or 'No email' }}</td>
-                            <td>
-                                <span class="badge fw-bold px-2 py-1
-                                    {% if user.role == 'admin' %}bg-danger
-                                    {% elif user.role == 'team_member' %}bg-success
-                                    {% else %}bg-primary{% endif %}">
-                                    <i class="fas fa-{{ 'crown' if user.role == 'admin' else 'gavel' if user.role == 'team_member' else 'handshake' }} me-1"></i>
-                                    {{ 'Administrator' if user.role == 'admin' else 'Lawyer' if user.role == 'team_member' else 'Client' }}
-                                </span>
-                            </td>
-                            <td>
-                                {% if user.active %}
-                                    <span class="badge bg-success">Active</span>
-                                {% else %}
-                                    <span class="badge bg-danger">Inactive</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ user.created_at.strftime('%b %d, %Y') }}</td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" 
-                                       class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <a href="{{ url_for('admin.grant_admin', user_id=user.id) }}" 
-                                       class="btn btn-sm btn-outline-warning"
-                                       onclick="return confirm('Grant admin privileges to {{ user.full_name }}?')">
-                                        <i class="fas fa-crown"></i>
-                                    </a>
-                                    <a href="{{ url_for('admin.toggle_user_status', user_id=user.id) }}" 
-                                       class="btn btn-sm btn-outline-secondary"
-                                       onclick="return confirm('Toggle status for {{ user.full_name }}?')">
-                                        <i class="fas fa-toggle-{% if user.active %}off{% else %}on{% endif %}"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.user-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+    overflow: hidden;
+}
+
+.user-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+.user-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 600;
+    color: white;
+    margin-right: 1rem;
+}
+
+.role-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.role-admin { background: #667eea; color: white; }
+.role-team { background: #28a745; color: white; }
+.role-client { background: #17a2b8; color: white; }
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.status-active { background: #d4edda; color: #155724; }
+.status-inactive { background: #f8d7da; color: #721c24; }
+
+.action-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin: 2px;
+}
+
+.btn-edit {
+    background: #f8f9fa;
+    color: #495057;
+    border: 1px solid #dee2e6;
+}
+
+.btn-edit:hover {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-toggle {
+    background: #ffc107;
+    color: #212529;
+}
+
+.btn-toggle:hover {
+    background: #e0a800;
+}
+
+.btn-delete {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #c82333;
+    transform: scale(1.05);
+}
+
+.section-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 3px solid #667eea;
+    color: #2c3e50;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.filter-tabs {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.filter-tab {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #6c757d;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-tab.active {
+    background: white;
+    color: #667eea;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.user-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+    .user-actions {
+        justify-content: center;
+        margin-top: 1rem;
+    }
+    
+    .user-card .row {
+        text-align: center;
+    }
+    
+    .user-avatar {
+        margin: 0 auto 1rem;
+    }
+}
+</style>
+
+<div class="admin-header">
+    <div class="container">
+        <h1 class="mb-0">
+            <i class="fas fa-users-cog me-3"></i>User Management
+        </h1>
+        <p class="mb-0 mt-2 opacity-75">Manage all users in your law firm</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Statistics Cards -->
+    <div class="row mb-5">
+        <div class="col-md-3 mb-4">
+            <div class="stat-card text-center">
+                <div class="stat-number text-primary">{{ total_users }}</div>
+                <div class="text-muted">Total Users</div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="stat-card text-center">
+                <div class="stat-number text-success">{{ active_users }}</div>
+                <div class="text-muted">Active Users</div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="stat-card text-center">
+                <div class="stat-number text-warning">{{ inactive_users }}</div>
+                <div class="text-muted">Inactive Users</div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="stat-card text-center">
+                <div class="stat-number text-info">{{ admins|length + team_members|length }}</div>
+                <div class="text-muted">Staff Members</div>
             </div>
         </div>
     </div>
-    {% else %}
-    <div class="card">
-        <div class="card-body text-center py-5">
-            <i class="fas fa-users fa-3x text-muted mb-3"></i>
-            <h5>No Users Found</h5>
-            <p class="text-muted">Start by adding your first team member or client.</p>
-            <a href="{{ url_for('admin.add_user') }}" class="btn btn-primary">
-                <i class="fas fa-plus me-1"></i>Add User
-            </a>
-        </div>
+
+    <!-- Filter Tabs -->
+    <div class="filter-tabs d-flex justify-content-center">
+        <button class="filter-tab active" onclick="showUsers('all')">
+            All Users ({{ total_users }})
+        </button>
+        <button class="filter-tab" onclick="showUsers('admins')">
+            Admins ({{ admins|length }})
+        </button>
+        <button class="filter-tab" onclick="showUsers('team')">
+            Team ({{ team_members|length }})
+        </button>
+        <button class="filter-tab" onclick="showUsers('clients')">
+            Clients ({{ clients|length }})
+        </button>
     </div>
-    {% endif %}
+
+    <!-- All Users Section -->
+    <div id="all-users" class="user-section">
+        <h3 class="section-title">All Users</h3>
+        {% if users %}
+            <div class="row">
+                {% for user in users %}
+                <div class="col-lg-6 mb-4">
+                    <div class="user-card p-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="user-avatar" style="background: {% if user.role == 'admin' %}#667eea{% elif user.role == 'team_member' %}#28a745{% else %}#17a2b8{% endif %};">
+                                        {% if user.first_name %}{{ user.first_name[0] }}{% else %}{{ user.email[0]|upper }}{% endif %}
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-1 fw-bold">{{ user.full_name or user.email }}</h5>
+                                        <p class="mb-1 text-muted">{{ user.email }}</p>
+                                        <div class="d-flex gap-2 align-items-center">
+                                            <span class="role-badge role-{{ user.role.replace('_', '') }}">
+                                                {{ user.role.replace('_', ' ').title() }}
+                                            </span>
+                                            <span class="status-badge status-{{ 'active' if user.active else 'inactive' }}">
+                                                {{ 'Active' if user.active else 'Inactive' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% if user.phone %}
+                                <p class="mb-1 small text-muted">
+                                    <i class="fas fa-phone me-2"></i>{{ user.phone }}
+                                </p>
+                                {% endif %}
+                                <p class="mb-0 small text-muted">
+                                    <i class="fas fa-calendar me-2"></i>Joined {{ user.created_at.strftime('%B %d, %Y') if user.created_at }}
+                                </p>
+                            </div>
+                            <div class="col-md-4">
+                                {% if user.id != current_user.id %}
+                                <div class="user-actions">
+                                    <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=user.id) }}" style="display: inline;">
+                                        <button type="submit" class="action-btn btn-toggle" title="{{ 'Deactivate' if user.active else 'Activate' }} User">
+                                            <i class="fas fa-{{ 'pause' if user.active else 'play' }}"></i>
+                                            {{ 'Deactivate' if user.active else 'Activate' }}
+                                        </button>
+                                    </form>
+                                    
+                                    <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" 
+                                          onsubmit="return confirm('Are you sure you want to permanently delete {{ user.full_name or user.email }}? This action cannot be undone.')" 
+                                          style="display: inline;">
+                                        <button type="submit" class="action-btn btn-delete" title="Delete User">
+                                            <i class="fas fa-trash"></i>
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                                {% else %}
+                                <div class="user-actions">
+                                    <span class="text-muted small">
+                                        <i class="fas fa-user-shield me-1"></i>Your Account
+                                    </span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-users"></i>
+                <h4>No Users Found</h4>
+                <p>No users have been added to your law firm yet.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Admins Section -->
+    <div id="admins-users" class="user-section" style="display: none;">
+        <h3 class="section-title">Administrators</h3>
+        {% if admins %}
+            <div class="row">
+                {% for user in admins %}
+                <div class="col-lg-6 mb-4">
+                    <div class="user-card p-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="user-avatar" style="background: #667eea;">
+                                        {% if user.first_name %}{{ user.first_name[0] }}{% else %}{{ user.email[0]|upper }}{% endif %}
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-1 fw-bold">{{ user.full_name or user.email }}</h5>
+                                        <p class="mb-1 text-muted">{{ user.email }}</p>
+                                        <span class="status-badge status-{{ 'active' if user.active else 'inactive' }}">
+                                            {{ 'Active' if user.active else 'Inactive' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                {% if user.id != current_user.id %}
+                                <div class="user-actions">
+                                    <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=user.id) }}" style="display: inline;">
+                                        <button type="submit" class="action-btn btn-toggle">
+                                            <i class="fas fa-{{ 'pause' if user.active else 'play' }}"></i>
+                                            {{ 'Deactivate' if user.active else 'Activate' }}
+                                        </button>
+                                    </form>
+                                </div>
+                                {% else %}
+                                <span class="text-muted small">Your Account</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-user-shield"></i>
+                <h4>No Administrators</h4>
+                <p>No administrators found.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Team Members Section -->
+    <div id="team-users" class="user-section" style="display: none;">
+        <h3 class="section-title">Team Members</h3>
+        {% if team_members %}
+            <div class="row">
+                {% for user in team_members %}
+                <div class="col-lg-6 mb-4">
+                    <div class="user-card p-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="user-avatar" style="background: #28a745;">
+                                        {% if user.first_name %}{{ user.first_name[0] }}{% else %}{{ user.email[0]|upper }}{% endif %}
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-1 fw-bold">{{ user.full_name or user.email }}</h5>
+                                        <p class="mb-1 text-muted">{{ user.email }}</p>
+                                        <span class="status-badge status-{{ 'active' if user.active else 'inactive' }}">
+                                            {{ 'Active' if user.active else 'Inactive' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="user-actions">
+                                    <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=user.id) }}" style="display: inline;">
+                                        <button type="submit" class="action-btn btn-toggle">
+                                            <i class="fas fa-{{ 'pause' if user.active else 'play' }}"></i>
+                                            {{ 'Deactivate' if user.active else 'Activate' }}
+                                        </button>
+                                    </form>
+                                    
+                                    <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" 
+                                          onsubmit="return confirm('Are you sure you want to permanently delete {{ user.full_name or user.email }}?')" 
+                                          style="display: inline;">
+                                        <button type="submit" class="action-btn btn-delete">
+                                            <i class="fas fa-trash"></i>
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-users"></i>
+                <h4>No Team Members</h4>
+                <p>No team members found.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Clients Section -->
+    <div id="clients-users" class="user-section" style="display: none;">
+        <h3 class="section-title">Clients</h3>
+        {% if clients %}
+            <div class="row">
+                {% for user in clients %}
+                <div class="col-lg-6 mb-4">
+                    <div class="user-card p-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="user-avatar" style="background: #17a2b8;">
+                                        {% if user.first_name %}{{ user.first_name[0] }}{% else %}{{ user.email[0]|upper }}{% endif %}
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-1 fw-bold">{{ user.full_name or user.email }}</h5>
+                                        <p class="mb-1 text-muted">{{ user.email }}</p>
+                                        <span class="status-badge status-{{ 'active' if user.active else 'inactive' }}">
+                                            {{ 'Active' if user.active else 'Inactive' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="user-actions">
+                                    <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=user.id) }}" style="display: inline;">
+                                        <button type="submit" class="action-btn btn-toggle">
+                                            <i class="fas fa-{{ 'pause' if user.active else 'play' }}"></i>
+                                            {{ 'Deactivate' if user.active else 'Activate' }}
+                                        </button>
+                                    </form>
+                                    
+                                    <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" 
+                                          onsubmit="return confirm('Are you sure you want to permanently delete {{ user.full_name or user.email }}?')" 
+                                          style="display: inline;">
+                                        <button type="submit" class="action-btn btn-delete">
+                                            <i class="fas fa-trash"></i>
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-user-friends"></i>
+                <h4>No Clients</h4>
+                <p>No clients found.</p>
+            </div>
+        {% endif %}
+    </div>
 </div>
+
+<script>
+function showUsers(type) {
+    // Hide all sections
+    document.querySelectorAll('.user-section').forEach(section => {
+        section.style.display = 'none';
+    });
+    
+    // Remove active class from all tabs
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Show selected section and activate tab
+    if (type === 'all') {
+        document.getElementById('all-users').style.display = 'block';
+        event.target.classList.add('active');
+    } else if (type === 'admins') {
+        document.getElementById('admins-users').style.display = 'block';
+        event.target.classList.add('active');
+    } else if (type === 'team') {
+        document.getElementById('team-users').style.display = 'block';
+        event.target.classList.add('active');
+    } else if (type === 'clients') {
+        document.getElementById('clients-users').style.display = 'block';
+        event.target.classList.add('active');
+    }
+}
+
+// Add confirmation for delete actions
+document.addEventListener('DOMContentLoaded', function() {
+    // Enhanced hover effects
+    document.querySelectorAll('.user-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+</script>
 {% endblock %}
