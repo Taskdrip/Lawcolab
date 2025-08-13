@@ -66,7 +66,7 @@
                                     <i class="fas fa-eye me-1"></i>View
                                 </a>
                                 {% if req.request_type in ['3days', '1month', '3months', '6months', '1year'] %}
-                                <a href="{{ url_for('superadmin.law_firm_detail', firm_id=req.law_firm.id) }}" class="btn btn-sm btn-success">
+                                <a href="{{ url_for('superadmin.view_law_firm', firm_id=req.law_firm.id) }}" class="btn btn-sm btn-success">
                                     <i class="fas fa-user-shield me-1"></i>Grant Access
                                 </a>
                                 {% endif %}
