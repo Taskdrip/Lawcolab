@@ -38,6 +38,14 @@
                         </a>
                     </li>
                     
+                    {% if current_user.is_super_admin() %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('superadmin.dashboard') }}">
+                            <i class="fas fa-crown me-1"></i>Super Admin
+                        </a>
+                    </li>
+                    {% endif %}
+                    
                     {% if current_user.is_admin() %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('admin.admin_dashboard') }}">

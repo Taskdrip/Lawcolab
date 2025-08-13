@@ -13,6 +13,7 @@ from blueprints.projects import projects_bp
 from blueprints.team import team_bp
 from blueprints.public import public_bp
 from blueprints.chat import chat_bp
+from blueprints.superadmin import superadmin_bp
 
 # Register blueprints
 app.register_blueprint(auth_bp, url_prefix="/auth")
@@ -23,6 +24,7 @@ app.register_blueprint(projects_bp, url_prefix="/projects")
 app.register_blueprint(team_bp, url_prefix="/team")
 app.register_blueprint(public_bp, url_prefix="/public")
 app.register_blueprint(chat_bp, url_prefix="/chat")
+app.register_blueprint(superadmin_bp, url_prefix="/superadmin")
 
 # Make session permanent
 @app.before_request
@@ -34,7 +36,9 @@ def index():
     """Main landing page - shows public landing if not authenticated, redirects to dashboard if authenticated"""
     if current_user.is_authenticated:
         # Redirect to appropriate dashboard based on role
-        if current_user.is_admin():
+        if current_user.is_super_admin():
+            return redirect(url_for('superadmin.dashboard'))
+        elif current_user.is_admin():
             return redirect(url_for('admin.admin_dashboard'))
         elif current_user.is_team_member():
             return redirect(url_for('dashboard.team_member_dashboard'))

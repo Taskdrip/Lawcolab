@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block title %}Super Admin Dashboard - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gradient">Platform Management Dashboard</h1>
+            <p class="text-muted">Manage all law firms and users across the platform</p>
+        </div>
+        <div>
+            <a href="{{ url_for('superadmin.create_super_admin') }}" class="btn btn-primary me-2">
+                <i class="fas fa-user-shield me-2"></i>Add Super Admin
+            </a>
+            <div class="dropdown d-inline">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-plus me-2"></i>Quick Actions
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" onclick="showGrantAdminModal()">
+                        <i class="fas fa-user-plus me-2"></i>Create Law Firm Admin
+                    </a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('superadmin.platform_users') }}">
+                        <i class="fas fa-users me-2"></i>View All Users
+                    </a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Platform Statistics -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-2 col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle p-3 me-3" style="background-color: #e3f2fd;">
+                            <i class="fas fa-building text-primary"></i>
+                        </div>
+                        <div>
+                            <h3 class="mb-0">{{ stats.total_law_firms }}</h3>
+                            <p class="text-muted mb-0">Law Firms</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle p-3 me-3" style="background-color: #e8f5e8;">
+                            <i class="fas fa-users text-success"></i>
+                        </div>
+                        <div>
+                            <h3 class="mb-0">{{ stats.total_users }}</h3>
+                            <p class="text-muted mb-0">Total Users</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle p-3 me-3" style="background-color: #fff3e0;">
+                            <i class="fas fa-user-tie text-warning"></i>
+                        </div>
+                        <div>
+                            <h3 class="mb-0">{{ stats.total_admins }}</h3>
+                            <p class="text-muted mb-0">Admins</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle p-3 me-3" style="background-color: #f3e5f5;">
+                            <i class="fas fa-user-friends text-info"></i>
+                        </div>
+                        <div>
+                            <h3 class="mb-0">{{ stats.total_clients }}</h3>
+                            <p class="text-muted mb-0">Clients</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle p-3 me-3" style="background-color: #fce4ec;">
+                            <i class="fas fa-briefcase text-secondary"></i>
+                        </div>
+                        <div>
+                            <h3 class="mb-0">{{ stats.total_projects }}</h3>
+                            <p class="text-muted mb-0">Projects</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle p-3 me-3" style="background-color: #e1f5fe;">
+                            <i class="fas fa-user-cog text-primary"></i>
+                        </div>
+                        <div>
+                            <h3 class="mb-0">{{ stats.total_team_members }}</h3>
+                            <p class="text-muted mb-0">Team Members</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Law Firms -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-building me-2 text-primary"></i>Recent Law Firms
+                        </h5>
+                        <a href="{{ url_for('superadmin.manage_law_firms') }}" class="btn btn-sm btn-outline-primary">
+                            View All <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if recent_law_firms %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Law Firm</th>
+                                    <th>Admin</th>
+                                    <th>Users</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for firm in recent_law_firms %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle p-2 me-2" style="background-color: #e3f2fd; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-building text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold">{{ firm.name }}</div>
+                                                <small class="text-muted">{{ firm.email or 'No email' }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if firm.users and firm.users[0].role == 'admin' %}
+                                            {{ firm.users[0].full_name }}
+                                        {% else %}
+                                            <span class="text-muted">No admin</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ firm.users|length if firm.users else 0 }}</td>
+                                    <td class="text-muted">{{ firm.created_at.strftime('%b %d, %Y') if firm.created_at else 'N/A' }}</td>
+                                    <td>
+                                        <a href="{{ url_for('superadmin.view_law_firm', firm_id=firm.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-building fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No law firms registered yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Admins -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user-shield me-2 text-primary"></i>Recent Admin Signups
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_admins %}
+                    <div class="list-group list-group-flush">
+                        {% for admin in recent_admins %}
+                        <div class="list-group-item border-0 px-0">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle p-2 me-3" style="background-color: #fff3e0; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-user-tie text-warning"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold">{{ admin.full_name }}</div>
+                                    <small class="text-muted">{{ admin.law_firm.name if admin.law_firm else 'No firm' }}</small>
+                                    <br><small class="text-muted">{{ admin.created_at.strftime('%b %d') if admin.created_at }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-user-shield fa-2x text-muted mb-2"></i>
+                        <p class="text-muted">No recent admin signups</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Grant Admin Modal -->
+<div class="modal fade" id="grantAdminModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Law Firm Admin</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="grantAdminForm">
+                    <div class="mb-3">
+                        <label class="form-label">Admin Email *</label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">First Name *</label>
+                                <input type="text" class="form-control" name="first_name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Last Name *</label>
+                                <input type="text" class="form-control" name="last_name" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Law Firm Name *</label>
+                        <input type="text" class="form-control" name="law_firm_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password *</label>
+                        <input type="password" class="form-control" name="password" required>
+                        <div class="form-text">Password will be provided to the admin for initial login</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="createAdmin()">Create Admin & Law Firm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showGrantAdminModal() {
+    new bootstrap.Modal(document.getElementById('grantAdminModal')).show();
+}
+
+function createAdmin() {
+    const form = document.getElementById('grantAdminForm');
+    const formData = new FormData(form);
+    
+    const data = {
+        action: 'create',
+        email: formData.get('email'),
+        first_name: formData.get('first_name'),
+        last_name: formData.get('last_name'),
+        law_firm_name: formData.get('law_firm_name'),
+        password: formData.get('password')
+    };
+    
+    fetch('{{ url_for("superadmin.grant_admin_privileges") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert(result.message);
+            location.reload();
+        } else {
+            alert('Error: ' + result.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    });
+}
+</script>
+{% endblock %}

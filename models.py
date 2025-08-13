@@ -6,7 +6,8 @@ from sqlalchemy import UniqueConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # User roles
-ROLE_ADMIN = 'admin'
+ROLE_SUPER_ADMIN = 'super_admin'  # Platform-wide admin
+ROLE_ADMIN = 'admin'              # Law firm admin
 ROLE_TEAM_MEMBER = 'team_member'
 ROLE_CLIENT = 'client'
 
@@ -76,6 +77,9 @@ class User(UserMixin, db.Model):
     def has_role(self, role):
         return self.role == role
 
+    def is_super_admin(self):
+        return self.role == ROLE_SUPER_ADMIN
+        
     def is_admin(self):
         return self.role == ROLE_ADMIN
 
@@ -84,6 +88,10 @@ class User(UserMixin, db.Model):
 
     def is_client(self):
         return self.role == ROLE_CLIENT
+    
+    def can_manage_law_firms(self):
+        """Super admins can manage all law firms"""
+        return self.is_super_admin()
     
     # Note: is_active property inherited from UserMixin, using self.active field
 

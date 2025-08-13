@@ -12,11 +12,20 @@ def simple_login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def require_super_admin(f):
+    @wraps(f)
+    @simple_login_required
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_super_admin():
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
+
 def require_admin(f):
     @wraps(f)
     @simple_login_required
     def decorated_function(*args, **kwargs):
-        if not current_user.is_admin():
+        if not (current_user.is_admin() or current_user.is_super_admin()):
             abort(403)
         return f(*args, **kwargs)
     return decorated_function
@@ -25,7 +34,7 @@ def require_team_member_or_admin(f):
     @wraps(f)
     @simple_login_required
     def decorated_function(*args, **kwargs):
-        if not (current_user.is_admin() or current_user.is_team_member()):
+        if not (current_user.is_admin() or current_user.is_team_member() or current_user.is_super_admin()):
             abort(403)
         return f(*args, **kwargs)
     return decorated_function
