@@ -3,6 +3,7 @@ from flask_login import current_user
 from replit_auth import require_login
 from app import db
 from models import User, DirectMessage, ChatConversation
+from models_chat import ChatRoom, ChatParticipant, ChatMessage
 from sqlalchemy import or_, and_, desc
 from datetime import datetime
 import json
@@ -25,7 +26,16 @@ def chat_home():
     support_room = current_user.law_firm.get_support_chat_room()
     
     # Get project chat rooms for the user
-    from models_chat import ChatRoom, ChatParticipant, ChatMessage
+    try:
+        from models_chat import ChatRoom, ChatParticipant, ChatMessage
+    except ImportError:
+        # If models_chat doesn't exist, create empty lists
+        chat_list = []
+        return render_template('chat/index.html', 
+                             chat_list=chat_list, 
+                             all_users=[],
+                             unread_counts={},
+                             current_user=current_user)
     
     project_rooms = db.session.query(ChatRoom).join(ChatParticipant).filter(
         ChatParticipant.user_id == current_user.id,

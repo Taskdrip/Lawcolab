@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "base.html" %}
 
 {% block content %}
 <style>
@@ -245,13 +245,7 @@
                     <div class="chat-meta">
                         <div class="chat-time">
                             {% if chat.last_time %}
-                                {% if chat.last_time.date() == moment().date() %}
-                                    {{ chat.last_time.strftime('%I:%M %p') }}
-                                {% elif chat.last_time.date() == (moment() - timedelta(days=1)).date() %}
-                                    Yesterday
-                                {% else %}
-                                    {{ chat.last_time.strftime('%m/%d') }}
-                                {% endif %}
+                                {{ chat.last_time.strftime('%I:%M %p') }}
                             {% endif %}
                         </div>
                         {% if chat.unread_count > 0 %}
