@@ -171,9 +171,9 @@
                             <i class="fas fa-comments me-2"></i>Project Chat
                         </a>
                         {% if current_user.is_admin() or current_user.is_team_member() %}
-                        <button class="btn btn-outline-secondary" onclick="alert('Edit project functionality would be implemented here')">
+                        <a href="{{ url_for('projects.edit_project', project_id=project.id) }}" class="btn btn-outline-secondary">
                             <i class="fas fa-edit me-2"></i>Edit Project
-                        </button>
+                        </a>
                         {% endif %}
                         {% if project.assigned_clients %}
                         <a href="{{ url_for('clients.client_profile', client_id=project.assigned_clients[0].id) }}" class="btn btn-outline-info">

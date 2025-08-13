@@ -354,3 +354,47 @@ def send_message(project_id):
     
     flash('Message sent successfully!', 'success')
     return redirect(url_for('projects.project_chat', project_id=project_id))
+
+@projects_bp.route('/<int:project_id>/edit', methods=['GET', 'POST'])
+@require_team_member_or_admin
+def edit_project(project_id):
+    """Edit an existing project"""
+    project = Project.query.get_or_404(project_id)
+    
+    # Check if user can edit this project (admin can edit all, team members can edit their own)
+    if not current_user.is_admin() and project.created_by_id != current_user.id:
+        flash('You do not have permission to edit this project.', 'error')
+        return redirect(url_for('projects.project_detail', project_id=project_id))
+    
+    # Ensure project belongs to same law firm
+    if project.law_firm_id != current_user.law_firm_id:
+        flash('You do not have access to this project.', 'error')
+        return redirect(url_for('projects.list_projects'))
+    
+    form = ProjectForm()
+    
+    if form.validate_on_submit():
+        # Update project with form data
+        project.title = form.title.data
+        project.description = form.description.data
+        project.status = form.status.data
+        project.priority = form.priority.data
+        project.deadline = form.deadline.data
+        
+        try:
+            db.session.commit()
+            flash('Project updated successfully!', 'success')
+            return redirect(url_for('projects.project_detail', project_id=project.id))
+        except Exception as e:
+            db.session.rollback()
+            flash('An error occurred while updating the project. Please try again.', 'error')
+    
+    # Pre-populate form with existing project data
+    if request.method == 'GET':
+        form.title.data = project.title
+        form.description.data = project.description
+        form.status.data = project.status
+        form.priority.data = project.priority
+        form.deadline.data = project.deadline
+    
+    return render_template('projects/edit.html', form=form, project=project)

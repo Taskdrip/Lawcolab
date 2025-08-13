@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}Edit {{ project.title }} - Project{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-edit text-primary fs-3 me-3"></i>
+                        <div>
+                            <h1 class="h3 mb-1">Edit Project</h1>
+                            <p class="text-muted mb-0">Update project details and settings</p>
+                        </div>
+                    </div>
+                    
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item">
+                                <a href="{{ url_for('projects.list_projects') }}" class="text-decoration-none">
+                                    <i class="fas fa-folder me-1"></i>Projects
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="text-decoration-none">
+                                    {{ project.title }}
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">Edit</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Edit Form -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Project Title -->
+                        <div class="mb-4">
+                            <label for="title" class="form-label fw-semibold">
+                                <i class="fas fa-heading me-2 text-primary"></i>Project Title *
+                            </label>
+                            {{ form.title(class="form-control form-control-lg", placeholder="Enter project title") }}
+                            {% if form.title.errors %}
+                                <div class="text-danger mt-1">
+                                    {% for error in form.title.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Project Description -->
+                        <div class="mb-4">
+                            <label for="description" class="form-label fw-semibold">
+                                <i class="fas fa-align-left me-2 text-primary"></i>Description
+                            </label>
+                            {{ form.description(class="form-control", rows="4", placeholder="Describe the project objectives, scope, and any important details...") }}
+                            {% if form.description.errors %}
+                                <div class="text-danger mt-1">
+                                    {% for error in form.description.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Status and Priority Row -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="status" class="form-label fw-semibold">
+                                    <i class="fas fa-tasks me-2 text-primary"></i>Status
+                                </label>
+                                {{ form.status(class="form-select") }}
+                                {% if form.status.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.status.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="priority" class="form-label fw-semibold">
+                                    <i class="fas fa-exclamation-triangle me-2 text-primary"></i>Priority
+                                </label>
+                                {{ form.priority(class="form-select") }}
+                                {% if form.priority.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.priority.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Deadline -->
+                        <div class="mb-4">
+                            <label for="deadline" class="form-label fw-semibold">
+                                <i class="fas fa-calendar-alt me-2 text-primary"></i>Deadline
+                            </label>
+                            {{ form.deadline(class="form-control") }}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Optional: Set a deadline for this project
+                            </div>
+                            {% if form.deadline.errors %}
+                                <div class="text-danger mt-1">
+                                    {% for error in form.deadline.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                            <div>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Fields marked with * are required
+                                </small>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" 
+                                   class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Project Info Card -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-body p-4">
+                    <h6 class="card-title mb-3">
+                        <i class="fas fa-info-circle me-2 text-info"></i>Project Information
+                    </h6>
+                    <div class="row text-sm">
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                <span class="text-muted">Created by:</span>
+                                <span class="ms-1 fw-medium">{{ project.created_by.full_name }}</span>
+                            </div>
+                            <div class="mb-2">
+                                <span class="text-muted">Created on:</span>
+                                <span class="ms-1 fw-medium">{{ project.created_at.strftime('%B %d, %Y') }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                <span class="text-muted">Assigned users:</span>
+                                <span class="ms-1 fw-medium">{{ project.assignments|length }} members</span>
+                            </div>
+                            <div class="mb-2">
+                                <span class="text-muted">Project files:</span>
+                                <span class="ms-1 fw-medium">{{ project.files|length }} files</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Custom styling for edit form */
+.form-control:focus,
+.form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+.form-label {
+    color: #495057;
+    margin-bottom: 0.75rem;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "›";
+    color: #6c757d;
+}
+
+.card {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+</style>
+{% endblock %}
