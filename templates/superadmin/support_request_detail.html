@@ -109,7 +109,7 @@
                             <hr>
                             <h6><strong>Message:</strong></h6>
                             <div class="p-3 bg-light rounded">
-                                {{ request.message | nl2br }}
+                                {{ request.message | replace('\n', '<br>') | safe }}
                             </div>
                         </div>
                     </div>
@@ -128,12 +128,12 @@
                             </button>
                             {% endif %}
                             
-                            <a href="{{ url_for('chat.law_firm_support_chat', law_firm_id=request.law_firm.id) }}" 
+                            <a href="{{ url_for('enhanced_chat.superadmin_support_rooms') }}" 
                                class="btn btn-primary w-100 mb-2">
-                                <i class="fas fa-comments me-1"></i>Chat with Law Firm
+                                <i class="fas fa-comments me-1"></i>View Support Chats
                             </a>
                             
-                            <a href="{{ url_for('superadmin.view_law_firm', law_firm_id=request.law_firm.id) }}" 
+                            <a href="{{ url_for('superadmin.view_law_firm', firm_id=request.law_firm.id) }}" 
                                class="btn btn-outline-info w-100">
                                 <i class="fas fa-building me-1"></i>View Law Firm
                             </a>
@@ -148,8 +148,8 @@
                         <div class="card-body">
                             <p class="small mb-2">
                                 <strong>Subscription:</strong> 
-                                <span class="badge {% if request.law_firm.subscription_status == 'active' %}bg-success{% else %}bg-warning{% endif %}">
-                                    {{ request.law_firm.subscription_status.title() if request.law_firm.subscription_status else 'None' }}
+                                <span class="badge {% if request.law_firm.admin_access_granted %}bg-success{% else %}bg-warning{% endif %}">
+                                    {% if request.law_firm.admin_access_granted %}Active{% else %}Pending{% endif %}
                                 </span>
                             </p>
                             <p class="small mb-2">
