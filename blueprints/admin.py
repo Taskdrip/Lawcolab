@@ -75,6 +75,11 @@ def add_client():
 @require_admin  
 def add_team_member():
     """Admin can add new team members to their law firm"""
+    # Ensure admin has a law firm
+    if not current_user.law_firm_id:
+        current_user.create_law_firm_if_admin()
+        db.session.commit()
+    
     form = TeamMemberForm()
     
     if form.validate_on_submit():
@@ -87,7 +92,14 @@ def add_team_member():
         team_member.phone = form.phone.data
         team_member.bio = form.bio.data
         team_member.specialization = form.specialization.data
-        team_member.years_experience = form.years_experience.data
+        # Convert years_experience to int if provided
+        if form.years_experience.data and form.years_experience.data.strip():
+            try:
+                team_member.years_experience = int(form.years_experience.data)
+            except ValueError:
+                team_member.years_experience = None
+        else:
+            team_member.years_experience = None
         team_member.education = form.education.data
         team_member.certifications = form.certifications.data
         team_member.role = ROLE_TEAM_MEMBER
@@ -104,7 +116,8 @@ def add_team_member():
             return redirect(url_for('team.list_team'))
         except Exception as e:
             db.session.rollback()
-            flash('Error adding team member. Please try again.', 'error')
+            print(f"Error adding team member: {str(e)}")  # Debug logging
+            flash(f'Error adding team member: {str(e)}', 'error')
     
     return render_template('admin/add_team_member.html', form=form)
 

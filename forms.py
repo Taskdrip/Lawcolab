@@ -65,10 +65,16 @@ class TeamMemberForm(FlaskForm):
     phone = StringField('Phone Number', validators=[Optional(), Length(max=20)])
     bio = TextAreaField('Bio/About', validators=[Optional(), Length(max=500)])
     specialization = StringField('Specialization', validators=[Optional(), Length(max=200)])
-    years_experience = StringField('Years of Experience', validators=[Optional()])
+    years_experience = StringField('Years of Experience', validators=[Optional(), Length(max=3)])
     education = TextAreaField('Education', validators=[Optional(), Length(max=500)])
     certifications = TextAreaField('Certifications', validators=[Optional(), Length(max=500)])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
+    
+    def validate_email(self, email):
+        # Check if email is already in use by another user
+        existing_user = User.query.filter_by(email=email.data.lower()).first()
+        if existing_user:
+            raise ValidationError('A user with this email address already exists.')
 
 class AdminUserForm(FlaskForm):
     first_name = StringField('First Name', validators=[DataRequired(), Length(min=2, max=50)])
