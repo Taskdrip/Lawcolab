@@ -111,7 +111,7 @@
                     <div class="row text-center">
                         <div class="col-6">
                             <div class="border-end">
-                                <h4 class="mb-1">{{ law_firm.users|length }}</h4>
+                                <h4 class="mb-1">{{ law_firm.users|selectattr('active')|list|length }}</h4>
                                 <small class="text-muted">Users</small>
                             </div>
                         </div>
@@ -148,6 +148,7 @@
                     </thead>
                     <tbody>
                         {% for user in law_firm.users %}
+                        {% if user.active %}
                         <tr>
                             <td>
                                 <div class="d-flex align-items-center">
@@ -187,6 +188,7 @@
                                 </div>
                             </td>
                         </tr>
+                        {% endif %}
                         {% endfor %}
                     </tbody>
                 </table>

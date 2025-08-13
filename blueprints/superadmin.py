@@ -170,6 +170,7 @@ def grant_admin_access():
         
         # Grant admin privileges
         owner.role = ROLE_ADMIN
+        owner.active = True  # Ensure user is active when granting access
         law_firm.admin_access_granted = True
         law_firm.admin_access_expires = expiry
         law_firm.subscription_period = period
@@ -197,6 +198,7 @@ def grant_admin_access():
         
         if admin:
             admin.role = 'lawfirm_owner'  # Downgrade to owner
+            admin.active = False  # Deactivate user when revoking access
         
         law_firm.admin_access_granted = False
         law_firm.admin_access_expires = None
