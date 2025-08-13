@@ -17,13 +17,99 @@
     <!-- Custom CSS with cache busting -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/simple.css') }}?v={{ range(1000, 9999) | random }}">
     
-    <!-- Clean Simple Styling -->
+    <!-- Clean Simple Styling with Mobile Optimization -->
     <style>
         /* Simple clean design: white background, black text */
         body {
             background-color: #ffffff;
             color: #000000;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+        
+        /* Mobile-first responsive container */
+        .container, .container-fluid {
+            padding-left: 15px;
+            padding-right: 15px;
+            max-width: 100%;
+        }
+        
+        /* Ensure cards and content don't overflow */
+        .card, .table-responsive, .form-control, .btn {
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+        
+        /* Mobile responsive tables */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Mobile navigation improvements */
+        @media (max-width: 768px) {
+            .navbar-nav {
+                background-color: #fff;
+                padding: 10px 0;
+                margin-top: 10px;
+                border-top: 1px solid #dee2e6;
+            }
+            
+            .nav-item {
+                text-align: center;
+                padding: 5px 0;
+            }
+            
+            /* Stack buttons vertically on mobile */
+            .d-flex.gap-2, .d-flex.gap-3 {
+                flex-direction: column !important;
+                gap: 10px !important;
+            }
+            
+            /* Mobile friendly forms */
+            .row.g-4 {
+                margin: 0 !important;
+            }
+            
+            .col-md-6, .col-lg-4, .col-xl-8 {
+                padding-left: 8px !important;
+                padding-right: 8px !important;
+            }
+            
+            /* Mobile table adjustments */
+            .table th, .table td {
+                font-size: 0.875rem;
+                padding: 0.5rem 0.25rem;
+            }
+            
+            /* Hide overflow text on mobile */
+            .text-truncate-mobile {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                max-width: 150px;
+            }
+        }
+        
+        /* Extra small devices */
+        @media (max-width: 576px) {
+            .container-fluid {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+            
+            .card-body {
+                padding: 15px !important;
+            }
+            
+            .btn {
+                font-size: 0.875rem;
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .h3 {
+                font-size: 1.25rem !important;
+            }
         }
         
         /* Override Bootstrap muted text to be darker */
@@ -50,6 +136,20 @@
         
         .nav-link:hover {
             color: #007bff;
+        }
+        
+        /* Prevent text overflow in cards */
+        .card-title, .card-text {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        /* Mobile-friendly modals */
+        @media (max-width: 768px) {
+            .modal-dialog {
+                margin: 10px;
+                max-width: calc(100% - 20px);
+            }
         }
     </style>
 </head>

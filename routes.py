@@ -17,6 +17,10 @@ from blueprints.superadmin import superadmin_bp
 from blueprints.enhanced_chat import enhanced_chat_bp
 from blueprints.support_requests import support_bp
 
+# Import invoice blueprints
+from blueprints.invoices.routes import invoices_bp
+from blueprints.invoice_chat.routes import invoice_chat_bp
+
 # Register blueprints
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(dashboard_bp, url_prefix="/dashboard")
@@ -29,6 +33,8 @@ app.register_blueprint(chat_bp, url_prefix="/chat")
 app.register_blueprint(superadmin_bp, url_prefix="/superadmin")
 app.register_blueprint(support_bp, url_prefix="/support")
 app.register_blueprint(enhanced_chat_bp, url_prefix='/enhanced-chat')
+app.register_blueprint(invoices_bp, url_prefix="/invoices")
+app.register_blueprint(invoice_chat_bp, url_prefix="/invoice-chat")
 
 # Make session permanent
 @app.before_request
@@ -139,13 +145,7 @@ def uploaded_file(filename):
     """Serve uploaded files"""
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-# Register invoice blueprint
-from blueprints.invoices.routes import invoices_bp
-app.register_blueprint(invoices_bp)
-
-# Register invoice chat blueprint
-from blueprints.invoice_chat.routes import invoice_chat_bp
-app.register_blueprint(invoice_chat_bp)
+# Invoice blueprints already registered above
 
 @app.errorhandler(403)
 def forbidden(e):
