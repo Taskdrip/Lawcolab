@@ -14,6 +14,38 @@ def landing():
     
     return render_template('public/landing.html', firm=firm, team_members=team_members)
 
+@public_bp.route('/firm/<firm_id>')
+def law_firm_profile(firm_id):
+    """Public law firm profile page"""
+    law_firm = LawFirm.query.get_or_404(firm_id)
+    
+    # Get firm statistics
+    team_count = User.query.filter(
+        User.law_firm_id == firm_id,
+        User.role.in_(['admin', 'team_member'])
+    ).count()
+    
+    client_count = User.query.filter(
+        User.law_firm_id == firm_id,
+        User.role == 'client'
+    ).count()
+    
+    project_count = Project.query.filter_by(law_firm_id=firm_id).count()
+    
+    # Get team members for display
+    team_members = User.query.filter(
+        User.law_firm_id == firm_id,
+        User.role.in_(['admin', 'team_member'])
+    ).limit(4).all()
+    
+    return render_template('public/law_firm_profile.html',
+                         law_firm=law_firm,
+                         team_count=team_count,
+                         client_count=client_count,
+                         project_count=project_count,
+                         team_members=team_members,
+                         current_year=datetime.now().year)
+
 @public_bp.route('/profile/<user_id>')
 def user_profile(user_id):
     """Public user profile page"""

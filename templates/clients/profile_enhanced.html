@@ -251,8 +251,8 @@
                         </a>
                         
                         {% if current_user.is_admin() %}
-                        <a href="{{ url_for('admin.edit_user', user_id=client.id) }}" class="btn btn-outline-warning">
-                            <i class="fas fa-edit me-2"></i>Edit Profile
+                        <a href="{{ url_for('admin.add_client') }}" class="btn btn-outline-warning">
+                            <i class="fas fa-edit me-2"></i>Manage Clients
                         </a>
                         {% endif %}
                     </div>
