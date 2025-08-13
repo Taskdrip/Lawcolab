@@ -8,11 +8,14 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h3 mb-0 text-gradient">Admin Dashboard</h1>
-            <p class="text-muted">Manage your law firm's operations and users</p>
+            <p class="text-muted">Manage your law firm's operations</p>
         </div>
         <div>
-            <a href="{{ url_for('admin.add_user') }}" class="btn btn-primary">
-                <i class="fas fa-user-plus me-2"></i>Add User
+            <a href="{{ url_for('admin.add_client') }}" class="btn btn-primary me-2">
+                <i class="fas fa-user-plus me-2"></i>Add Client
+            </a>
+            <a href="{{ url_for('admin.add_team_member') }}" class="btn btn-outline-primary">
+                <i class="fas fa-user-tie me-2"></i>Add Team Member
             </a>
         </div>
     </div>
@@ -20,15 +23,15 @@
     <!-- Statistics Cards -->
     <div class="row g-4 mb-5">
         <div class="col-lg-3 col-md-6">
-            <div class="card stat-card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
-                        <div class="stat-icon bg-primary">
-                            <i class="fas fa-users"></i>
+                        <div class="rounded-circle p-3 me-3" style="background-color: #e3f2fd;">
+                            <i class="fas fa-user-friends text-primary"></i>
                         </div>
                         <div>
-                            <h3 class="stat-number mb-0">{{ stats.total_users }}</h3>
-                            <p class="stat-label mb-0">Total Users</p>
+                            <h3 class="mb-0">{{ total_clients }}</h3>
+                            <p class="text-muted mb-0">Total Clients</p>
                         </div>
                     </div>
                 </div>
@@ -36,15 +39,15 @@
         </div>
         
         <div class="col-lg-3 col-md-6">
-            <div class="card stat-card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
-                        <div class="stat-icon bg-success">
-                            <i class="fas fa-user-tie"></i>
+                        <div class="rounded-circle p-3 me-3" style="background-color: #e8f5e8;">
+                            <i class="fas fa-user-tie text-success"></i>
                         </div>
                         <div>
-                            <h3 class="stat-number mb-0">{{ stats.total_team_members }}</h3>
-                            <p class="stat-label mb-0">Team Members</p>
+                            <h3 class="mb-0">{{ total_team_members }}</h3>
+                            <p class="text-muted mb-0">Team Members</p>
                         </div>
                     </div>
                 </div>
@@ -52,15 +55,15 @@
         </div>
         
         <div class="col-lg-3 col-md-6">
-            <div class="card stat-card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
-                        <div class="stat-icon bg-info">
-                            <i class="fas fa-user-friends"></i>
+                        <div class="rounded-circle p-3 me-3" style="background-color: #fff3e0;">
+                            <i class="fas fa-briefcase text-warning"></i>
                         </div>
                         <div>
-                            <h3 class="stat-number mb-0">{{ stats.total_clients }}</h3>
-                            <p class="stat-label mb-0">Clients</p>
+                            <h3 class="mb-0">{{ total_projects }}</h3>
+                            <p class="text-muted mb-0">Active Projects</p>
                         </div>
                     </div>
                 </div>
@@ -68,15 +71,15 @@
         </div>
         
         <div class="col-lg-3 col-md-6">
-            <div class="card stat-card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
-                        <div class="stat-icon bg-warning">
-                            <i class="fas fa-briefcase"></i>
+                        <div class="rounded-circle p-3 me-3" style="background-color: #fce4ec;">
+                            <i class="fas fa-comments text-info"></i>
                         </div>
                         <div>
-                            <h3 class="stat-number mb-0">{{ stats.active_projects }}</h3>
-                            <p class="stat-label mb-0">Active Projects</p>
+                            <h3 class="mb-0">{{ conversations_count|default(0) }}</h3>
+                            <p class="text-muted mb-0">Active Chats</p>
                         </div>
                     </div>
                 </div>
@@ -85,61 +88,47 @@
     </div>
 
     <div class="row">
-        <!-- Recent Users -->
+        <!-- Recent Clients -->
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-transparent border-0">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">
-                            <i class="fas fa-user-plus me-2 text-primary"></i>Recent Users
+                            <i class="fas fa-users me-2 text-primary"></i>Recent Clients
                         </h5>
-                        <a href="{{ url_for('admin.manage_users') }}" class="btn btn-sm btn-outline-primary">
+                        <a href="{{ url_for('clients.list_clients') }}" class="btn btn-sm btn-outline-primary">
                             View All <i class="fas fa-arrow-right ms-1"></i>
                         </a>
                     </div>
                 </div>
                 <div class="card-body">
-                    {% if recent_users %}
+                    {% if recent_clients %}
                     <div class="table-responsive">
                         <table class="table table-hover align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th>User</th>
-                                    <th>Role</th>
+                                    <th>Client</th>
                                     <th>Email</th>
+                                    <th>Company</th>
                                     <th>Joined</th>
-                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for user in recent_users %}
+                                {% for client in recent_clients %}
                                 <tr>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            {% if user.profile_image_url %}
-                                                <img src="{{ user.profile_image_url }}" alt="Profile" class="profile-img-sm me-2">
-                                            {% else %}
-                                                <div class="profile-placeholder-sm me-2">
-                                                    <i class="fas fa-user"></i>
-                                                </div>
-                                            {% endif %}
+                                            <div class="rounded-circle p-2 me-2" style="background-color: #e3f2fd; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-user text-primary"></i>
+                                            </div>
                                             <div>
-                                                <div class="fw-semibold">{{ user.full_name }}</div>
+                                                <div class="fw-semibold">{{ client.full_name }}</div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td>
-                                        <span class="badge bg-{{ 'primary' if user.role == 'admin' else 'success' if user.role == 'team_member' else 'secondary' }}">
-                                            {{ user.role.replace('_', ' ').title() }}
-                                        </span>
-                                    </td>
-                                    <td class="text-muted">{{ user.email }}</td>
-                                    <td class="text-muted">{{ user.created_at.strftime('%b %d, %Y') }}</td>
-                                    <td>
-                                        <span class="badge bg-{{ 'success' if user.active else 'danger' }}">
-                                            {{ 'Active' if user.active else 'Inactive' }}
-                                        </span>
-                                    </td>
+                                    <td class="text-muted">{{ client.email or 'N/A' }}</td>
+                                    <td class="text-muted">{{ client.company_name or 'N/A' }}</td>
+                                    <td class="text-muted">{{ client.created_at.strftime('%b %d, %Y') if client.created_at else 'N/A' }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -148,7 +137,10 @@
                     {% else %}
                     <div class="text-center py-4">
                         <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">No users found</p>
+                        <p class="text-muted">No clients added yet</p>
+                        <a href="{{ url_for('admin.add_client') }}" class="btn btn-primary">
+                            <i class="fas fa-user-plus me-2"></i>Add Your First Client
+                        </a>
                     </div>
                     {% endif %}
                 </div>
@@ -165,51 +157,50 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a href="{{ url_for('admin.add_user') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-user-plus me-2"></i>Add New User
+                        <a href="{{ url_for('admin.add_client') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-user-plus me-2"></i>Add New Client
                         </a>
-                        <a href="{{ url_for('admin.firm_profile') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-building me-2"></i>Firm Profile
+                        <a href="{{ url_for('admin.add_team_member') }}" class="btn btn-outline-success">
+                            <i class="fas fa-user-tie me-2"></i>Add Team Member
                         </a>
-                        <a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline-info">
-                            <i class="fas fa-users-cog me-2"></i>Manage Users
+                        <a href="{{ url_for('clients.list_clients') }}" class="btn btn-outline-info">
+                            <i class="fas fa-users me-2"></i>View All Clients
                         </a>
-                        <a href="{{ url_for('admin.manage_projects') }}" class="btn btn-outline-warning">
+                        <a href="{{ url_for('projects.list_projects') }}" class="btn btn-outline-warning">
                             <i class="fas fa-briefcase me-2"></i>View Projects
+                        </a>
+                        <a href="{{ url_for('chat.chat_home') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-comments me-2"></i>Messages
                         </a>
                     </div>
                 </div>
             </div>
 
-            <!-- Firm Info Card -->
-            {% if firm %}
+            <!-- Law Firm Info -->
             <div class="card border-0 shadow-sm mt-4">
                 <div class="card-header bg-transparent border-0">
                     <h5 class="card-title mb-0">
-                        <i class="fas fa-building me-2 text-primary"></i>{{ firm.name }}
+                        <i class="fas fa-building me-2 text-primary"></i>Your Law Firm
                     </h5>
                 </div>
                 <div class="card-body">
-                    {% if firm.description %}
-                    <p class="text-muted mb-3">{{ firm.description[:100] }}{% if firm.description|length > 100 %}...{% endif %}</p>
+                    {% if current_user.law_firm %}
+                    <h6 class="fw-bold">{{ current_user.law_firm.name }}</h6>
+                    {% if current_user.law_firm.description %}
+                    <p class="text-muted mb-3">{{ current_user.law_firm.description[:100] }}{% if current_user.law_firm.description|length > 100 %}...{% endif %}</p>
                     {% endif %}
                     
-                    {% if firm.email %}
+                    {% if current_user.law_firm.email %}
                     <div class="d-flex align-items-center mb-2">
                         <i class="fas fa-envelope text-muted me-2"></i>
-                        <small>{{ firm.email }}</small>
+                        <small>{{ current_user.law_firm.email }}</small>
                     </div>
                     {% endif %}
-                    
-                    {% if firm.phone %}
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-phone text-muted me-2"></i>
-                        <small>{{ firm.phone }}</small>
-                    </div>
+                    {% else %}
+                    <p class="text-muted">Law firm information not available</p>
                     {% endif %}
                 </div>
             </div>
-            {% endif %}
         </div>
     </div>
 </div>
