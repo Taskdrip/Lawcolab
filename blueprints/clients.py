@@ -10,9 +10,15 @@ from utils.profile_upload import save_profile_image
 clients_bp = Blueprint('clients', __name__)
 
 @clients_bp.route('/')
-@require_team_member_or_admin
+@require_login
 def list_clients():
     """List clients from the same law firm with search functionality"""
+    
+    # Check if user has required permissions first
+    if not (current_user.is_admin() or current_user.is_team_member() or current_user.is_super_admin()):
+        flash(f'Access denied. You need admin or team member role to view clients. Your current role: {current_user.role}', 'error')
+        return redirect(url_for('index'))
+    
     search = request.args.get('search', '')
     
     # Only show clients from the current user's law firm (ensure current user has law_firm_id)
