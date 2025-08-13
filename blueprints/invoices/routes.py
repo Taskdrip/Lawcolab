@@ -150,26 +150,36 @@ def get_client_projects(client_id):
     """API endpoint to get projects for a specific client"""
     from models import ProjectAssignment
     
-    # Get projects where the client is assigned
-    project_assignments = ProjectAssignment.query.filter_by(
-        user_id=client_id,
-        law_firm_id=current_user.law_firm_id
-    ).all()
-    
-    # Format projects for JSON response
-    project_data = []
-    for assignment in project_assignments:
-        if assignment.project:
-            project_data.append({
-                'id': assignment.project.id,
-                'name': assignment.project.title,  # Use 'title' instead of 'name'
-                'status': assignment.project.status
-            })
-    
-    return jsonify({
-        'success': True,
-        'projects': project_data
-    })
+    try:
+        # Get projects where the client is assigned, joining with projects to filter by law firm
+        project_assignments = db.session.query(ProjectAssignment).join(
+            Project, ProjectAssignment.project_id == Project.id
+        ).filter(
+            ProjectAssignment.user_id == client_id,
+            Project.law_firm_id == current_user.law_firm_id
+        ).all()
+        
+        # Format projects for JSON response
+        project_data = []
+        for assignment in project_assignments:
+            if assignment.project:
+                project_data.append({
+                    'id': assignment.project.id,
+                    'name': assignment.project.title,  # Use 'title' instead of 'name'
+                    'status': assignment.project.status
+                })
+        
+        return jsonify({
+            'success': True,
+            'projects': project_data
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'projects': []
+        })
 
 @invoices_bp.route('/<int:id>')
 @login_required
