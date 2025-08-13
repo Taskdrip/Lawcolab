@@ -240,7 +240,7 @@ function addLineItem() {
                     <input type="number" name="line_quantity[]" class="form-control line-quantity" value="1" step="0.01" min="0" style="border: 1px solid #e1e5e9; font-size: 0.85rem;">
                 </div>
                 <div class="col-4 col-md-2">
-                    <label class="form-label" style="color: #1a1a1a; font-size: 0.8rem;">Rate ($)</label>
+                    <label class="form-label rate-label" style="color: #1a1a1a; font-size: 0.8rem;">Rate ($)</label>
                     <input type="number" name="line_rate[]" class="form-control line-rate" step="0.01" min="0" placeholder="0.00" style="border: 1px solid #e1e5e9; font-size: 0.85rem;">
                 </div>
                 <div class="col-4 col-md-2">
@@ -266,6 +266,12 @@ function addLineItem() {
         const currencySymbol = currencySymbols[currencySelect.value] || '$';
         totalInput.value = currencySymbol + total.toFixed(2);
     }
+    
+    // Set initial currency symbol for this line item
+    const currencySelect = document.getElementById('currencySelect');
+    const initialCurrencySymbol = currencySymbols[currencySelect.value] || '$';
+    newItem.querySelector('.rate-label').textContent = `Rate (${initialCurrencySymbol})`;
+    totalInput.placeholder = `${initialCurrencySymbol}0.00`;
     
     quantityInput.addEventListener('input', calculateTotal);
     rateInput.addEventListener('input', calculateTotal);
@@ -349,19 +355,17 @@ document.getElementById('currencySelect').addEventListener('change', function() 
     document.getElementById('currencySymbol').textContent = currencySymbol;
     
     // Update line item rate labels and totals
-    document.querySelectorAll('.line-rate').forEach(input => {
-        const label = input.closest('.col-4, .col-md-2').querySelector('.form-label');
-        if (label) {
-            label.textContent = `Rate (${currencySymbol})`;
-        }
+    document.querySelectorAll('.rate-label').forEach(label => {
+        label.textContent = `Rate (${currencySymbol})`;
     });
     
-    // Update line item totals
+    // Update line item totals and placeholders
     document.querySelectorAll('.line-total').forEach(input => {
         const quantity = parseFloat(input.closest('.line-item').querySelector('.line-quantity').value) || 0;
         const rate = parseFloat(input.closest('.line-item').querySelector('.line-rate').value) || 0;
         const total = quantity * rate;
         input.value = currencySymbol + total.toFixed(2);
+        input.placeholder = `${currencySymbol}0.00`;
     });
 });
 </script>
