@@ -70,10 +70,14 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label text-muted">Status</label>
-                                {% if law_firm.admin_access_granted %}
-                                    <span class="badge bg-success">Active (Admin Access Granted)</span>
+                                {% if law_firm.subscription_status == "Active" %}
+                                    <span class="badge bg-success">{{ law_firm.subscription_status }}</span>
+                                {% elif law_firm.subscription_status == "Expired" %}
+                                    <span class="badge bg-danger">{{ law_firm.subscription_status }}</span>
+                                {% elif "Expires in" in law_firm.subscription_status %}
+                                    <span class="badge bg-warning">{{ law_firm.subscription_status }}</span>
                                 {% else %}
-                                    <span class="badge bg-warning">Pending Payment Verification</span>
+                                    <span class="badge bg-secondary">{{ law_firm.subscription_status }}</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -322,9 +326,29 @@ function promoteToAdmin(userId, userName) {
 }
 
 function deactivateUser(userId, userName) {
-    if (confirm(`Deactivate ${userName}?`)) {
-        // Implementation for deactivating user
-        alert('Deactivation functionality will be implemented');
+    if (confirm(`Deactivate ${userName}? They will no longer be able to access the system.`)) {
+        fetch('/superadmin/deactivate-user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                user_id: userId
+            })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                alert(result.message);
+                location.reload();
+            } else {
+                alert('Error: ' + result.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
     }
 }
 </script>

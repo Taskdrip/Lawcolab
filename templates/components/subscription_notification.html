@@ -1,0 +1,27 @@
+{% if current_user.is_authenticated and current_user.law_firm %}
+    {% set firm = current_user.law_firm %}
+    {% if firm.admin_access_granted %}
+        {% if firm.is_subscription_expired %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Subscription Expired!</strong> Your law firm's subscription has expired. 
+                <a href="/chat-support" class="alert-link">Contact support to renew</a>.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% elif firm.days_until_expiry is not none and firm.days_until_expiry <= 7 %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="fas fa-clock me-2"></i>
+                <strong>Subscription Expiring Soon!</strong> Your subscription expires in {{ firm.days_until_expiry }} day{{ 's' if firm.days_until_expiry != 1 else '' }}. 
+                <a href="/chat-support" class="alert-link">Contact support to renew</a>.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Admin Access Pending</strong> Contact our support team to verify payment and activate admin features. 
+            <a href="/chat-support" class="alert-link">Request access now</a>.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endif %}
+{% endif %}

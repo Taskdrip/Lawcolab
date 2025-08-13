@@ -173,8 +173,42 @@ class LawFirm(db.Model):
     website = db.Column(db.String(200))
     practice_areas = db.Column(db.Text)  # JSON string of practice areas
     
+    # Admin access and subscription management
+    admin_access_granted = db.Column(db.Boolean, default=False, nullable=False)
+    admin_access_expires = db.Column(db.DateTime)
+    subscription_period = db.Column(db.String(20))  # 3days, 1month, 3months, 6months, 1year
+    
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    
+    @property
+    def is_subscription_expired(self):
+        """Check if the law firm's subscription has expired"""
+        if not self.admin_access_expires:
+            return False
+        from datetime import datetime
+        return datetime.now() > self.admin_access_expires
+    
+    @property
+    def days_until_expiry(self):
+        """Get days until subscription expires"""
+        if not self.admin_access_expires:
+            return None
+        from datetime import datetime
+        delta = self.admin_access_expires - datetime.now()
+        return max(0, delta.days)
+    
+    @property
+    def subscription_status(self):
+        """Get current subscription status"""
+        if not self.admin_access_granted:
+            return "Pending Payment Verification"
+        elif self.is_subscription_expired:
+            return "Expired"
+        elif self.days_until_expiry is not None and self.days_until_expiry <= 7:
+            return f"Expires in {self.days_until_expiry} days"
+        else:
+            return "Active"
     
     # Multi-tenancy relationships
     users = db.relationship('User', back_populates='law_firm')

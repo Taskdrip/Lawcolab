@@ -221,6 +221,32 @@ def grant_admin_access():
         'message': 'Invalid action.'
     }), 400
 
+@superadmin_bp.route('/deactivate-user', methods=['POST'])
+@require_super_admin
+def deactivate_user():
+    """Deactivate a user account"""
+    data = request.get_json()
+    user_id = data.get('user_id')
+    
+    user = User.query.get_or_404(user_id)
+    
+    # Deactivate the user
+    user.active = False
+    
+    try:
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': f'{user.full_name} has been deactivated successfully.'
+        })
+    except Exception as e:
+        print(f"Error deactivating user: {e}")
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': f'Error deactivating user: {str(e)}'
+        }), 500
+
 @superadmin_bp.route('/grant-admin-privileges', methods=['POST'])
 @require_super_admin
 def grant_admin_privileges():
