@@ -23,7 +23,7 @@
             <div class="card border-0" style="background: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-radius: 16px; overflow: hidden;">
                 <div class="card-body p-4 p-md-5">
                     <form method="POST" id="invoiceForm">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        {{ csrf_token() }}
                         
                         <!-- Client and Project Selection -->
                         <div class="row g-3 mb-4">
