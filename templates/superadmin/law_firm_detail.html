@@ -15,17 +15,9 @@
                 <i class="fas fa-arrow-left me-2"></i>Back to Law Firms
             </a>
             {% if not law_firm.admin_access_granted %}
-            <div class="btn-group">
-                <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    <i class="fas fa-user-shield me-2"></i>Grant Admin Access
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#" onclick="grantAdminAccess('{{ law_firm.id }}', '{{ law_firm.name }}', '1month')">1 Month</a></li>
-                    <li><a class="dropdown-item" href="#" onclick="grantAdminAccess('{{ law_firm.id }}', '{{ law_firm.name }}', '3months')">3 Months</a></li>
-                    <li><a class="dropdown-item" href="#" onclick="grantAdminAccess('{{ law_firm.id }}', '{{ law_firm.name }}', '6months')">6 Months</a></li>
-                    <li><a class="dropdown-item" href="#" onclick="grantAdminAccess('{{ law_firm.id }}', '{{ law_firm.name }}', '1year')">1 Year</a></li>
-                </ul>
-            </div>
+            <button class="btn btn-success" onclick="showGrantAccessModal('{{ law_firm.id }}', '{{ law_firm.name }}')">
+                <i class="fas fa-user-shield me-2"></i>Grant Admin Access
+            </button>
             {% else %}
             <button class="btn btn-warning" onclick="revokeAdminAccess('{{ law_firm.id }}', '{{ law_firm.name }}')">
                 <i class="fas fa-user-times me-2"></i>Revoke Access
@@ -214,13 +206,24 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>Grant admin access to this law firm? This will allow them to:</p>
+                <p>Grant admin access to <strong id="firmNameDisplay"></strong>? This will allow them to:</p>
                 <ul>
                     <li>Add team members and clients</li>
                     <li>Create and manage projects</li>
                     <li>Assign lawyers to projects</li>
                     <li>Manage firm settings</li>
                 </ul>
+                
+                <div class="mb-3">
+                    <label class="form-label">Select Subscription Period:</label>
+                    <select class="form-select" id="subscriptionPeriod">
+                        <option value="1month">1 Month</option>
+                        <option value="3months">3 Months</option>
+                        <option value="6months">6 Months</option>
+                        <option value="1year" selected>1 Year</option>
+                    </select>
+                </div>
+                
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle me-2"></i>
                     Make sure you have verified their payment before granting access.
@@ -235,33 +238,51 @@
 </div>
 
 <script>
+function showGrantAccessModal(firmId, firmName) {
+    document.getElementById('firmNameDisplay').textContent = firmName;
+    
+    document.getElementById('confirmGrantAdmin').onclick = function() {
+        const period = document.getElementById('subscriptionPeriod').value;
+        grantAdminAccess(firmId, firmName, period);
+    };
+    
+    new bootstrap.Modal(document.getElementById('grantAdminModal')).show();
+}
+
 function grantAdminAccess(firmId, firmName, period) {
-    if (confirm(`Grant admin access to "${firmName}" for ${period}?`)) {
-        fetch('/superadmin/grant-admin-access', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'grant_access',
-                firm_id: firmId,
-                period: period
-            })
+    // Close the modal first
+    bootstrap.Modal.getInstance(document.getElementById('grantAdminModal')).hide();
+    
+    console.log(`Granting access to firm ${firmId} for period ${period}`);
+    
+    fetch('/superadmin/grant-admin-access', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            action: 'grant_access',
+            firm_id: firmId,
+            period: period
         })
-        .then(response => response.json())
-        .then(result => {
-            if (result.success) {
-                alert(result.message);
-                location.reload();
-            } else {
-                alert('Error: ' + result.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred. Please try again.');
-        });
-    }
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+    })
+    .then(result => {
+        console.log('Result:', result);
+        if (result.success) {
+            alert(result.message);
+            location.reload();
+        } else {
+            alert('Error: ' + result.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    });
 }
 
 function revokeAdminAccess(firmId, firmName) {
