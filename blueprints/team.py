@@ -12,7 +12,12 @@ team_bp = Blueprint('team', __name__)
 @require_team_member_or_admin
 def list_team():
     """List all team members"""
-    team_members = User.query.filter(User.role.in_(['admin', 'team_member'])).all()
+    # Only show team members from the same law firm
+    team_members = User.query.filter(
+        User.role.in_(['admin', 'team_member']),
+        User.law_firm_id == current_user.law_firm_id,
+        User.active == True
+    ).all()
     return render_template('team/list.html', team_members=team_members)
 
 @team_bp.route('/<member_id>')
