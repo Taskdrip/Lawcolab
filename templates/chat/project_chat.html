@@ -3,102 +3,294 @@
 {% block title %}{{ project.title }} - Project Chat{% endblock %}
 
 {% block content %}
-<div class="container-fluid mt-4">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent border-0">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="card-title mb-0">
-                                <i class="fas fa-project-diagram me-2 text-primary"></i>{{ project.title }}
-                            </h5>
-                            <small class="text-muted">Project Team Chat - Only assigned members can see this</small>
-                        </div>
-                        <div>
-                            <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-arrow-left me-1"></i>Back to Project
-                            </a>
-                        </div>
-                    </div>
+<style>
+/* Enhanced Chat Styling */
+.chat-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 15px 15px 0 0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #f8f9fa;
+    border-left: 1px solid #e9ecef;
+    border-right: 1px solid #e9ecef;
+}
+
+.message-bubble {
+    margin-bottom: 20px;
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message-content.sent {
+    margin-left: auto;
+}
+
+.message-content.received {
+    margin-right: auto;
+}
+
+.message-text {
+    border-radius: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    word-wrap: break-word;
+}
+
+.message-text.sent {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.message-text.received {
+    background: white;
+    color: #333;
+    border: 1px solid #e9ecef;
+}
+
+.sender-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.sender-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.chat-input-container {
+    background: white;
+    padding: 20px;
+    border-radius: 0 0 15px 15px;
+    box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
+    border-left: 1px solid #e9ecef;
+    border-right: 1px solid #e9ecef;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.chat-input-form {
+    display: flex;
+    align-items: end;
+    gap: 12px;
+}
+
+.message-input {
+    flex: 1;
+    border: 2px solid #e9ecef;
+    border-radius: 25px;
+    padding: 12px 20px;
+    resize: none;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.message-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    outline: none;
+}
+
+.send-button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.send-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.upload-button {
+    background: #6c757d;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.upload-button:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+}
+
+.team-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.team-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.empty-chat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #6c757d;
+}
+
+.empty-chat-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+</style>
+
+<div class="container-fluid py-4">
+    <div class="chat-container">
+        <!-- Enhanced Chat Header -->
+        <div class="chat-header">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                    <h4 class="mb-2">
+                        <i class="fas fa-project-diagram me-2"></i>{{ project.title }}
+                    </h4>
+                    <p class="mb-0 opacity-75">Project Team Chat - Secure collaboration space</p>
                     
                     <!-- Team Members -->
-                    <div class="mt-2">
-                        <small class="text-muted">Team Members: </small>
+                    <div class="team-badges">
                         {% for assignment in project.assignments %}
-                        <span class="badge {% if assignment.user.role == 'admin' %}bg-success{% elif assignment.user.role == 'team_member' %}bg-warning{% else %}bg-info{% endif %} me-1">
+                        <span class="team-badge {% if assignment.user.role == 'admin' %}bg-success bg-opacity-75{% elif assignment.user.role == 'team_member' %}bg-warning bg-opacity-75{% else %}bg-info bg-opacity-75{% endif %}">
+                            <i class="fas {% if assignment.user.role == 'admin' %}fa-user-shield{% elif assignment.user.role == 'team_member' %}fa-user-tie{% else %}fa-user{% endif %} me-1"></i>
                             {{ assignment.user.full_name }}
                         </span>
                         {% endfor %}
                     </div>
                 </div>
-                
-                <div class="card-body p-0">
-                    <!-- Messages Container -->
-                    <div class="chat-messages" id="messagesContainer" style="height: 450px; overflow-y: auto; padding: 20px;">
-                        {% for message in messages %}
-                        <div class="message-bubble mb-3 {% if message.sender_id == current_user.id %}sent{% else %}received{% endif %}">
-                            <div class="d-flex {% if message.sender_id == current_user.id %}justify-content-end{% else %}justify-content-start{% endif %}">
-                                <div class="message-content" style="max-width: 70%;">
-                                    <!-- Sender Info -->
-                                    <div class="sender-info mb-1 d-flex align-items-center">
-                                        <div class="rounded-circle me-2" 
-                                             style="background-color: {% if message.sender.role == 'admin' %}#e8f5e8{% elif message.sender.role == 'team_member' %}#fff3e0{% else %}#f3e5f5{% endif %}; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center;">
-                                            <i class="fas {% if message.sender.role == 'admin' %}fa-user-shield text-success{% elif message.sender.role == 'team_member' %}fa-user-tie text-warning{% else %}fa-user text-info{% endif %}" style="font-size: 12px;"></i>
-                                        </div>
-                                        <small class="text-muted me-2">{{ message.sender.full_name }}</small>
-                                        <small class="text-muted">{{ message.created_at.strftime('%b %d at %I:%M %p') }}</small>
-                                    </div>
-                                    
-                                    <!-- Message Content -->
-                                    <div class="message-text p-3 rounded {% if message.sender_id == current_user.id %}bg-primary text-white{% else %}bg-light{% endif %}">
-                                        {% if message.message_type == 'file' %}
-                                        <div class="file-message">
-                                            <i class="fas fa-file-alt me-2"></i>
-                                            <a href="/download/{{ message.file_path }}" class="{% if message.sender_id == current_user.id %}text-white{% else %}text-primary{% endif %}" target="_blank">
-                                                {{ message.file_name }}
-                                            </a>
-                                        </div>
-                                        {% else %}
-                                        {{ message.message_content|nl2br|safe }}
-                                        {% endif %}
-                                    </div>
-                                </div>
+                <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="btn btn-light btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Project
+                </a>
+            </div>
+        </div>
+        
+        <!-- Messages Container -->
+        <div class="chat-messages" id="messagesContainer">
+            {% for message in messages %}
+            <div class="message-bubble">
+                <div class="d-flex {% if message.sender_id == current_user.id %}justify-content-end{% else %}justify-content-start{% endif %}">
+                    <div class="message-content {% if message.sender_id == current_user.id %}sent{% else %}received{% endif %}" style="max-width: 75%;">
+                        
+                        {% if message.sender_id != current_user.id %}
+                        <!-- Sender Info for received messages -->
+                        <div class="sender-info">
+                            <div class="sender-avatar" style="background-color: {% if message.sender.role == 'admin' %}#d4edda{% elif message.sender.role == 'team_member' %}#fff3cd{% else %}#d1ecf1{% endif %};">
+                                <i class="fas {% if message.sender.role == 'admin' %}fa-user-shield text-success{% elif message.sender.role == 'team_member' %}fa-user-tie text-warning{% else %}fa-user text-info{% endif %}" style="font-size: 14px;"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold" style="font-size: 13px; color: #495057;">{{ message.sender.full_name }}</div>
+                                <div style="font-size: 11px; color: #6c757d;">{{ message.created_at.strftime('%b %d at %I:%M %p') }}</div>
                             </div>
                         </div>
-                        {% endfor %}
+                        {% endif %}
                         
-                        {% if not messages %}
-                        <div class="text-center text-muted py-5">
-                            <i class="fas fa-users fa-3x mb-3"></i>
-                            <h6>Team Chat</h6>
-                            <p>Start collaborating with your project team</p>
+                        <!-- Message Content -->
+                        <div class="message-text {% if message.sender_id == current_user.id %}sent{% else %}received{% endif %} p-3">
+                            {% if message.message_type == 'notification' %}
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-info-circle me-2" style="color: #17a2b8;"></i>
+                                <em style="color: #6c757d;">{{ message.message_content }}</em>
+                            </div>
+                            {% elif message.message_type == 'file' %}
+                            <div class="file-message d-flex align-items-center">
+                                <i class="fas fa-file-alt me-2"></i>
+                                <a href="/download/{{ message.file_path }}" target="_blank" class="text-decoration-none">
+                                    {{ message.file_name }}
+                                </a>
+                            </div>
+                            {% else %}
+                            {{ message.message_content|nl2br|safe }}
+                            {% endif %}
+                        </div>
+                        
+                        {% if message.sender_id == current_user.id %}
+                        <!-- Timestamp for sent messages -->
+                        <div class="text-end mt-1">
+                            <small style="font-size: 10px; color: #6c757d;">{{ message.created_at.strftime('%I:%M %p') }}</small>
                         </div>
                         {% endif %}
                     </div>
-                    
-                    <!-- Message Input -->
-                    <div class="chat-input border-top p-3">
-                        <form id="messageForm" class="d-flex align-items-end">
-                            <input type="hidden" id="roomId" value="{{ room.id }}">
-                            <div class="flex-grow-1 me-2">
-                                <textarea class="form-control" id="messageInput" rows="2" placeholder="Send a message to the team..." required></textarea>
-                            </div>
-                            <div class="d-flex flex-column gap-2">
-                                <button type="button" class="btn btn-outline-secondary btn-sm" id="uploadBtn" title="Upload File">
-                                    <i class="fas fa-paperclip"></i>
-                                </button>
-                                <button type="submit" class="btn btn-primary btn-sm" title="Send Message">
-                                    <i class="fas fa-paper-plane"></i>
-                                </button>
-                            </div>
-                        </form>
-                        
-                        <!-- Hidden file input -->
-                        <input type="file" id="fileInput" style="display: none;" accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif">
-                    </div>
                 </div>
             </div>
+            {% endfor %}
+            
+            {% if not messages %}
+            <div class="empty-chat">
+                <i class="fas fa-comments empty-chat-icon"></i>
+                <h5 class="mb-2">Welcome to Project Chat</h5>
+                <p class="text-center">Start collaborating with your project team.<br>Send messages, share files, and stay connected!</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Enhanced Message Input -->
+        <div class="chat-input-container">
+            <form id="messageForm" class="chat-input-form">
+                <input type="hidden" id="roomId" value="{{ room.id }}">
+                <button type="button" class="upload-button" id="uploadBtn" title="Upload File">
+                    <i class="fas fa-paperclip"></i>
+                </button>
+                <textarea class="message-input" id="messageInput" rows="1" placeholder="Type your message..." required></textarea>
+                <button type="submit" class="send-button" title="Send Message">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+            
+            <!-- Hidden file input -->
+            <input type="file" id="fileInput" style="display: none;" accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif">
         </div>
     </div>
 </div>

@@ -209,13 +209,23 @@ def send_message():
     ).first()
     
     if not participant:
-        # Auto-add user to support rooms
+        # Auto-add user to appropriate rooms
         if room.room_type == 'support':
             participant = ChatParticipant(
                 room_id=room_id,
                 user_id=current_user.id
             )
             db.session.add(participant)
+        elif room.room_type == 'project':
+            # Check if user is assigned to this project
+            if current_user.is_assigned_to_project(room.project_id):
+                participant = ChatParticipant(
+                    room_id=room_id,
+                    user_id=current_user.id
+                )
+                db.session.add(participant)
+            else:
+                return jsonify({'success': False, 'message': 'Not authorized to send messages in this room'}), 403
         else:
             return jsonify({'success': False, 'message': 'Not authorized to send messages in this room'}), 403
     
