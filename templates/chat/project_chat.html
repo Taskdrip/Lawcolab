@@ -4,35 +4,36 @@
 
 {% block content %}
 <style>
-/* Replit-Style Chat Interface */
+/* Clean White Chat Interface */
 body {
-    background: #0e1117;
-    color: #f0f6fc;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #ffffff;
+    color: #333333;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 }
 
-.replit-chat-container {
+.clean-chat-container {
     height: 100vh;
     display: flex;
     flex-direction: column;
-    background: #0e1117;
+    background: #ffffff;
     max-width: none;
     margin: 0;
     padding: 0;
 }
 
-.replit-header {
-    background: #21262d;
-    border-bottom: 1px solid #30363d;
+.clean-header {
+    background: #ffffff;
+    border-bottom: 1px solid #e1e4e8;
     padding: 16px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     min-height: 60px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .project-title {
-    color: #f0f6fc;
+    color: #24292e;
     font-size: 18px;
     font-weight: 600;
     margin: 0;
@@ -42,15 +43,15 @@ body {
 }
 
 .project-subtitle {
-    color: #8b949e;
+    color: #6a737d;
     font-size: 14px;
     margin: 4px 0 0 0;
 }
 
 .back-button {
-    background: #21262d;
-    border: 1px solid #30363d;
-    color: #f0f6fc;
+    background: #f6f8fa;
+    border: 1px solid #d1d5da;
+    color: #24292e;
     padding: 8px 16px;
     border-radius: 6px;
     text-decoration: none;
@@ -59,8 +60,8 @@ body {
 }
 
 .back-button:hover {
-    background: #30363d;
-    color: #f0f6fc;
+    background: #e1e4e8;
+    color: #24292e;
     text-decoration: none;
 }
 
@@ -72,9 +73,9 @@ body {
 }
 
 .member-pill {
-    background: rgba(56, 139, 253, 0.15);
-    border: 1px solid rgba(56, 139, 253, 0.3);
-    color: #79c0ff;
+    background: #f1f8ff;
+    border: 1px solid #c8e1ff;
+    color: #0366d6;
     padding: 4px 12px;
     border-radius: 16px;
     font-size: 12px;
@@ -84,22 +85,22 @@ body {
 }
 
 .member-pill.admin {
-    background: rgba(63, 185, 80, 0.15);
-    border-color: rgba(63, 185, 80, 0.3);
-    color: #7ee787;
+    background: #f0fff4;
+    border-color: #a3f3a3;
+    color: #28a745;
 }
 
 .member-pill.team {
-    background: rgba(255, 212, 59, 0.15);
-    border-color: rgba(255, 212, 59, 0.3);
-    color: #f2cc60;
+    background: #fffdef;
+    border-color: #f9e09c;
+    color: #e36209;
 }
 
-.replit-messages {
+.clean-messages {
     flex: 1;
     overflow-y: auto;
     padding: 20px;
-    background: #0e1117;
+    background: #fafbfc;
     display: flex;
     flex-direction: column;
 }
@@ -124,21 +125,22 @@ body {
     justify-content: center;
     font-size: 14px;
     flex-shrink: 0;
+    border: 1px solid #e1e4e8;
 }
 
 .message-avatar.admin {
-    background: rgba(63, 185, 80, 0.2);
-    color: #7ee787;
+    background: #f0fff4;
+    color: #28a745;
 }
 
 .message-avatar.team {
-    background: rgba(255, 212, 59, 0.2);
-    color: #f2cc60;
+    background: #fffdef;
+    color: #e36209;
 }
 
 .message-avatar.client {
-    background: rgba(56, 139, 253, 0.2);
-    color: #79c0ff;
+    background: #f1f8ff;
+    color: #0366d6;
 }
 
 .message-content {
@@ -157,35 +159,36 @@ body {
 .message-sender {
     font-weight: 600;
     font-size: 14px;
-    color: #f0f6fc;
+    color: #24292e;
 }
 
 .message-time {
     font-size: 12px;
-    color: #8b949e;
+    color: #6a737d;
 }
 
 .message-bubble {
-    background: #21262d;
-    border: 1px solid #30363d;
+    background: #ffffff;
+    border: 1px solid #e1e4e8;
     border-radius: 8px;
     padding: 12px 16px;
-    color: #f0f6fc;
+    color: #24292e;
     font-size: 14px;
     line-height: 1.5;
     word-wrap: break-word;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .message-item.own-message .message-bubble {
-    background: #1f6feb;
-    border-color: #1f6feb;
+    background: #0366d6;
+    border-color: #0366d6;
     color: white;
 }
 
 .notification-message {
-    background: rgba(255, 212, 59, 0.1);
-    border-color: rgba(255, 212, 59, 0.3);
-    color: #f2cc60;
+    background: #fffbf0;
+    border-color: #f9e09c;
+    color: #735c0f;
     font-style: italic;
     text-align: center;
     margin: 8px auto;
@@ -199,36 +202,38 @@ body {
     justify-content: center;
     flex: 1;
     text-align: center;
-    color: #8b949e;
+    color: #6a737d;
 }
 
 .empty-icon {
     font-size: 48px;
     margin-bottom: 16px;
     opacity: 0.5;
+    color: #6a737d;
 }
 
 .empty-title {
     font-size: 20px;
-    color: #f0f6fc;
+    color: #24292e;
     margin-bottom: 8px;
 }
 
 .empty-subtitle {
     font-size: 14px;
-    color: #8b949e;
+    color: #6a737d;
     max-width: 400px;
 }
 
-.replit-input-container {
-    background: #21262d;
-    border-top: 1px solid #30363d;
+.clean-input-container {
+    background: #ffffff;
+    border-top: 1px solid #e1e4e8;
     padding: 16px 20px;
+    box-shadow: 0 -1px 3px rgba(0,0,0,0.05);
 }
 
 .input-wrapper {
-    background: #0e1117;
-    border: 1px solid #30363d;
+    background: #ffffff;
+    border: 1px solid #d1d5da;
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -238,15 +243,15 @@ body {
 }
 
 .input-wrapper:focus-within {
-    border-color: #1f6feb;
-    box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.1);
+    border-color: #0366d6;
+    box-shadow: 0 0 0 3px rgba(3, 102, 214, 0.1);
 }
 
 .chat-input {
     flex: 1;
     background: transparent;
     border: none;
-    color: #f0f6fc;
+    color: #24292e;
     padding: 12px 8px;
     font-size: 14px;
     font-family: inherit;
@@ -255,7 +260,7 @@ body {
 }
 
 .chat-input::placeholder {
-    color: #8b949e;
+    color: #6a737d;
 }
 
 .input-actions {
@@ -267,7 +272,7 @@ body {
 .action-button {
     background: transparent;
     border: none;
-    color: #8b949e;
+    color: #6a737d;
     padding: 8px;
     border-radius: 4px;
     cursor: pointer;
@@ -278,47 +283,47 @@ body {
 }
 
 .action-button:hover {
-    color: #f0f6fc;
-    background: rgba(240, 246, 252, 0.1);
+    color: #24292e;
+    background: #f6f8fa;
 }
 
 .send-button {
-    background: #1f6feb !important;
+    background: #0366d6 !important;
     color: white !important;
 }
 
 .send-button:hover {
-    background: #1a5feb !important;
+    background: #0256cc !important;
 }
 
 .send-button:disabled {
-    background: #30363d !important;
-    color: #8b949e !important;
+    background: #d1d5da !important;
+    color: #6a737d !important;
     cursor: not-allowed;
 }
 
-/* Scrollbar styling */
-.replit-messages::-webkit-scrollbar {
+/* Clean scrollbar styling */
+.clean-messages::-webkit-scrollbar {
     width: 8px;
 }
 
-.replit-messages::-webkit-scrollbar-track {
-    background: #0e1117;
+.clean-messages::-webkit-scrollbar-track {
+    background: #f6f8fa;
 }
 
-.replit-messages::-webkit-scrollbar-thumb {
-    background: #30363d;
+.clean-messages::-webkit-scrollbar-thumb {
+    background: #d1d5da;
     border-radius: 4px;
 }
 
-.replit-messages::-webkit-scrollbar-thumb:hover {
-    background: #484f58;
+.clean-messages::-webkit-scrollbar-thumb:hover {
+    background: #959da5;
 }
 </style>
 
-<div class="replit-chat-container">
-    <!-- Replit-style Header -->
-    <div class="replit-header">
+<div class="clean-chat-container">
+    <!-- Clean Header -->
+    <div class="clean-header">
         <div>
             <h1 class="project-title">
                 <i class="fas fa-balance-scale"></i>
@@ -341,8 +346,8 @@ body {
         </a>
     </div>
     
-    <!-- Replit-style Messages -->
-    <div class="replit-messages" id="messagesContainer">
+    <!-- Clean Messages -->
+    <div class="clean-messages" id="messagesContainer">
         {% for message in messages %}
         {% if message.message_type == 'notification' %}
         <div class="message-bubble notification-message">
@@ -394,8 +399,8 @@ body {
         {% endif %}
     </div>
     
-    <!-- Replit-style Input -->
-    <div class="replit-input-container">
+    <!-- Clean Input -->
+    <div class="clean-input-container">
         <form id="messageForm">
             <input type="hidden" id="roomId" value="{{ room.id }}">
             <div class="input-wrapper">

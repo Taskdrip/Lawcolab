@@ -6,6 +6,7 @@ LawFirmOS is a comprehensive legal practice management system built with Flask, 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 Profile image preferences: Beautiful square profile images with clear role-based icons for visual distinction between admins, clients, and lawyers.
+UI Design preference: Clean, simple white background interfaces - avoid dark themes.
 
 ## Recent Changes
 - **August 13, 2025**: MULTI-TIERED CHAT SYSTEM - Implemented comprehensive messaging with law firm-super admin support chat, project-based team isolation, super admin broadcast messaging, verified badges, and seamless subscription requests with pricing ($70/1mo, $190/3mo, $400/6mo, $750/1yr)
