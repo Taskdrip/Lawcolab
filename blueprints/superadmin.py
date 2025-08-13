@@ -179,10 +179,11 @@ def grant_admin_access():
                 'message': f'Admin access granted to {owner.full_name} for {law_firm.name} until {expiry.strftime("%B %d, %Y")}.'
             })
         except Exception as e:
+            print(f"Error granting admin access: {e}")
             db.session.rollback()
             return jsonify({
                 'success': False,
-                'message': 'Error granting admin access.'
+                'message': f'Error granting admin access: {str(e)}'
             }), 500
     
     elif action == 'revoke_access':
@@ -206,10 +207,11 @@ def grant_admin_access():
                 'message': f'Admin access revoked for {law_firm.name}.'
             })
         except Exception as e:
+            print(f"Error revoking admin access: {e}")
             db.session.rollback()
             return jsonify({
                 'success': False,
-                'message': 'Error revoking admin access.'
+                'message': f'Error revoking admin access: {str(e)}'
             }), 500
     
     return jsonify({
