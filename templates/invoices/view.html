@@ -25,42 +25,47 @@
             </div>
 
             <!-- Invoice Details -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-5">
+            <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
+                <div class="card-body p-5" style="border-left: 5px solid #007bff;">
                     <!-- Invoice Header -->
                     <div class="row mb-5">
                         <div class="col-md-6">
-                            <h4 class="fw-bold text-primary mb-3">
-                                <i class="fas fa-balance-scale me-2"></i>{{ invoice.law_firm.name }}
-                            </h4>
-                            <div class="text-muted">
-                                {% if invoice.law_firm.email %}
-                                <div><i class="fas fa-envelope me-2"></i>{{ invoice.law_firm.email }}</div>
-                                {% endif %}
-                                {% if invoice.law_firm.description %}
-                                <div class="mt-2">{{ invoice.law_firm.description }}</div>
-                                {% endif %}
+                            <div class="p-4 rounded-3" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white;">
+                                <h4 class="fw-bold mb-3">
+                                    <i class="fas fa-balance-scale me-2"></i>{{ invoice.law_firm.name }}
+                                </h4>
+                                <div class="opacity-75">
+                                    {% if invoice.law_firm.email %}
+                                    <div><i class="fas fa-envelope me-2"></i>{{ invoice.law_firm.email }}</div>
+                                    {% endif %}
+                                    {% if invoice.law_firm.phone %}
+                                    <div><i class="fas fa-phone me-2"></i>{{ invoice.law_firm.phone }}</div>
+                                    {% endif %}
+                                </div>
                             </div>
+
                         </div>
                         <div class="col-md-6 text-md-end">
-                            <div class="mb-3">
-                                <div class="h5 fw-bold">Invoice {{ invoice.invoice_number }}</div>
-                                {% if invoice.status == 'draft' %}
-                                    <span class="badge bg-secondary fs-6">Draft</span>
-                                {% elif invoice.status == 'sent' %}
-                                    <span class="badge bg-warning fs-6">Sent</span>
-                                {% elif invoice.status == 'paid' %}
-                                    <span class="badge bg-success fs-6">Paid</span>
-                                {% elif invoice.status == 'overdue' %}
-                                    <span class="badge bg-danger fs-6">Overdue</span>
-                                {% endif %}
-                            </div>
-                            <div class="text-muted">
-                                <div><strong>Issue Date:</strong> {{ invoice.issue_date.strftime('%B %d, %Y') }}</div>
-                                <div><strong>Due Date:</strong> {{ invoice.due_date.strftime('%B %d, %Y') }}</div>
-                                {% if invoice.paid_date %}
-                                <div><strong>Paid Date:</strong> {{ invoice.paid_date.strftime('%B %d, %Y') }}</div>
-                                {% endif %}
+                            <div class="p-4 rounded-3 border border-2" style="background: #fff; border-color: #007bff !important;">
+                                <div class="h4 fw-bold text-primary mb-3">Invoice {{ invoice.invoice_number }}</div>
+                                <div class="mb-3">
+                                    {% if invoice.status == 'draft' %}
+                                        <span class="badge bg-secondary fs-6 px-3 py-2">Draft</span>
+                                    {% elif invoice.status == 'sent' %}
+                                        <span class="badge bg-warning fs-6 px-3 py-2">Sent</span>
+                                    {% elif invoice.status == 'paid' %}
+                                        <span class="badge bg-success fs-6 px-3 py-2">Paid</span>
+                                    {% elif invoice.status == 'overdue' %}
+                                        <span class="badge bg-danger fs-6 px-3 py-2">Overdue</span>
+                                    {% endif %}
+                                </div>
+                                <div class="text-muted">
+                                    <div><strong>Issue Date:</strong> {{ invoice.issue_date.strftime('%B %d, %Y') }}</div>
+                                    <div><strong>Due Date:</strong> {{ invoice.due_date.strftime('%B %d, %Y') }}</div>
+                                    {% if invoice.paid_date %}
+                                    <div><strong>Paid Date:</strong> {{ invoice.paid_date.strftime('%B %d, %Y') }}</div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -84,7 +89,7 @@
                             {% if invoice.project %}
                             <h6 class="fw-bold text-uppercase text-muted mb-2">Project</h6>
                             <div>
-                                <div class="fw-bold">{{ invoice.project.name }}</div>
+                                <div class="fw-bold">{{ invoice.project.title }}</div>
                                 {% if invoice.project.description %}
                                 <div class="text-muted">{{ invoice.project.description[:100] }}{% if invoice.project.description|length > 100 %}...{% endif %}</div>
                                 {% endif %}
@@ -137,17 +142,27 @@
 
                     <!-- Total -->
                     <div class="row justify-content-end">
-                        <div class="col-md-4">
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span>Subtotal:</span>
-                                        <span>${{ "%.2f"|format(invoice.total_amount) }}</span>
+                        <div class="col-md-5">
+                            <div class="card border-2 border-primary shadow-sm">
+                                <div class="card-header bg-primary bg-gradient text-white">
+                                    <h6 class="fw-bold mb-0 text-center">
+                                        <i class="fas fa-calculator me-2"></i>Invoice Summary
+                                    </h6>
+                                </div>
+                                <div class="card-body p-4">
+                                    <div class="d-flex justify-content-between mb-3 pb-2 border-bottom">
+                                        <span class="text-muted">Subtotal:</span>
+                                        <span class="fw-semibold">${{ "%.2f"|format(invoice.total_amount) }}</span>
                                     </div>
-                                    <hr class="my-2">
-                                    <div class="d-flex justify-content-between fw-bold h5">
-                                        <span>Total:</span>
-                                        <span>${{ "%.2f"|format(invoice.total_amount) }} {{ invoice.currency }}</span>
+                                    {% if invoice.tax_amount and invoice.tax_amount > 0 %}
+                                    <div class="d-flex justify-content-between mb-3 pb-2 border-bottom">
+                                        <span class="text-muted">Tax:</span>
+                                        <span class="fw-semibold">${{ "%.2f"|format(invoice.tax_amount) }}</span>
+                                    </div>
+                                    {% endif %}
+                                    <div class="d-flex justify-content-between fw-bold h4 text-primary">
+                                        <span>Total Amount:</span>
+                                        <span class="bg-primary bg-opacity-10 px-3 py-2 rounded">${{ "%.2f"|format(invoice.total_amount) }} USD</span>
                                     </div>
                                 </div>
                             </div>

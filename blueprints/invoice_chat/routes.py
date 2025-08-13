@@ -48,6 +48,7 @@ def chat_view(invoice_id):
             client_id=invoice.client_id
         )
         db.session.add(chat)
+        db.session.flush()  # Ensure chat.id is available
         
         # Create welcome system message
         welcome_msg = InvoiceChatMessage(
