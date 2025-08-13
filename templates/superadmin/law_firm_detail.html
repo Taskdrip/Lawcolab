@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Law Firm Details - Super Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">{{ law_firm.name }}</h1>
+            <p class="text-muted">Law Firm Management</p>
+        </div>
+        <div>
+            <a href="{{ url_for('superadmin.lawfirms') }}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-arrow-left me-2"></i>Back to Law Firms
+            </a>
+            {% if not law_firm.admin_user %}
+            <button class="btn btn-success" onclick="grantAdminAccess('{{ law_firm.id }}', '{{ law_firm.name }}')">
+                <i class="fas fa-user-shield me-2"></i>Grant Admin Access
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Law Firm Info -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-building me-2 text-primary"></i>Law Firm Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Firm Name</label>
+                                <p class="mb-0 fw-semibold">{{ law_firm.name }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Email</label>
+                                <p class="mb-0">{{ law_firm.email or 'Not provided' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Phone</label>
+                                <p class="mb-0">{{ law_firm.phone or 'Not provided' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Address</label>
+                                <p class="mb-0">{{ law_firm.address or 'Not provided' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Created Date</label>
+                                <p class="mb-0">{{ law_firm.created_at.strftime('%B %d, %Y at %I:%M %p') if law_firm.created_at }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Status</label>
+                                {% if law_firm.admin_user %}
+                                    <span class="badge bg-success">Active (Admin Assigned)</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Pending Admin Access</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2 text-primary"></i>Statistics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h4 class="mb-1">{{ law_firm.users|length }}</h4>
+                                <small class="text-muted">Users</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="mb-1">{{ law_firm.projects|length if law_firm.projects else 0 }}</h4>
+                            <small class="text-muted">Projects</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-users me-2 text-primary"></i>Users in {{ law_firm.name }}
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if law_firm.users %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Joined</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in law_firm.users %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle p-2 me-2" 
+                                         style="background-color: {% if user.role == 'admin' %}#e8f5e8{% elif user.role == 'team_member' %}#fff3e0{% else %}#f3e5f5{% endif %}; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas {% if user.role == 'admin' %}fa-user-shield text-success{% elif user.role == 'team_member' %}fa-user-tie text-warning{% else %}fa-user text-info{% endif %}"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">{{ user.full_name }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                <span class="badge {% if user.role == 'admin' %}bg-success{% elif user.role == 'team_member' %}bg-warning{% else %}bg-info{% endif %}">
+                                    {{ user.role|title }}
+                                </span>
+                            </td>
+                            <td class="text-muted">{{ user.created_at.strftime('%b %d, %Y') if user.created_at }}</td>
+                            <td>
+                                {% if user.active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    {% if user.role != 'admin' %}
+                                    <button class="btn btn-sm btn-outline-success" onclick="promoteToAdmin('{{ user.id }}', '{{ user.full_name }}')">
+                                        <i class="fas fa-user-shield"></i> Make Admin
+                                    </button>
+                                    {% endif %}
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deactivateUser('{{ user.id }}', '{{ user.full_name }}')">
+                                        <i class="fas fa-user-times"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No users in this law firm yet</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Grant Admin Modal -->
+<div class="modal fade" id="grantAdminModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Grant Admin Access</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Grant admin access to this law firm? This will allow them to:</p>
+                <ul>
+                    <li>Add team members and clients</li>
+                    <li>Create and manage projects</li>
+                    <li>Assign lawyers to projects</li>
+                    <li>Manage firm settings</li>
+                </ul>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Make sure you have verified their payment before granting access.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmGrantAdmin">Grant Admin Access</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function grantAdminAccess(firmId, firmName) {
+    document.getElementById('confirmGrantAdmin').onclick = function() {
+        // Call API to grant admin access
+        fetch('/superadmin/grant-admin-access', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'grant_access',
+                firm_id: firmId
+            })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                alert(result.message);
+                location.reload();
+            } else {
+                alert('Error: ' + result.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
+    };
+    
+    new bootstrap.Modal(document.getElementById('grantAdminModal')).show();
+}
+
+function promoteToAdmin(userId, userName) {
+    if (confirm(`Promote ${userName} to admin role?`)) {
+        // Implementation for promoting user to admin
+        alert('Promotion functionality will be implemented');
+    }
+}
+
+function deactivateUser(userId, userName) {
+    if (confirm(`Deactivate ${userName}?`)) {
+        // Implementation for deactivating user
+        alert('Deactivation functionality will be implemented');
+    }
+}
+</script>
+
+{% endblock %}

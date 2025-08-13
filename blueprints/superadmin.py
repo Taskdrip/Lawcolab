@@ -128,6 +128,47 @@ def create_super_admin():
     
     return render_template('superadmin/create_super_admin.html')
 
+@superadmin_bp.route('/grant-admin-access', methods=['POST'])
+@require_super_admin  
+def grant_admin_access():
+    """Grant admin access to a law firm after payment verification"""
+    data = request.get_json()
+    action = data.get('action')
+    
+    if action == 'grant_access':
+        firm_id = data.get('firm_id')
+        law_firm = LawFirm.query.get_or_404(firm_id)
+        
+        # Find the owner/first user of the law firm
+        owner = law_firm.users[0] if law_firm.users else None
+        
+        if not owner:
+            return jsonify({
+                'success': False,
+                'message': 'No users found in this law firm.'
+            }), 400
+        
+        # Grant admin privileges
+        owner.role = ROLE_ADMIN
+        
+        try:
+            db.session.commit()
+            return jsonify({
+                'success': True,
+                'message': f'Admin access granted to {owner.full_name} for {law_firm.name}.'
+            })
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({
+                'success': False,
+                'message': 'Error granting admin access.'
+            }), 500
+    
+    return jsonify({
+        'success': False,
+        'message': 'Invalid action.'
+    }), 400
+
 @superadmin_bp.route('/grant-admin-privileges', methods=['POST'])
 @require_super_admin
 def grant_admin_privileges():
