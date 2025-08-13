@@ -113,16 +113,195 @@
                         </div>
                         {% endif %}
 
+                        <!-- Payment Information Section -->
+                        <div class="mt-5">
+                            <h5 class="fw-bold mb-3">
+                                <i class="fas fa-university me-2"></i>Payment Information
+                            </h5>
+                            
+                            <!-- Current Bank Details Display -->
+                            <div class="card bg-light border-0">
+                                <div class="card-body p-4">
+                                    {% if current_user.law_firm.bank_name %}
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="mb-2">
+                                                <strong>Bank Name:</strong> {{ current_user.law_firm.bank_name }}
+                                            </div>
+                                            <div class="mb-2">
+                                                <strong>Account Holder:</strong> {{ current_user.law_firm.account_holder_name }}
+                                            </div>
+                                            <div class="mb-2">
+                                                <strong>Account Number:</strong> {{ current_user.law_firm.account_number }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            {% if current_user.law_firm.routing_number %}
+                                            <div class="mb-2">
+                                                <strong>Routing Number:</strong> {{ current_user.law_firm.routing_number }}
+                                            </div>
+                                            {% endif %}
+                                            {% if current_user.law_firm.swift_code %}
+                                            <div class="mb-2">
+                                                <strong>SWIFT Code:</strong> {{ current_user.law_firm.swift_code }}
+                                            </div>
+                                            {% endif %}
+                                            {% if current_user.law_firm.tax_id %}
+                                            <div class="mb-2">
+                                                <strong>Tax ID:</strong> {{ current_user.law_firm.tax_id }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div class="text-center py-3">
+                                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                        <span class="text-muted">No bank details configured yet</span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="text-center mt-3">
+                                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#bankDetailsModal">
+                                            <i class="fas fa-edit me-2"></i>Update Bank Details
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Submit Buttons -->
-                        <div class="d-flex justify-content-end gap-3 mt-5 pt-4 border-top">
-                            <a href="{{ url_for('invoices.view_invoice', id=invoice.id) }}" class="btn btn-outline-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Update Invoice
-                            </button>
+                        <div class="d-flex justify-content-between align-items-center mt-5 pt-4 border-top">
+                            <div>
+                                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteInvoiceModal">
+                                    <i class="fas fa-trash me-2"></i>Delete Invoice
+                                </button>
+                            </div>
+                            <div class="d-flex gap-3">
+                                <a href="{{ url_for('invoices.view_invoice', id=invoice.id) }}" class="btn btn-outline-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Update Invoice
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bank Details Modal -->
+<div class="modal fade" id="bankDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-university me-2"></i>Update Bank Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="bankDetailsForm">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Information:</strong> These bank details will be included in your invoices for client payments.
+                    </div>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Bank Name <span class="text-danger">*</span></label>
+                            <input type="text" name="bank_name" class="form-control" value="{{ current_user.law_firm.bank_name or '' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Account Holder Name <span class="text-danger">*</span></label>
+                            <input type="text" name="account_holder_name" class="form-control" value="{{ current_user.law_firm.account_holder_name or '' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Account Number <span class="text-danger">*</span></label>
+                            <input type="text" name="account_number" class="form-control" value="{{ current_user.law_firm.account_number or '' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Routing Number</label>
+                            <input type="text" name="routing_number" class="form-control" value="{{ current_user.law_firm.routing_number or '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">SWIFT Code</label>
+                            <input type="text" name="swift_code" class="form-control" value="{{ current_user.law_firm.swift_code or '' }}">
+                            <small class="text-muted">For international transfers</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tax ID / EIN</label>
+                            <input type="text" name="tax_id" class="form-control" value="{{ current_user.law_firm.tax_id or '' }}">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Save Bank Details
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Invoice Modal -->
+<div class="modal fade" id="deleteInvoiceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Delete Invoice
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-warning me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone!
+                </div>
+                <p>Are you sure you want to delete invoice <strong>{{ invoice.invoice_number }}</strong>?</p>
+                <p><strong>Title:</strong> {{ invoice.title }}</p>
+                <p><strong>Amount:</strong> ${{ "%.2f"|format(invoice.total_amount) }}</p>
+                <p><strong>Client:</strong> {{ invoice.client.display_name }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('invoices.delete_invoice', id=invoice.id) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Delete Invoice
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Bank Details Form Handler
+document.getElementById('bankDetailsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('{{ url_for("invoices.update_bank_details") }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload(); // Reload to show updated bank details
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Error updating bank details: ' + error);
+    });
+});
+</script>
         </div>
     </div>
 </div>

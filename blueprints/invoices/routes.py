@@ -386,6 +386,39 @@ def edit_invoice(id):
     
     return render_template('invoices/edit.html', invoice=invoice, clients=clients, projects=projects)
 
+@invoices_bp.route('/<int:id>/delete', methods=['POST'])
+@login_required
+@role_required(['admin', 'team_member'])
+def delete_invoice(id):
+    """Delete an invoice (only drafts can be deleted)"""
+    invoice = Invoice.query.filter_by(
+        id=id,
+        law_firm_id=current_user.law_firm_id
+    ).first_or_404()
+    
+    if invoice.status != 'draft':
+        flash('Only draft invoices can be deleted.', 'error')
+        return redirect(url_for('invoices.view_invoice', id=id))
+    
+    try:
+        invoice_number = invoice.invoice_number
+        
+        # Delete related line items (cascade should handle this, but being explicit)
+        for line_item in invoice.line_items:
+            db.session.delete(line_item)
+        
+        # Delete the invoice
+        db.session.delete(invoice)
+        db.session.commit()
+        
+        flash(f'Invoice {invoice_number} deleted successfully.', 'success')
+        return redirect(url_for('invoices.list_invoices'))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting invoice: {str(e)}', 'error')
+        return redirect(url_for('invoices.view_invoice', id=id))
+
 @invoices_bp.route('/notifications')
 @login_required
 def notifications():
