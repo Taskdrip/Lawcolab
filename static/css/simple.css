@@ -137,8 +137,8 @@ body {
 .admin-card h6 {
     margin: 0;
     font-size: 0.875rem;
-    color: #666666;
-    font-weight: 500;
+    color: #333333 !important;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -203,8 +203,8 @@ body {
 
 .stat-label {
     font-size: 0.875rem;
-    color: #666666;
-    font-weight: 500;
+    color: #333333 !important;
+    font-weight: 600;
 }
 
 /* Chat System Styles */
@@ -246,7 +246,8 @@ body {
 
 .message-time {
     font-size: 0.75rem;
-    opacity: 0.7;
+    opacity: 1.0 !important;
+    color: #666666 !important;
     margin-top: 4px;
 }
 
@@ -305,11 +306,11 @@ body {
 .feature-card h4 {
     font-weight: 600;
     margin-bottom: 1rem;
-    color: #2c3e50;
+    color: #000000 !important;
 }
 
 .feature-card p {
-    color: #6c757d;
+    color: #333333 !important;
     margin-bottom: 0;
     line-height: 1.6;
 }
@@ -317,7 +318,7 @@ body {
 /* Navigation improvements for better alignment */
 .nav-link {
     font-weight: 500;
-    color: #495057 !important;
+    color: #000000 !important;
     display: flex;
     align-items: center;
     padding: 0.5rem 1rem;
@@ -441,12 +442,64 @@ body {
 }
 
 .footer a {
-    color: #666666;
+    color: #333333 !important;
     text-decoration: none;
+    font-weight: 500;
 }
 
 .footer a:hover {
-    color: #000000;
+    color: #000000 !important;
+}
+
+/* Fix any remaining text opacity issues */
+.text-muted, 
+.small, 
+.text-secondary {
+    color: #555555 !important;
+    font-weight: 500 !important;
+}
+
+/* Ensure all headings are bold and dark */
+h1, h2, h3, h4, h5, h6 {
+    color: #000000 !important;
+    font-weight: 600 !important;
+}
+
+/* Ensure paragraphs have good contrast */
+p {
+    color: #333333 !important;
+    font-weight: 400;
+}
+
+/* Feature section specific fixes */
+.feature-stat h6 {
+    color: #000000 !important;
+    font-weight: 600 !important;
+}
+
+.feature-stat span {
+    color: #444444 !important;
+    font-weight: 500 !important;
+}
+
+/* Card text improvements */
+.card-body h3,
+.card-body h4,
+.card-body h5,
+.card-body h6 {
+    color: #000000 !important;
+    font-weight: 600 !important;
+}
+
+.card-body p,
+.card-body span {
+    color: #333333 !important;
+    font-weight: 400;
+}
+
+/* Icon improvements */
+.fas, .far, .fab {
+    color: inherit !important;
 }
 
 /* Responsive adjustments */
