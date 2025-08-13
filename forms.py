@@ -22,9 +22,8 @@ class SignupForm(FlaskForm):
         EqualTo('password', message='Passwords must match')
     ])
     role = SelectField('Account Type', choices=[
-        ('client', 'Client - Access case information and communicate with your legal team'),
-        ('team_member', 'Team Member - Lawyer or legal professional')
-    ], validators=[DataRequired()])
+        ('admin', 'Law Firm Owner - Start your own law firm practice')
+    ], validators=[DataRequired()], default='admin')
 
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data.lower()).first()

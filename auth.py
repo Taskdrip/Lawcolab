@@ -65,11 +65,25 @@ def signup():
             db.session.add(user)
             db.session.commit()
             
-            # Create law firm if this user is an admin
-            if user.is_admin():
-                user.create_law_firm_if_admin()
+            # Every new signup automatically creates a new law firm and makes the user admin of that firm
+            # This ensures complete isolation between law firms
+            if user.role == 'team_member':  # Convert team_member signups to admin
+                user.role = 'admin'
             
-            flash('Registration successful! Please log in to your account.', 'success')
+            # Create a new law firm for every signup (ensuring complete isolation)
+            firm_name = f"{user.full_name}'s Law Firm"
+            new_firm = LawFirm()
+            new_firm.name = firm_name
+            new_firm.description = f"Legal practice managed by {user.full_name}"
+            new_firm.email = user.email
+            db.session.add(new_firm)
+            db.session.flush()  # Get the ID
+            
+            # Associate user with their new law firm
+            user.law_firm_id = new_firm.id
+            db.session.commit()
+            
+            flash('Registration successful! You are now the admin of your law firm. Please log in to add team members and clients.', 'success')
             return redirect(url_for('auth.login'))
         except Exception as e:
             db.session.rollback()

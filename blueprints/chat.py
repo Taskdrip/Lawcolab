@@ -52,12 +52,14 @@ def chat_home():
             User.law_firm_id == current_user.law_firm_id
         ).filter(User.active == True).order_by(User.role, User.first_name, User.last_name).all()
     else:
-        # Team members and admins can chat with users from same law firm only
+        # Team members and admins can only chat with users from same law firm
+        # Exclude the current user and ensure law_firm_id matches
         all_users = User.query.filter(
             User.id != current_user.id,
             User.law_firm_id == current_user.law_firm_id,
-            User.law_firm_id.is_not(None)
-        ).filter(User.active == True).order_by(User.role, User.first_name, User.last_name).all()
+            User.law_firm_id.is_not(None),
+            User.active == True
+        ).order_by(User.role.desc(), User.first_name, User.last_name).all()
     
     # Get unread message counts
     unread_counts = {}
