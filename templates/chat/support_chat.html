@@ -17,19 +17,29 @@
 }
 
 .subscription-option.border-primary {
-    background: linear-gradient(135deg, #0d6efd, #6610f2) !important;
+    background: linear-gradient(135deg, #28a745, #20c997) !important;
     color: white !important;
     transform: scale(1.05) !important;
-    box-shadow: 0 8px 25px rgba(13, 110, 253, 0.3) !important;
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4) !important;
+    border-color: #28a745 !important;
 }
 
 .subscription-option.border-primary * {
     color: white !important;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3) !important;
 }
 
 .subscription-option.border-primary .badge {
-    background: rgba(255,255,255,0.2) !important;
+    background: rgba(255,255,255,0.25) !important;
     color: white !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+}
+
+.subscription-option.border-primary h5,
+.subscription-option.border-primary .h4 {
+    color: white !important;
+    font-weight: 800 !important;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.4) !important;
 }
 
 /* Enhanced text visibility for subscription panel */
@@ -197,7 +207,7 @@
                             
                             <div class="text-center mt-3">
                                 <p class="text-muted small mb-0" style="color: #666666 !important; font-weight: 500 !important;">
-                                    <i class="fas fa-clock me-1"></i>Our super admin will review and activate your account within 24 hours
+                                    <i class="fas fa-zap me-1 text-warning"></i>Lightning-fast activation within 24 hours • Payment processing starts immediately
                                 </p>
                             </div>
                         </form>
@@ -365,7 +375,7 @@ Law Firm: {{ current_user.law_firm.name if current_user.law_firm else current_us
 Team Size: ${teamSize}
 Contact: {{ current_user.email }}
 
-Please activate admin access for this law firm. Payment will be processed upon approval.`;
+Please activate admin access for this law firm. Payment processing will begin immediately after activation.`;
             
             // Send message to support chat
             fetch('/enhanced-chat/send-message', {
