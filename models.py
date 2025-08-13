@@ -147,6 +147,20 @@ class User(UserMixin, db.Model):
         if not self.law_firm_id:
             return []
         return Project.query.filter_by(law_firm_id=self.law_firm_id).all()
+    
+    def is_assigned_to_project(self, project_id):
+        """Check if user is assigned to a specific project"""
+        if self.is_admin():
+            # Admins have access to all projects in their law firm
+            project = Project.query.get(project_id)
+            return project and project.law_firm_id == self.law_firm_id
+        else:
+            # Team members and clients need explicit assignment
+            assignment = ProjectAssignment.query.filter_by(
+                project_id=project_id,
+                user_id=self.id
+            ).first()
+            return assignment is not None
 
 # (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
 class OAuth(OAuthConsumerMixin, db.Model):

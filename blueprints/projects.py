@@ -123,65 +123,83 @@ def assign_user(project_id):
         assignment.assigned_by_id = current_user.id
         db.session.add(assignment)
         
-        # Implement seamless tagging for lawyer-client connections
+        # Create or update project chat room with all participants
         try:
             db.session.flush()
             
-            # Get current project assignments to check for automatic connections
-            project_assignments = ProjectAssignment.query.filter_by(project_id=project_id).all()
-            clients = [a.user for a in project_assignments if a.user.role == 'client']
-            lawyers = [a.user for a in project_assignments if a.user.role in ['admin', 'team_member']]
+            # Import chat models
+            from models_chat import ChatRoom, ChatParticipant, ChatMessage
             
-            # Create automatic chat connections between clients and lawyers
-            if user.role == 'client':
-                # New client assigned, connect to all existing lawyers
-                for lawyer in lawyers:
-                    if lawyer.id != user.id:
-                        # Check if conversation already exists
-                        from models import ChatConversation
-                        from sqlalchemy import or_, and_
-                        existing_conversation = ChatConversation.query.filter(
-                            or_(
-                                and_(ChatConversation.user1_id == user.id, ChatConversation.user2_id == lawyer.id),
-                                and_(ChatConversation.user1_id == lawyer.id, ChatConversation.user2_id == user.id)
-                            )
-                        ).first()
-                        
-                        if not existing_conversation:
-                            conversation = ChatConversation()
-                            conversation.user1_id = min(user.id, lawyer.id)
-                            conversation.user2_id = max(user.id, lawyer.id)
-                            conversation.law_firm_id = current_user.law_firm_id
-                            db.session.add(conversation)
-            elif user.role in ['admin', 'team_member']:
-                # New lawyer assigned, connect to all existing clients
-                for client in clients:
-                    if client.id != user.id:
-                        # Check if conversation already exists
-                        from models import ChatConversation
-                        from sqlalchemy import or_, and_
-                        existing_conversation = ChatConversation.query.filter(
-                            or_(
-                                and_(ChatConversation.user1_id == user.id, ChatConversation.user2_id == client.id),
-                                and_(ChatConversation.user1_id == client.id, ChatConversation.user2_id == user.id)
-                            )
-                        ).first()
-                        
-                        if not existing_conversation:
-                            conversation = ChatConversation()
-                            conversation.user1_id = min(user.id, client.id)
-                            conversation.user2_id = max(user.id, client.id)
-                            conversation.law_firm_id = current_user.law_firm_id
-                            db.session.add(conversation)
+            # Get or create project chat room
+            project_room = ChatRoom.query.filter_by(
+                project_id=project_id,
+                room_type='project',
+                is_active=True
+            ).first()
+            
+            if not project_room:
+                # Create new project chat room
+                project_room = ChatRoom(
+                    name=f"Project: {project.title}",
+                    room_type='project',
+                    law_firm_id=project.law_firm_id,
+                    project_id=project_id,
+                    created_by_id=current_user.id
+                )
+                db.session.add(project_room)
+                db.session.flush()
+                
+                # Send welcome message to the chat room
+                welcome_message = ChatMessage(
+                    room_id=project_room.id,
+                    sender_id=current_user.id,
+                    message_content=f"Welcome to the project chat for '{project.title}'! All team members and clients assigned to this project can collaborate here.",
+                    message_type='notification'
+                )
+                db.session.add(welcome_message)
+            
+            # Add the newly assigned user as a participant if not already added
+            existing_participant = ChatParticipant.query.filter_by(
+                room_id=project_room.id,
+                user_id=user_id
+            ).first()
+            
+            if not existing_participant:
+                new_participant = ChatParticipant(
+                    room_id=project_room.id,
+                    user_id=user_id
+                )
+                db.session.add(new_participant)
+                
+                # Send notification about new member
+                notification_message = ChatMessage(
+                    room_id=project_room.id,
+                    sender_id=current_user.id,
+                    message_content=f"{user.full_name} has been added to the project team.",
+                    message_type='notification'
+                )
+                db.session.add(notification_message)
+            
+            # Ensure all project participants are in the chat room
+            project_assignments = ProjectAssignment.query.filter_by(project_id=project_id).all()
+            for assignment in project_assignments:
+                participant_exists = ChatParticipant.query.filter_by(
+                    room_id=project_room.id,
+                    user_id=assignment.user_id
+                ).first()
+                
+                if not participant_exists:
+                    participant = ChatParticipant(
+                        room_id=project_room.id,
+                        user_id=assignment.user_id
+                    )
+                    db.session.add(participant)
             
             db.session.commit()
             
-            # Success message with seamless tagging info
-            connection_count = len(clients) if user.role in ['admin', 'team_member'] else len(lawyers)
-            if connection_count > 0:
-                flash(f'{user.full_name} has been assigned to the project with automatic chat connections established!', 'success')
-            else:
-                flash(f'{user.full_name} has been assigned to the project.', 'success')
+            # Success message with chat room info
+            participant_count = len(project_assignments)
+            flash(f'{user.full_name} has been assigned to the project! A project chat room with {participant_count} participants is now available.', 'success')
         except Exception as e:
             db.session.rollback()
             db.session.add(assignment)
