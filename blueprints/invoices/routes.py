@@ -220,49 +220,26 @@ def send_invoice(id):
     try:
         # Update status
         invoice.status = 'sent'
+        invoice.sent_date = datetime.now()
         
-        # Create notification for client
-        create_invoice_notification(
-            invoice=invoice,
-            notification_type='invoice_sent',
-            recipient_type='client',
-            message=f'New invoice {invoice.invoice_number} for {invoice.title} has been sent to you.'
-        )
-        
-        # Schedule reminder notifications
-        # 7 days before due date
-        reminder_date = invoice.due_date - timedelta(days=7)
-        if reminder_date > date.today():
-            create_invoice_notification(
-                invoice=invoice,
-                notification_type='reminder',
-                recipient_type='both',
-                message=f'Reminder: Invoice {invoice.invoice_number} is due in 7 days.',
-                scheduled_date=datetime.combine(reminder_date, datetime.min.time())
-            )
-        
-        # On due date
-        create_invoice_notification(
-            invoice=invoice,
-            notification_type='due_today',
-            recipient_type='both',
-            message=f'Invoice {invoice.invoice_number} is due today.',
-            scheduled_date=datetime.combine(invoice.due_date, datetime.min.time())
-        )
-        
-        # 3 days after due date (overdue)
-        overdue_date = invoice.due_date + timedelta(days=3)
-        create_invoice_notification(
-            invoice=invoice,
-            notification_type='overdue',
-            recipient_type='both',
-            message=f'Invoice {invoice.invoice_number} is now 3 days overdue.',
-            scheduled_date=datetime.combine(overdue_date, datetime.min.time())
-        )
+        # Basic notification creation without complex scheduling
+        try:
+            notification = InvoiceNotification()
+            notification.invoice_id = invoice.id
+            notification.notification_type = 'invoice_sent'
+            notification.recipient_type = 'client'
+            notification.message = f'Invoice {invoice.invoice_number} has been sent to you.'
+            notification.status = 'sent'
+            notification.sent_date = datetime.now()
+            notification.is_automatic = True
+            db.session.add(notification)
+        except Exception as notification_error:
+            # Log notification error but don't fail the send operation
+            print(f"Notification error: {notification_error}")
         
         db.session.commit()
         
-        flash(f'Invoice {invoice.invoice_number} sent successfully.', 'success')
+        flash(f'Invoice {invoice.invoice_number} sent successfully to {invoice.client.display_name}.', 'success')
         
     except Exception as e:
         db.session.rollback()
