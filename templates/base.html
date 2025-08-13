@@ -17,92 +17,41 @@
     <!-- Custom CSS with cache busting -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/simple.css') }}?v={{ range(1000, 9999) | random }}">
     
-    <!-- FORCE MAXIMUM TEXT CONTRAST AND BRIGHTNESS -->
+    <!-- Targeted text visibility fixes -->
     <style>
-        /* Override ALL Bootstrap text styling with maximum contrast */
-        body, html {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
-            color: #000000 !important;
-            background-color: #ffffff !important;
+        /* Only target specific Bootstrap muted text classes */
+        .text-muted {
+            color: #495057 !important;
+            font-weight: 500 !important;
         }
         
-        /* Force ALL text elements to be completely dark and visible */
-        *, *:before, *:after {
-            color: #000000 !important;
-            opacity: 1.0 !important;
-            text-shadow: none !important;
-            filter: none !important;
+        .text-secondary {
+            color: #495057 !important;
+            font-weight: 500 !important;
         }
         
-        /* Specific overrides for Bootstrap muted classes */
-        .text-muted, .text-secondary, .small, .muted, .secondary,
-        span.text-muted, p.text-muted, div.text-muted {
-            color: #000000 !important;
-            opacity: 1.0 !important;
-            font-weight: 600 !important;
-        }
-        
-        /* All headings completely black */
+        /* Ensure proper contrast for key elements */
         h1, h2, h3, h4, h5, h6 {
             color: #000000 !important;
-            font-weight: 700 !important;
-            opacity: 1.0 !important;
+            font-weight: 600 !important;
         }
         
-        /* All paragraphs and text dark */
-        p, span, div, a, label, input, button {
+        .nav-link {
             color: #000000 !important;
             font-weight: 500 !important;
-            opacity: 1.0 !important;
         }
         
-        /* Navigation links completely dark */
-        .nav-link, .navbar-nav .nav-link {
+        .feature-stat h6 {
             color: #000000 !important;
             font-weight: 600 !important;
-            opacity: 1.0 !important;
         }
         
-        /* Card content completely dark */
-        .card *, .card-body *, .card-header *, .card-footer * {
-            color: #000000 !important;
+        .feature-stat span {
+            color: #495057 !important;
             font-weight: 500 !important;
-            opacity: 1.0 !important;
         }
         
-        /* Feature sections completely dark */
-        .feature-stat *, .feature-item *, .feature-card * {
-            color: #000000 !important;
-            font-weight: 600 !important;
-            opacity: 1.0 !important;
-        }
-        
-        /* Remove any transparency or filters */
-        .fade, .show, .collapse, .collapsing {
-            opacity: 1.0 !important;
-            filter: none !important;
-        }
-        
-        /* Icons completely visible */
-        .fas, .far, .fab, i {
-            color: #000000 !important;
-            opacity: 1.0 !important;
-        }
-        
-        /* Form elements dark */
-        .form-control, .form-select, .form-label {
-            color: #000000 !important;
-            background-color: #ffffff !important;
-            border-color: #000000 !important;
-        }
-        
-        /* Buttons dark text */
-        .btn {
-            color: #000000 !important;
-            font-weight: 600 !important;
-            opacity: 1.0 !important;
-        }
-        
+        /* Preserve button functionality */
         .btn-primary {
             background-color: #000000 !important;
             color: #ffffff !important;
@@ -112,7 +61,6 @@
         .btn-outline-primary {
             color: #000000 !important;
             border-color: #000000 !important;
-            background-color: transparent !important;
         }
     </style>
 </head>
