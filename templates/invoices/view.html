@@ -18,6 +18,9 @@
                     <a href="{{ url_for('invoices.list_invoices') }}" class="btn btn-sm" style="background: #ffffff; border: 1px solid #dee2e6; color: #495057; font-size: 0.85rem;">
                         <i class="fas fa-arrow-left me-1" style="font-size: 0.75rem;"></i>Back
                     </a>
+                    <a href="{{ url_for('invoices.download_invoice_pdf', id=invoice.id) }}" class="btn btn-sm" style="background: #6c757d; border: 1px solid #6c757d; color: #ffffff; font-size: 0.85rem;">
+                        <i class="fas fa-download me-1" style="font-size: 0.75rem;"></i>PDF
+                    </a>
                     {% if not current_user.is_client() %}
                         {% if invoice.status == 'draft' %}
                             <a href="{{ url_for('invoices.edit_invoice', id=invoice.id) }}" class="btn btn-sm" style="background: #007bff; border: 1px solid #007bff; color: #ffffff; font-size: 0.85rem;">
@@ -321,6 +324,11 @@
                                         {% if payment.payment_reference %}
                                         <div><strong>Reference:</strong> {{ payment.payment_reference }}</div>
                                         {% endif %}
+                                        <div class="mt-2">
+                                            <a href="{{ url_for('invoices.download_payment_pdf', payment_id=payment.id) }}" class="btn btn-sm btn-outline-success">
+                                                <i class="fas fa-download me-1"></i>Download Receipt
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

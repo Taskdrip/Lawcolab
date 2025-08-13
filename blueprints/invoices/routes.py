@@ -1,8 +1,15 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, make_response
 from flask_login import login_required, current_user
 from datetime import datetime, date, timedelta
 from decimal import Decimal
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, func, extract
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.colors import HexColor, black, blue
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.units import inch
+import io
 
 from app import db
 from models import Invoice, InvoiceLineItem, InvoiceNotification, PaymentRecord, User, Project, LawFirm
@@ -50,6 +57,76 @@ def list_invoices():
                          invoices=invoices, 
                          status_filter=status_filter,
                          stats=stats)
+
+@invoices_bp.route('/analytics')
+@login_required
+@role_required(['admin', 'team_member'])
+def analytics_dashboard():
+    """Invoice dashboard with analytics"""
+    # Currency breakdown for paid invoices
+    currency_stats = db.session.query(
+        Invoice.currency,
+        func.count(Invoice.id).label('count'),
+        func.sum(Invoice.total_amount).label('total')
+    ).filter(
+        Invoice.law_firm_id == current_user.law_firm_id,
+        Invoice.status == 'paid'
+    ).group_by(Invoice.currency).all()
+    
+    # Monthly payment analytics (last 12 months)
+    current_date = datetime.now()
+    monthly_stats = []
+    for i in range(12):
+        target_date = current_date - timedelta(days=30*i)
+        month_start = target_date.replace(day=1)
+        if i == 0:
+            month_end = current_date
+        else:
+            month_end = (month_start + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        
+        payments = db.session.query(
+            func.count(PaymentRecord.id).label('count'),
+            func.sum(PaymentRecord.amount_paid).label('total')
+        ).join(Invoice).filter(
+            Invoice.law_firm_id == current_user.law_firm_id,
+            PaymentRecord.payment_date >= month_start,
+            PaymentRecord.payment_date <= month_end
+        ).first()
+        
+        monthly_stats.append({
+            'month': target_date.strftime('%B %Y'),
+            'count': payments.count if payments and payments.count else 0,
+            'total': float(payments.total) if payments and payments.total else 0.0
+        })
+    
+    monthly_stats.reverse()  # Show oldest to newest
+    
+    # Client payment breakdown
+    client_stats = db.session.query(
+        User.first_name,
+        User.last_name,
+        func.count(Invoice.id).label('invoice_count'),
+        func.sum(Invoice.total_amount).label('total_billed'),
+        func.sum(PaymentRecord.amount_paid).label('total_paid')
+    ).outerjoin(PaymentRecord, Invoice.id == PaymentRecord.invoice_id)\
+     .filter(
+        Invoice.law_firm_id == current_user.law_firm_id,
+        User.role == 'client'
+    ).group_by(User.id, User.first_name, User.last_name).all()
+    
+    # Recent payments
+    recent_payments = db.session.query(PaymentRecord, Invoice, User)\
+        .join(Invoice, PaymentRecord.invoice_id == Invoice.id)\
+        .join(User, Invoice.client_id == User.id)\
+        .filter(Invoice.law_firm_id == current_user.law_firm_id)\
+        .order_by(PaymentRecord.payment_date.desc())\
+        .limit(10).all()
+    
+    return render_template('invoices/dashboard.html',
+                         currency_stats=currency_stats,
+                         monthly_stats=monthly_stats,
+                         client_stats=client_stats,
+                         recent_payments=recent_payments)
 
 @invoices_bp.route('/create', methods=['GET', 'POST'])
 @login_required
@@ -204,6 +281,203 @@ def view_invoice(id):
         return redirect(url_for('invoices.list_invoices'))
     
     return render_template('invoices/view.html', invoice=invoice)
+
+@invoices_bp.route('/<int:id>/pdf')
+@login_required
+def download_invoice_pdf(id):
+    """Download invoice as PDF"""
+    invoice = Invoice.query.get_or_404(id)
+    
+    # Security check
+    if current_user.is_client() and invoice.client_id != current_user.id:
+        flash('Access denied.', 'error')
+        return redirect(url_for('invoices.list_invoices'))
+    
+    if not current_user.is_client() and invoice.law_firm_id != current_user.law_firm_id:
+        flash('Access denied.', 'error')
+        return redirect(url_for('invoices.list_invoices'))
+    
+    # Get law firm details
+    law_firm = LawFirm.query.get(invoice.law_firm_id)
+    client = User.query.get(invoice.client_id)
+    
+    if not law_firm or not client:
+        flash('Invoice data not complete.', 'error')
+        return redirect(url_for('invoices.list_invoices'))
+    
+    # Generate PDF using ReportLab
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    story = []
+    styles = getSampleStyleSheet()
+    
+    # Custom styles
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Title'],
+        fontSize=24,
+        spaceAfter=30,
+        textColor=HexColor('#667eea')
+    )
+    
+    # Law firm header
+    story.append(Paragraph(f"<b>{law_firm.name if law_firm and law_firm.name else 'Law Firm'}</b>", title_style))
+    if law_firm and law_firm.address:
+        story.append(Paragraph(law_firm.address, styles['Normal']))
+    if law_firm and law_firm.phone:
+        story.append(Paragraph(f"Phone: {law_firm.phone}", styles['Normal']))
+    if law_firm and law_firm.email:
+        story.append(Paragraph(f"Email: {law_firm.email}", styles['Normal']))
+    
+    story.append(Spacer(1, 30))
+    
+    # Invoice details
+    story.append(Paragraph(f"<b>INVOICE #{invoice.invoice_number}</b>", styles['Heading2']))
+    story.append(Paragraph(f"Date: {invoice.created_at.strftime('%B %d, %Y')}", styles['Normal']))
+    story.append(Paragraph(f"Due Date: {invoice.due_date.strftime('%B %d, %Y')}", styles['Normal']))
+    
+    story.append(Spacer(1, 20))
+    
+    # Client details
+    story.append(Paragraph("<b>Bill To:</b>", styles['Heading3']))
+    client_name = f"{client.first_name if client and client.first_name else ''} {client.last_name if client and client.last_name else ''}".strip()
+    story.append(Paragraph(client_name or "Client", styles['Normal']))
+    if client and client.email:
+        story.append(Paragraph(client.email, styles['Normal']))
+    
+    story.append(Spacer(1, 20))
+    
+    # Invoice items table
+    data = [['Description', 'Quantity', 'Rate', 'Amount']]
+    for item in invoice.line_items:
+        currency_symbol = {'USD': '$', 'EUR': '€', 'GBP': '£', 'CAD': '$', 'NGN': '₦'}.get(invoice.currency, '$')
+        data.append([
+            item.description,
+            f"{item.quantity:.2f}",
+            f"{currency_symbol}{item.rate:.2f}",
+            f"{currency_symbol}{item.amount:.2f}"
+        ])
+    
+    # Add total row
+    currency_symbol = {'USD': '$', 'EUR': '€', 'GBP': '£', 'CAD': '$', 'NGN': '₦'}.get(invoice.currency, '$')
+    data.append(['', '', 'Total:', f"{currency_symbol}{invoice.total_amount:.2f}"])
+    
+    table = Table(data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), HexColor('#667eea')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), HexColor('#ffffff')),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), HexColor('#f8f9fc')),
+        ('GRID', (0, 0), (-1, -1), 1, black)
+    ]))
+    
+    story.append(table)
+    story.append(Spacer(1, 30))
+    
+    # Footer
+    story.append(Paragraph("<i>Generated by Taskdrip for legal professionals worldwide</i>", styles['Normal']))
+    
+    doc.build(story)
+    pdf = buffer.getvalue()
+    buffer.close()
+    
+    # Create response
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = f'attachment; filename=Invoice-{invoice.invoice_number}.pdf'
+    
+    return response
+
+@invoices_bp.route('/payment/<int:payment_id>/pdf')
+@login_required
+def download_payment_pdf(payment_id):
+    """Download payment receipt as PDF"""
+    payment = PaymentRecord.query.get_or_404(payment_id)
+    invoice = Invoice.query.get(payment.invoice_id)
+    
+    # Security check
+    if current_user.is_client() and invoice.client_id != current_user.id:
+        flash('Access denied.', 'error')
+        return redirect(url_for('invoices.list_invoices'))
+    
+    if not current_user.is_client() and invoice.law_firm_id != current_user.law_firm_id:
+        flash('Access denied.', 'error')
+        return redirect(url_for('invoices.list_invoices'))
+    
+    # Get law firm details
+    law_firm = LawFirm.query.get(invoice.law_firm_id)
+    client = User.query.get(invoice.client_id)
+    
+    # Generate PDF using ReportLab
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    story = []
+    styles = getSampleStyleSheet()
+    
+    # Custom styles
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Title'],
+        fontSize=24,
+        spaceAfter=30,
+        textColor=HexColor('#28a745')
+    )
+    
+    # Law firm header
+    story.append(Paragraph(f"<b>{law_firm.name}</b>", title_style))
+    if law_firm.address:
+        story.append(Paragraph(law_firm.address, styles['Normal']))
+    
+    story.append(Spacer(1, 30))
+    
+    # Payment receipt details
+    story.append(Paragraph("<b>PAYMENT RECEIPT</b>", styles['Heading2']))
+    story.append(Paragraph(f"Receipt Date: {payment.payment_date.strftime('%B %d, %Y')}", styles['Normal']))
+    story.append(Paragraph(f"Invoice: #{invoice.invoice_number}", styles['Normal']))
+    
+    story.append(Spacer(1, 20))
+    
+    # Client details
+    story.append(Paragraph("<b>Received From:</b>", styles['Heading3']))
+    story.append(Paragraph(f"{client.first_name} {client.last_name}", styles['Normal']))
+    
+    story.append(Spacer(1, 20))
+    
+    # Payment details
+    currency_symbol = {'USD': '$', 'EUR': '€', 'GBP': '£', 'CAD': '$', 'NGN': '₦'}.get(invoice.currency, '$')
+    payment_data = [
+        ['Payment Amount:', f"{currency_symbol}{payment.amount_paid:.2f}"],
+        ['Payment Method:', payment.payment_method or 'Not specified'],
+        ['Reference:', payment.payment_reference or 'N/A']
+    ]
+    
+    payment_table = Table(payment_data)
+    payment_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), HexColor('#f8f9fc')),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('GRID', (0, 0), (-1, -1), 1, black)
+    ]))
+    
+    story.append(payment_table)
+    story.append(Spacer(1, 30))
+    
+    # Footer
+    story.append(Paragraph("<i>Payment receipt generated by Taskdrip</i>", styles['Normal']))
+    
+    doc.build(story)
+    pdf = buffer.getvalue()
+    buffer.close()
+    
+    # Create response
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = f'attachment; filename=Payment-Receipt-{invoice.invoice_number}.pdf'
+    
+    return response
 
 @invoices_bp.route('/<int:id>/send', methods=['GET', 'POST'])
 @login_required
