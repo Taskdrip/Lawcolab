@@ -502,40 +502,9 @@ p {
     color: inherit !important;
 }
 
-/* FORCE BRIGHT TEXT - HIGHEST PRIORITY */
-* {
-    color: inherit !important;
-}
-
-body * {
-    opacity: 1 !important;
-}
-
+/* Clean override for muted text only */
 .text-muted {
     color: #333333 !important;
-    opacity: 1 !important;
-    font-weight: 500 !important;
-}
-
-.text-secondary {
-    color: #333333 !important;
-    opacity: 1 !important;
-    font-weight: 500 !important;
-}
-
-.small {
-    color: #333333 !important;
-    opacity: 1 !important;
-    font-weight: 500 !important;
-}
-
-/* Force bright contrast for all Bootstrap muted elements */
-.text-muted,
-.text-secondary,
-.muted,
-.secondary {
-    color: #333333 !important;
-    opacity: 1 !important;
 }
 
 /* Responsive adjustments */
