@@ -11,7 +11,31 @@ support_bp = Blueprint('support', __name__)
 @require_login
 def chat():
     """Support chat interface"""
-    return render_template('chat/support_chat.html')
+    # Ensure user has a law firm
+    if not current_user.law_firm_id:
+        if current_user.is_admin():
+            current_user.create_law_firm_if_admin()
+        else:
+            flash('You are not associated with a law firm.', 'error')
+            return redirect(url_for('index'))
+    
+    # Get or create support chat room
+    room = current_user.law_firm.get_support_chat_room()
+    
+    # Get recent messages for the support room
+    try:
+        from models_chat import ChatMessage
+        recent_messages = ChatMessage.query.filter_by(room_id=room.id)\
+                                         .order_by(ChatMessage.created_at.desc())\
+                                         .limit(50).all()
+        recent_messages.reverse()  # Show oldest first
+    except ImportError:
+        recent_messages = []
+    
+    return render_template('chat/support_chat.html', 
+                         room=room, 
+                         recent_messages=recent_messages,
+                         current_user=current_user)
 
 @support_bp.route('/support-requests')
 @require_super_admin

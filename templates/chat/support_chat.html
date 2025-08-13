@@ -270,7 +270,7 @@
                     <!-- Message Input -->
                     <div class="chat-input border-top p-3">
                         <form id="messageForm" class="d-flex align-items-end">
-                            <input type="hidden" id="roomId" value="{{ room.id }}">
+                            <input type="hidden" id="roomId" value="{{ room.id if room else '' }}">
                             <div class="flex-grow-1 me-2">
                                 <textarea class="form-control" id="messageInput" rows="2" placeholder="Type your message..." required></textarea>
                             </div>
@@ -384,7 +384,7 @@ Please activate admin access for this law firm. Payment processing will begin im
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    room_id: '{{ room.id if room }}',
+                    room_id: '{{ room.id if room else "" }}',
                     message: requestMessage
                 })
             })
