@@ -52,7 +52,7 @@ def landing():
 
 @app.route('/about')
 def about():
-    """About Taskdrip and LawFirmOS page"""
+    """About Taskdrip and LawColab page"""
     return render_template('about.html')
 
 @app.route('/contact')

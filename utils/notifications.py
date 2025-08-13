@@ -1,5 +1,5 @@
 """
-Invoice notification utilities for LawFirmOS
+Invoice notification utilities for LawColab
 Handles automatic reminders, due date notifications, and payment confirmations
 """
 

@@ -71,7 +71,7 @@ def pricing():
 
 @app.route('/about')
 def about():
-    """About Taskdrip and LawFirmOS page"""
+    """About Taskdrip and LawColab page"""
     response = render_template('about.html')
     # Add cache control headers to prevent caching issues
     from flask import make_response

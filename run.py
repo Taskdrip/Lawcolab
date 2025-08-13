@@ -1,5 +1,5 @@
 """
-Production-ready Flask app runner for LawFirmOS
+Production-ready Flask app runner for LawColab
 """
 import os
 from app import app

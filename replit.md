@@ -1,7 +1,7 @@
-# LawFirmOS
+# LawColab
 
 ## Overview
-LawFirmOS is a comprehensive legal practice management system built with Flask, designed to streamline law firm operations. It provides role-based access for administrators, team members, and clients, enabling efficient project management, client communication, and firm administration. The system includes features for law firm profile management, team coordination, client case tracking, document management, and public-facing firm presentation.
+LawColab is a comprehensive legal practice management system built with Flask, designed to streamline law firm operations. It provides role-based access for administrators, team members, and clients, enabling efficient project management, client communication, and firm administration. The system includes features for law firm profile management, team coordination, client case tracking, document management, and public-facing firm presentation.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -15,7 +15,7 @@ UI Design preference: Clean, simple white background interfaces with black text 
 - **August 11, 2025**: DEPLOYMENT READY - Created comprehensive About Us and Contact Us pages for Taskdrip with full team profiles, Abraham's story, social media integration
 - **August 11, 2025**: Added professional About Us page featuring Abraham (Founder/CEO - lawyer since 2015, tech entrepreneur) and complete team including Wiam Tahbat (Co-Founder/COO)
 - **August 11, 2025**: Implemented Contact Us page with inquiry forms, WhatsApp contact (+234 803 662 2568), social media links (Telegram, Instagram, TikTok, YouTube: https://www.youtube.com/@Taskdriper)
-- **August 11, 2025**: Created deployment package (LawFirmOS_Deployment_Package.tar.gz) ready for Contabo VPS hosting with complete setup scripts
+- **August 11, 2025**: Created deployment package (LawColab_Deployment_Package.tar.gz) ready for Contabo VPS hosting with complete setup scripts
 - **August 11, 2025**: Fixed all routing issues - About and Contact pages fully functional with professional content and Abraham's profile photo
 - **August 11, 2025**: Generated deployment documentation, startup scripts, environment templates for production hosting
 - Fixed navigation links for Projects and Clients pages with full functionality
@@ -27,7 +27,7 @@ UI Design preference: Clean, simple white background interfaces with black text 
 - Navigation includes Projects, Clients, and Messages for seamless workflow
 - Project chat allows real-time communication between assigned team members and clients
 - File management system fully operational with secure uploads and organization
-- Admin account: admin@lawfirmos.com / admin123 (fully functional with all features)
+- Admin account: admin@lawcolab.com / admin123 (fully functional with all features)
 - Complete About Us and Contact Us pages with team profiles, social media integration, and professional content
 - Production-ready deployment package with setup scripts and comprehensive documentation
 - Contact information: taskdrip@gmail.com, WhatsApp +234 803 662 2568, social media links integrated

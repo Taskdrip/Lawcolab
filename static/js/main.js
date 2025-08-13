@@ -1,5 +1,5 @@
 /**
- * LawFirmOS - Main JavaScript File
+ * LawColab - Main JavaScript File
  * Professional Legal Practice Management System
  */
 

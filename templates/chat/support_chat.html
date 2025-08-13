@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Support Chat - LawFirmOS{% endblock %}
+{% block title %}Support Chat - LawColab{% endblock %}
 
 {% block content %}
 <style>
@@ -122,7 +122,7 @@
                     <div class="subscription-request-panel p-4 border-bottom bg-white">
                         <div class="text-center mb-4">
                             <h5 class="text-dark fw-bold mb-2" style="color: #000000 !important; font-weight: 700 !important;">
-                                <i class="fas fa-rocket me-2 text-primary"></i>Choose Your LawFirmOS Plan
+                                <i class="fas fa-rocket me-2 text-primary"></i>Choose Your LawColab Plan
                             </h5>
                             <p class="text-dark mb-0" style="color: #333333 !important; font-weight: 500 !important;">Select the perfect plan for your law firm</p>
                         </div>
@@ -224,7 +224,7 @@
                                     <div class="sender-info mb-1">
                                         {% if message.sender.role == 'super_admin' %}
                                         <span class="badge bg-danger me-1">
-                                            <i class="fas fa-shield-alt"></i> LawFirmOS Support
+                                            <i class="fas fa-shield-alt"></i> LawColab Support
                                         </span>
                                         <small class="text-muted">{{ message.sender.full_name }}</small>
                                         {% else %}

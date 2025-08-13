@@ -79,7 +79,7 @@ def signup():
             
             # Login the user immediately after successful registration
             login_user(user)
-            flash('Registration successful! Welcome to LawFirmOS.', 'success')
+            flash('Registration successful! Welcome to LawColab.', 'success')
             return redirect(url_for('registration_success'))
         except Exception as e:
             db.session.rollback()
