@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ team_member.full_name }} - Legal Professional | LawFirmOS</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+            padding: 80px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .profile-image {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #ffffff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .info-card {
+            background: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .info-card:hover {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #0066cc;
+            margin-bottom: 0.5rem;
+        }
+        
+        .contact-btn {
+            background: #0066cc;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .contact-btn:hover {
+            background: #0056b3;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+        }
+        
+        .role-badge {
+            background: linear-gradient(135deg, #0066cc, #0056b3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .expertise-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
+        }
+        
+        .expertise-item:hover {
+            background: #e3f2fd;
+            border-color: #0066cc;
+        }
+        
+        .icon-wrapper {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #0066cc, #0056b3);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .achievement-badge {
+            background: #fff3cd;
+            color: #856404;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin: 2px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-4 text-center mb-4 mb-lg-0">
+                    <img src="{{ team_member.profile_image_url or url_for('static', filename='images/default-lawyer.svg') }}" 
+                         alt="{{ team_member.full_name }}" 
+                         class="profile-image">
+                </div>
+                <div class="col-lg-8">
+                    <div class="d-flex align-items-center mb-3">
+                        <h1 class="display-4 fw-bold mb-0 me-3">{{ team_member.full_name }}</h1>
+                        <div class="role-badge">
+                            <i class="fas fa-{{ 'crown' if team_member.is_admin() else 'user-tie' }}"></i>
+                            {{ 'Managing Partner' if team_member.is_admin() else 'Legal Professional' }}
+                        </div>
+                    </div>
+                    
+                    {% if team_member.title %}
+                    <p class="lead text-muted mb-3">
+                        <i class="fas fa-briefcase me-2"></i>{{ team_member.title }}
+                    </p>
+                    {% endif %}
+                    
+                    <p class="text-muted mb-4">
+                        Experienced legal professional specializing in comprehensive client representation 
+                        and case management with a focus on excellence and client satisfaction.
+                    </p>
+                    
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="mailto:{{ team_member.email }}" class="contact-btn">
+                            <i class="fas fa-envelope"></i>
+                            Contact Professional
+                        </a>
+                        {% if current_user.is_authenticated and (current_user.is_admin() or current_user.is_team_member()) %}
+                        <a href="{{ url_for('team.team_member_profile', member_id=team_member.id) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-user-circle me-2"></i>
+                            View Full Profile
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row">
+                <!-- Professional Information -->
+                <div class="col-lg-4 mb-4">
+                    <div class="info-card">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <h5 class="fw-bold mb-3">Professional Details</h5>
+                        
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Email Address</small>
+                            <strong>{{ team_member.email }}</strong>
+                        </div>
+                        
+                        {% if team_member.phone %}
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Phone Number</small>
+                            <strong>{{ team_member.phone }}</strong>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Position</small>
+                            <strong>{{ team_member.title or ('Managing Partner' if team_member.is_admin() else 'Legal Professional') }}</strong>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <small class="text-muted d-block">With Firm Since</small>
+                            <strong>{{ team_member.created_at.strftime('%B %Y') if team_member.created_at else 'Recently' }}</strong>
+                        </div>
+                        
+                        <div class="achievement-badge">Professional Excellence</div>
+                        <div class="achievement-badge">Client Focused</div>
+                        <div class="achievement-badge">Expert Advisor</div>
+                    </div>
+                </div>
+
+                <!-- Performance Metrics -->
+                <div class="col-lg-4 mb-4">
+                    <div class="info-card">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h5 class="fw-bold mb-3">Professional Metrics</h5>
+                        
+                        <div class="stat-item">
+                            <div class="stat-number">{{ projects|length }}</div>
+                            <small class="text-muted">Active Cases</small>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-number">{{ client_count }}</div>
+                            <small class="text-muted">Clients Served</small>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-number">98%</div>
+                            <small class="text-muted">Success Rate</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Areas of Expertise -->
+                <div class="col-lg-4 mb-4">
+                    <div class="info-card">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                        <h5 class="fw-bold mb-3">Areas of Expertise</h5>
+                        
+                        <div class="expertise-item">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-building text-primary me-2"></i>
+                                <strong>Corporate Law</strong>
+                            </div>
+                        </div>
+                        
+                        <div class="expertise-item">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-handshake text-primary me-2"></i>
+                                <strong>Contract Negotiation</strong>
+                            </div>
+                        </div>
+                        
+                        <div class="expertise-item">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-gavel text-primary me-2"></i>
+                                <strong>Litigation Support</strong>
+                            </div>
+                        </div>
+                        
+                        <div class="expertise-item">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-file-contract text-primary me-2"></i>
+                                <strong>Legal Documentation</strong>
+                            </div>
+                        </div>
+                        
+                        <div class="expertise-item">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-users text-primary me-2"></i>
+                                <strong>Client Relations</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Projects -->
+            {% if projects %}
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h3 class="fw-bold mb-4">
+                        <i class="fas fa-briefcase me-2 text-primary"></i>
+                        Current Cases & Projects
+                    </h3>
+                    
+                    <div class="row">
+                        {% for project in projects[:3] %}
+                        <div class="col-lg-4 mb-3">
+                            <div class="info-card">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="fw-bold mb-0">{{ project.name }}</h6>
+                                    <span class="badge bg-primary">{{ project.status|title }}</span>
+                                </div>
+                                
+                                {% if project.description %}
+                                <p class="text-muted small mb-3">{{ project.description[:80] }}{% if project.description|length > 80 %}...{% endif %}</p>
+                                {% endif %}
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        {{ project.created_at.strftime('%b %Y') if project.created_at else 'Recent' }}
+                                    </small>
+                                    <small class="text-primary fw-bold">
+                                        <i class="fas fa-users me-1"></i>
+                                        {{ project.assignments|length }} Team
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Professional Values -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="info-card text-center">
+                        <h4 class="fw-bold mb-4">Professional Commitment</h4>
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <i class="fas fa-shield-alt text-primary mb-2" style="font-size: 2rem;"></i>
+                                <h6 class="fw-bold">Integrity</h6>
+                                <p class="text-muted small">Maintaining the highest ethical standards in all professional activities</p>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <i class="fas fa-bullseye text-primary mb-2" style="font-size: 2rem;"></i>
+                                <h6 class="fw-bold">Excellence</h6>
+                                <p class="text-muted small">Delivering superior legal services with attention to detail</p>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <i class="fas fa-heart text-primary mb-2" style="font-size: 2rem;"></i>
+                                <h6 class="fw-bold">Client Focus</h6>
+                                <p class="text-muted small">Prioritizing client needs and achieving optimal outcomes</p>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <i class="fas fa-lightbulb text-primary mb-2" style="font-size: 2rem;"></i>
+                                <h6 class="fw-bold">Innovation</h6>
+                                <p class="text-muted small">Leveraging technology for efficient legal practice management</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Professional Footer -->
+    <footer class="py-4" style="background: #f8f9fa; border-top: 1px solid #e9ecef;">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-0 text-muted">
+                        <i class="fas fa-balance-scale me-2 text-primary"></i>
+                        Professional Legal Practice Management
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0 text-muted">
+                        Built by <strong class="text-primary">Taskdrip</strong> for legal professionals worldwide
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

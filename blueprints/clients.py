@@ -4,7 +4,7 @@ from replit_auth import require_login
 from utils.decorators import require_team_member_or_admin
 from utils.forms import ClientNoteForm
 from app import db
-from models import User, ClientNote, Project
+from models import User, ClientNote, Project, ProjectAssignment
 from utils.profile_upload import save_profile_image
 
 clients_bp = Blueprint('clients', __name__)
@@ -64,11 +64,19 @@ def client_profile(client_id):
     
     form = ClientNoteForm()
     
-    return render_template('clients/profile_enhanced.html', 
-                         client=client, 
-                         projects=projects, 
-                         notes=notes, 
-                         form=form)
+    # Check if this is a public view (no authentication required for public profiles)
+    if not current_user.is_authenticated or current_user.id == client_id:
+        # Public view - use professional landing page template
+        return render_template('clients/public_profile.html', 
+                             client=client, 
+                             projects=projects)
+    else:
+        # Internal view - use enhanced profile with notes
+        return render_template('clients/profile_enhanced.html', 
+                             client=client, 
+                             projects=projects, 
+                             notes=notes, 
+                             form=form)
 
 @clients_bp.route('/<client_id>/notes', methods=['POST'])
 @require_team_member_or_admin

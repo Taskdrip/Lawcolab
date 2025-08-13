@@ -40,10 +40,19 @@ def team_member_profile(member_id):
                 client_ids.add(assignment.user_id)
     client_count = len(client_ids)
     
-    return render_template('team/profile_enhanced.html',
-                         team_member=team_member,
-                         projects=projects,
-                         client_count=client_count)
+    # Check if this is a public view or internal view
+    if not current_user.is_authenticated or (current_user.law_firm_id != team_member.law_firm_id and not current_user.is_super_admin()):
+        # Public view - use professional landing page template
+        return render_template('team/public_profile.html',
+                             team_member=team_member,
+                             projects=projects,
+                             client_count=client_count)
+    else:
+        # Internal view - use enhanced profile
+        return render_template('team/profile_enhanced.html',
+                             team_member=team_member,
+                             projects=projects,
+                             client_count=client_count)
 
 @team_bp.route('/<member_id>/upload_profile_image', methods=['POST'])
 @require_login
