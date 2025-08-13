@@ -151,6 +151,7 @@ def assign_user(project_id):
                             conversation = ChatConversation()
                             conversation.user1_id = min(user.id, lawyer.id)
                             conversation.user2_id = max(user.id, lawyer.id)
+                            conversation.law_firm_id = current_user.law_firm_id
                             db.session.add(conversation)
             elif user.role in ['admin', 'team_member']:
                 # New lawyer assigned, connect to all existing clients
@@ -170,6 +171,7 @@ def assign_user(project_id):
                             conversation = ChatConversation()
                             conversation.user1_id = min(user.id, client.id)
                             conversation.user2_id = max(user.id, client.id)
+                            conversation.law_firm_id = current_user.law_firm_id
                             db.session.add(conversation)
             
             db.session.commit()

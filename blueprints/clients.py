@@ -15,8 +15,20 @@ def list_clients():
     """List clients from the same law firm with search functionality"""
     search = request.args.get('search', '')
     
-    # Only show clients from the current user's law firm
-    query = User.query.filter_by(role='client', law_firm_id=current_user.law_firm_id)
+    # Only show clients from the current user's law firm (ensure current user has law_firm_id)
+    if not current_user.law_firm_id:
+        # If admin doesn't have law firm, create one
+        if current_user.is_admin():
+            current_user.create_law_firm_if_admin()
+        else:
+            flash('You are not associated with a law firm.', 'error')
+            return redirect(url_for('index'))
+    
+    query = User.query.filter(
+        User.role == 'client',
+        User.law_firm_id == current_user.law_firm_id,
+        User.law_firm_id.is_not(None)  # Ensure law_firm_id is not null
+    )
     
     if search:
         query = query.filter(

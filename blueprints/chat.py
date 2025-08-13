@@ -13,12 +13,21 @@ chat_bp = Blueprint('chat', __name__, template_folder='../templates')
 @require_login
 def chat_home():
     """Main chat interface showing conversations list"""
-    # Get all conversations for current user
+    # Ensure current user has law firm
+    if not current_user.law_firm_id:
+        if current_user.is_admin():
+            current_user.create_law_firm_if_admin()
+        else:
+            flash('You are not associated with a law firm.', 'error')
+            return redirect(url_for('index'))
+    
+    # Get conversations only with users from same law firm
     conversations = db.session.query(ChatConversation).filter(
         or_(
             ChatConversation.user1_id == current_user.id,
             ChatConversation.user2_id == current_user.id
-        )
+        ),
+        ChatConversation.law_firm_id == current_user.law_firm_id
     ).order_by(desc(ChatConversation.last_message_at)).all()
     
     # Get relevant users based on current user's role and assignments
@@ -39,12 +48,15 @@ def chat_home():
                     assigned_user_ids.add(assignment.user_id)
         
         all_users = User.query.filter(
-            User.id.in_(assigned_user_ids)
+            User.id.in_(assigned_user_ids),
+            User.law_firm_id == current_user.law_firm_id
         ).filter(User.active == True).order_by(User.role, User.first_name, User.last_name).all()
     else:
-        # Team members and admins can chat with all active users
+        # Team members and admins can chat with users from same law firm only
         all_users = User.query.filter(
-            User.id != current_user.id
+            User.id != current_user.id,
+            User.law_firm_id == current_user.law_firm_id,
+            User.law_firm_id.is_not(None)
         ).filter(User.active == True).order_by(User.role, User.first_name, User.last_name).all()
     
     # Get unread message counts
