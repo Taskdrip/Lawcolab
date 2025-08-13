@@ -23,6 +23,10 @@ def support_chat():
             flash('You are not associated with a law firm.', 'error')
             return redirect(url_for('index'))
     
+    # Check if this is a new law firm without admin access
+    if not current_user.law_firm.admin_access_granted:
+        return render_template('chat/subscription_request.html')
+    
     # Get or create support chat room
     support_room = current_user.law_firm.get_support_chat_room()
     
@@ -44,6 +48,72 @@ def support_chat():
                          room=support_room, 
                          messages=messages,
                          current_user=current_user)
+
+@enhanced_chat_bp.route('/request-access', methods=['POST'])
+@require_login
+def request_access():
+    """Handle subscription request and send to super admin chat"""
+    if not current_user.law_firm_id:
+        if current_user.is_admin():
+            current_user.create_law_firm_if_admin()
+        else:
+            return jsonify({'success': False, 'message': 'No law firm associated'})
+    
+    # Get form data
+    request_type = request.form.get('request_type')
+    team_size = request.form.get('team_size', 'Not specified')
+    additional_message = request.form.get('message', '')
+    
+    # Create pricing map
+    pricing = {
+        'trial': 'FREE 3-Day Trial',
+        '1month': '$70 (1 Month)',
+        '3months': '$190 (3 Months) - Save $20',
+        '6months': '$400 (6 Months) - Save $70', 
+        '1year': '$750 (1 Year) - Save $190'
+    }
+    
+    # Create support request message
+    plan_display = pricing.get(request_type, request_type)
+    
+    request_message = f"""🚀 NEW SUBSCRIPTION REQUEST
+
+Law Firm: {current_user.law_firm.name}
+Plan Requested: {plan_display}
+Team Size: {team_size}
+Admin Contact: {current_user.full_name} ({current_user.email})
+
+{f'Additional Message: {additional_message}' if additional_message else ''}
+
+Please review and activate admin access for this law firm."""
+    
+    # Get or create support room
+    support_room = current_user.law_firm.get_support_chat_room()
+    
+    # Send message to support room
+    message = ChatMessage(
+        room_id=support_room.id,
+        sender_id=current_user.id,
+        message_content=request_message,
+        message_type='text'
+    )
+    
+    db.session.add(message)
+    
+    # Also create support request record
+    from models import SupportRequest
+    support_request = SupportRequest(
+        user_id=current_user.id,
+        law_firm_id=current_user.law_firm_id,
+        request_type=request_type,
+        message=additional_message,
+        team_size=team_size
+    )
+    
+    db.session.add(support_request)
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': 'Request sent to admin team'})
 
 @enhanced_chat_bp.route('/project/<int:project_id>')
 @require_login

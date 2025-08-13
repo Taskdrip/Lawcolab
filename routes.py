@@ -91,36 +91,10 @@ def registration_success():
 
 @app.route('/chat-support', methods=['GET', 'POST'])
 def chat_support():
-    """Support chat for license requests and general inquiries"""
+    """Redirect to enhanced chat support system"""
     if not current_user.is_authenticated:
         return redirect(url_for('auth.login'))
-    
-    if request.method == 'POST':
-        from models import SupportRequest
-        from flask import request, flash
-        
-        support_request = SupportRequest(
-            user_id=current_user.id,
-            law_firm_id=current_user.law_firm_id,
-            request_type=request.form.get('request_type'),
-            message=request.form.get('message'),
-            team_size=request.form.get('team_size')
-        )
-        
-        try:
-            db.session.add(support_request)
-            db.session.commit()
-            flash('Your request has been sent to our super admin team. We will respond within 24 hours.', 'success')
-            return redirect(url_for('dashboard.index'))
-        except Exception as e:
-            db.session.rollback()
-            flash('Error sending request. Please try again.', 'error')
-    
-    return render_template('chat_support.html')
-    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-    resp.headers['Pragma'] = 'no-cache'
-    resp.headers['Expires'] = '0'
-    return resp
+    return redirect(url_for('enhanced_chat.support_chat'))
 
 # Test route to verify pages are working
 @app.route('/test-pages')

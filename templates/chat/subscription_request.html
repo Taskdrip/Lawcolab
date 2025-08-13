@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}Request Admin Access - LawFirmOS{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 text-center py-4">
+                    <h3 class="mb-2">
+                        <i class="fas fa-rocket me-2 text-primary"></i>Get Admin Access to LawFirmOS
+                    </h3>
+                    <p class="text-muted mb-0">Choose your subscription plan and get started with full access</p>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form id="subscriptionForm" method="POST" action="{{ url_for('enhanced_chat.support_chat') }}">
+                        <!-- Subscription Plans -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Choose Your Plan</label>
+                            <div class="row g-3">
+                                <!-- Trial Plan -->
+                                <div class="col-md-6">
+                                    <div class="card border-2 subscription-card" data-plan="trial" style="cursor: pointer;">
+                                        <div class="card-body text-center p-3">
+                                            <div class="badge bg-success mb-2">Most Popular</div>
+                                            <h6 class="fw-bold">3-Day Trial</h6>
+                                            <div class="h5 text-primary mb-1">FREE</div>
+                                            <small class="text-muted">Perfect for testing</small>
+                                            <ul class="list-unstyled mt-2 text-start small">
+                                                <li><i class="fas fa-check text-success me-2"></i>Full platform access</li>
+                                                <li><i class="fas fa-check text-success me-2"></i>Up to 5 team members</li>
+                                                <li><i class="fas fa-check text-success me-2"></i>All features included</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 1 Month Plan -->
+                                <div class="col-md-6">
+                                    <div class="card border-2 subscription-card" data-plan="1month" style="cursor: pointer;">
+                                        <div class="card-body text-center p-3">
+                                            <h6 class="fw-bold">1 Month</h6>
+                                            <div class="h5 text-primary mb-1">$70</div>
+                                            <small class="text-muted">Great for small firms</small>
+                                            <ul class="list-unstyled mt-2 text-start small">
+                                                <li><i class="fas fa-check text-success me-2"></i>Unlimited team members</li>
+                                                <li><i class="fas fa-check text-success me-2"></i>Unlimited clients</li>
+                                                <li><i class="fas fa-check text-success me-2"></i>Priority support</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 3 Months Plan -->
+                                <div class="col-md-6">
+                                    <div class="card border-2 subscription-card" data-plan="3months" style="cursor: pointer;">
+                                        <div class="card-body text-center p-3">
+                                            <div class="badge bg-warning mb-2">Save $20</div>
+                                            <h6 class="fw-bold">3 Months</h6>
+                                            <div class="h5 text-primary mb-1">$190</div>
+                                            <small class="text-muted">$63/month</small>
+                                            <ul class="list-unstyled mt-2 text-start small">
+                                                <li><i class="fas fa-check text-success me-2"></i>Everything in 1-month</li>
+                                                <li><i class="fas fa-check text-success me-2"></i>Advanced analytics</li>
+                                                <li><i class="fas fa-check text-success me-2"></i>Custom branding</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 6 Months Plan -->
+                                <div class="col-md-6">
+                                    <div class="card border-2 subscription-card" data-plan="6months" style="cursor: pointer;">
+                                        <div class="card-body text-center p-3">
+                                            <div class="badge bg-info mb-2">Save $70</div>
+                                            <h6 class="fw-bold">6 Months</h6>
+                                            <div class="h5 text-primary mb-1">$400</div>
+                                            <small class="text-muted">$67/month</small>
+                                            <ul class="list-unstyled mt-2 text-start small">
+                                                <li><i class="fas fa-check text-success me-2"></i>Everything in 3-month</li>
+                                                <li><i class="fas fa-check text-success me-2"></i>API access</li>
+                                                <li><i class="fas fa-check text-success me-2"></i>White-label option</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 1 Year Plan -->
+                                <div class="col-md-12">
+                                    <div class="card border-2 subscription-card" data-plan="1year" style="cursor: pointer;">
+                                        <div class="card-body text-center p-3">
+                                            <div class="badge bg-danger mb-2">Best Value - Save $190</div>
+                                            <h6 class="fw-bold">1 Year (12 Months)</h6>
+                                            <div class="h5 text-primary mb-1">$750</div>
+                                            <small class="text-muted">$62.50/month</small>
+                                            <div class="row mt-2">
+                                                <div class="col-md-4">
+                                                    <ul class="list-unstyled text-start small">
+                                                        <li><i class="fas fa-check text-success me-2"></i>Everything included</li>
+                                                        <li><i class="fas fa-check text-success me-2"></i>Dedicated support</li>
+                                                    </ul>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <ul class="list-unstyled text-start small">
+                                                        <li><i class="fas fa-check text-success me-2"></i>Custom integrations</li>
+                                                        <li><i class="fas fa-check text-success me-2"></i>Training sessions</li>
+                                                    </ul>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <ul class="list-unstyled text-start small">
+                                                        <li><i class="fas fa-check text-success me-2"></i>Priority feature requests</li>
+                                                        <li><i class="fas fa-check text-success me-2"></i>24/7 phone support</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <input type="hidden" name="request_type" id="selectedPlan" required>
+                        </div>
+                        
+                        <!-- Team Size -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Expected Team Size</label>
+                            <select class="form-select" name="team_size">
+                                <option value="1-5">1-5 members</option>
+                                <option value="6-15">6-15 members</option>
+                                <option value="16-30">16-30 members</option>
+                                <option value="30+">30+ members</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Message -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Additional Message (Optional)</label>
+                            <textarea class="form-control" name="message" rows="3" placeholder="Tell us about your law firm, specific needs, or any questions you have..."></textarea>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg px-5" id="submitBtn" disabled>
+                                <i class="fas fa-paper-plane me-2"></i>Send Request to Admin
+                            </button>
+                            <p class="text-muted mt-2 small">Our super admin will review your request and activate your account within 24 hours</p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.subscription-card {
+    transition: all 0.3s ease;
+    border-color: #dee2e6 !important;
+}
+
+.subscription-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.subscription-card.selected {
+    border-color: #0d6efd !important;
+    background-color: #f8f9ff;
+}
+
+.subscription-card.selected::before {
+    content: "✓";
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: #0d6efd;
+    color: white;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const subscriptionCards = document.querySelectorAll('.subscription-card');
+    const selectedPlanInput = document.getElementById('selectedPlan');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    subscriptionCards.forEach(card => {
+        card.addEventListener('click', function() {
+            // Remove selected class from all cards
+            subscriptionCards.forEach(c => c.classList.remove('selected'));
+            
+            // Add selected class to clicked card
+            this.classList.add('selected');
+            
+            // Set the hidden input value
+            const plan = this.dataset.plan;
+            selectedPlanInput.value = plan;
+            
+            // Enable submit button
+            submitBtn.disabled = false;
+        });
+    });
+    
+    // Form submission
+    document.getElementById('subscriptionForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!selectedPlanInput.value) {
+            alert('Please select a subscription plan');
+            return;
+        }
+        
+        // Create the request message
+        const planMessages = {
+            'trial': '🚀 Trial Request: 3-Day FREE Trial Access',
+            '1month': '💼 Subscription Request: 1 Month Plan ($70)',
+            '3months': '📈 Subscription Request: 3 Months Plan ($190)',
+            '6months': '⭐ Subscription Request: 6 Months Plan ($400)',
+            '1year': '🏆 Subscription Request: 1 Year Plan ($750)'
+        };
+        
+        const selectedPlan = selectedPlanInput.value;
+        const teamSize = document.querySelector('[name="team_size"]').value;
+        const additionalMessage = document.querySelector('[name="message"]').value;
+        
+        const requestMessage = `${planMessages[selectedPlan]}
+        
+Law Firm: {{ current_user.law_firm.name if current_user.law_firm else current_user.full_name + "'s Law Firm" }}
+Team Size: ${teamSize}
+Contact: {{ current_user.email }}
+
+${additionalMessage ? 'Additional Message: ' + additionalMessage : ''}
+
+Please activate admin access for this law firm. Payment will be processed upon approval.`;
+        
+        // Send message to support chat
+        fetch('/enhanced-chat/send-message', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                room_id: '{{ support_room.id if support_room else "" }}',
+                message: requestMessage
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = '/enhanced-chat/support';
+            } else {
+                alert('Failed to send request: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while sending the request.');
+        });
+    });
+});
+</script>
+{% endblock %}

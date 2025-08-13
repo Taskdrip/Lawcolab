@@ -23,8 +23,79 @@
                 </div>
                 
                 <div class="card-body p-0">
+                    <!-- Subscription Request Form (for new law firms) -->
+                    {% if not current_user.law_firm.admin_access_granted %}
+                    <div class="subscription-request-panel p-4 border-bottom">
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-rocket me-2"></i>Choose Your LawFirmOS Plan
+                        </h6>
+                        <form id="subscriptionForm">
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-4">
+                                    <div class="card border subscription-option" data-plan="trial" style="cursor: pointer;">
+                                        <div class="card-body p-2 text-center">
+                                            <div class="badge bg-success mb-1" style="font-size: 10px;">Most Popular</div>
+                                            <h6 class="fw-bold mb-1" style="font-size: 14px;">3-Day Trial</h6>
+                                            <div class="h6 text-primary mb-0">FREE</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card border subscription-option" data-plan="1month" style="cursor: pointer;">
+                                        <div class="card-body p-2 text-center">
+                                            <h6 class="fw-bold mb-1" style="font-size: 14px;">1 Month</h6>
+                                            <div class="h6 text-primary mb-0">$70</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card border subscription-option" data-plan="3months" style="cursor: pointer;">
+                                        <div class="card-body p-2 text-center">
+                                            <div class="badge bg-warning mb-1" style="font-size: 10px;">Save $20</div>
+                                            <h6 class="fw-bold mb-1" style="font-size: 14px;">3 Months</h6>
+                                            <div class="h6 text-primary mb-0">$190</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-6">
+                                    <div class="card border subscription-option" data-plan="6months" style="cursor: pointer;">
+                                        <div class="card-body p-2 text-center">
+                                            <div class="badge bg-info mb-1" style="font-size: 10px;">Save $70</div>
+                                            <h6 class="fw-bold mb-1" style="font-size: 14px;">6 Months</h6>
+                                            <div class="h6 text-primary mb-0">$400</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card border subscription-option" data-plan="1year" style="cursor: pointer;">
+                                        <div class="card-body p-2 text-center">
+                                            <div class="badge bg-danger mb-1" style="font-size: 10px;">Best Value</div>
+                                            <h6 class="fw-bold mb-1" style="font-size: 14px;">1 Year</h6>
+                                            <div class="h6 text-primary mb-0">$750</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2 align-items-center">
+                                <select class="form-select form-select-sm" name="team_size" style="max-width: 150px;">
+                                    <option value="1-5">1-5 team</option>
+                                    <option value="6-15">6-15 team</option>
+                                    <option value="16-30">16-30 team</option>
+                                    <option value="30+">30+ team</option>
+                                </select>
+                                <button type="submit" class="btn btn-primary btn-sm" id="requestBtn" disabled>
+                                    <i class="fas fa-paper-plane me-1"></i>Request Access
+                                </button>
+                            </div>
+                            <input type="hidden" name="selected_plan" id="selectedPlan">
+                        </form>
+                    </div>
+                    {% endif %}
+                    
                     <!-- Messages Container -->
-                    <div class="chat-messages" id="messagesContainer" style="height: 450px; overflow-y: auto; padding: 20px;">
+                    <div class="chat-messages" id="messagesContainer" style="height: {% if not current_user.law_firm.admin_access_granted %}300px{% else %}450px{% endif %}; overflow-y: auto; padding: 20px;">
                         {% for message in messages %}
                         <div class="message-bubble mb-3 {% if message.sender_id == current_user.id %}sent{% else %}received{% endif %}">
                             <div class="d-flex {% if message.sender_id == current_user.id %}justify-content-end{% else %}justify-content-start{% endif %}">
@@ -108,6 +179,87 @@ function scrollToBottom() {
     const container = document.getElementById('messagesContainer');
     container.scrollTop = container.scrollHeight;
 }
+
+// Subscription form handling
+document.addEventListener('DOMContentLoaded', function() {
+    const subscriptionOptions = document.querySelectorAll('.subscription-option');
+    const selectedPlanInput = document.getElementById('selectedPlan');
+    const requestBtn = document.getElementById('requestBtn');
+    const subscriptionForm = document.getElementById('subscriptionForm');
+    
+    if (subscriptionOptions.length > 0) {
+        subscriptionOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove selected class from all options
+                subscriptionOptions.forEach(opt => opt.classList.remove('border-primary', 'bg-light'));
+                
+                // Add selected class to clicked option
+                this.classList.add('border-primary', 'bg-light');
+                
+                // Set the hidden input value
+                const plan = this.dataset.plan;
+                selectedPlanInput.value = plan;
+                
+                // Enable request button
+                requestBtn.disabled = false;
+            });
+        });
+        
+        // Handle subscription form submission
+        subscriptionForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const selectedPlan = selectedPlanInput.value;
+            const teamSize = document.querySelector('[name="team_size"]').value;
+            
+            if (!selectedPlan) {
+                alert('Please select a subscription plan');
+                return;
+            }
+            
+            // Create the request message
+            const planMessages = {
+                'trial': '🚀 Trial Request: 3-Day FREE Trial Access',
+                '1month': '💼 Subscription Request: 1 Month Plan ($70)',
+                '3months': '📈 Subscription Request: 3 Months Plan ($190)',
+                '6months': '⭐ Subscription Request: 6 Months Plan ($400)',
+                '1year': '🏆 Subscription Request: 1 Year Plan ($750)'
+            };
+            
+            const requestMessage = `${planMessages[selectedPlan]}
+
+Law Firm: {{ current_user.law_firm.name if current_user.law_firm else current_user.full_name + "'s Law Firm" }}
+Team Size: ${teamSize}
+Contact: {{ current_user.email }}
+
+Please activate admin access for this law firm. Payment will be processed upon approval.`;
+            
+            // Send message to support chat
+            fetch('/enhanced-chat/send-message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    room_id: '{{ room.id if room else "" }}',
+                    message: requestMessage
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // Refresh to show new message
+                } else {
+                    alert('Failed to send request: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while sending the request.');
+            });
+        });
+    }
+});
 
 // Send message
 document.getElementById('messageForm').addEventListener('submit', function(e) {
