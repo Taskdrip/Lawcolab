@@ -54,13 +54,13 @@
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <div class="fw-bold text-dark h4 mb-0">
-                                        {% set total_revenue = 0 %}
-                                        {% for stat in currency_stats %}
-                                            {% set total_revenue = total_revenue + (stat.total or 0) %}
-                                        {% endfor %}
-                                        ${{ "%.0f"|format(total_revenue) }}
+                                        {% if currency_stats %}
+                                            {{ currency_stats|length }}
+                                        {% else %}
+                                            0
+                                        {% endif %}
                                     </div>
-                                    <div class="text-muted small">Total Revenue</div>
+                                    <div class="text-muted small">Total Invoices</div>
                                 </div>
                             </div>
                         </div>
@@ -280,8 +280,8 @@
                                             <tr>
                                                 <td style="color: #1a1a1a;">{{ client.first_name }} {{ client.last_name }}</td>
                                                 <td style="color: #1a1a1a;">{{ client.invoice_count }}</td>
-                                                <td style="color: #1a1a1a;">${{ "%.2f"|format(client.total_billed or 0) }}</td>
-                                                <td style="color: #1a1a1a;">${{ "%.2f"|format(client.total_paid or 0) }}</td>
+                                                <td style="color: #1a1a1a;">Mixed Currency</td>
+                                                <td style="color: #1a1a1a;">Mixed Currency</td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>
@@ -292,6 +292,70 @@
                                     <i class="fas fa-users fa-2x text-muted mb-3"></i>
                                     <h6 class="text-muted">No client data available</h6>
                                     <p class="text-muted small">Client analytics will appear here once you create invoices</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            <!-- Recent Payments -->
+            <div class="row g-3 mb-2">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white border-bottom">
+                            <h5 class="card-title mb-0" style="color: #1a1a1a;">
+                                <i class="fas fa-clock me-2 text-success"></i>Recent Payments
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if recent_payments %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th style="color: #1a1a1a;">Date</th>
+                                                <th style="color: #1a1a1a;">Client</th>
+                                                <th style="color: #1a1a1a;">Invoice</th>
+                                                <th style="color: #1a1a1a;">Amount</th>
+                                                <th style="color: #1a1a1a;">Method</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for payment, invoice, client in recent_payments %}
+                                            <tr>
+                                                <td style="color: #1a1a1a;">{{ payment.payment_date.strftime('%m/%d/%Y') }}</td>
+                                                <td style="color: #1a1a1a;">
+                                                    {{ client.first_name }} {{ client.last_name }}
+                                                </td>
+                                                <td style="color: #1a1a1a;">
+                                                    <a href="{{ url_for('invoices.view_invoice', id=invoice.id) }}" class="text-primary text-decoration-none">
+                                                        {{ invoice.invoice_number }}
+                                                    </a>
+                                                </td>
+                                                <td style="color: #1a1a1a;">
+                                                    <span class="fw-bold text-success">
+                                                        {% if invoice.currency == 'USD' %}$
+                                                        {% elif invoice.currency == 'EUR' %}€
+                                                        {% elif invoice.currency == 'GBP' %}£
+                                                        {% elif invoice.currency == 'CAD' %}$
+                                                        {% elif invoice.currency == 'NGN' %}₦
+                                                        {% else %}{{ invoice.currency }}
+                                                        {% endif %}{{ "%.0f"|format(payment.amount_paid) }}
+                                                        <small class="text-muted ms-1">{{ invoice.currency }}</small>
+                                                    </span>
+                                                </td>
+                                                <td style="color: #1a1a1a;">
+                                                    <span class="badge bg-light text-dark">{{ payment.payment_method.replace('_', ' ').title() }}</span>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-receipt fa-2x text-muted mb-3"></i>
+                                    <h6 class="text-muted">No recent payments</h6>
+                                    <p class="text-muted small">Recent payment activity will appear here</p>
                                 </div>
                             {% endif %}
                         </div>
