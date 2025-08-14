@@ -64,11 +64,11 @@ def list_invoices():
 def analytics_dashboard():
     """Invoice dashboard with analytics"""
     # Currency breakdown for paid invoices
-    # Currency breakdown - use column reference instead of property
+    # Currency breakdown - use correct column name 'amount'
     currency_stats = db.session.query(
         Invoice.currency,
         func.count(Invoice.id).label('count'),
-        func.sum(Invoice.__table__.c.total_amount).label('total')
+        func.sum(Invoice.amount).label('total')
     ).filter(
         Invoice.law_firm_id == current_user.law_firm_id,
         Invoice.status == 'paid'
@@ -102,12 +102,12 @@ def analytics_dashboard():
     
     monthly_stats.reverse()  # Show oldest to newest
     
-    # Client payment breakdown - use column reference
+    # Client payment breakdown - use correct column name
     client_stats = db.session.query(
         User.first_name,
         User.last_name,
         func.count(Invoice.id).label('invoice_count'),
-        func.sum(Invoice.__table__.c.total_amount).label('total_billed'),
+        func.sum(Invoice.amount).label('total_billed'),
         func.sum(PaymentRecord.amount_paid).label('total_paid')
     ).outerjoin(PaymentRecord, Invoice.id == PaymentRecord.invoice_id)\
      .filter(
@@ -941,9 +941,9 @@ def dashboard():
         pending_count = Invoice.query.filter_by(law_firm_id=current_user.law_firm_id, status='sent').count()
         draft_count = Invoice.query.filter_by(law_firm_id=current_user.law_firm_id, status='draft').count()
         
-        # Calculate total revenue from paid invoices
+        # Calculate total revenue from paid invoices  
         paid_invoices = Invoice.query.filter_by(law_firm_id=current_user.law_firm_id, status='paid').all()
-        total_revenue = sum(float(invoice.total_amount) for invoice in paid_invoices)
+        total_revenue = sum(float(invoice.amount) for invoice in paid_invoices)
         
         # Get recent invoices (last 10)
         recent_invoices = Invoice.query.filter_by(law_firm_id=current_user.law_firm_id)\

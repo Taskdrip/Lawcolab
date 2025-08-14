@@ -22,27 +22,129 @@
                 </div>
             </div>
 
+            <!-- Summary Cards Row -->
+            <div class="row g-3 mb-5">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 bg-success bg-opacity-10 h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-money-bill-wave text-success fa-2x"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="fw-bold text-dark h4 mb-0">
+                                        {% if currency_stats %}
+                                            {{ currency_stats|length }}
+                                        {% else %}
+                                            0
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-muted small">Active Currencies</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 bg-primary bg-opacity-10 h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-chart-line text-primary fa-2x"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="fw-bold text-dark h4 mb-0">
+                                        {% set total_revenue = 0 %}
+                                        {% for stat in currency_stats %}
+                                            {% set total_revenue = total_revenue + (stat.total or 0) %}
+                                        {% endfor %}
+                                        ${{ "%.0f"|format(total_revenue) }}
+                                    </div>
+                                    <div class="text-muted small">Total Revenue</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 bg-info bg-opacity-10 h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-users text-info fa-2x"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="fw-bold text-dark h4 mb-0">
+                                        {% if client_stats %}
+                                            {{ client_stats|length }}
+                                        {% else %}
+                                            0
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-muted small">Active Clients</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 bg-warning bg-opacity-10 h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-calendar-month text-warning fa-2x"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="fw-bold text-dark h4 mb-0">
+                                        {% set current_month_revenue = 0 %}
+                                        {% if monthly_stats and monthly_stats|length > 0 %}
+                                            {{ monthly_stats[-1].count or 0 }}
+                                        {% else %}
+                                            0
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-muted small">This Month</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Currency Breakdown -->
             <div class="row g-4 mb-4">
                 <div class="col-12">
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-white border-bottom">
-                            <h5 class="card-title mb-0" style="color: #1a1a1a;">Revenue by Currency</h5>
+                            <h5 class="card-title mb-0" style="color: #1a1a1a;">
+                                <i class="fas fa-coins me-2 text-primary"></i>Revenue by Currency
+                            </h5>
                         </div>
                         <div class="card-body">
                             {% if currency_stats %}
-                                <div class="row g-3">
+                                <div class="row g-4">
                                     {% for stat in currency_stats %}
-                                    <div class="col-md-6 col-lg-4">
-                                        <div class="p-3 bg-light rounded">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <h6 class="fw-bold text-dark mb-1">{{ stat.currency }}</h6>
-                                                    <small class="text-muted">{{ stat.count }} invoices</small>
+                                    <div class="col-md-6 col-xl-4">
+                                        <div class="card border border-primary bg-primary bg-opacity-5">
+                                            <div class="card-body text-center">
+                                                <div class="display-6 fw-bold text-primary mb-2">
+                                                    {{ stat.currency|currency_symbol }}
                                                 </div>
-                                                <div class="text-end">
-                                                    <div class="fw-bold text-success">
-                                                        {{ stat.currency|currency_symbol }}{{ "%.2f"|format(stat.total or 0) }}
+                                                <h5 class="fw-bold text-dark">{{ stat.currency }}</h5>
+                                                <div class="row g-2 mt-2">
+                                                    <div class="col-6">
+                                                        <div class="bg-white rounded p-2">
+                                                            <div class="fw-bold text-dark">{{ stat.count }}</div>
+                                                            <small class="text-muted">Invoices</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="bg-white rounded p-2">
+                                                            <div class="fw-bold text-success">
+                                                                {{ "%.0f"|format(stat.total or 0) }}
+                                                            </div>
+                                                            <small class="text-muted">Revenue</small>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -51,10 +153,13 @@
                                     {% endfor %}
                                 </div>
                             {% else %}
-                                <div class="text-center py-4">
-                                    <i class="fas fa-chart-pie fa-2x text-muted mb-3"></i>
-                                    <h6 class="text-muted">No paid invoices yet</h6>
-                                    <p class="text-muted small">Currency breakdown will appear here once you have paid invoices</p>
+                                <div class="text-center py-5">
+                                    <i class="fas fa-chart-pie fa-4x text-muted mb-4"></i>
+                                    <h4 class="text-muted mb-3">No Revenue Data Yet</h4>
+                                    <p class="text-muted mb-4">Currency breakdown will appear here once you have paid invoices</p>
+                                    <a href="{{ url_for('invoices.create_invoice') }}" class="btn btn-primary">
+                                        <i class="fas fa-plus me-2"></i>Create First Invoice
+                                    </a>
                                 </div>
                             {% endif %}
                         </div>
