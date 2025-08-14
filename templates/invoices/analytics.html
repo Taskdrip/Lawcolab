@@ -155,9 +155,28 @@
                                                                 {% else %}{{ stat.currency }}
                                                                 {% endif %}{{ "%.0f"|format(stat.total or 0) }}
                                                             </div>
-                                                            <small class="text-muted">Revenue</small>
+                                                            <small class="text-muted">Invoiced</small>
                                                         </div>
                                                     </div>
+                                                </div>
+                                                {% if stat.paid > 0 %}
+                                                <div class="row g-2 mt-1">
+                                                    <div class="col-12">
+                                                        <div class="bg-success bg-opacity-10 rounded p-2 border border-success">
+                                                            <div class="fw-bold text-success h6 mb-0">
+                                                                {% if stat.currency == 'USD' %}$
+                                                                {% elif stat.currency == 'EUR' %}€
+                                                                {% elif stat.currency == 'GBP' %}£
+                                                                {% elif stat.currency == 'CAD' %}$
+                                                                {% elif stat.currency == 'NGN' %}₦
+                                                                {% else %}{{ stat.currency }}
+                                                                {% endif %}{{ "%.0f"|format(stat.paid) }}
+                                                            </div>
+                                                            <small class="text-muted">Payments Received</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
                                                 </div>
                                             </div>
                                         </div>
@@ -202,7 +221,24 @@
                                             <tr>
                                                 <td style="color: #1a1a1a;">{{ month.month }}</td>
                                                 <td style="color: #1a1a1a;">{{ month.count }}</td>
-                                                <td style="color: #1a1a1a;">${{ "%.2f"|format(month.total) }}</td>
+                                                <td style="color: #1a1a1a;">
+                                                    {% if month.currency_totals %}
+                                                        {% for currency, amount in month.currency_totals.items() %}
+                                                            <div class="mb-1">
+                                                                {% if currency == 'USD' %}$
+                                                                {% elif currency == 'EUR' %}€
+                                                                {% elif currency == 'GBP' %}£
+                                                                {% elif currency == 'CAD' %}$
+                                                                {% elif currency == 'NGN' %}₦
+                                                                {% else %}{{ currency }}
+                                                                {% endif %}{{ "%.0f"|format(amount) }}
+                                                                <small class="text-muted">{{ currency }}</small>
+                                                            </div>
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        <span class="text-muted">No payments</span>
+                                                    {% endif %}
+                                                </td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>

@@ -63,18 +63,49 @@ def list_invoices():
 @role_required(['admin', 'team_member'])
 def analytics_dashboard():
     """Invoice dashboard with analytics"""
-    # Currency breakdown for paid invoices
-    # Currency breakdown - use correct column name 'amount'
-    currency_stats = db.session.query(
+    # Currency breakdown - get separate totals for each currency from both invoices and payments
+    # Get invoice totals by currency
+    invoice_stats = db.session.query(
         Invoice.currency,
-        func.count(Invoice.id).label('count'),
-        func.sum(Invoice.amount).label('total')
-    ).filter(
-        Invoice.law_firm_id == current_user.law_firm_id,
-        Invoice.status == 'paid'
-    ).group_by(Invoice.currency).all()
+        func.count(Invoice.id).label('invoice_count'),
+        func.sum(Invoice.amount).label('total_invoiced')
+    ).filter(Invoice.law_firm_id == current_user.law_firm_id)\
+     .group_by(Invoice.currency).all()
     
-    # Monthly payment analytics (last 12 months)
+    # Get payment totals by currency
+    payment_stats = db.session.query(
+        Invoice.currency,
+        func.count(PaymentRecord.id).label('payment_count'),
+        func.sum(PaymentRecord.amount_paid).label('total_paid')
+    ).join(Invoice, PaymentRecord.invoice_id == Invoice.id)\
+     .filter(Invoice.law_firm_id == current_user.law_firm_id)\
+     .group_by(Invoice.currency).all()
+    
+    # Combine currency stats
+    currency_stats = []
+    all_currencies = set()
+    
+    # Get all currencies from invoices
+    for stat in invoice_stats:
+        all_currencies.add(stat.currency)
+    
+    # Get all currencies from payments 
+    for stat in payment_stats:
+        all_currencies.add(stat.currency)
+    
+    # Create combined stats for each currency
+    for currency in all_currencies:
+        invoice_data = next((s for s in invoice_stats if s.currency == currency), None)
+        payment_data = next((s for s in payment_stats if s.currency == currency), None)
+        
+        currency_stats.append({
+            'currency': currency,
+            'count': invoice_data.invoice_count if invoice_data else 0,
+            'total': float(invoice_data.total_invoiced) if invoice_data and invoice_data.total_invoiced else 0.0,
+            'paid': float(payment_data.total_paid) if payment_data and payment_data.total_paid else 0.0
+        })
+    
+    # Monthly payment analytics by currency (last 12 months)
     current_date = datetime.now()
     monthly_stats = []
     for i in range(12):
@@ -85,19 +116,28 @@ def analytics_dashboard():
         else:
             month_end = (month_start + timedelta(days=32)).replace(day=1) - timedelta(days=1)
         
-        payments = db.session.query(
+        # Get payments by currency for this month
+        payments_by_currency = db.session.query(
+            Invoice.currency,
             func.count(PaymentRecord.id).label('count'),
             func.sum(PaymentRecord.amount_paid).label('total')
-        ).join(Invoice).filter(
+        ).join(Invoice, PaymentRecord.invoice_id == Invoice.id).filter(
             Invoice.law_firm_id == current_user.law_firm_id,
             PaymentRecord.payment_date >= month_start,
             PaymentRecord.payment_date <= month_end
-        ).first()
+        ).group_by(Invoice.currency).all()
+        
+        # Create currency breakdown for this month
+        currency_totals = {}
+        total_count = 0
+        for payment in payments_by_currency:
+            currency_totals[payment.currency] = float(payment.total) if payment.total else 0.0
+            total_count += payment.count if payment.count else 0
         
         monthly_stats.append({
             'month': target_date.strftime('%B %Y'),
-            'count': payments.count if payments and payments.count else 0,
-            'total': float(payments.total) if payments and payments.total else 0.0
+            'count': total_count,
+            'currency_totals': currency_totals
         })
     
     monthly_stats.reverse()  # Show oldest to newest
