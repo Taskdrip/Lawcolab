@@ -537,7 +537,11 @@ def download_payment_pdf(payment_id):
     payment = PaymentRecord.query.get_or_404(payment_id)
     invoice = Invoice.query.get(payment.invoice_id)
     
-    # Security check
+    # Security check - handle None case
+    if not invoice:
+        flash('Payment not found.', 'error')
+        return redirect(url_for('invoices.list_invoices'))
+        
     if current_user.is_client() and invoice.client_id != current_user.id:
         flash('Access denied.', 'error')
         return redirect(url_for('invoices.list_invoices'))
@@ -546,9 +550,9 @@ def download_payment_pdf(payment_id):
         flash('Access denied.', 'error')
         return redirect(url_for('invoices.list_invoices'))
     
-    # Get law firm details
-    law_firm = LawFirm.query.get(invoice.law_firm_id)
-    client = User.query.get(invoice.client_id)
+    # Get law firm details - handle None cases
+    law_firm = LawFirm.query.get(invoice.law_firm_id) if invoice.law_firm_id else None
+    client = User.query.get(invoice.client_id) if invoice.client_id else None
     
     # Generate Professional Payment Receipt PDF
     buffer = io.BytesIO()
