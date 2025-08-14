@@ -782,7 +782,7 @@ def mark_paid(id):
         payment_method = request.form.get('payment_method', 'bank_transfer')
         payment_reference = request.form.get('payment_reference', '')
         payment_date = request.form.get('payment_date')
-        amount_paid = request.form.get('amount_paid')
+        amount_paid = request.form.get('payment_amount')
         notes = request.form.get('notes', '')
         
         # Parse payment date

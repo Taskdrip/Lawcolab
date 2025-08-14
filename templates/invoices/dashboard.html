@@ -298,7 +298,7 @@
                                                                     <h5 class="modal-title" id="markPaymentModalLabel{{ invoice.id }}">Mark Payment for Invoice #{{ invoice.invoice_number }}</h5>
                                                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                                 </div>
-                                                                <form method="POST" action="{{ url_for('invoices.mark_invoice_paid', id=invoice.id) }}">
+                                                                <form method="POST" action="{{ url_for('invoices.mark_paid', id=invoice.id) }}">
                                                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                                     <div class="modal-body">
                                                                         <div class="mb-3">
