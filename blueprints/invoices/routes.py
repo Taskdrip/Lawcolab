@@ -123,7 +123,7 @@ def analytics_dashboard():
         .order_by(PaymentRecord.payment_date.desc())\
         .limit(10).all()
     
-    return render_template('invoices/dashboard.html',
+    return render_template('invoices/analytics.html',
                          currency_stats=currency_stats,
                          monthly_stats=monthly_stats,
                          client_stats=client_stats,
