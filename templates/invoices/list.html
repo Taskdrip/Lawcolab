@@ -291,6 +291,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <form method="POST" style="display: inline;" id="sendInvoiceForm">
+                    {{ csrf_token() }}
                     <button type="submit" class="btn btn-primary">Send Invoice</button>
                 </form>
             </div>
@@ -307,6 +308,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" id="markPaidForm">
+                {{ csrf_token() }}
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Payment Date</label>
@@ -349,6 +351,9 @@ function sendInvoice(invoiceId) {
 }
 
 function markPaid(invoiceId) {
+    // Set today's date as default
+    document.querySelector('#markPaidModal input[name="payment_date"]').value = new Date().toISOString().split('T')[0];
+    // Set form action
     document.getElementById('markPaidForm').action = '{{ url_for("invoices.mark_paid", id=0) }}'.replace('0', invoiceId);
     new bootstrap.Modal(document.getElementById('markPaidModal')).show();
 }

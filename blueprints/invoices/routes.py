@@ -812,13 +812,20 @@ def mark_paid(id):
         
         db.session.add(payment)
         
-        # Create notification (simplified for now to avoid errors)
+        # Create notification with proper currency display
         try:
+            # Get proper currency symbol for notification
+            currency_symbol = '₦' if invoice.currency == 'NGN' else '$'
+            if invoice.currency == 'EUR':
+                currency_symbol = '€'
+            elif invoice.currency == 'GBP':
+                currency_symbol = '£'
+                
             create_invoice_notification(
                 invoice=invoice,
                 notification_type='payment_received',
                 recipient_type='both',
-                message=f'Payment received for invoice {invoice.invoice_number}. Amount: ${amount_paid}'
+                message=f'Payment received for invoice {invoice.invoice_number}. Amount: {currency_symbol}{amount_paid:.0f} {invoice.currency}'
             )
         except Exception as notif_error:
             # Continue even if notification fails
