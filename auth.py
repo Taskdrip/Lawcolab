@@ -136,3 +136,34 @@ def change_password():
             flash('Current password is incorrect.', 'error')
     
     return render_template('auth/change_password.html', form=form)
+
+@auth_bp.route('/edit_address', methods=['GET', 'POST'])
+@login_required
+def edit_address():
+    from forms import AddressForm
+    
+    form = AddressForm()
+    
+    if form.validate_on_submit():
+        # Update user address fields
+        current_user.address_line_1 = form.address_line_1.data
+        current_user.address_line_2 = form.address_line_2.data
+        current_user.city = form.city.data
+        current_user.state_province = form.state_province.data
+        current_user.postal_code = form.postal_code.data
+        current_user.country = form.country.data
+        
+        db.session.commit()
+        flash('Address updated successfully!', 'success')
+        return redirect(url_for('auth.profile'))
+    
+    # Pre-populate form with existing address data
+    if request.method == 'GET':
+        form.address_line_1.data = current_user.address_line_1
+        form.address_line_2.data = current_user.address_line_2
+        form.city.data = current_user.city
+        form.state_province.data = current_user.state_province
+        form.postal_code.data = current_user.postal_code
+        form.country.data = current_user.country
+    
+    return render_template('auth/edit_address.html', form=form)

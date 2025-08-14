@@ -41,6 +41,14 @@ class User(UserMixin, db.Model):
     education = db.Column(db.Text, nullable=True)
     certifications = db.Column(db.Text, nullable=True)
     
+    # Enhanced address fields for professional invoices
+    address_line_1 = db.Column(db.String(200))
+    address_line_2 = db.Column(db.String(200))
+    city = db.Column(db.String(100))
+    state_province = db.Column(db.String(100))
+    postal_code = db.Column(db.String(20))
+    country = db.Column(db.String(100))
+    
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 

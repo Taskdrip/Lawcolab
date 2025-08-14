@@ -305,82 +305,179 @@ def download_invoice_pdf(id):
         flash('Invoice data not complete.', 'error')
         return redirect(url_for('invoices.list_invoices'))
     
-    # Generate PDF using ReportLab
+    # Generate Professional Canva-style PDF using ReportLab
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4)
-    story = []
-    styles = getSampleStyleSheet()
     
-    # Custom styles
-    title_style = ParagraphStyle(
-        'CustomTitle',
-        parent=styles['Title'],
-        fontSize=24,
-        spaceAfter=30,
-        textColor=HexColor('#667eea')
-    )
+    # Create canvas for custom drawing
+    from reportlab.pdfgen import canvas as pdf_canvas
+    from reportlab.lib.units import mm
     
-    # Law firm header
-    story.append(Paragraph(f"<b>{law_firm.name if law_firm and law_firm.name else 'Law Firm'}</b>", title_style))
+    c = pdf_canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+    
+    # Define colors
+    primary_blue = HexColor('#667eea')
+    secondary_purple = HexColor('#764ba2')
+    dark_gray = HexColor('#2c3e50')
+    light_gray = HexColor('#ecf0f1')
+    success_green = HexColor('#27ae60')
+    
+    # Header with gradient-like design
+    c.setFillColor(primary_blue)
+    c.rect(0, height - 120, width, 120, fill=1, stroke=0)
+    
+    # LawColab branding in header
+    c.setFillColor(HexColor('#ffffff'))
+    c.setFont("Helvetica-Bold", 32)
+    c.drawString(40, height - 60, "LawColab")
+    c.setFont("Helvetica", 12)
+    c.drawString(40, height - 80, "Professional Legal Invoice System")
+    
+    # Invoice number in top right corner
+    c.setFont("Helvetica-Bold", 16)
+    invoice_text = f"INVOICE #{invoice.invoice_number}"
+    text_width = c.stringWidth(invoice_text, "Helvetica-Bold", 16)
+    c.drawRightString(width - 40, height - 50, invoice_text)
+    
+    # Invoice date info
+    c.setFont("Helvetica", 10)
+    c.drawRightString(width - 40, height - 70, f"Date: {invoice.created_at.strftime('%B %d, %Y')}")
+    c.drawRightString(width - 40, height - 85, f"Due: {invoice.due_date.strftime('%B %d, %Y')}")
+    
+    # Law firm details section
+    y_position = height - 160
+    c.setFillColor(dark_gray)
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(40, y_position, "FROM:")
+    
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(40, y_position - 25, law_firm.name if law_firm and law_firm.name else 'Law Firm')
+    
+    y_position -= 45
     if law_firm and law_firm.address:
-        story.append(Paragraph(law_firm.address, styles['Normal']))
+        c.setFont("Helvetica", 10)
+        c.drawString(40, y_position, law_firm.address)
+        y_position -= 15
+    
     if law_firm and law_firm.phone:
-        story.append(Paragraph(f"Phone: {law_firm.phone}", styles['Normal']))
+        c.drawString(40, y_position, f"Phone: {law_firm.phone}")
+        y_position -= 15
+        
     if law_firm and law_firm.email:
-        story.append(Paragraph(f"Email: {law_firm.email}", styles['Normal']))
+        c.drawString(40, y_position, f"Email: {law_firm.email}")
+        y_position -= 15
     
-    story.append(Spacer(1, 30))
+    # Client details section
+    bill_to_y = height - 160
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(width/2 + 20, bill_to_y, "BILL TO:")
     
-    # Invoice details
-    story.append(Paragraph(f"<b>INVOICE #{invoice.invoice_number}</b>", styles['Heading2']))
-    story.append(Paragraph(f"Date: {invoice.created_at.strftime('%B %d, %Y')}", styles['Normal']))
-    story.append(Paragraph(f"Due Date: {invoice.due_date.strftime('%B %d, %Y')}", styles['Normal']))
-    
-    story.append(Spacer(1, 20))
-    
-    # Client details
-    story.append(Paragraph("<b>Bill To:</b>", styles['Heading3']))
     client_name = f"{client.first_name if client and client.first_name else ''} {client.last_name if client and client.last_name else ''}".strip()
-    story.append(Paragraph(client_name or "Client", styles['Normal']))
+    if client and hasattr(client, 'company_name') and client.company_name:
+        client_name = client.company_name
+    
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(width/2 + 20, bill_to_y - 25, client_name or "Client")
+    
+    bill_to_y -= 45
     if client and client.email:
-        story.append(Paragraph(client.email, styles['Normal']))
+        c.setFont("Helvetica", 10)
+        c.drawString(width/2 + 20, bill_to_y, client.email)
+        bill_to_y -= 15
     
-    story.append(Spacer(1, 20))
+    # Client address if available
+    if client and hasattr(client, 'address_line_1') and client.address_line_1:
+        c.drawString(width/2 + 20, bill_to_y, client.address_line_1)
+        bill_to_y -= 15
+        if client.city and client.state_province:
+            c.drawString(width/2 + 20, bill_to_y, f"{client.city}, {client.state_province} {client.postal_code or ''}")
+            bill_to_y -= 15
+        if client.country:
+            c.drawString(width/2 + 20, bill_to_y, client.country)
+            bill_to_y -= 15
     
-    # Invoice items table
-    data = [['Description', 'Quantity', 'Rate', 'Amount']]
-    for item in invoice.line_items:
-        currency_symbol = {'USD': '$', 'EUR': '€', 'GBP': '£', 'CAD': '$', 'NGN': '₦'}.get(invoice.currency, '$')
-        data.append([
-            item.description,
-            f"{item.quantity:.2f}",
-            f"{currency_symbol}{item.rate:.2f}",
-            f"{currency_symbol}{item.amount:.2f}"
-        ])
+    # Items table header
+    table_y = y_position - 60
+    c.setFillColor(primary_blue)
+    c.rect(40, table_y - 25, width - 80, 25, fill=1, stroke=0)
     
-    # Add total row
+    # Table headers
+    c.setFillColor(HexColor('#ffffff'))
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(50, table_y - 18, "DESCRIPTION")
+    c.drawString(300, table_y - 18, "QTY")
+    c.drawString(350, table_y - 18, "RATE")
+    c.drawString(450, table_y - 18, "AMOUNT")
+    
+    # Get currency symbol
     currency_symbol = {'USD': '$', 'EUR': '€', 'GBP': '£', 'CAD': '$', 'NGN': '₦'}.get(invoice.currency, '$')
-    data.append(['', '', 'Total:', f"{currency_symbol}{invoice.total_amount:.2f}"])
     
-    table = Table(data)
-    table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), HexColor('#667eea')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), HexColor('#ffffff')),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 12),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), HexColor('#f8f9fc')),
-        ('GRID', (0, 0), (-1, -1), 1, black)
-    ]))
+    # Items
+    c.setFillColor(dark_gray)
+    item_y = table_y - 40
+    subtotal = 0
     
-    story.append(table)
-    story.append(Spacer(1, 30))
+    for item in invoice.line_items:
+        c.setFont("Helvetica", 10)
+        c.drawString(50, item_y, item.description[:40] + "..." if len(item.description) > 40 else item.description)
+        c.drawString(300, item_y, f"{item.quantity:.0f}")
+        c.drawString(350, item_y, f"{currency_symbol}{item.rate:.2f}")
+        c.drawString(450, item_y, f"{currency_symbol}{item.amount:.2f}")
+        subtotal += float(item.amount)
+        item_y -= 20
     
-    # Footer
-    story.append(Paragraph("<i>Generated by Taskdrip for legal professionals worldwide</i>", styles['Normal']))
+    # Subtotal and total section
+    total_section_y = item_y - 20
+    c.setFillColor(light_gray)
+    c.rect(300, total_section_y - 40, width - 340, 40, fill=1, stroke=0)
     
-    doc.build(story)
+    c.setFillColor(dark_gray)
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(320, total_section_y - 20, "TOTAL:")
+    c.setFont("Helvetica-Bold", 14)
+    c.setFillColor(success_green)
+    total_text = f"{currency_symbol}{invoice.total_amount:.2f} {invoice.currency}"
+    c.drawRightString(width - 50, total_section_y - 20, total_text)
+    
+    # Payment instructions
+    payment_y = total_section_y - 80
+    c.setFillColor(dark_gray)
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(40, payment_y, "PAYMENT INFORMATION:")
+    
+    payment_y -= 20
+    c.setFont("Helvetica", 9)
+    if law_firm and law_firm.bank_name:
+        c.drawString(40, payment_y, f"Bank: {law_firm.bank_name}")
+        payment_y -= 12
+    if law_firm and law_firm.account_number:
+        c.drawString(40, payment_y, f"Account: {law_firm.account_number}")
+        payment_y -= 12
+    if law_firm and law_firm.routing_number:
+        c.drawString(40, payment_y, f"Routing: {law_firm.routing_number}")
+        payment_y -= 12
+    
+    # Footer with LawColab branding
+    c.setFillColor(primary_blue)
+    c.rect(0, 0, width, 50, fill=1, stroke=0)
+    
+    c.setFillColor(HexColor('#ffffff'))
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(40, 30, "LawColab")
+    c.setFont("Helvetica", 8)
+    c.drawString(40, 15, "Powered by Taskdrip - Professional invoice system for lawyers globally")
+    
+    # Invoice status indicator
+    if invoice.status == 'paid':
+        c.setFillColor(success_green)
+        c.setFont("Helvetica-Bold", 12)
+        c.drawRightString(width - 50, 25, "PAID")
+    elif invoice.status == 'sent':
+        c.setFillColor(HexColor('#f39c12'))
+        c.setFont("Helvetica-Bold", 12)
+        c.drawRightString(width - 50, 25, "PENDING")
+    
+    c.save()
     pdf = buffer.getvalue()
     buffer.close()
     
@@ -411,64 +508,120 @@ def download_payment_pdf(payment_id):
     law_firm = LawFirm.query.get(invoice.law_firm_id)
     client = User.query.get(invoice.client_id)
     
-    # Generate PDF using ReportLab
+    # Generate Professional Payment Receipt PDF
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4)
-    story = []
-    styles = getSampleStyleSheet()
+    from reportlab.pdfgen import canvas as pdf_canvas
     
-    # Custom styles
-    title_style = ParagraphStyle(
-        'CustomTitle',
-        parent=styles['Title'],
-        fontSize=24,
-        spaceAfter=30,
-        textColor=HexColor('#28a745')
-    )
+    c = pdf_canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
     
-    # Law firm header
-    story.append(Paragraph(f"<b>{law_firm.name}</b>", title_style))
-    if law_firm.address:
-        story.append(Paragraph(law_firm.address, styles['Normal']))
+    # Define colors
+    success_green = HexColor('#27ae60')
+    primary_blue = HexColor('#667eea')
+    dark_gray = HexColor('#2c3e50')
+    light_green = HexColor('#d5f4e6')
     
-    story.append(Spacer(1, 30))
+    # Header with green theme for payment receipt
+    c.setFillColor(success_green)
+    c.rect(0, height - 120, width, 120, fill=1, stroke=0)
     
-    # Payment receipt details
-    story.append(Paragraph("<b>PAYMENT RECEIPT</b>", styles['Heading2']))
-    story.append(Paragraph(f"Receipt Date: {payment.payment_date.strftime('%B %d, %Y')}", styles['Normal']))
-    story.append(Paragraph(f"Invoice: #{invoice.invoice_number}", styles['Normal']))
+    # LawColab branding
+    c.setFillColor(HexColor('#ffffff'))
+    c.setFont("Helvetica-Bold", 32)
+    c.drawString(40, height - 60, "LawColab")
+    c.setFont("Helvetica", 12)
+    c.drawString(40, height - 80, "Payment Receipt")
     
-    story.append(Spacer(1, 20))
+    # PAID stamp
+    c.setFont("Helvetica-Bold", 20)
+    c.drawRightString(width - 40, height - 50, "PAID")
+    c.setFont("Helvetica", 10)
+    c.drawRightString(width - 40, height - 70, f"Date: {payment.payment_date.strftime('%B %d, %Y')}")
     
-    # Client details
-    story.append(Paragraph("<b>Received From:</b>", styles['Heading3']))
-    story.append(Paragraph(f"{client.first_name} {client.last_name}", styles['Normal']))
+    # Receipt details section
+    y_position = height - 160
+    c.setFillColor(dark_gray)
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(40, y_position, "PAYMENT RECEIPT")
     
-    story.append(Spacer(1, 20))
+    y_position -= 30
+    c.setFont("Helvetica", 11)
+    c.drawString(40, y_position, f"Receipt for Invoice: #{invoice.invoice_number}")
+    y_position -= 15
+    c.drawString(40, y_position, f"Payment Date: {payment.payment_date.strftime('%B %d, %Y')}")
+    
+    # Law firm section
+    y_position -= 40
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(40, y_position, "RECEIVED BY:")
+    y_position -= 20
+    c.setFont("Helvetica", 10)
+    c.drawString(40, y_position, law_firm.name if law_firm and law_firm.name else 'Law Firm')
+    if law_firm and law_firm.address:
+        y_position -= 15
+        c.drawString(40, y_position, law_firm.address)
+    
+    # Client section
+    client_y = height - 160
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(width/2 + 20, client_y, "PAID BY:")
+    client_y -= 20
+    
+    client_name = f"{client.first_name if client and client.first_name else ''} {client.last_name if client and client.last_name else ''}".strip()
+    if client and hasattr(client, 'company_name') and client.company_name:
+        client_name = client.company_name
+    
+    c.setFont("Helvetica", 10)
+    c.drawString(width/2 + 20, client_y, client_name or "Client")
+    if client and client.email:
+        client_y -= 15
+        c.drawString(width/2 + 20, client_y, client.email)
+    
+    # Payment amount box
+    amount_y = y_position - 60
+    c.setFillColor(light_green)
+    c.rect(40, amount_y - 60, width - 80, 60, fill=1, stroke=1)
+    
+    c.setFillColor(success_green)
+    c.setFont("Helvetica-Bold", 16)
+    currency_symbol = {'USD': '$', 'EUR': '€', 'GBP': '£', 'CAD': '$', 'NGN': '₦'}.get(invoice.currency, '$')
+    amount_text = f"{currency_symbol}{payment.amount_paid:.2f} {invoice.currency}"
+    
+    # Center the amount
+    text_width = c.stringWidth(amount_text, "Helvetica-Bold", 16)
+    c.drawString((width - text_width) / 2, amount_y - 25, amount_text)
+    
+    c.setFont("Helvetica", 12)
+    c.setFillColor(dark_gray)
+    label_text = "AMOUNT PAID"
+    label_width = c.stringWidth(label_text, "Helvetica", 12)
+    c.drawString((width - label_width) / 2, amount_y - 45, label_text)
     
     # Payment details
-    currency_symbol = {'USD': '$', 'EUR': '€', 'GBP': '£', 'CAD': '$', 'NGN': '₦'}.get(invoice.currency, '$')
-    payment_data = [
-        ['Payment Amount:', f"{currency_symbol}{payment.amount_paid:.2f}"],
-        ['Payment Method:', payment.payment_method or 'Not specified'],
-        ['Reference:', payment.payment_reference or 'N/A']
-    ]
+    details_y = amount_y - 100
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(40, details_y, "PAYMENT DETAILS:")
     
-    payment_table = Table(payment_data)
-    payment_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), HexColor('#f8f9fc')),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-        ('GRID', (0, 0), (-1, -1), 1, black)
-    ]))
+    details_y -= 20
+    c.setFont("Helvetica", 10)
+    if payment.payment_method:
+        c.drawString(40, details_y, f"Method: {payment.payment_method}")
+        details_y -= 15
+    if payment.payment_reference:
+        c.drawString(40, details_y, f"Reference: {payment.payment_reference}")
+        details_y -= 15
     
-    story.append(payment_table)
-    story.append(Spacer(1, 30))
+    # Footer with LawColab branding
+    c.setFillColor(success_green)
+    c.rect(0, 0, width, 50, fill=1, stroke=0)
     
-    # Footer
-    story.append(Paragraph("<i>Payment receipt generated by Taskdrip</i>", styles['Normal']))
+    c.setFillColor(HexColor('#ffffff'))
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(40, 30, "LawColab")
+    c.setFont("Helvetica", 8)
+    c.drawString(40, 15, "Payment receipt generated by Taskdrip - Trusted by legal professionals worldwide")
     
-    doc.build(story)
+    c.save()
     pdf = buffer.getvalue()
     buffer.close()
     

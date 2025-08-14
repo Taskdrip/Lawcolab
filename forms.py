@@ -124,3 +124,12 @@ class LawFirmEditForm(FlaskForm):
     address = TextAreaField('Address', validators=[Optional(), Length(max=500)])
     website = StringField('Website', validators=[Optional(), Length(max=200)])
     practice_areas = TextAreaField('Practice Areas (one per line)', validators=[Optional()])
+
+class AddressForm(FlaskForm):
+    address_line_1 = StringField('Address Line 1', validators=[Optional(), Length(max=200)])
+    address_line_2 = StringField('Address Line 2 (Optional)', validators=[Optional(), Length(max=200)])
+    city = StringField('City', validators=[Optional(), Length(max=100)])
+    state_province = StringField('State/Province', validators=[Optional(), Length(max=100)])
+    postal_code = StringField('Postal Code', validators=[Optional(), Length(max=20)])
+    country = StringField('Country', validators=[Optional(), Length(max=100)])
+    submit = StringField()

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Update Address - LawColab{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom-0">
+                    <h4 class="card-title mb-0" style="color: #1a1a1a;">Update Address Information</h4>
+                    <p class="text-muted mb-0 mt-2">This information will appear on your invoices and receipts</p>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.address_line_1.label(class="form-label fw-semibold", style="color: #1a1a1a;") }}
+                            {{ form.address_line_1(class="form-control") }}
+                            {% if form.address_line_1.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.address_line_1.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.address_line_2.label(class="form-label fw-semibold", style="color: #1a1a1a;") }}
+                            {{ form.address_line_2(class="form-control") }}
+                            {% if form.address_line_2.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.address_line_2.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.city.label(class="form-label fw-semibold", style="color: #1a1a1a;") }}
+                                {{ form.city(class="form-control") }}
+                                {% if form.city.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.city.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.state_province.label(class="form-label fw-semibold", style="color: #1a1a1a;") }}
+                                {{ form.state_province(class="form-control") }}
+                                {% if form.state_province.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.state_province.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.postal_code.label(class="form-label fw-semibold", style="color: #1a1a1a;") }}
+                                {{ form.postal_code(class="form-control") }}
+                                {% if form.postal_code.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.postal_code.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.country.label(class="form-label fw-semibold", style="color: #1a1a1a;") }}
+                                {{ form.country(class="form-control") }}
+                                {% if form.country.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.country.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('auth.profile') }}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Update Address
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
