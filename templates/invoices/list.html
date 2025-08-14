@@ -149,7 +149,15 @@
                                     </td>
                                     {% endif %}
                                     <td>
-                                        <div class="fw-bold">${{ "%.2f"|format(invoice.total_amount) }}</div>
+                                        <div class="fw-bold">
+                                            {% if invoice.currency == 'USD' %}$
+                                            {% elif invoice.currency == 'EUR' %}€
+                                            {% elif invoice.currency == 'GBP' %}£
+                                            {% elif invoice.currency == 'CAD' %}$
+                                            {% elif invoice.currency == 'NGN' %}₦
+                                            {% else %}{{ invoice.currency }}
+                                            {% endif %}{{ "%.0f"|format(invoice.total_amount) }}
+                                        </div>
                                         <small class="text-muted d-block d-md-none">{{ invoice.client.display_name if not current_user.is_client() else '' }}</small>
                                         <small class="text-muted">{{ invoice.currency }}</small>
                                     </td>
