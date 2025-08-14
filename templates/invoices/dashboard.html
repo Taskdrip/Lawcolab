@@ -120,9 +120,9 @@
                             <div class="row g-3">
                                 {% for stat in currency_stats %}
                                 <div class="col-md-6 col-lg-4">
-                                    <div class="card border border-primary bg-primary bg-opacity-5 h-100">
-                                        <div class="card-body text-center p-3">
-                                            <div class="display-6 fw-bold text-primary mb-2">
+                                    <div class="card border-0 shadow-sm h-100" style="background: #ffffff;">
+                                        <div class="card-body text-center p-4">
+                                            <div class="display-6 fw-bold mb-2" style="color: #1a1a1a;">
                                                 {% if stat.currency == 'USD' %}$
                                                 {% elif stat.currency == 'EUR' %}€
                                                 {% elif stat.currency == 'GBP' %}£
@@ -131,16 +131,16 @@
                                                 {% else %}{{ stat.currency }}
                                                 {% endif %}
                                             </div>
-                                            <h6 class="fw-bold text-dark mb-2">{{ stat.currency }}</h6>
+                                            <h6 class="fw-bold mb-3" style="color: #1a1a1a;">{{ stat.currency }}</h6>
                                             <div class="row g-2">
                                                 <div class="col-6">
-                                                    <div class="bg-white rounded p-2 border">
-                                                        <div class="fw-bold text-dark h6 mb-0">{{ stat.count }}</div>
+                                                    <div class="rounded p-3 border" style="background: #f8f9fa;">
+                                                        <div class="fw-bold h6 mb-0" style="color: #1a1a1a;">{{ stat.count }}</div>
                                                         <small class="text-muted">Invoices</small>
                                                     </div>
                                                 </div>
                                                 <div class="col-6">
-                                                    <div class="bg-white rounded p-2 border">
+                                                    <div class="rounded p-3 border" style="background: #f8f9fa;">
                                                         <div class="fw-bold text-success h6 mb-0">
                                                             {% if stat.currency == 'USD' %}$
                                                             {% elif stat.currency == 'EUR' %}€
@@ -155,9 +155,9 @@
                                                 </div>
                                             </div>
                                             {% if stat.total_paid > 0 %}
-                                            <div class="row g-2 mt-1">
+                                            <div class="row g-2 mt-2">
                                                 <div class="col-12">
-                                                    <div class="bg-success bg-opacity-10 rounded p-2 border border-success">
+                                                    <div class="rounded p-3 border" style="background: #e8f5e8;">
                                                         <div class="fw-bold text-success h6 mb-0">
                                                             {% if stat.currency == 'USD' %}$
                                                             {% elif stat.currency == 'EUR' %}€
