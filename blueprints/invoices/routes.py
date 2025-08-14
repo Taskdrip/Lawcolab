@@ -102,14 +102,15 @@ def analytics_dashboard():
     
     monthly_stats.reverse()  # Show oldest to newest
     
-    # Client payment breakdown - use correct column name
+    # Client payment breakdown - fix cartesian product with proper join
     client_stats = db.session.query(
         User.first_name,
         User.last_name,
         func.count(Invoice.id).label('invoice_count'),
         func.sum(Invoice.amount).label('total_billed'),
         func.sum(PaymentRecord.amount_paid).label('total_paid')
-    ).outerjoin(PaymentRecord, Invoice.id == PaymentRecord.invoice_id)\
+    ).join(Invoice, Invoice.client_id == User.id)\
+     .outerjoin(PaymentRecord, Invoice.id == PaymentRecord.invoice_id)\
      .filter(
         Invoice.law_firm_id == current_user.law_firm_id,
         User.role == 'client'
@@ -696,7 +697,7 @@ def update_bank_details():
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)})
 
-@invoices_bp.route('/<int:id>/mark-paid', methods=['POST'])
+@invoices_bp.route('/<int:id>/mark-paid', methods=['POST', 'GET'])
 @login_required
 def mark_paid(id):
     """Mark invoice as paid - available to law firm staff and clients"""

@@ -3,7 +3,7 @@
 {% block title %}Invoice Analytics - LawColab{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-2" style="max-height: 100vh; overflow-y: auto;">
     <div class="row">
         <div class="col-12">
             <!-- Header -->
@@ -23,7 +23,7 @@
             </div>
 
             <!-- Summary Cards Row -->
-            <div class="row g-3 mb-5">
+            <div class="row g-3 mb-3">
                 <div class="col-xl-3 col-md-6">
                     <div class="card border-0 bg-success bg-opacity-10 h-100">
                         <div class="card-body">
@@ -112,7 +112,7 @@
             </div>
 
             <!-- Currency Breakdown -->
-            <div class="row g-4 mb-4">
+            <div class="row g-3 mb-3">
                 <div class="col-12">
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-white border-bottom">
@@ -126,22 +126,34 @@
                                     {% for stat in currency_stats %}
                                     <div class="col-md-6 col-xl-4">
                                         <div class="card border border-primary bg-primary bg-opacity-5">
-                                            <div class="card-body text-center">
+                                            <div class="card-body text-center p-3">
                                                 <div class="display-6 fw-bold text-primary mb-2">
-                                                    {{ stat.currency|currency_symbol }}
+                                                    {% if stat.currency == 'USD' %}$
+                                                    {% elif stat.currency == 'EUR' %}€
+                                                    {% elif stat.currency == 'GBP' %}£
+                                                    {% elif stat.currency == 'CAD' %}$
+                                                    {% elif stat.currency == 'NGN' %}₦
+                                                    {% else %}{{ stat.currency }}
+                                                    {% endif %}
                                                 </div>
-                                                <h5 class="fw-bold text-dark">{{ stat.currency }}</h5>
-                                                <div class="row g-2 mt-2">
+                                                <h6 class="fw-bold text-dark mb-2">{{ stat.currency }}</h6>
+                                                <div class="row g-2">
                                                     <div class="col-6">
-                                                        <div class="bg-white rounded p-2">
-                                                            <div class="fw-bold text-dark">{{ stat.count }}</div>
+                                                        <div class="bg-white rounded p-2 border">
+                                                            <div class="fw-bold text-dark h6 mb-0">{{ stat.count }}</div>
                                                             <small class="text-muted">Invoices</small>
                                                         </div>
                                                     </div>
                                                     <div class="col-6">
-                                                        <div class="bg-white rounded p-2">
-                                                            <div class="fw-bold text-success">
-                                                                {{ "%.0f"|format(stat.total or 0) }}
+                                                        <div class="bg-white rounded p-2 border">
+                                                            <div class="fw-bold text-success h6 mb-0">
+                                                                {% if stat.currency == 'USD' %}$
+                                                                {% elif stat.currency == 'EUR' %}€
+                                                                {% elif stat.currency == 'GBP' %}£
+                                                                {% elif stat.currency == 'CAD' %}$
+                                                                {% elif stat.currency == 'NGN' %}₦
+                                                                {% else %}{{ stat.currency }}
+                                                                {% endif %}{{ "%.0f"|format(stat.total or 0) }}
                                                             </div>
                                                             <small class="text-muted">Revenue</small>
                                                         </div>
@@ -168,7 +180,7 @@
             </div>
 
             <!-- Monthly Trends -->
-            <div class="row g-4 mb-4">
+            <div class="row g-3 mb-3">
                 <div class="col-12">
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-white border-bottom">
@@ -209,7 +221,7 @@
             </div>
 
             <!-- Top Clients -->
-            <div class="row g-4">
+            <div class="row g-3 mb-2">
                 <div class="col-12">
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-white border-bottom">
