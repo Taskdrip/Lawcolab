@@ -976,15 +976,69 @@ def dashboard():
                              paid_this_month=0)
         
     else:
-        # Law firm dashboard - full analytics
+        # Law firm dashboard - full analytics with multi-currency support
         total_invoices = Invoice.query.filter_by(law_firm_id=current_user.law_firm_id).count()
         paid_count = Invoice.query.filter_by(law_firm_id=current_user.law_firm_id, status='paid').count()
         pending_count = Invoice.query.filter_by(law_firm_id=current_user.law_firm_id, status='sent').count()
         draft_count = Invoice.query.filter_by(law_firm_id=current_user.law_firm_id, status='draft').count()
         
-        # Calculate total revenue from paid invoices  
-        paid_invoices = Invoice.query.filter_by(law_firm_id=current_user.law_firm_id, status='paid').all()
-        total_revenue = sum(float(invoice.amount) for invoice in paid_invoices)
+        # Multi-currency revenue breakdown - get separate totals for each currency
+        # Get invoice totals by currency
+        invoice_stats = db.session.query(
+            Invoice.currency,
+            func.count(Invoice.id).label('invoice_count'),
+            func.sum(Invoice.amount).label('total_invoiced')
+        ).filter(Invoice.law_firm_id == current_user.law_firm_id)\
+         .group_by(Invoice.currency).all()
+        
+        # Get payment totals by currency
+        payment_stats = db.session.query(
+            Invoice.currency,
+            func.count(PaymentRecord.id).label('payment_count'),
+            func.sum(PaymentRecord.amount_paid).label('total_paid')
+        ).join(Invoice, PaymentRecord.invoice_id == Invoice.id)\
+         .filter(Invoice.law_firm_id == current_user.law_firm_id)\
+         .group_by(Invoice.currency).all()
+        
+        # Combine currency stats
+        currency_stats = []
+        all_currencies = set()
+        total_revenue_usd_equivalent = 0  # For legacy compatibility
+        
+        # Get all currencies from invoices
+        for stat in invoice_stats:
+            all_currencies.add(stat.currency)
+            
+        # Get all currencies from payments 
+        for stat in payment_stats:
+            all_currencies.add(stat.currency)
+        
+        # Create combined stats for each currency
+        for currency in all_currencies:
+            invoice_data = next((s for s in invoice_stats if s.currency == currency), None)
+            payment_data = next((s for s in payment_stats if s.currency == currency), None)
+            
+            total_invoiced = float(invoice_data.total_invoiced) if invoice_data and invoice_data.total_invoiced else 0.0
+            total_paid = float(payment_data.total_paid) if payment_data and payment_data.total_paid else 0.0
+            
+            # Add to USD equivalent for legacy total_revenue field (using rough conversion)
+            if currency == 'USD':
+                total_revenue_usd_equivalent += total_paid
+            elif currency == 'NGN':
+                total_revenue_usd_equivalent += total_paid / 1500  # Rough conversion
+            elif currency == 'EUR':
+                total_revenue_usd_equivalent += total_paid * 1.1   # Rough conversion
+            elif currency == 'GBP':
+                total_revenue_usd_equivalent += total_paid * 1.25  # Rough conversion
+            else:
+                total_revenue_usd_equivalent += total_paid  # Default to 1:1
+            
+            currency_stats.append({
+                'currency': currency,
+                'count': invoice_data.invoice_count if invoice_data else 0,
+                'total_invoiced': total_invoiced,
+                'total_paid': total_paid
+            })
         
         # Get recent invoices (last 10)
         recent_invoices = Invoice.query.filter_by(law_firm_id=current_user.law_firm_id)\
@@ -1001,7 +1055,8 @@ def dashboard():
                              paid_count=paid_count,
                              pending_count=pending_count,
                              draft_count=draft_count,
-                             total_revenue=total_revenue,
+                             total_revenue=total_revenue_usd_equivalent,
+                             currency_stats=currency_stats,
                              recent_invoices=recent_invoices,
                              pending_invoices=pending_count,
                              paid_this_month=paid_this_month)
