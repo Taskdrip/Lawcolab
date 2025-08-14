@@ -626,8 +626,21 @@ def download_payment_pdf(payment_id):
     
     c.setFillColor(success_green)
     c.setFont("Helvetica-Bold", 16)
-    currency_symbol = {'USD': '$', 'EUR': '€', 'GBP': '£', 'CAD': '$', 'NGN': '₦'}.get(invoice.currency, '$')
-    amount_text = f"{currency_symbol}{payment.amount_paid:.2f} {invoice.currency}"
+    
+    # Handle currency symbols with proper encoding for PDF
+    if invoice.currency == 'NGN':
+        # Use the Unicode character for Naira symbol
+        currency_symbol = '\u20A6'  # Unicode for ₦
+    elif invoice.currency == 'USD' or invoice.currency == 'CAD':
+        currency_symbol = '$'
+    elif invoice.currency == 'EUR':
+        currency_symbol = '\u20AC'  # Unicode for €
+    elif invoice.currency == 'GBP':
+        currency_symbol = '\u00A3'  # Unicode for £
+    else:
+        currency_symbol = '$'
+        
+    amount_text = f"{currency_symbol}{payment.amount_paid:.0f} {invoice.currency}"
     
     # Center the amount
     text_width = c.stringWidth(amount_text, "Helvetica-Bold", 16)
@@ -649,8 +662,8 @@ def download_payment_pdf(payment_id):
     if payment.payment_method:
         c.drawString(40, details_y, f"Method: {payment.payment_method}")
         details_y -= 15
-    if payment.payment_reference:
-        c.drawString(40, details_y, f"Reference: {payment.payment_reference}")
+    if payment.reference_number:
+        c.drawString(40, details_y, f"Reference: {payment.reference_number}")
         details_y -= 15
     
     # Footer with LawColab branding
