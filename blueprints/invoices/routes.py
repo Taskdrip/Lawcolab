@@ -64,10 +64,11 @@ def list_invoices():
 def analytics_dashboard():
     """Invoice dashboard with analytics"""
     # Currency breakdown for paid invoices
+    # Currency breakdown - use column reference instead of property
     currency_stats = db.session.query(
         Invoice.currency,
         func.count(Invoice.id).label('count'),
-        func.sum(Invoice.total_amount).label('total')
+        func.sum(Invoice.__table__.c.total_amount).label('total')
     ).filter(
         Invoice.law_firm_id == current_user.law_firm_id,
         Invoice.status == 'paid'
@@ -101,12 +102,12 @@ def analytics_dashboard():
     
     monthly_stats.reverse()  # Show oldest to newest
     
-    # Client payment breakdown
+    # Client payment breakdown - use column reference
     client_stats = db.session.query(
         User.first_name,
         User.last_name,
         func.count(Invoice.id).label('invoice_count'),
-        func.sum(Invoice.total_amount).label('total_billed'),
+        func.sum(Invoice.__table__.c.total_amount).label('total_billed'),
         func.sum(PaymentRecord.amount_paid).label('total_paid')
     ).outerjoin(PaymentRecord, Invoice.id == PaymentRecord.invoice_id)\
      .filter(
@@ -898,58 +899,68 @@ def notifications():
 @invoices_bp.route('/dashboard')
 @login_required
 def dashboard():
-    """Invoice dashboard with key metrics"""
-    # Get dashboard data based on user role
+    """Beautiful invoice dashboard with comprehensive metrics"""
     if current_user.is_client():
-        # Client dashboard
+        # Client dashboard - simplified view
         total_invoices = Invoice.query.filter_by(
             law_firm_id=current_user.law_firm_id,
             client_id=current_user.id
         ).count()
         
-        outstanding_amount = db.session.query(
-            db.func.sum(Invoice.amount)
-        ).filter_by(
+        paid_count = Invoice.query.filter_by(
             law_firm_id=current_user.law_firm_id,
             client_id=current_user.id,
-            status='sent'
-        ).scalar() or 0
+            status='paid'
+        ).count()
         
-        overdue_count = Invoice.query.filter_by(
+        pending_count = Invoice.query.filter_by(
             law_firm_id=current_user.law_firm_id,
             client_id=current_user.id,
             status='sent'
-        ).filter(Invoice.due_date < date.today()).count()
+        ).count()
         
         recent_invoices = Invoice.query.filter_by(
             law_firm_id=current_user.law_firm_id,
             client_id=current_user.id
-        ).order_by(Invoice.created_at.desc()).limit(5).all()
+        ).order_by(Invoice.created_at.desc()).limit(10).all()
+        
+        return render_template('invoices/dashboard.html',
+                             total_invoices=total_invoices,
+                             paid_count=paid_count,
+                             pending_count=pending_count,
+                             draft_count=0,
+                             total_revenue=0,
+                             recent_invoices=recent_invoices,
+                             pending_invoices=pending_count,
+                             paid_this_month=0)
         
     else:
-        # Law firm dashboard
-        total_invoices = Invoice.query.filter_by(
-            law_firm_id=current_user.law_firm_id
-        ).count()
+        # Law firm dashboard - full analytics
+        total_invoices = Invoice.query.filter_by(law_firm_id=current_user.law_firm_id).count()
+        paid_count = Invoice.query.filter_by(law_firm_id=current_user.law_firm_id, status='paid').count()
+        pending_count = Invoice.query.filter_by(law_firm_id=current_user.law_firm_id, status='sent').count()
+        draft_count = Invoice.query.filter_by(law_firm_id=current_user.law_firm_id, status='draft').count()
         
-        outstanding_amount = db.session.query(
-            db.func.sum(Invoice.amount)
-        ).filter_by(
-            law_firm_id=current_user.law_firm_id,
-            status='sent'
-        ).scalar() or 0
+        # Calculate total revenue from paid invoices
+        paid_invoices = Invoice.query.filter_by(law_firm_id=current_user.law_firm_id, status='paid').all()
+        total_revenue = sum(float(invoice.total_amount) for invoice in paid_invoices)
         
-        overdue_count = Invoice.query.filter_by(
-            law_firm_id=current_user.law_firm_id,
-            status='sent'
-        ).filter(Invoice.due_date < date.today()).count()
+        # Get recent invoices (last 10)
+        recent_invoices = Invoice.query.filter_by(law_firm_id=current_user.law_firm_id)\
+            .order_by(Invoice.created_at.desc()).limit(10).all()
         
-        recent_invoices = Invoice.query.filter_by(
-            law_firm_id=current_user.law_firm_id
-        ).order_by(Invoice.created_at.desc()).limit(5).all()
-    
-    return render_template('invoices/dashboard.html',
-                         total_invoices=total_invoices,
-                         outstanding_amount=outstanding_amount,
-                         overdue_count=overdue_count,
-                         recent_invoices=recent_invoices)
+        # Count paid invoices this month
+        from datetime import datetime, timedelta
+        current_month_start = datetime.now().replace(day=1)
+        paid_this_month = Invoice.query.filter_by(law_firm_id=current_user.law_firm_id, status='paid')\
+            .filter(Invoice.updated_at >= current_month_start).count()
+        
+        return render_template('invoices/dashboard.html',
+                             total_invoices=total_invoices,
+                             paid_count=paid_count,
+                             pending_count=pending_count,
+                             draft_count=draft_count,
+                             total_revenue=total_revenue,
+                             recent_invoices=recent_invoices,
+                             pending_invoices=pending_count,
+                             paid_this_month=paid_this_month)

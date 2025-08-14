@@ -1,202 +1,224 @@
 {% extends "base.html" %}
 
-{% block title %}Invoice Analytics Dashboard - LawColab{% endblock %}
+{% block title %}Invoice Dashboard - LawColab{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4 py-4">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="h3 mb-1" style="color: #1a1a1a; font-weight: 600;">Invoice Analytics Dashboard</h2>
-            <p class="text-muted mb-0">Comprehensive payment analytics and currency insights</p>
-        </div>
-        <div class="d-flex gap-2">
-            <a href="{{ url_for('invoices.list_invoices') }}" class="btn btn-outline-primary btn-sm">
-                <i class="fas fa-list me-1"></i>View All Invoices
-            </a>
-            <a href="{{ url_for('invoices.create_invoice') }}" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus me-1"></i>Create Invoice
-            </a>
-        </div>
-    </div>
-
-    <!-- Currency Analytics -->
-    <div class="row g-4 mb-4">
+<div class="container-fluid py-4">
+    <div class="row">
         <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom-0">
-                    <h5 class="card-title mb-0" style="color: #1a1a1a;">
-                        <i class="fas fa-coins me-2 text-primary"></i>Currency Breakdown
-                    </h5>
-                    <small class="text-muted">Payments received by currency</small>
+            <!-- Header -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+                <div>
+                    <h1 class="h3 fw-bold text-dark mb-2">Invoice Dashboard</h1>
+                    <p class="text-muted mb-0">Overview of your invoicing and payment analytics</p>
                 </div>
-                <div class="card-body">
-                    {% if currency_stats %}
+                <div class="d-flex flex-column flex-sm-row gap-2">
+                    <a href="{{ url_for('invoices.list_invoices') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-list me-2"></i>All Invoices
+                    </a>
+                    <a href="{{ url_for('invoices.create_invoice') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Create Invoice
+                    </a>
+                </div>
+            </div>
+
+            <!-- Quick Stats Row -->
+            <div class="row g-3 mb-5">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 bg-primary bg-opacity-10 h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-file-invoice text-primary fa-2x"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="fw-bold text-dark h4 mb-0">{{ total_invoices }}</div>
+                                    <div class="text-muted small">Total Invoices</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 bg-success bg-opacity-10 h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-dollar-sign text-success fa-2x"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="fw-bold text-dark h4 mb-0">${{ total_revenue|round(2) }}</div>
+                                    <div class="text-muted small">Total Revenue</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 bg-warning bg-opacity-10 h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-clock text-warning fa-2x"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="fw-bold text-dark h4 mb-0">{{ pending_invoices }}</div>
+                                    <div class="text-muted small">Pending Payment</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 bg-info bg-opacity-10 h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-chart-line text-info fa-2x"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="fw-bold text-dark h4 mb-0">{{ paid_this_month }}</div>
+                                    <div class="text-muted small">Paid This Month</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Dashboard Content -->
+            <div class="row g-4">
+                <!-- Recent Invoices -->
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-bottom">
+                            <h5 class="card-title mb-0" style="color: #1a1a1a;">Recent Invoices</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if recent_invoices %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th style="color: #1a1a1a;">Invoice #</th>
+                                                <th style="color: #1a1a1a;">Client</th>
+                                                <th style="color: #1a1a1a;">Amount</th>
+                                                <th style="color: #1a1a1a;">Status</th>
+                                                <th style="color: #1a1a1a;">Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for invoice in recent_invoices %}
+                                            <tr>
+                                                <td>
+                                                    <a href="{{ url_for('invoices.view_invoice', id=invoice.id) }}" class="text-decoration-none fw-semibold">
+                                                        #{{ invoice.invoice_number }}
+                                                    </a>
+                                                </td>
+                                                <td style="color: #1a1a1a;">
+                                                    {% if invoice.client %}
+                                                        {{ invoice.client.full_name }}
+                                                    {% else %}
+                                                        Unknown Client
+                                                    {% endif %}
+                                                </td>
+                                                <td style="color: #1a1a1a;">
+                                                    {{ invoice.currency|currency_symbol }}{{ "%.2f"|format(invoice.total_amount) }}
+                                                </td>
+                                                <td>
+                                                    {% if invoice.status == 'paid' %}
+                                                        <span class="badge bg-success">Paid</span>
+                                                    {% elif invoice.status == 'sent' %}
+                                                        <span class="badge bg-warning">Pending</span>
+                                                    {% elif invoice.status == 'draft' %}
+                                                        <span class="badge bg-secondary">Draft</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td style="color: #1a1a1a;">
+                                                    {{ invoice.created_at.strftime('%b %d, %Y') }}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-5">
+                                    <i class="fas fa-file-invoice fa-3x text-muted mb-3"></i>
+                                    <h6 class="text-muted">No invoices created yet</h6>
+                                    <p class="text-muted small">Create your first invoice to get started</p>
+                                    <a href="{{ url_for('invoices.create_invoice') }}" class="btn btn-primary">
+                                        <i class="fas fa-plus me-1"></i>Create Invoice
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions & Status -->
+                <div class="col-lg-4">
                     <div class="row g-3">
-                        {% for currency_stat in currency_stats %}
-                        <div class="col-md-4 col-lg-3">
-                            <div class="p-3 rounded-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <div class="h4 mb-1 fw-bold">
-                                            {{ currency_stat.currency|currency_symbol }}{{ "%.2f"|format(currency_stat.total) }}
-                                        </div>
-                                        <div class="small opacity-75">{{ currency_stat.currency }}</div>
-                                    </div>
-                                    <div class="text-end">
-                                        <div class="h6 mb-0">{{ currency_stat.count }}</div>
-                                        <div class="small opacity-75">Invoices</div>
+                        <!-- Quick Actions -->
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-white border-bottom">
+                                    <h6 class="card-title mb-0" style="color: #1a1a1a;">Quick Actions</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('invoices.create_invoice') }}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-plus me-2"></i>Create New Invoice
+                                        </a>
+                                        <a href="{{ url_for('invoices.analytics_dashboard') }}" class="btn btn-outline-info btn-sm">
+                                            <i class="fas fa-chart-bar me-2"></i>View Analytics
+                                        </a>
+                                        <a href="{{ url_for('clients.list_clients') }}" class="btn btn-outline-secondary btn-sm">
+                                            <i class="fas fa-users me-2"></i>Manage Clients
+                                        </a>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-chart-pie text-muted fs-1 mb-3"></i>
-                        <p class="text-muted">No paid invoices yet. Currency analytics will appear here once payments are received.</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Monthly Payment Analytics -->
-    <div class="row g-4 mb-4">
-        <div class="col-12 col-lg-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom-0">
-                    <h5 class="card-title mb-0" style="color: #1a1a1a;">
-                        <i class="fas fa-chart-line me-2 text-success"></i>Monthly Payment Trends
-                    </h5>
-                    <small class="text-muted">Last 12 months payment activity</small>
-                </div>
-                <div class="card-body">
-                    {% if monthly_stats %}
-                    <div class="table-responsive">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr style="background: #f8f9fc;">
-                                    <th style="color: #495057; font-size: 0.8rem;">Month</th>
-                                    <th style="color: #495057; font-size: 0.8rem;" class="text-end">Payments</th>
-                                    <th style="color: #495057; font-size: 0.8rem;" class="text-end">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for month_stat in monthly_stats %}
-                                <tr>
-                                    <td style="font-size: 0.85rem;">{{ month_stat.month }}</td>
-                                    <td class="text-end" style="font-size: 0.85rem;">{{ month_stat.count }}</td>
-                                    <td class="text-end fw-semibold" style="font-size: 0.85rem; color: #28a745;">
-                                        ${{ "%.2f"|format(month_stat.total) }}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-chart-line text-muted fs-1 mb-3"></i>
-                        <p class="text-muted">No payment data available yet.</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        
-        <!-- Client Payment Summary -->
-        <div class="col-12 col-lg-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom-0">
-                    <h5 class="card-title mb-0" style="color: #1a1a1a;">
-                        <i class="fas fa-users me-2 text-info"></i>Top Clients
-                    </h5>
-                    <small class="text-muted">By total payments</small>
-                </div>
-                <div class="card-body">
-                    {% if client_stats %}
-                    {% for client_stat in client_stats[:5] %}
-                    <div class="d-flex justify-content-between align-items-center py-2 {% if not loop.last %}border-bottom{% endif %}">
-                        <div>
-                            <div class="fw-semibold" style="font-size: 0.85rem; color: #1a1a1a;">
-                                {{ client_stat.first_name }} {{ client_stat.last_name }}
-                            </div>
-                            <small class="text-muted">{{ client_stat.invoice_count }} invoices</small>
-                        </div>
-                        <div class="text-end">
-                            <div class="fw-bold" style="font-size: 0.85rem; color: #28a745;">
-                                ${{ "%.2f"|format(client_stat.total_paid or 0) }}
+                        <!-- Invoice Status Distribution -->
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-white border-bottom">
+                                    <h6 class="card-title mb-0" style="color: #1a1a1a;">Invoice Status</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="small fw-semibold" style="color: #1a1a1a;">Paid</span>
+                                            <span class="small text-success fw-bold">{{ paid_count }}</span>
+                                        </div>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar bg-success" style="width: {{ (paid_count / total_invoices * 100) if total_invoices > 0 else 0 }}%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="small fw-semibold" style="color: #1a1a1a;">Pending</span>
+                                            <span class="small text-warning fw-bold">{{ pending_count }}</span>
+                                        </div>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar bg-warning" style="width: {{ (pending_count / total_invoices * 100) if total_invoices > 0 else 0 }}%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-0">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="small fw-semibold" style="color: #1a1a1a;">Draft</span>
+                                            <span class="small text-secondary fw-bold">{{ draft_count }}</span>
+                                        </div>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar bg-secondary" style="width: {{ (draft_count / total_invoices * 100) if total_invoices > 0 else 0 }}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    {% endfor %}
-                    {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-users text-muted fs-1 mb-3"></i>
-                        <p class="text-muted">No client payment data yet.</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Payments -->
-    <div class="row g-4">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom-0">
-                    <h5 class="card-title mb-0" style="color: #1a1a1a;">
-                        <i class="fas fa-receipt me-2 text-warning"></i>Recent Payments
-                    </h5>
-                    <small class="text-muted">Latest payment activity</small>
-                </div>
-                <div class="card-body">
-                    {% if recent_payments %}
-                    <div class="table-responsive">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr style="background: #f8f9fc;">
-                                    <th style="color: #495057; font-size: 0.8rem;">Date</th>
-                                    <th style="color: #495057; font-size: 0.8rem;">Invoice</th>
-                                    <th style="color: #495057; font-size: 0.8rem;">Client</th>
-                                    <th style="color: #495057; font-size: 0.8rem;" class="text-end">Amount</th>
-                                    <th style="color: #495057; font-size: 0.8rem;" class="text-center">Receipt</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for payment, invoice, client in recent_payments %}
-                                <tr>
-                                    <td style="font-size: 0.85rem;">{{ payment.payment_date.strftime('%m/%d/%Y') }}</td>
-                                    <td style="font-size: 0.85rem;">
-                                        <a href="{{ url_for('invoices.view_invoice', id=invoice.id) }}" class="text-decoration-none">
-                                            #{{ invoice.invoice_number }}
-                                        </a>
-                                    </td>
-                                    <td style="font-size: 0.85rem;">{{ client.first_name }} {{ client.last_name }}</td>
-                                    <td class="text-end fw-semibold" style="font-size: 0.85rem; color: #28a745;">
-                                        {{ invoice.currency|currency_symbol }}{{ "%.2f"|format(payment.amount_paid) }}
-                                    </td>
-                                    <td class="text-center">
-                                        <a href="{{ url_for('invoices.download_payment_pdf', payment_id=payment.id) }}" 
-                                           class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-download" style="font-size: 0.75rem;"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-receipt text-muted fs-1 mb-3"></i>
-                        <p class="text-muted">No payments received yet.</p>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
