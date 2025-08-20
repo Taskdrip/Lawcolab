@@ -229,82 +229,141 @@
             <div class="p-4">
                 <!-- Header -->
                 <div class="text-center mb-5">
-                    <h2 class="display-5 fw-bold mb-3">🚀 LawColab Pre-Sale Launch!</h2>
-                    <p class="lead">Join 500+ law firms already using LawColab. Limited time offer!</p>
+                    <h2 class="display-5 fw-bold mb-3">⚖️ Welcome to LawColab – The Future of Law Firm Management ⚖️</h2>
+                    <p class="lead mb-4">Streamline operations, manage cases, collaborate with clients, and grow profitably.</p>
+                    <div class="features-badges mb-4">
+                        <span class="badge bg-success me-2 p-2">🔒 Secure</span>
+                        <span class="badge bg-primary me-2 p-2">📂 Organized</span>
+                        <span class="badge bg-info me-2 p-2">🤝 Collaborative</span>
+                        <span class="badge bg-warning text-dark p-2">💸 Profitable</span>
+                    </div>
                     <div class="countdown mb-3">
-                        <i class="fas fa-clock me-2"></i>
-                        Special Launch Price Ends in: <span id="countdown-timer">72:00:00</span>
+                        <p class="h5 text-primary">👉 What used to take days now takes hours</p>
+                        <div class="text-danger">
+                            <i class="fas fa-clock me-2"></i>
+                            <strong>Pre-Order Ends in: <span id="countdown-timer">72:00:00</span></strong>
+                        </div>
                     </div>
                 </div>
                 
                 <!-- Pricing Plans -->
                 <div class="row mb-5">
-                    <div class="col-md-4 mb-4">
+                    <div class="col-lg-3 col-md-6 mb-4">
                         <div class="pricing-card card h-100">
-                            <div class="card-header">
-                                <h4>Starter</h4>
+                            <div class="card-header text-center">
+                                <h5>💼 Starter Plan</h5>
+                                <p class="text-muted small">Solo Attorneys</p>
                             </div>
                             <div class="card-body text-center">
                                 <div class="price">${{ "%.0f"|format(settings.starter_price) }}</div>
                                 <p class="text-muted">/month</p>
-                                <ul class="list-unstyled">
-                                    <li><i class="fas fa-check text-success"></i> Up to 50 clients</li>
-                                    <li><i class="fas fa-check text-success"></i> Basic invoicing</li>
-                                    <li><i class="fas fa-check text-success"></i> 5GB storage</li>
-                                    <li><i class="fas fa-check text-success"></i> Email support</li>
+                                <ul class="list-unstyled text-start">
+                                    <li><i class="fas fa-check text-success me-2"></i>📋 Case & Project Management</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>🤝 Client Collaboration Portal</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>📄 Document Management</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>💳 Smart Billing</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>📧 Email Support</li>
                                 </ul>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="col-md-4 mb-4">
-                        <div class="pricing-card card h-100 featured">
-                            <div class="card-header bg-primary text-white">
-                                <h4>Professional <span class="badge bg-warning">Most Popular</span></h4>
-                            </div>
-                            <div class="card-body text-center">
-                                <div class="price">${{ "%.0f"|format(settings.professional_price) }}</div>
-                                <p class="text-muted">/month</p>
-                                <ul class="list-unstyled">
-                                    <li><i class="fas fa-check text-success"></i> Unlimited clients</li>
-                                    <li><i class="fas fa-check text-success"></i> Advanced invoicing</li>
-                                    <li><i class="fas fa-check text-success"></i> 50GB storage</li>
-                                    <li><i class="fas fa-check text-success"></i> Priority support</li>
-                                    <li><i class="fas fa-check text-success"></i> Analytics dashboard</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-4 mb-4">
+                    <div class="col-lg-3 col-md-6 mb-4">
                         <div class="pricing-card card h-100">
-                            <div class="card-header">
-                                <h4>Enterprise</h4>
+                            <div class="card-header text-center bg-info text-white">
+                                <h5>🚀 Growth Plan</h5>
+                                <p class="small mb-0">Small Firms (2-10 Users)</p>
                             </div>
                             <div class="card-body text-center">
-                                <div class="price">${{ "%.0f"|format(settings.enterprise_price) }}</div>
+                                <div class="price">${{ "%.0f"|format(settings.growth_price) }}</div>
                                 <p class="text-muted">/month</p>
-                                <ul class="list-unstyled">
-                                    <li><i class="fas fa-check text-success"></i> Everything in Pro</li>
-                                    <li><i class="fas fa-check text-success"></i> Multi-office support</li>
-                                    <li><i class="fas fa-check text-success"></i> 500GB storage</li>
-                                    <li><i class="fas fa-check text-success"></i> 24/7 phone support</li>
-                                    <li><i class="fas fa-check text-success"></i> Custom integrations</li>
+                                <ul class="list-unstyled text-start">
+                                    <li><i class="fas fa-check text-success me-2"></i><strong>Everything in Starter +</strong></li>
+                                    <li><i class="fas fa-check text-success me-2"></i>👥 Team Workspace</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>🔐 Encrypted Messaging</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>📋 Templates & Checklists</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>📊 CRM Lite for Client Intake</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="pricing-card card h-100 featured">
+                            <div class="card-header text-center bg-primary text-white">
+                                <h5>⚡ Scale Plan <span class="badge bg-warning text-dark">Popular</span></h5>
+                                <p class="small mb-0">Mid-Large Firms</p>
+                            </div>
+                            <div class="card-body text-center">
+                                <div class="price">${{ "%.0f"|format(settings.scale_price) }}</div>
+                                <p class="text-muted">/month</p>
+                                <ul class="list-unstyled text-start">
+                                    <li><i class="fas fa-check text-success me-2"></i><strong>Everything in Growth +</strong></li>
+                                    <li><i class="fas fa-check text-success me-2"></i>🤖 AI Drafting & Legal Research</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>✍️ E-Signing & Compliance Tools</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>📅 Court & Calendar Sync</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>⚙️ Advanced Doc Automation</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>📈 Analytics Dashboard</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="pricing-card card h-100 border-warning" style="border-width: 3px !important;">
+                            <div class="card-header text-center bg-warning text-dark">
+                                <h5>🏆 Founders' Lifetime</h5>
+                                <p class="small mb-0"><strong>Limited Time Only</strong></p>
+                            </div>
+                            <div class="card-body text-center">
+                                <div class="price text-warning">${{ "%.0f"|format(settings.lifetime_price) }}</div>
+                                <p class="text-muted">one-time payment</p>
+                                <ul class="list-unstyled text-start">
+                                    <li><i class="fas fa-crown text-warning me-2"></i><strong>All features forever</strong></li>
+                                    <li><i class="fas fa-users text-warning me-2"></i>Up to 20 users</li>
+                                    <li><i class="fas fa-star text-warning me-2"></i>Beta access to new features</li>
+                                    <li><i class="fas fa-headset text-warning me-2"></i>Priority concierge support</li>
+                                    <li><i class="fas fa-badge-check text-warning me-2"></i>Founders' badge & listing</li>
+                                    <li><i class="fas fa-infinity text-warning me-2"></i>Lifetime updates</li>
                                 </ul>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Bonus Section -->
-                <div class="bonus-section">
-                    <h5><i class="fas fa-gift me-2"></i>Launch Bonuses (Worth $500+)</h5>
-                    <ul class="mb-0">
-                        <li>✅ Free migration from your current system</li>
-                        <li>✅ 1-hour personal onboarding session</li>
-                        <li>✅ Custom law firm branding setup</li>
-                        <li>✅ 30-day money-back guarantee</li>
-                    </ul>
+                <!-- Special Bonuses Section -->
+                <div class="bonus-section mb-4">
+                    <h5 class="text-center mb-4"><i class="fas fa-gift me-2"></i>💎 Special Pre-Order Bonuses (Worth $2,500+) 💎</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="bonus-item mb-3">
+                                <h6><i class="fas fa-magnet me-2 text-primary"></i>🧲 Client Acquisition Accelerator</h6>
+                                <p class="small text-muted">Templates, strategies, and tools to attract premium clients ($497 value)</p>
+                            </div>
+                            <div class="bonus-item mb-3">
+                                <h6><i class="fas fa-clock me-2 text-success"></i>⏰ Time Mastery Toolkit</h6>
+                                <p class="small text-muted">Productivity systems and workflows for busy attorneys ($397 value)</p>
+                            </div>
+                            <div class="bonus-item mb-3">
+                                <h6><i class="fas fa-chart-line me-2 text-warning"></i>💹 Financial Fitness Bootcamp</h6>
+                                <p class="small text-muted">Complete financial management and growth strategies ($697 value)</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="bonus-item mb-3">
+                                <h6><i class="fas fa-graduation-cap me-2 text-info"></i>📚 Continuous Learning Hub</h6>
+                                <p class="small text-muted">Access to legal tech training and best practices ($597 value)</p>
+                            </div>
+                            <div class="bonus-item mb-3">
+                                <h6><i class="fas fa-user-tie me-2 text-primary"></i>💬 Personalized Support Concierge</h6>
+                                <p class="small text-muted">Dedicated setup specialist and priority support ($397 value)</p>
+                            </div>
+                            <div class="bonus-item mb-3">
+                                <h6><i class="fas fa-shield-alt me-2 text-success"></i>🛡️ Complete Setup & Integration</h6>
+                                <p class="small text-muted">Full system setup, data migration, and team training ($997 value)</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Lead Form -->
@@ -358,10 +417,11 @@
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label">Plan *</label>
                                     <select class="form-select" name="plan" required>
-                                        <option value="">Choose Plan</option>
-                                        <option value="Starter">Starter - ${{ "%.0f"|format(settings.starter_price) }}/mo</option>
-                                        <option value="Professional" selected>Professional - ${{ "%.0f"|format(settings.professional_price) }}/mo</option>
-                                        <option value="Enterprise">Enterprise - ${{ "%.0f"|format(settings.enterprise_price) }}/mo</option>
+                                        <option value="">🎯 Choose Your Plan</option>
+                                        <option value="Starter">💼 Starter - ${{ "%.0f"|format(settings.starter_price) }}/mo</option>
+                                        <option value="Growth" selected>🚀 Growth - ${{ "%.0f"|format(settings.growth_price) }}/mo (Popular)</option>
+                                        <option value="Scale">⚡ Scale - ${{ "%.0f"|format(settings.scale_price) }}/mo</option>
+                                        <option value="Lifetime">🏆 Founders' Lifetime - ${{ "%.0f"|format(settings.lifetime_price) }} (Limited)</option>
                                     </select>
                                 </div>
                             </div>
@@ -379,9 +439,17 @@
                                     <option value="Invoice">Send Invoice</option>
                                 </select>
                             </div>
-                            <button type="submit" class="btn btn-primary btn-lg w-100">
-                                <i class="fas fa-rocket me-2"></i>Secure My LawColab Access Now!
+                            <button type="submit" class="btn btn-primary btn-lg w-100" style="padding: 15px; font-size: 1.1rem;">
+                                <i class="fas fa-rocket me-2"></i>🚀 Reserve My Access - Join 100+ Law Firms!
                             </button>
+                            
+                            <div class="text-center mt-3">
+                                <p class="small text-muted">
+                                    <i class="fas fa-shield-alt me-1 text-success"></i>Secure checkout • 
+                                    <i class="fas fa-undo me-1 text-info"></i>30-day guarantee • 
+                                    <i class="fas fa-lock me-1 text-warning"></i>SSL encrypted
+                                </p>
+                            </div>
                         </form>
                     </div>
                     
@@ -429,16 +497,34 @@
             document.body.style.overflow = 'auto';
         }
         
-        // Auto-show popup after delay
+        // Auto-show popup after delay or scroll
+        let hasScrolled = false;
+        
         function initPopup() {
             fetch('/sales/api/popup-settings')
                 .then(response => response.json())
                 .then(data => {
                     if (data.enabled && !sessionStorage.getItem('popup-shown')) {
-                        popupTimer = setTimeout(() => {
-                            showPopup();
-                            sessionStorage.setItem('popup-shown', 'true');
-                        }, data.delay * 1000);
+                        // Show after 7 seconds
+                        setTimeout(() => {
+                            if (!sessionStorage.getItem('popup-shown')) {
+                                showPopup();
+                                sessionStorage.setItem('popup-shown', 'true');
+                            }
+                        }, 7000);
+                        
+                        // Or show on scroll (whichever comes first)
+                        window.addEventListener('scroll', function() {
+                            if (!hasScrolled && window.scrollY > 200 && !sessionStorage.getItem('popup-shown')) {
+                                hasScrolled = true;
+                                setTimeout(() => {
+                                    if (!sessionStorage.getItem('popup-shown')) {
+                                        showPopup();
+                                        sessionStorage.setItem('popup-shown', 'true');
+                                    }
+                                }, 1000);
+                            }
+                        });
                     }
                 });
         }

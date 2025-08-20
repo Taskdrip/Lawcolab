@@ -1,0 +1,151 @@
+Create a prompt I can paste into Replit to create a sales page popup with checkout for presale to the LawColab web App , I want it to be a complete landing page with over 20 5 stars reviews and different plan , it should incentives to make them get book their spot for setup and integration of the lawcolab web App for theIr lawfirm or practice, ensure the pop landing page can be edited from the admin dashboard, with settings with in how many seconds the popup sales landing page happens , use content  below to build a comprehensive sales  landing page that drives sales with checkout and review , with a form that stores their database , like name , email phone number , location, address, plan number of team members, and all necessary data , give me a prompt for Replit to incorporate the popup sales landing page optimized for mobile and desktop, ensure images , data analytics and reviews are added , use your experience in tech to make it an irresistible sales page ....see demo text you can work with below , build on it and make it a comprehensive prompt:Perfect. Here’s how we can turn that into a killer sales popup with structured offers and a ready-to-use AI form generator prompt:
+
+⚖️✨ Popup Sales Page Structure ✨⚖️
+
+🖼 Popup Headline:
+
+⚖️ Welcome to LawColab – The Future of Law Firm Management ⚖️
+
+💡 Section 1: Core Offer
+
+🚀 LawColab Legal OS Your all-in-one system to streamline operations, manage cases, collaborate with clients, and grow profitably.
+
+🔒 Secure • 📂 Organized • 🤝 Collaborative • 💸 Profitable
+
+👉 What used to take days now takes hours.
+
+✅ Choose Your Plan (Pre-Order Access)
+
+1️⃣ Starter Plan – $29/mo (Solo Attorneys)
+
+Case & Project Management
+
+Client Collaboration Portal
+
+Document Management
+
+Smart Billing
+
+
+2️⃣ Growth Plan – $79/mo (Small Firms, 2–10 Users) Everything in Starter +
+
+Team Workspace
+
+Encrypted Messaging
+
+Templates & Checklists
+
+CRM Lite for Client Intake
+
+
+3️⃣ Scale Plan – $199/mo (Mid–Large Firms) Everything in Growth +
+
+AI Drafting & Legal Research
+
+E-Signing & Compliance Tools
+
+Court & Calendar Sync
+
+Advanced Doc Automation
+
+Analytics Dashboard
+
+
+🔥 Founders’ Lifetime Deal – One-Time $999 (Limited)
+
+All features (current + upcoming)
+
+Lifetime access for up to 20 users
+
+Priority onboarding & concierge support
+
+Exclusive access to beta features
+
+Founders’ badge (your firm listed as a LawColab Pioneer)
+
+
+💎 Special Bonuses (Pre-Order Only)
+
+Client Acquisition Accelerator 🧲
+
+Time Mastery Toolkit ⏰
+
+Financial Fitness Bootcamp 💹
+
+Continuous Learning Hub 📚
+
+Personalized Support Concierge 💬
+
+
+🎯 Call-to-Action (CTA)
+
+👉 Reserve Your Access Today – Join 100+ forward-thinking law firms already on the waitlist.
+
+[ Reserve My Spot ]
+
+🔥 Prompt for AI Form Generator
+
+Here’s the exact prompt you can paste into Tally.so / Typeform / Feathery / Framer AI form builder:
+
+Prompt: "Generate a popup sales form for a SaaS legal web app called LawColab. The popup should include:
+
+Headline: ⚖️ Welcome to LawColab – The Future of Law Firm Management ⚖️
+
+Short pitch: Streamline operations, manage cases, collaborate with clients, and grow profitably. Secure • Organized • Collaborative • Profitable.
+
+
+Plan Options (radio button or cards with icons):
+
+1. Starter Plan – $29/mo (Solo Attorneys)
+
+
+
+Case Management, Client Portal, Documents, Smart Billing
+
+
+2. Growth Plan – $79/mo (2–10 Users)
+
+
+
+Includes Starter + Team Workspace, Encrypted Messaging, CRM Lite
+
+
+3. Scale Plan – $199/mo (Mid–Large Firms)
+
+
+
+Includes Growth + AI Drafting, E-Signing, Compliance, Automation, Analytics
+
+
+4. Founders’ Lifetime Deal – $999 one-time
+
+
+
+All features forever, 20 users, beta access, priority support, founders badge
+
+
+Form Fields:
+
+Full Name
+
+Law Firm Name
+
+Email Address
+
+Country
+
+Team Size (dropdown: Solo, 2–10, 11–50, 51+)
+
+Preferred Plan (radio buttons above)
+
+Payment Method (dropdown: Card, PayPal, Bank Transfer, Crypto)
+
+
+CTA Button: "🚀 Reserve My Access"
+
+After submission: Show success screen: "🎉 Congratulations! You’ve reserved early access to LawColab. Our team will contact you shortly with onboarding instructions."
+
+Style: Clean, modern, legal-tech feel. Use law-themed icons (⚖️📂🤝💼). Keep it professional yet futuristic.
+
+Also ensure icons are added and.emoji are added that increases clicks , with welcome video and a thank you page with a video and actions and their purchase on the sales page
+

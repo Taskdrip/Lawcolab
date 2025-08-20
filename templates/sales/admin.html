@@ -129,25 +129,32 @@
                         </div>
                         
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="mb-3">
-                                    <label class="form-label">Starter Price ($)</label>
+                                    <label class="form-label">💼 Starter Price ($)</label>
                                     <input type="number" class="form-control" name="starter_price" 
-                                           value="{{ settings.starter_price }}" step="0.01" min="0">
+                                           value="{{ settings.starter_price }}" step="1" min="0">
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="mb-3">
-                                    <label class="form-label">Professional Price ($)</label>
-                                    <input type="number" class="form-control" name="professional_price" 
-                                           value="{{ settings.professional_price }}" step="0.01" min="0">
+                                    <label class="form-label">🚀 Growth Price ($)</label>
+                                    <input type="number" class="form-control" name="growth_price" 
+                                           value="{{ settings.growth_price }}" step="1" min="0">
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="mb-3">
-                                    <label class="form-label">Enterprise Price ($)</label>
-                                    <input type="number" class="form-control" name="enterprise_price" 
-                                           value="{{ settings.enterprise_price }}" step="0.01" min="0">
+                                    <label class="form-label">⚡ Scale Price ($)</label>
+                                    <input type="number" class="form-control" name="scale_price" 
+                                           value="{{ settings.scale_price }}" step="1" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">🏆 Lifetime Price ($)</label>
+                                    <input type="number" class="form-control" name="lifetime_price" 
+                                           value="{{ settings.lifetime_price }}" step="1" min="0">
                                 </div>
                             </div>
                         </div>

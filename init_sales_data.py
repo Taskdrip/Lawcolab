@@ -11,13 +11,14 @@ def init_sales_data():
         settings = PopupSettings.query.first()
         if not settings:
             settings = PopupSettings()
-            settings.popup_delay_seconds = 15
+            settings.popup_delay_seconds = 7
             settings.popup_enabled = True
             settings.welcome_video_url = ""
             settings.thankyou_video_url = ""
-            settings.starter_price = 49.99
-            settings.professional_price = 99.99
-            settings.enterprise_price = 199.99
+            settings.starter_price = 29.00
+            settings.growth_price = 79.00
+            settings.scale_price = 199.00
+            settings.lifetime_price = 999.00
             db.session.add(settings)
             print("✓ Created popup settings")
         

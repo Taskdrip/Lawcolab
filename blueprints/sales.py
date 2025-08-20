@@ -148,9 +148,10 @@ def update_settings():
         settings.thankyou_video_url = request.form.get('thankyou_video_url', '').strip()
         
         # Update pricing
-        settings.starter_price = float(request.form.get('starter_price', 49.99))
-        settings.professional_price = float(request.form.get('professional_price', 99.99))
-        settings.enterprise_price = float(request.form.get('enterprise_price', 199.99))
+        settings.starter_price = float(request.form.get('starter_price', 29.00))
+        settings.growth_price = float(request.form.get('growth_price', 79.00))
+        settings.scale_price = float(request.form.get('scale_price', 199.00))
+        settings.lifetime_price = float(request.form.get('lifetime_price', 999.00))
         
         db.session.commit()
         flash('Settings updated successfully!', 'success')

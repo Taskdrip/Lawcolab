@@ -714,15 +714,16 @@ class PopupSettings(db.Model):
     __tablename__ = 'popup_settings'
     
     id = db.Column(db.Integer, primary_key=True)
-    popup_delay_seconds = db.Column(db.Integer, default=15)
+    popup_delay_seconds = db.Column(db.Integer, default=7)
     popup_enabled = db.Column(db.Boolean, default=True)
     welcome_video_url = db.Column(db.String(500), nullable=True)
     thankyou_video_url = db.Column(db.String(500), nullable=True)
     
     # Plan pricing
-    starter_price = db.Column(db.Numeric(10, 2), default=49.99)
-    professional_price = db.Column(db.Numeric(10, 2), default=99.99)
-    enterprise_price = db.Column(db.Numeric(10, 2), default=199.99)
+    starter_price = db.Column(db.Numeric(10, 2), default=29.00)
+    growth_price = db.Column(db.Numeric(10, 2), default=79.00)
+    scale_price = db.Column(db.Numeric(10, 2), default=199.00)
+    lifetime_price = db.Column(db.Numeric(10, 2), default=999.00)
     
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
