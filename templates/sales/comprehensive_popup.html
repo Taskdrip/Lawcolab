@@ -14,44 +14,112 @@
         <button class="close-popup" onclick="hidePopup()" style="position: fixed; top: 20px; right: 20px; z-index: 1001; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px;">&times;</button>
         
         <!-- Hero Section -->
-        <section class="hero-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 80px 0 60px;">
-            <div class="container">
+        <section class="hero-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 80px 0 60px; position: relative; overflow: hidden;">
+            <div class="hero-pattern" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100\" height=\"100\" viewBox=\"0 0 100 100\"><defs><pattern id=\"grain\" width=\"100\" height=\"100\" patternUnits=\"userSpaceOnUse\"><circle cx=\"50\" cy=\"50\" r=\"1\" fill=\"%23ffffff\" opacity=\"0.1\"/></pattern></defs><rect width=\"100\" height=\"100\" fill=\"url(%23grain)\"/></svg>'); opacity: 0.3;"></div>
+            <div class="container" style="position: relative; z-index: 2;">
                 <div class="row align-items-center">
                     <div class="col-lg-6">
-                        <h1 class="display-4 fw-bold mb-4">{{ settings.hero_title or "Transform Your Legal Practice with LawColab" }}</h1>
-                        <p class="lead mb-4">{{ settings.hero_subtitle or "The complete practice management solution trusted by 1,000+ law firms worldwide" }}</p>
+                        <div class="hero-brand mb-4">
+                            <h1 class="display-3 fw-bold mb-2" style="font-size: 4rem; line-height: 1.1;">
+                                <span style="color: #fff; font-weight: 900;">LAW</span><span style="color: #ddd; font-weight: 400;">CO</span><span style="color: #FFD700; font-weight: 700;">LAB</span>
+                            </h1>
+                            <p class="h4 text-warning mb-4">Transform Your Legal Practice</p>
+                        </div>
+                        
+                        <h2 class="h2 fw-bold mb-4">{{ settings.hero_title or "The Complete Practice Management Solution" }}</h2>
+                        <p class="lead mb-4" style="font-size: 1.3rem;">{{ settings.hero_subtitle or "Trusted by 1,000+ law firms worldwide to streamline operations, increase revenue, and improve client satisfaction" }}</p>
                         
                         <!-- Key Benefits -->
                         <div class="benefits-list mb-4">
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="fas fa-check-circle text-warning me-3"></i>
-                                <span>Save 40% of administrative time</span>
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="benefit-icon me-3" style="background: rgba(255,215,0,0.2); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-clock text-warning"></i>
+                                </div>
+                                <span style="font-size: 1.1rem;">Save 40% of administrative time</span>
                             </div>
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="fas fa-check-circle text-warning me-3"></i>
-                                <span>Increase revenue by $50K+ annually</span>
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="benefit-icon me-3" style="background: rgba(255,215,0,0.2); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-chart-line text-warning"></i>
+                                </div>
+                                <span style="font-size: 1.1rem;">Increase revenue by $50K+ annually</span>
                             </div>
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="fas fa-check-circle text-warning me-3"></i>
-                                <span>Complete client collaboration platform</span>
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="benefit-icon me-3" style="background: rgba(255,215,0,0.2); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-users text-warning"></i>
+                                </div>
+                                <span style="font-size: 1.1rem;">Complete client collaboration platform</span>
                             </div>
                         </div>
                         
-                        <a href="#pricing" class="btn btn-warning btn-lg me-3" style="padding: 15px 30px;">
-                            <i class="fas fa-rocket me-2"></i>Get Started Today
-                        </a>
-                        <a href="#demo" class="btn btn-outline-light btn-lg" style="padding: 15px 30px;">
-                            <i class="fas fa-play me-2"></i>Watch Demo
-                        </a>
+                        <div class="hero-actions">
+                            <a href="#pricing" class="btn btn-warning btn-lg me-3" style="padding: 15px 30px; font-size: 1.2rem; border-radius: 10px; box-shadow: 0 4px 15px rgba(255,215,0,0.3);">
+                                <i class="fas fa-rocket me-2"></i>Get Started Today
+                            </a>
+                            <a href="#demo" class="btn btn-outline-light btn-lg" style="padding: 15px 30px; font-size: 1.2rem; border-radius: 10px; border-width: 2px;">
+                                <i class="fas fa-play me-2"></i>Watch Demo
+                            </a>
+                        </div>
                     </div>
                     
                     <div class="col-lg-6">
-                        <!-- Hero Image/Video -->
-                        <div class="hero-media">
-                            <img src="{{ settings.hero_image_url or '/static/images/lawcolab-dashboard.png' }}" 
-                                 alt="LawColab Dashboard" 
-                                 class="img-fluid rounded shadow-lg"
-                                 style="border: 3px solid rgba(255,255,255,0.2);">
+                        <!-- Hero Image/Video with Enhanced Styling -->
+                        <div class="hero-media text-center">
+                            <div class="dashboard-preview" style="background: white; border-radius: 20px; padding: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.3); transform: perspective(1000px) rotateY(-5deg) rotateX(5deg); transition: transform 0.3s ease;" onmouseover="this.style.transform='perspective(1000px) rotateY(0deg) rotateX(0deg)'" onmouseout="this.style.transform='perspective(1000px) rotateY(-5deg) rotateX(5deg)'"">
+                                <div class="browser-bar mb-3" style="display: flex; align-items: center; padding-bottom: 15px; border-bottom: 1px solid #eee;">
+                                    <div style="display: flex; gap: 8px;">
+                                        <div style="width: 12px; height: 12px; border-radius: 50%; background: #ff5f57;"></div>
+                                        <div style="width: 12px; height: 12px; border-radius: 50%; background: #ffbd2e;"></div>
+                                        <div style="width: 12px; height: 12px; border-radius: 50%; background: #28ca42;"></div>
+                                    </div>
+                                    <div style="flex: 1; text-align: center; color: #666; font-size: 12px;">lawcolab.com/dashboard</div>
+                                </div>
+                                
+                                <div class="dashboard-content">
+                                    <div style="display: flex; align-items: center; margin-bottom: 20px; padding: 0 10px;">
+                                        <div style="background: #0066cc; border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                            <i class="fas fa-balance-scale" style="color: white; font-size: 1.2rem;"></i>
+                                        </div>
+                                        <div style="text-align: left;">
+                                            <h6 style="margin: 0; color: #333; font-weight: 600;">
+                                                <span style="color: #000; font-weight: 900;">LAW</span><span style="color: #666; font-weight: 400;">CO</span><span style="color: #FFD700; font-weight: 700;">LAB</span>
+                                            </h6>
+                                            <small style="color: #666;">Dashboard</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 15px;">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                                            <div style="text-align: center; flex: 1;">
+                                                <div style="color: #0066cc; font-size: 1.5rem; font-weight: bold;">47</div>
+                                                <small style="color: #666;">Active Cases</small>
+                                            </div>
+                                            <div style="text-align: center; flex: 1;">
+                                                <div style="color: #28a745; font-size: 1.5rem; font-weight: bold;">$125K</div>
+                                                <small style="color: #666;">Revenue</small>
+                                            </div>
+                                            <div style="text-align: center; flex: 1;">
+                                                <div style="color: #ffc107; font-size: 1.5rem; font-weight: bold;">89%</div>
+                                                <small style="color: #666;">Efficiency</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                                        <div style="flex: 1; background: #e3f2fd; padding: 15px; border-radius: 8px; text-align: center;">
+                                            <i class="fas fa-users" style="color: #0066cc; font-size: 1.5rem; margin-bottom: 8px;"></i>
+                                            <div style="font-size: 12px; color: #666;">Team Collaboration</div>
+                                        </div>
+                                        <div style="flex: 1; background: #f3e5f5; padding: 15px; border-radius: 8px; text-align: center;">
+                                            <i class="fas fa-comments" style="color: #9c27b0; font-size: 1.5rem; margin-bottom: 8px;"></i>
+                                            <div style="font-size: 12px; color: #666;">Real-time Chat</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="background: #0066cc; color: white; padding: 12px; border-radius: 8px; text-align: center; font-weight: 600;">
+                                        Access Your Firm
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -59,38 +127,119 @@
         </section>
 
         <!-- Demo Video Section -->
-        <section id="demo" class="demo-section py-5 bg-light">
+        <section id="demo" class="demo-section py-5" style="background: linear-gradient(45deg, #f8f9fa 0%, #e9ecef 100%);">
             <div class="container">
                 <div class="row justify-content-center">
-                    <div class="col-lg-8 text-center">
-                        <h2 class="h2 mb-4">See LawColab in Action</h2>
-                        <p class="lead mb-4">Watch how top law firms are transforming their practice management</p>
+                    <div class="col-lg-10">
+                        <div class="text-center mb-5">
+                            <h2 class="h1 mb-4" style="color: #333;">See <span style="color: #000; font-weight: 900;">LAW</span><span style="color: #666; font-weight: 400;">CO</span><span style="color: #FFD700; font-weight: 700;">LAB</span> in Action</h2>
+                            <p class="lead mb-4" style="color: #666; max-width: 600px; margin: 0 auto;">Watch how top law firms are transforming their practice management with our comprehensive platform</p>
+                        </div>
                         
-                        <div class="video-container mb-4">
-                            <div class="ratio ratio-16x9">
-                                <iframe src="{{ settings.demo_video_url or 'https://www.youtube.com/embed/dQw4w9WgXcQ' }}" 
-                                       title="LawColab Demo" 
-                                       allowfullscreen 
-                                       class="rounded shadow"></iframe>
+                        <div class="row align-items-center mb-5">
+                            <div class="col-lg-7 mb-4 mb-lg-0">
+                                <div class="video-container position-relative">
+                                    <div class="ratio ratio-16x9">
+                                        <iframe src="{{ settings.demo_video_url or 'https://www.youtube.com/embed/dQw4w9WgXcQ' }}" 
+                                               title="LawColab Demo" 
+                                               allowfullscreen 
+                                               class="rounded shadow-lg"
+                                               style="border: 4px solid white; box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;"></iframe>
+                                    </div>
+                                    <div class="play-overlay position-absolute top-50 start-50 translate-middle" style="pointer-events: none;">
+                                        <div style="background: rgba(0,102,204,0.9); border-radius: 50%; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; animation: pulse 2s infinite;">
+                                            <i class="fas fa-play text-white" style="font-size: 2rem; margin-left: 5px;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-5">
+                                <div class="demo-features">
+                                    <h4 class="mb-4" style="color: #333;">What You'll See:</h4>
+                                    <div class="feature-list">
+                                        <div class="d-flex align-items-start mb-3">
+                                            <div class="feature-icon me-3" style="background: #e3f2fd; border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                <i class="fas fa-tachometer-alt text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">Intuitive Dashboard</h6>
+                                                <small class="text-muted">Complete overview of cases, clients, and firm metrics</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="d-flex align-items-start mb-3">
+                                            <div class="feature-icon me-3" style="background: #f3e5f5; border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                <i class="fas fa-comments text-purple"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">Team Collaboration</h6>
+                                                <small class="text-muted">Real-time messaging and project coordination</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="d-flex align-items-start mb-3">
+                                            <div class="feature-icon me-3" style="background: #fff3cd; border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                <i class="fas fa-file-invoice-dollar text-warning"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">Smart Billing</h6>
+                                                <small class="text-muted">Automated invoicing and payment tracking</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="d-flex align-items-start">
+                                            <div class="feature-icon me-3" style="background: #d4edda; border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                <i class="fas fa-shield-alt text-success"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">Enterprise Security</h6>
+                                                <small class="text-muted">Bank-grade encryption and compliance tools</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="demo-stats row text-center">
-                            <div class="col-md-3">
-                                <h4 class="text-primary">1,000+</h4>
-                                <p class="text-muted">Active Law Firms</p>
-                            </div>
-                            <div class="col-md-3">
-                                <h4 class="text-success">40%</h4>
-                                <p class="text-muted">Time Savings</p>
-                            </div>
-                            <div class="col-md-3">
-                                <h4 class="text-warning">$50K+</h4>
-                                <p class="text-muted">Revenue Increase</p>
-                            </div>
-                            <div class="col-md-3">
-                                <h4 class="text-info">4.9/5</h4>
-                                <p class="text-muted">Customer Rating</p>
+                        <div class="demo-stats">
+                            <div class="row text-center">
+                                <div class="col-md-3 col-6 mb-4">
+                                    <div class="stat-card p-4 bg-white rounded shadow-sm h-100">
+                                        <div class="stat-icon mb-3">
+                                            <i class="fas fa-building text-primary" style="font-size: 2.5rem;"></i>
+                                        </div>
+                                        <h3 class="text-primary mb-2">1,000+</h3>
+                                        <p class="text-muted mb-0">Active Law Firms</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-6 mb-4">
+                                    <div class="stat-card p-4 bg-white rounded shadow-sm h-100">
+                                        <div class="stat-icon mb-3">
+                                            <i class="fas fa-clock text-success" style="font-size: 2.5rem;"></i>
+                                        </div>
+                                        <h3 class="text-success mb-2">40%</h3>
+                                        <p class="text-muted mb-0">Time Savings</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-6 mb-4">
+                                    <div class="stat-card p-4 bg-white rounded shadow-sm h-100">
+                                        <div class="stat-icon mb-3">
+                                            <i class="fas fa-dollar-sign text-warning" style="font-size: 2.5rem;"></i>
+                                        </div>
+                                        <h3 class="text-warning mb-2">$50K+</h3>
+                                        <p class="text-muted mb-0">Revenue Increase</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-6 mb-4">
+                                    <div class="stat-card p-4 bg-white rounded shadow-sm h-100">
+                                        <div class="stat-icon mb-3">
+                                            <i class="fas fa-star text-info" style="font-size: 2.5rem;"></i>
+                                        </div>
+                                        <h3 class="text-info mb-2">4.9/5</h3>
+                                        <p class="text-muted mb-0">Customer Rating</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
