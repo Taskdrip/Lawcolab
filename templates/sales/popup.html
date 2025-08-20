@@ -448,7 +448,7 @@
                                         <option value="Starter">💼 Starter - ${{ "%.0f"|format(settings.starter_price) }}/mo</option>
                                         <option value="Growth" selected>🚀 Growth - ${{ "%.0f"|format(settings.growth_price) }}/mo (Popular)</option>
                                         <option value="Scale">⚡ Scale - ${{ "%.0f"|format(settings.scale_price) }}/mo</option>
-                                        <option value="Lifetime">🏆 Founders' Lifetime - ${{ "%.0f"|format(settings.lifetime_price) }} (Limited)</option>
+                                        <option value="Lifetime">🏆 Founders' Lifetime - ${{ "%.0f"|format(settings.founders_price) }} (Limited)</option>
                                     </select>
                                 </div>
                             </div>
@@ -466,7 +466,50 @@
                                     <option value="Invoice">Send Invoice</option>
                                 </select>
                             </div>
-                            <button type="submit" class="btn btn-primary btn-lg w-100" style="padding: 15px; font-size: 1.1rem;">
+                            <!-- Enhanced Payment Methods with Visual Icons -->
+                            <div class="payment-methods mt-4 mb-4">
+                                <h6 class="mb-3 text-center">💳 Multiple Payment Options Available:</h6>
+                                <div class="row text-center">
+                                    <div class="col-4 col-md-2 mb-3">
+                                        <div class="payment-method-card p-2 border rounded h-100" style="transition: all 0.3s ease;">
+                                            <i class="fas fa-credit-card text-primary" style="font-size: 1.5rem;"></i>
+                                            <p class="small mt-1 mb-0">Credit Card</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-4 col-md-2 mb-3">
+                                        <div class="payment-method-card p-2 border rounded h-100" style="transition: all 0.3s ease;">
+                                            <i class="fas fa-university text-info" style="font-size: 1.5rem;"></i>
+                                            <p class="small mt-1 mb-0">Bank Transfer</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-4 col-md-2 mb-3">
+                                        <div class="payment-method-card p-2 border rounded h-100" style="transition: all 0.3s ease;">
+                                            <i class="fab fa-paypal text-primary" style="font-size: 1.5rem;"></i>
+                                            <p class="small mt-1 mb-0">PayPal</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-4 col-md-2 mb-3">
+                                        <div class="payment-method-card p-2 border rounded h-100" style="transition: all 0.3s ease;">
+                                            <i class="fab fa-bitcoin text-warning" style="font-size: 1.5rem;"></i>
+                                            <p class="small mt-1 mb-0">USDT/Crypto</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-4 col-md-2 mb-3">
+                                        <div class="payment-method-card p-2 border rounded h-100" style="transition: all 0.3s ease;">
+                                            <i class="fas fa-money-check text-success" style="font-size: 1.5rem;"></i>
+                                            <p class="small mt-1 mb-0">Cheque</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-4 col-md-2 mb-3">
+                                        <div class="payment-method-card p-2 border rounded h-100" style="transition: all 0.3s ease;">
+                                            <i class="fas fa-mobile-alt text-dark" style="font-size: 1.5rem;"></i>
+                                            <p class="small mt-1 mb-0">Mobile Pay</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100" style="padding: 15px; font-size: 1.1rem; background: linear-gradient(45deg, #0066cc, #004499); border: none;">
                                 <i class="fas fa-rocket me-2"></i>🚀 Reserve My Access - Join 100+ Law Firms!
                             </button>
                             
@@ -475,6 +518,9 @@
                                     <i class="fas fa-shield-alt me-1 text-success"></i>Secure checkout • 
                                     <i class="fas fa-undo me-1 text-info"></i>30-day guarantee • 
                                     <i class="fas fa-lock me-1 text-warning"></i>SSL encrypted
+                                </p>
+                                <p class="small text-success">
+                                    <i class="fas fa-star me-1"></i>Trusted by 1,000+ legal professionals worldwide
                                 </p>
                             </div>
                         </form>
