@@ -64,7 +64,7 @@
                     </div>
                 </div>
                 
-                <button onclick="showPreviewPopup()" class="btn btn-primary btn-lg" type="button" style="padding: 18px 35px; font-size: 1.2rem; border-radius: 10px; background: linear-gradient(45deg, #667eea, #764ba2); border: none; box-shadow: 0 6px 20px rgba(102,126,234,0.4); transition: all 0.3s ease;">
+                <button onclick="showComprehensivePopup()" class="btn btn-primary btn-lg" type="button" style="padding: 18px 35px; font-size: 1.2rem; border-radius: 10px; background: linear-gradient(45deg, #667eea, #764ba2); border: none; box-shadow: 0 6px 20px rgba(102,126,234,0.4); transition: all 0.3s ease;">
                     <i class="fas fa-rocket me-2"></i>Reserve My Access Now!
                 </button>
                 <p class="small text-muted mt-3">
@@ -86,7 +86,7 @@
                     <div class="col-lg-6 mb-5 mb-lg-0">
                         <div class="hero-content">
                             <h1 style="font-size: 3.5rem; font-weight: 700; line-height: 1.1; color: #1a1a1a; margin-bottom: 1.5rem;">
-                                <span style="color: #000; font-weight: 900;">LAW</span><span style="color: #666; font-weight: 400;">CO</span><span style="color: #FFD700; font-weight: 700;">LAB</span> practice <br>
+                                Legal practice <br>
                                 <span style="color: #0066cc;">made simple</span>
                             </h1>
                             <p style="font-size: 1.25rem; color: #64748b; line-height: 1.6; margin-bottom: 2rem; max-width: 480px;">
@@ -97,7 +97,7 @@
                                    style="background: #0066cc; color: white; padding: 16px 32px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; border: none; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,102,204,0.3);">
                                     <i class="fas fa-rocket me-2"></i>Start Free Trial
                                 </a>
-                                <button onclick="showPreviewPopup()" 
+                                <button onclick="showComprehensivePopup()" 
                                    style="background: transparent; color: #0066cc; padding: 16px 32px; border: 2px solid #0066cc; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; transition: all 0.3s; cursor: pointer;">
                                     <i class="fas fa-star me-2"></i>Pre-Sale Launch
                                 </button>
@@ -232,9 +232,9 @@
                                style="background: #0066cc; color: white; padding: 18px 36px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1.1rem; display: inline-flex; align-items: center; box-shadow: 0 4px 15px rgba(0,102,204,0.3); transition: all 0.3s;">
                                 <i class="fas fa-rocket me-2"></i>Start Free Trial
                             </a>
-                            <button onclick="showPreviewPopup()" 
+                            <button onclick="showComprehensivePopup()" 
                                style="background: transparent; color: #0066cc; padding: 18px 36px; border: 2px solid #0066cc; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1.1rem; display: inline-flex; align-items: center; cursor: pointer; transition: all 0.3s;">
-                                <i class="fas fa-tag me-2"></i>View <span style="color: #000; font-weight: 900;">LAW</span><span style="color: #666; font-weight: 400;">CO</span><span style="color: #FFD700; font-weight: 700;">LAB</span> Pricing
+                                <i class="fas fa-tag me-2"></i>View Pricing & Pre-Order
                             </button>
                         </div>
                     </div>
@@ -345,9 +345,9 @@
 // Sales popup functionality
 let popupTimer;
 
-// Show preview popup first
-function showPreviewPopup() {
-    const popup = document.getElementById('preview-popup');
+// Show comprehensive popup directly
+function showComprehensivePopup() {
+    const popup = document.getElementById('sales-popup');
     if (popup) {
         popup.style.display = 'block';
         document.body.style.overflow = 'hidden';
@@ -355,8 +355,7 @@ function showPreviewPopup() {
 }
 
 function showPopup() {
-    document.getElementById('sales-popup').style.display = 'block';
-    document.body.style.overflow = 'hidden';
+    showComprehensivePopup();
 }
 
 function hidePopup() {
@@ -388,7 +387,7 @@ function initPopup() {
                 setTimeout(() => {
                     if (!popupShown) {
                         console.log('7 seconds passed, showing popup...');
-                        showPopup();
+                        showComprehensivePopup();
                         popupShown = true;
                     }
                 }, 7000);
@@ -400,7 +399,7 @@ function initPopup() {
                         console.log('User scrolled, showing popup...');
                         setTimeout(() => {
                             if (!popupShown) {
-                                showPopup();
+                                showComprehensivePopup();
                                 popupShown = true;
                             }
                         }, 1000);
@@ -415,7 +414,7 @@ function initPopup() {
             // Fallback to showing popup if API fails
             setTimeout(() => {
                 if (!popupShown) {
-                    showPopup();
+                    showComprehensivePopup();
                     popupShown = true;
                 }
             }, 7000);
@@ -488,8 +487,7 @@ document.addEventListener('keydown', function(e) {
 });
 </script>
 
-<!-- Include preview popup and comprehensive popup -->
-{% include 'sales/preview_popup.html' %}
+<!-- Include comprehensive popup only -->
 {% include 'sales/comprehensive_popup.html' %}
 
 {% endblock %}
