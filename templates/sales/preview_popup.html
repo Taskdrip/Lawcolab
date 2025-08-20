@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAWCOLAB - Exclusive Founder Access</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<!-- Preview Popup Modal -->
+<div id="preview-popup" class="popup-container" style="display: none;">
+    <div class="popup-content">
+        <button class="close-popup" onclick="hidePreviewPopup()" style="position: fixed; top: 20px; right: 20px; z-index: 1001; background: rgba(0,0,0,0.8); color: white; border: none; border-radius: 50%; width: 45px; height: 45px; font-size: 22px; cursor: pointer;">&times;</button>
+        
+        <div class="preview-container" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;">
+            <div class="preview-card" style="background: white; color: #333; border-radius: 20px; padding: 40px; max-width: 600px; text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.3);">
+                
+                <!-- LAWCOLAB Branding -->
+                <div class="brand-header mb-4">
+                    <h1 style="font-size: 3.5rem; margin-bottom: 10px; line-height: 1;">
+                        <span style="color: #000; font-weight: 900;">LAW</span><span style="color: #666; font-weight: 400;">CO</span><span style="color: #FFD700; font-weight: 700;">LAB</span>
+                    </h1>
+                    <p class="h5 text-warning mb-0">Exclusive Founder Access</p>
+                </div>
+
+                <!-- Limited Time Offer -->
+                <div class="offer-badge mb-4">
+                    <span class="badge" style="background: linear-gradient(45deg, #ff6b6b, #ff8e8e); color: white; font-size: 1rem; padding: 10px 20px; border-radius: 25px;">
+                        <i class="fas fa-fire me-2"></i>Limited Time: First 100 Founders Only
+                    </span>
+                </div>
+
+                <!-- Founder Pack Value -->
+                <div class="founder-value mb-4" style="background: #f8f9fa; border-radius: 15px; padding: 25px; border: 2px solid #e9ecef;">
+                    <h4 class="text-primary mb-3">🎯 Founder Pack Bonuses</h4>
+                    <div class="bonus-list text-start">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><i class="fas fa-crown text-warning me-2"></i>Lifetime License</span>
+                            <strong class="text-success">$2,997</strong>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><i class="fas fa-users text-info me-2"></i>White-Label Rights</span>
+                            <strong class="text-success">$1,500</strong>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><i class="fas fa-headset text-primary me-2"></i>Priority Support (1 Year)</span>
+                            <strong class="text-success">$1,200</strong>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><i class="fas fa-graduation-cap text-secondary me-2"></i>Training & Onboarding</span>
+                            <strong class="text-success">$800</strong>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="h6 mb-0">Total Bonus Value:</span>
+                            <span class="h5 text-success mb-0 fw-bold">$6,497</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Reviews -->
+                <div class="quick-reviews mb-4">
+                    <h6 class="mb-3">What Legal Professionals Say:</h6>
+                    <div class="review-grid">
+                        <div class="mini-review mb-2 p-2" style="background: #fff3cd; border-radius: 8px; font-size: 0.9rem;">
+                            <div class="stars text-warning mb-1">★★★★★</div>
+                            <em>"Increased our efficiency by 45% in just 2 months!"</em>
+                            <div class="reviewer text-muted">- Sarah Chen, Partner at Chen & Associates</div>
+                        </div>
+                        <div class="mini-review mb-2 p-2" style="background: #d4edda; border-radius: 8px; font-size: 0.9rem;">
+                            <div class="stars text-warning mb-1">★★★★★</div>
+                            <em>"Best investment we've made for our practice."</em>
+                            <div class="reviewer text-muted">- Michael Rodriguez, Managing Partner</div>
+                        </div>
+                        <div class="mini-review p-2" style="background: #cce5ff; border-radius: 8px; font-size: 0.9rem;">
+                            <div class="stars text-warning mb-1">★★★★★</div>
+                            <em>"Our clients love the collaboration features!"</em>
+                            <div class="reviewer text-muted">- Jessica Thompson, Family Law Attorney</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <a href="/sales/popup" class="btn btn-primary btn-lg mb-3" style="width: 100%; padding: 15px; font-size: 1.2rem; border-radius: 10px; background: linear-gradient(45deg, #667eea, #764ba2); border: none; box-shadow: 0 4px 15px rgba(102,126,234,0.4);">
+                        <i class="fas fa-rocket me-2"></i>See Complete Details & Pricing
+                    </a>
+                    
+                    <p class="small text-muted mb-0">
+                        <i class="fas fa-shield-alt text-success me-1"></i>30-day money back guarantee • 
+                        <i class="fas fa-lock text-warning me-1"></i>SSL encrypted • 
+                        <i class="fas fa-clock text-info me-1"></i>Limited spots available
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.popup-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.popup-content {
+    width: 100%;
+    height: 100%;
+}
+
+.preview-card {
+    animation: slideInUp 0.6s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.offer-badge {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.close-popup:hover {
+    background: rgba(0,0,0,0.9) !important;
+    transform: scale(1.1);
+    transition: all 0.2s ease;
+}
+
+.mini-review {
+    transition: transform 0.2s ease;
+}
+
+.mini-review:hover {
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .preview-card {
+        margin: 20px;
+        padding: 30px 20px;
+    }
+    
+    .brand-header h1 {
+        font-size: 2.5rem;
+    }
+}
+</style>
+
+<script>
+function hidePreviewPopup() {
+    document.getElementById('preview-popup').style.display = 'none';
+    document.body.style.overflow = 'auto';
+    
+    // Suppress popup for 24 hours when closed
+    fetch('/sales/api/suppress-popup', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+    }).catch(err => console.log('Could not suppress popup:', err));
+}
+
+// Close on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        hidePreviewPopup();
+    }
+});
+</script>
+
+</body>
+</html>

@@ -64,7 +64,7 @@
                     </div>
                 </div>
                 
-                <button onclick="showPopup()" class="btn btn-primary btn-lg" type="button">
+                <button onclick="showPreviewPopup()" class="btn btn-primary btn-lg" type="button" style="padding: 18px 35px; font-size: 1.2rem; border-radius: 10px; background: linear-gradient(45deg, #667eea, #764ba2); border: none; box-shadow: 0 6px 20px rgba(102,126,234,0.4); transition: all 0.3s ease;">
                     <i class="fas fa-rocket me-2"></i>Reserve My Access Now!
                 </button>
                 <p class="small text-muted mt-3">
@@ -86,23 +86,23 @@
                     <div class="col-lg-6 mb-5 mb-lg-0">
                         <div class="hero-content">
                             <h1 style="font-size: 3.5rem; font-weight: 700; line-height: 1.1; color: #1a1a1a; margin-bottom: 1.5rem;">
-                                Legal practice <br>
+                                <span style="color: #000; font-weight: 900;">LAW</span><span style="color: #666; font-weight: 400;">CO</span><span style="color: #FFD700; font-weight: 700;">LAB</span> practice <br>
                                 <span style="color: #0066cc;">made simple</span>
                             </h1>
                             <p style="font-size: 1.25rem; color: #64748b; line-height: 1.6; margin-bottom: 2rem; max-width: 480px;">
                                 All-in-one platform for legal practitioners and law firms to manage operations, clients, teams, projects, cases, invoices, communication, and collaboration.
                             </p>
-                            <div class="hero-actions" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <div class="hero-actions" style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 1.5rem;">
                                 <a href="{{ url_for('auth.signup') }}" 
-                                   style="background: #0066cc; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; border: none; transition: all 0.2s;">
+                                   style="background: #0066cc; color: white; padding: 16px 32px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; border: none; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,102,204,0.3);">
                                     <i class="fas fa-rocket me-2"></i>Start Free Trial
                                 </a>
-                                <a href="{{ url_for('sales.popup_page') }}" 
-                                   style="background: transparent; color: #0066cc; padding: 14px 28px; border: 2px solid #0066cc; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; transition: all 0.2s;">
+                                <button onclick="showPreviewPopup()" 
+                                   style="background: transparent; color: #0066cc; padding: 16px 32px; border: 2px solid #0066cc; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; transition: all 0.3s; cursor: pointer;">
                                     <i class="fas fa-star me-2"></i>Pre-Sale Launch
-                                </a>
+                                </button>
                                 <a href="{{ url_for('pricing') }}" 
-                                   style="background: transparent; color: #666; padding: 14px 28px; border: 1px solid #ccc; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; transition: all 0.2s;">
+                                   style="background: transparent; color: #666; padding: 16px 32px; border: 1px solid #ccc; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; transition: all 0.3s;">
                                     <i class="fas fa-tag me-2"></i>View Pricing
                                 </a>
                             </div>
@@ -227,15 +227,15 @@
                     <div style="background: white; border-radius: 16px; padding: 3rem; border: 1px solid #e2e8f0; max-width: 600px; margin: 0 auto;">
                         <h3 style="font-size: 1.75rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Ready to Transform Your Practice?</h3>
                         <p style="color: #64748b; font-size: 1.125rem; margin-bottom: 2rem;">Join law firms globally who trust LawColab for their practice management needs.</p>
-                        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                        <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;">
                             <a href="{{ url_for('auth.signup') }}" 
-                               style="background: #0066cc; color: white; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1.1rem; display: inline-flex; align-items: center;">
+                               style="background: #0066cc; color: white; padding: 18px 36px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1.1rem; display: inline-flex; align-items: center; box-shadow: 0 4px 15px rgba(0,102,204,0.3); transition: all 0.3s;">
                                 <i class="fas fa-rocket me-2"></i>Start Free Trial
                             </a>
-                            <a href="{{ url_for('pricing') }}" 
-                               style="background: transparent; color: #0066cc; padding: 16px 32px; border: 2px solid #0066cc; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1.1rem; display: inline-flex; align-items: center;">
-                                <i class="fas fa-tag me-2"></i>View Pricing
-                            </a>
+                            <button onclick="showPreviewPopup()" 
+                               style="background: transparent; color: #0066cc; padding: 18px 36px; border: 2px solid #0066cc; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1.1rem; display: inline-flex; align-items: center; cursor: pointer; transition: all 0.3s;">
+                                <i class="fas fa-tag me-2"></i>View <span style="color: #000; font-weight: 900;">LAW</span><span style="color: #666; font-weight: 400;">CO</span><span style="color: #FFD700; font-weight: 700;">LAB</span> Pricing
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -344,6 +344,15 @@
 <script>
 // Sales popup functionality
 let popupTimer;
+
+// Show preview popup first
+function showPreviewPopup() {
+    const popup = document.getElementById('preview-popup');
+    if (popup) {
+        popup.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+}
 
 function showPopup() {
     document.getElementById('sales-popup').style.display = 'block';
@@ -479,7 +488,8 @@ document.addEventListener('keydown', function(e) {
 });
 </script>
 
-<!-- Include comprehensive popup -->
+<!-- Include preview popup and comprehensive popup -->
+{% include 'sales/preview_popup.html' %}
 {% include 'sales/comprehensive_popup.html' %}
 
 {% endblock %}
