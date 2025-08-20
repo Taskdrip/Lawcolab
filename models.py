@@ -759,3 +759,14 @@ class PaymentMethod(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     display_order = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.now)
+
+
+class PopupSuppression(db.Model):
+    __tablename__ = 'popup_suppressions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    ip_address = db.Column(db.String(45), nullable=False)
+    user_agent = db.Column(db.Text, nullable=True)
+    suppressed_until = db.Column(db.DateTime, nullable=True)
+    has_ordered = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.now)

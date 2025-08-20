@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, jsonif
 from flask_login import current_user, login_required
 from flask_wtf.csrf import validate_csrf
 from app import db
-from models import SalesLead, PopupSettings, CustomerReview, User, ROLE_SUPER_ADMIN, PaymentMethod
+from models import SalesLead, PopupSettings, CustomerReview, User, ROLE_SUPER_ADMIN, PaymentMethod, PopupSuppression
 from utils.decorators import role_required
 from datetime import datetime
 from sqlalchemy import desc
@@ -320,4 +320,80 @@ def get_payment_method(method_id):
 def preorder_thanks():
     """Pre-order thank you page"""
     lead_data = session.get('lead_data')
+    
+    # Mark this IP as having ordered to suppress future popups
+    client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
+    user_agent = request.headers.get('User-Agent', '')
+    
+    # Check if suppression record exists
+    suppression = PopupSuppression.query.filter_by(ip_address=client_ip).first()
+    if not suppression:
+        suppression = PopupSuppression(
+            ip_address=client_ip,
+            user_agent=user_agent,
+            has_ordered=True
+        )
+        db.session.add(suppression)
+    else:
+        suppression.has_ordered = True
+    
+    db.session.commit()
+    
     return render_template('sales/preorder_thanks.html', lead_data=lead_data)
+
+
+@sales_bp.route('/api/should-show-popup')
+def should_show_popup():
+    """Check if popup should be shown for this user"""
+    client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
+    
+    # Check if this IP has ordered or been suppressed
+    suppression = PopupSuppression.query.filter_by(ip_address=client_ip).first()
+    
+    # Don't show if user has ordered
+    if suppression and suppression.has_ordered:
+        return jsonify({'show': False, 'reason': 'has_ordered'})
+    
+    # Don't show if temporarily suppressed (they closed it recently)
+    if suppression and suppression.suppressed_until and suppression.suppressed_until > datetime.now():
+        return jsonify({'show': False, 'reason': 'temporarily_suppressed'})
+    
+    return jsonify({'show': True})
+
+
+@sales_bp.route('/api/suppress-popup', methods=['POST'])
+def suppress_popup():
+    """Temporarily suppress popup when user closes it"""
+    client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
+    user_agent = request.headers.get('User-Agent', '')
+    
+    # Suppress for 24 hours when closed
+    from datetime import timedelta
+    suppress_until = datetime.now() + timedelta(hours=24)
+    
+    suppression = PopupSuppression.query.filter_by(ip_address=client_ip).first()
+    if not suppression:
+        suppression = PopupSuppression(
+            ip_address=client_ip,
+            user_agent=user_agent,
+            suppressed_until=suppress_until
+        )
+        db.session.add(suppression)
+    else:
+        suppression.suppressed_until = suppress_until
+    
+    db.session.commit()
+    
+    return jsonify({'success': True})
+
+
+@sales_bp.route('/api/reset-popup-debug', methods=['POST'])
+def reset_popup_debug():
+    """Reset popup suppression for testing (debug only)"""
+    client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
+    
+    # Delete suppression record for this IP
+    PopupSuppression.query.filter_by(ip_address=client_ip).delete()
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': 'Popup suppression reset'})

@@ -334,6 +334,14 @@ function showPopup() {
 function hidePopup() {
     document.getElementById('sales-popup').style.display = 'none';
     document.body.style.overflow = 'auto';
+    
+    // Suppress popup for 24 hours when closed
+    fetch('/sales/api/suppress-popup', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).catch(err => console.log('Could not suppress popup:', err));
 }
 
 // Auto-show popup after 7 seconds or scroll
@@ -341,39 +349,49 @@ let hasScrolled = false;
 let popupShown = false;
 
 function initPopup() {
-    // Check if we should show popup (only on homepage and not already shown this session)
-    const isHomepage = window.location.pathname === '/' || window.location.pathname === '';
-    
-    if (isHomepage && !sessionStorage.getItem('popup-shown-today')) {
-        console.log('Initializing popup timer for 7 seconds...');
-        
-        // Show after 7 seconds
-        setTimeout(() => {
-            if (!popupShown && !sessionStorage.getItem('popup-shown-today')) {
-                console.log('7 seconds passed, showing popup...');
-                showPopup();
-                popupShown = true;
-                sessionStorage.setItem('popup-shown-today', new Date().toDateString());
-            }
-        }, 7000);
-        
-        // Or show on scroll (whichever comes first)
-        window.addEventListener('scroll', function() {
-            if (!hasScrolled && window.scrollY > 300 && !popupShown && !sessionStorage.getItem('popup-shown-today')) {
-                hasScrolled = true;
-                console.log('User scrolled, showing popup...');
+    // Check if we should show popup based on server-side logic
+    fetch('/sales/api/should-show-popup')
+        .then(response => response.json())
+        .then(data => {
+            if (data.show) {
+                console.log('Server says show popup, initializing timer for 7 seconds...');
+                
+                // Show after 7 seconds
                 setTimeout(() => {
-                    if (!popupShown && !sessionStorage.getItem('popup-shown-today')) {
+                    if (!popupShown) {
+                        console.log('7 seconds passed, showing popup...');
                         showPopup();
                         popupShown = true;
-                        sessionStorage.setItem('popup-shown-today', new Date().toDateString());
                     }
-                }, 1000);
+                }, 7000);
+                
+                // Or show on scroll (whichever comes first)
+                window.addEventListener('scroll', function() {
+                    if (!hasScrolled && window.scrollY > 300 && !popupShown) {
+                        hasScrolled = true;
+                        console.log('User scrolled, showing popup...');
+                        setTimeout(() => {
+                            if (!popupShown) {
+                                showPopup();
+                                popupShown = true;
+                            }
+                        }, 1000);
+                    }
+                });
+            } else {
+                console.log('Server says don\'t show popup:', data.reason);
             }
+        })
+        .catch(err => {
+            console.log('Could not check popup status, defaulting to show');
+            // Fallback to showing popup if API fails
+            setTimeout(() => {
+                if (!popupShown) {
+                    showPopup();
+                    popupShown = true;
+                }
+            }, 7000);
         });
-    } else {
-        console.log('Popup already shown today or not on homepage');
-    }
 }
 
 // Countdown timer
@@ -413,17 +431,22 @@ document.addEventListener('DOMContentLoaded', function() {
     initPopup();
     startCountdown();
     
-    // Debug: Add button to clear session storage for testing
+    // Debug: Add button to reset popup suppression for testing
     if (window.location.search.includes('debug=1')) {
         const debugBtn = document.createElement('button');
-        debugBtn.textContent = 'Clear Popup Session (Debug)';
+        debugBtn.textContent = 'Reset Popup (Debug)';
         debugBtn.className = 'btn btn-sm btn-warning position-fixed';
         debugBtn.style.top = '10px';
         debugBtn.style.right = '10px';
         debugBtn.style.zIndex = '10000';
         debugBtn.onclick = function() {
-            sessionStorage.removeItem('popup-shown-today');
-            alert('Popup session cleared. Refresh to test.');
+            fetch('/sales/api/reset-popup-debug', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            }).then(() => {
+                alert('Popup suppression reset. Refresh to test.');
+                location.reload();
+            });
         };
         document.body.appendChild(debugBtn);
     }
