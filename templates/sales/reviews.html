@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Customer Reviews - LawColab{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Customer Reviews Management</h1>
+                <a href="{{ url_for('sales.admin_dashboard') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add New Review Form -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-plus me-2"></i>Add New Review</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('sales.add_review') }}" method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Customer Name *</label>
+                                    <input type="text" class="form-control" name="name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Law Firm Name *</label>
+                                    <input type="text" class="form-control" name="firm_name" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Location</label>
+                                    <input type="text" class="form-control" name="location" placeholder="City, State/Country">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Rating *</label>
+                                    <select class="form-select" name="rating" required>
+                                        <option value="5" selected>5 Stars ⭐⭐⭐⭐⭐</option>
+                                        <option value="4">4 Stars ⭐⭐⭐⭐</option>
+                                        <option value="3">3 Stars ⭐⭐⭐</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="checkbox" name="is_featured">
+                                    <label class="form-check-label">Featured Review</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Review Text *</label>
+                            <textarea class="form-control" name="review_text" rows="3" required placeholder="Enter the customer's review..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Add Review
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Reviews List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-star me-2"></i>All Reviews ({{ reviews|length }})</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Customer</th>
+                                    <th>Review</th>
+                                    <th>Rating</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for review in reviews %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ review.name }}</strong><br>
+                                        <small class="text-muted">{{ review.firm_name }}</small>
+                                        {% if review.location %}
+                                        <br><small class="text-muted">{{ review.location }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td style="max-width: 300px;">
+                                        <p class="mb-0">{{ review.review_text[:150] }}{% if review.review_text|length > 150 %}...{% endif %}</p>
+                                    </td>
+                                    <td>
+                                        <div class="text-warning">
+                                            {% for i in range(review.rating) %}
+                                            <i class="fas fa-star"></i>
+                                            {% endfor %}
+                                            {% for i in range(5 - review.rating) %}
+                                            <i class="far fa-star"></i>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if review.is_featured %}
+                                        <span class="badge bg-primary">Featured</span>
+                                        {% endif %}
+                                        {% if review.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ review.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                onclick="showReviewModal('{{ review.id }}', '{{ review.name }}', '{{ review.firm_name }}', `{{ review.review_text }}`, '{{ review.rating }}', '{{ review.location or '' }}', {{ 'true' if review.is_featured else 'false' }}, {{ 'true' if review.is_active else 'false' }})">
+                                            Edit
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">No reviews found. Add your first review above.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Review</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editReviewForm">
+                <div class="modal-body">
+                    <input type="hidden" id="edit_review_id">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Customer Name</label>
+                                <input type="text" class="form-control" id="edit_name" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Law Firm Name</label>
+                                <input type="text" class="form-control" id="edit_firm_name" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Review Text</label>
+                        <textarea class="form-control" id="edit_review_text" rows="4" readonly></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Rating</label>
+                                <div id="edit_rating_display" class="form-control-plaintext text-warning"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox" id="edit_is_featured" disabled>
+                                <label class="form-check-label">Featured Review</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox" id="edit_is_active" disabled>
+                                <label class="form-check-label">Active</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Location</label>
+                        <input type="text" class="form-control" id="edit_location" readonly>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" onclick="deleteReview()">
+                        <i class="fas fa-trash me-1"></i>Delete
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function showReviewModal(id, name, firmName, reviewText, rating, location, isFeatured, isActive) {
+    document.getElementById('edit_review_id').value = id;
+    document.getElementById('edit_name').value = name;
+    document.getElementById('edit_firm_name').value = firmName;
+    document.getElementById('edit_review_text').value = reviewText;
+    document.getElementById('edit_location').value = location;
+    document.getElementById('edit_is_featured').checked = isFeatured;
+    document.getElementById('edit_is_active').checked = isActive;
+    
+    // Display rating stars
+    const ratingDisplay = document.getElementById('edit_rating_display');
+    let stars = '';
+    for (let i = 0; i < parseInt(rating); i++) {
+        stars += '<i class="fas fa-star"></i>';
+    }
+    for (let i = parseInt(rating); i < 5; i++) {
+        stars += '<i class="far fa-star"></i>';
+    }
+    ratingDisplay.innerHTML = stars;
+    
+    new bootstrap.Modal(document.getElementById('reviewModal')).show();
+}
+
+function deleteReview() {
+    if (confirm('Are you sure you want to delete this review?')) {
+        const reviewId = document.getElementById('edit_review_id').value;
+        // Implementation for delete functionality would go here
+        alert('Delete functionality not implemented yet');
+    }
+}
+</script>
+{% endblock %}

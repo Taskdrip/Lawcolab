@@ -118,11 +118,10 @@ class User(UserMixin, db.Model):
         if self.is_admin() and not self.law_firm_id:
             # Create a new law firm for this admin
             firm_name = f"{self.full_name}'s Law Firm"
-            new_firm = LawFirm(
-                name=firm_name,
-                description=f"Legal practice managed by {self.full_name}",
-                email=self.email
-            )
+            new_firm = LawFirm()
+            new_firm.name = firm_name
+            new_firm.description = f"Legal practice managed by {self.full_name}"
+            new_firm.email = self.email
             db.session.add(new_firm)
             db.session.flush()  # Get the ID
             
@@ -257,22 +256,21 @@ class LawFirm(db.Model):
         
         if not support_room:
             # Create new support chat room
-            admin_user = next((u for u in self.users if u.role == 'admin'), None)
+            admin_users = [u for u in self.users if u.role == 'admin']
+            admin_user = admin_users[0] if admin_users else None
             if admin_user:
-                support_room = ChatRoom(
-                    name=f"Support - {self.name}",
-                    room_type='support',
-                    law_firm_id=self.id,
-                    created_by_id=admin_user.id
-                )
+                support_room = ChatRoom()
+                support_room.name = f"Support - {self.name}"
+                support_room.room_type = 'support'
+                support_room.law_firm_id = self.id
+                support_room.created_by_id = admin_user.id
                 db.session.add(support_room)
                 db.session.flush()
                 
                 # Add admin as participant
-                participant = ChatParticipant(
-                    room_id=support_room.id,
-                    user_id=admin_user.id
-                )
+                participant = ChatParticipant()
+                participant.room_id = support_room.id
+                participant.user_id = admin_user.id
                 db.session.add(participant)
                 db.session.commit()
         
@@ -304,11 +302,11 @@ class Project(db.Model):
 
     @property
     def assigned_clients(self):
-        return [assignment.user for assignment in self.assignments if assignment.user.is_client()]
+        return [assignment.user for assignment in self.assignments if assignment.user and assignment.user.is_client()]
 
     @property
     def assigned_team_members(self):
-        return [assignment.user for assignment in self.assignments if assignment.user.is_team_member()]
+        return [assignment.user for assignment in self.assignments if assignment.user and assignment.user.is_team_member()]
 
 class ProjectAssignment(db.Model):
     __tablename__ = 'project_assignments'
@@ -495,8 +493,9 @@ class Invoice(db.Model):
     @property
     def total_amount(self):
         """Calculate total amount including line items"""
-        if self.line_items:
-            return sum(item.amount for item in self.line_items)
+        line_items_list = list(self.line_items) if self.line_items else []
+        if line_items_list:
+            return sum(float(item.amount) for item in line_items_list)
         return float(self.amount)
     
     def generate_invoice_number(self):
@@ -506,10 +505,11 @@ class Invoice(db.Model):
         prefix = f"INV-{today.year}-{today.month:02d}"
         
         # Find the next sequential number for this month
-        existing = db.session.query(Invoice).filter(
+        from sqlalchemy import func
+        existing = db.session.query(func.count(Invoice.id)).filter(
             Invoice.law_firm_id == self.law_firm_id,
             Invoice.invoice_number.like(f"{prefix}-%")
-        ).count()
+        ).scalar() or 0
         
         self.invoice_number = f"{prefix}-{existing + 1:04d}"
 
@@ -682,3 +682,61 @@ class InvoiceChatAttachment(db.Model):
                 return f"{bytes_size:.1f} {unit}"
             bytes_size /= 1024.0
         return f"{bytes_size:.1f} TB"
+
+
+# Sales Lead Models for Popup Sales Page
+class SalesLead(db.Model):
+    __tablename__ = 'sales_leads'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    firm_name = db.Column(db.String(200), nullable=False)
+    email = db.Column(db.String(200), nullable=False)
+    phone = db.Column(db.String(50), nullable=True)
+    country = db.Column(db.String(100), nullable=True)
+    address = db.Column(db.Text, nullable=True)
+    team_size = db.Column(db.String(50), nullable=True)
+    plan = db.Column(db.String(100), nullable=False)
+    payment_method = db.Column(db.String(50), nullable=True)
+    status = db.Column(db.String(50), default='new')  # new, contacted, converted, lost
+    
+    # UTM tracking
+    utm_source = db.Column(db.String(100), nullable=True)
+    utm_medium = db.Column(db.String(100), nullable=True)
+    utm_campaign = db.Column(db.String(100), nullable=True)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+
+
+class PopupSettings(db.Model):
+    __tablename__ = 'popup_settings'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    popup_delay_seconds = db.Column(db.Integer, default=15)
+    popup_enabled = db.Column(db.Boolean, default=True)
+    welcome_video_url = db.Column(db.String(500), nullable=True)
+    thankyou_video_url = db.Column(db.String(500), nullable=True)
+    
+    # Plan pricing
+    starter_price = db.Column(db.Numeric(10, 2), default=49.99)
+    professional_price = db.Column(db.Numeric(10, 2), default=99.99)
+    enterprise_price = db.Column(db.Numeric(10, 2), default=199.99)
+    
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+
+
+class CustomerReview(db.Model):
+    __tablename__ = 'customer_reviews'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    firm_name = db.Column(db.String(200), nullable=False)
+    review_text = db.Column(db.Text, nullable=False)
+    rating = db.Column(db.Integer, default=5)
+    location = db.Column(db.String(200), nullable=True)
+    is_featured = db.Column(db.Boolean, default=False)
+    is_active = db.Column(db.Boolean, default=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.now)

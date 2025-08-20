@@ -21,6 +21,9 @@ from blueprints.support_requests import support_bp
 from blueprints.invoices.routes import invoices_bp
 from blueprints.invoice_chat.routes import invoice_chat_bp
 
+# Import sales blueprint
+from blueprints.sales import sales_bp
+
 # Register blueprints
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(dashboard_bp, url_prefix="/dashboard")
@@ -35,6 +38,7 @@ app.register_blueprint(support_bp, url_prefix="/support")
 app.register_blueprint(enhanced_chat_bp, url_prefix='/enhanced-chat')
 app.register_blueprint(invoices_bp, url_prefix="/invoices")
 app.register_blueprint(invoice_chat_bp, url_prefix="/invoice-chat")
+app.register_blueprint(sales_bp, url_prefix="/sales")
 
 # Make session permanent
 @app.before_request

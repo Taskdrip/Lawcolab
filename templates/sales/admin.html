@@ -1,0 +1,408 @@
+{% extends "base.html" %}
+
+{% block title %}Sales Admin Dashboard - LawColab{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Sales Admin Dashboard</h1>
+                <div class="btn-group">
+                    <a href="{{ url_for('sales.manage_reviews') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-star me-2"></i>Manage Reviews
+                    </a>
+                    <a href="{{ url_for('sales.popup_page') }}" class="btn btn-outline-secondary" target="_blank">
+                        <i class="fas fa-external-link-alt me-2"></i>View Popup
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Analytics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ total_leads }}</h4>
+                            <p class="card-text">Total Leads</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ new_leads }}</h4>
+                            <p class="card-text">New Leads</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user-plus fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ converted_leads }}</h4>
+                            <p class="card-text">Converted</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ "%.1f"|format((converted_leads / total_leads * 100) if total_leads > 0 else 0) }}%</h4>
+                            <p class="card-text">Conversion Rate</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Settings Panel -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-cog me-2"></i>Popup Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('sales.update_settings') }}" method="POST">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" name="popup_enabled" 
+                                           {% if settings.popup_enabled %}checked{% endif %}>
+                                    <label class="form-check-label">Enable Popup</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Popup Delay (seconds)</label>
+                                    <input type="number" class="form-control" name="popup_delay_seconds" 
+                                           value="{{ settings.popup_delay_seconds }}" min="5" max="300">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Welcome Video URL</label>
+                                    <input type="url" class="form-control" name="welcome_video_url" 
+                                           value="{{ settings.welcome_video_url or '' }}" placeholder="YouTube embed URL">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Thank You Video URL</label>
+                                    <input type="url" class="form-control" name="thankyou_video_url" 
+                                           value="{{ settings.thankyou_video_url or '' }}" placeholder="YouTube embed URL">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Starter Price ($)</label>
+                                    <input type="number" class="form-control" name="starter_price" 
+                                           value="{{ settings.starter_price }}" step="0.01" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Professional Price ($)</label>
+                                    <input type="number" class="form-control" name="professional_price" 
+                                           value="{{ settings.professional_price }}" step="0.01" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Enterprise Price ($)</label>
+                                    <input type="number" class="form-control" name="enterprise_price" 
+                                           value="{{ settings.enterprise_price }}" step="0.01" min="0">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Save Settings
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Plan Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-chart-pie me-2"></i>Plan Preferences</h5>
+                </div>
+                <div class="card-body">
+                    {% for plan, count in plan_stats %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{{ plan }}</span>
+                        <span class="badge bg-primary">{{ count }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-calendar me-2"></i>Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Last 7 days: <span class="fw-bold">{{ leads.items[:7]|length }} new leads</span></p>
+                    <p class="text-muted">This month: <span class="fw-bold">{{ leads.total }} total leads</span></p>
+                    <p class="text-muted">Average per day: <span class="fw-bold">{{ "%.1f"|format(leads.total / 30) }}</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Leads Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-list me-2"></i>Recent Leads</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Firm</th>
+                                    <th>Email</th>
+                                    <th>Plan</th>
+                                    <th>Team Size</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lead in leads.items %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ lead.name }}</strong>
+                                        {% if lead.phone %}
+                                        <br><small class="text-muted">{{ lead.phone }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ lead.firm_name }}
+                                        {% if lead.country %}
+                                        <br><small class="text-muted">{{ lead.country }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="mailto:{{ lead.email }}">{{ lead.email }}</a>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ lead.plan }}</span>
+                                    </td>
+                                    <td>{{ lead.team_size or 'N/A' }}</td>
+                                    <td>
+                                        <select class="form-select form-select-sm status-select" 
+                                                data-lead-id="{{ lead.id }}">
+                                            <option value="new" {% if lead.status == 'new' %}selected{% endif %}>New</option>
+                                            <option value="contacted" {% if lead.status == 'contacted' %}selected{% endif %}>Contacted</option>
+                                            <option value="converted" {% if lead.status == 'converted' %}selected{% endif %}>Converted</option>
+                                            <option value="lost" {% if lead.status == 'lost' %}selected{% endif %}>Lost</option>
+                                        </select>
+                                    </td>
+                                    <td>{{ lead.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                onclick="showLeadDetails({{ lead.id }}, '{{ lead.name }}', '{{ lead.firm_name }}', '{{ lead.email }}', '{{ lead.phone or '' }}', '{{ lead.address or '' }}')">
+                                            View
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if leads.pages > 1 %}
+                    <nav aria-label="Leads pagination">
+                        <ul class="pagination">
+                            {% for page_num in leads.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != leads.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('sales.admin_dashboard', page=page_num) }}">{{ page_num }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                    {% endif %}
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lead Details Modal -->
+<div class="modal fade" id="leadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Lead Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="leadModalBody">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Status update functionality
+document.querySelectorAll('.status-select').forEach(select => {
+    select.addEventListener('change', function() {
+        const leadId = this.dataset.leadId;
+        const newStatus = this.value;
+        
+        fetch(`/sales/admin/lead/${leadId}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                lead_id: leadId,
+                status: newStatus
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
+                alert.style.top = '20px';
+                alert.style.right = '20px';
+                alert.style.zIndex = '9999';
+                alert.innerHTML = `
+                    Status updated successfully!
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.body.appendChild(alert);
+                
+                // Auto-remove after 3 seconds
+                setTimeout(() => {
+                    alert.remove();
+                }, 3000);
+            } else {
+                alert('Error updating status');
+                // Revert select value
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating status');
+            location.reload();
+        });
+    });
+});
+
+// Lead details modal
+function showLeadDetails(id, name, firm, email, phone, address) {
+    const modalBody = document.getElementById('leadModalBody');
+    modalBody.innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <strong>Name:</strong><br>
+                ${name}
+            </div>
+            <div class="col-md-6">
+                <strong>Firm:</strong><br>
+                ${firm}
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <strong>Email:</strong><br>
+                <a href="mailto:${email}">${email}</a>
+            </div>
+            <div class="col-md-6">
+                <strong>Phone:</strong><br>
+                ${phone ? `<a href="tel:${phone}">${phone}</a>` : 'N/A'}
+            </div>
+        </div>
+        ${address ? `
+        <div class="row mt-3">
+            <div class="col-12">
+                <strong>Address:</strong><br>
+                ${address}
+            </div>
+        </div>
+        ` : ''}
+        <div class="row mt-3">
+            <div class="col-12">
+                <strong>Actions:</strong><br>
+                <a href="mailto:${email}" class="btn btn-sm btn-primary me-2">
+                    <i class="fas fa-envelope me-1"></i>Send Email
+                </a>
+                ${phone ? `<a href="tel:${phone}" class="btn btn-sm btn-success">
+                    <i class="fas fa-phone me-1"></i>Call
+                </a>` : ''}
+            </div>
+        </div>
+    `;
+    
+    new bootstrap.Modal(document.getElementById('leadModal')).show();
+}
+</script>
+{% endblock %}
