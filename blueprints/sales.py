@@ -76,12 +76,65 @@ def submit_lead():
         session['lead_id'] = new_lead.id
         
         flash('Thank you! Your pre-order has been submitted successfully.', 'success')
-        return redirect(url_for('sales.preorder_thanks'))
+        return redirect(url_for('sales.checkout_page'))
         
     except Exception as e:
         db.session.rollback()
         flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('sales.popup_page'))
+
+@sales_bp.route('/checkout')
+def checkout_page():
+    """Checkout page with payment options"""
+    lead_data = session.get('lead_data')
+    if not lead_data:
+        flash('Please complete the registration form first.', 'warning')
+        return redirect(url_for('sales.popup_page'))
+    
+    # Get payment methods
+    from models import PaymentMethod
+    payment_methods = PaymentMethod.query.filter_by(is_active=True).order_by(PaymentMethod.display_order).all()
+    
+    settings = PopupSettings.query.first()
+    if not settings:
+        settings = PopupSettings()
+    
+    return render_template('sales/checkout.html', 
+                         lead_data=lead_data, 
+                         payment_methods=payment_methods,
+                         settings=settings)
+
+@sales_bp.route('/checkout/complete', methods=['POST'])
+def complete_checkout():
+    """Complete the checkout process"""
+    try:
+        lead_data = session.get('lead_data')
+        if not lead_data:
+            flash('Session expired. Please start over.', 'error')
+            return redirect(url_for('sales.popup_page'))
+        
+        payment_method = request.form.get('payment_method')
+        if not payment_method:
+            flash('Please select a payment method.', 'error')
+            return redirect(url_for('sales.checkout_page'))
+        
+        # Update lead with payment method choice
+        lead_id = session.get('lead_id')
+        if lead_id:
+            lead = SalesLead.query.get(lead_id)
+            if lead:
+                lead.payment_method = payment_method
+                lead.status = 'payment_pending'
+                db.session.commit()
+        
+        # Store payment method in session
+        session['payment_method'] = payment_method
+        
+        return redirect(url_for('sales.preorder_thanks'))
+        
+    except Exception as e:
+        flash(f'Error processing checkout: {str(e)}', 'error')
+        return redirect(url_for('sales.checkout_page'))
 
 @sales_bp.route('/thankyou')
 def thankyou():
@@ -538,3 +591,86 @@ def submit_review():
         db.session.rollback()
         flash('Could not submit review. Please try again.', 'error')
         return redirect(url_for('sales.preorder_thanks'))
+
+@sales_bp.route('/admin/setup-demo-payments')
+@login_required  
+@role_required([ROLE_SUPER_ADMIN])
+def setup_demo_payments():
+    """Setup demo payment methods"""
+    try:
+        from models import PaymentMethod
+        
+        # Clear existing demo payments
+        PaymentMethod.query.delete()
+        
+        demo_payments = [
+            {
+                'name': 'Bank Transfer',
+                'type': 'bank_transfer',
+                'details': 'Bank Name: First Bank of Nigeria\nAccount: Taskdrip Global Solutions\nAccount Number: 3124567890\nRouting: 221149828\nSWIFT: FBNNNGLA',
+                'display_order': 1,
+                'is_active': True
+            },
+            {
+                'name': 'PayPal',
+                'type': 'paypal', 
+                'details': 'PayPal Email: payments@taskdrip.com\nSend as Friends & Family to avoid fees',
+                'display_order': 2,
+                'is_active': True
+            },
+            {
+                'name': 'USDT (Tron)',
+                'type': 'crypto',
+                'details': 'Network: Tron (TRC-20)\nAddress: TXm7w8SDGVqCKPTRKbfFMLKxWkR9VqsKEn\nNote: Email transaction hash to support@lawcolab.com',
+                'display_order': 3,
+                'is_active': True
+            },
+            {
+                'name': 'USDT (BSC)',
+                'type': 'crypto',
+                'details': 'Network: Binance Smart Chain\nAddress: 0x742d35Cc6634C0532925a3b8D48E16F6b2e67B8f\nNote: Email transaction hash to support@lawcolab.com',
+                'display_order': 4,
+                'is_active': True
+            },
+            {
+                'name': 'TON',
+                'type': 'crypto',
+                'details': 'Network: The Open Network\nAddress: UQB8KkPvdyJP8AKQs6QKWpFJqS-KWGCmkPIW8QgJTkQqEGh5\nNote: Send USD equivalent in TON',
+                'display_order': 5,
+                'is_active': True
+            },
+            {
+                'name': 'AVAX',
+                'type': 'crypto',
+                'details': 'Network: Avalanche C-Chain\nAddress: 0x742d35Cc6634C0532925a3b8D48E16F6b2e67B8f\nNote: Send USD equivalent in AVAX',
+                'display_order': 6,
+                'is_active': True
+            },
+            {
+                'name': 'Solana',
+                'type': 'crypto',
+                'details': 'Network: Solana\nAddress: 8KvwgzKXBEztWhYYfrZ4MdFAe6WjHXzNbzr5B8R2CueT\nNote: Send USD equivalent in SOL',
+                'display_order': 7,
+                'is_active': True
+            }
+        ]
+        
+        for payment_data in demo_payments:
+            method = PaymentMethod(
+                name=payment_data['name'],
+                type=payment_data['type'],
+                details=payment_data['details'],
+                display_order=payment_data['display_order'],
+                is_active=payment_data['is_active']
+            )
+            db.session.add(method)
+        
+        db.session.commit()
+        flash('Demo payment methods created successfully!', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error setting up demo payments: {str(e)}', 'error')
+    
+    return redirect(url_for('sales.sales_admin'))
+

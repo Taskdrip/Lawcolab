@@ -121,7 +121,10 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5>Payment Methods</h5>
-                    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addPaymentModal">Add Payment Method</button>
+                    <div>
+                        <a href="{{ url_for('sales.setup_demo_payments') }}" class="btn btn-info btn-sm">Setup Demo Payments</a>
+                        <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addPaymentModal">Add Payment Method</button>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
