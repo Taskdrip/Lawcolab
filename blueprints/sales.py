@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, flash, session
 from flask_login import current_user, login_required
+from flask_wtf.csrf import validate_csrf
 from app import db
-from models import SalesLead, PopupSettings, CustomerReview, User, ROLE_SUPER_ADMIN
+from models import SalesLead, PopupSettings, CustomerReview, User, ROLE_SUPER_ADMIN, PaymentMethod
 from utils.decorators import role_required
 from datetime import datetime
 from sqlalchemy import desc
@@ -29,6 +30,8 @@ def popup_page():
 def submit_lead():
     """Handle lead form submission"""
     try:
+        # Validate CSRF token
+        validate_csrf(request.form.get('csrf_token'))
         # Extract form data
         lead_data = {
             'name': request.form.get('name', '').strip(),
@@ -68,11 +71,12 @@ def submit_lead():
         db.session.add(new_lead)
         db.session.commit()
         
-        # Store lead ID in session for thank you page
+        # Store lead data in session for checkout
+        session['lead_data'] = lead_data
         session['lead_id'] = new_lead.id
         
-        flash('Thank you! Your information has been submitted successfully.', 'success')
-        return redirect(url_for('sales.thankyou'))
+        flash('Thank you! Redirecting to checkout...', 'success')
+        return redirect(url_for('sales.checkout'))
         
     except Exception as e:
         db.session.rollback()
@@ -226,4 +230,87 @@ def popup_settings_api():
     return jsonify({
         'enabled': settings.popup_enabled,
         'delay': settings.popup_delay_seconds
+    })
+
+
+@sales_bp.route('/checkout')
+def checkout():
+    """Display checkout page"""
+    lead_data = session.get('lead_data')
+    if not lead_data:
+        flash('Please fill out the sales form first.', 'warning')
+        return redirect(url_for('sales.popup_page'))
+    
+    # Get active payment methods
+    payment_methods = PaymentMethod.query.filter_by(is_active=True).order_by(PaymentMethod.display_order, PaymentMethod.name).all()
+    
+    return render_template('sales/checkout.html', lead_data=lead_data, payment_methods=payment_methods)
+
+
+@sales_bp.route('/payment-admin')
+@login_required
+@role_required([ROLE_SUPER_ADMIN])
+def payment_admin():
+    """Payment method administration page"""
+    payment_methods = PaymentMethod.query.order_by(PaymentMethod.display_order, PaymentMethod.name).all()
+    return render_template('sales/payment_admin.html', payment_methods=payment_methods)
+
+
+@sales_bp.route('/payment-admin', methods=['POST'])
+@login_required
+@role_required([ROLE_SUPER_ADMIN])
+def add_payment_method():
+    """Add new payment method"""
+    try:
+        validate_csrf(request.form.get('csrf_token'))
+        
+        payment_method = PaymentMethod(
+            name=request.form.get('name', '').strip(),
+            type=request.form.get('type', '').strip(),
+            details=request.form.get('details', '').strip(),
+            is_active=bool(int(request.form.get('is_active', 1))),
+            display_order=int(request.form.get('display_order', 0))
+        )
+        
+        db.session.add(payment_method)
+        db.session.commit()
+        
+        flash(f'Payment method "{payment_method.name}" added successfully!', 'success')
+        
+    except Exception as e:
+        flash(f'Error adding payment method: {str(e)}', 'error')
+    
+    return redirect(url_for('sales.payment_admin'))
+
+
+@sales_bp.route('/payment-admin/delete/<int:method_id>', methods=['POST'])
+@login_required
+@role_required([ROLE_SUPER_ADMIN])
+def delete_payment_method(method_id):
+    """Delete payment method"""
+    try:
+        validate_csrf(request.form.get('csrf_token'))
+        
+        method = PaymentMethod.query.get_or_404(method_id)
+        method_name = method.name
+        
+        db.session.delete(method)
+        db.session.commit()
+        
+        flash(f'Payment method "{method_name}" deleted successfully!', 'success')
+        
+    except Exception as e:
+        flash(f'Error deleting payment method: {str(e)}', 'error')
+    
+    return redirect(url_for('sales.payment_admin'))
+
+
+@sales_bp.route('/payment-method/<int:method_id>')
+def get_payment_method(method_id):
+    """Get payment method details via AJAX"""
+    method = PaymentMethod.query.get_or_404(method_id)
+    return jsonify({
+        'name': method.name,
+        'type': method.type,
+        'details': method.details
     })

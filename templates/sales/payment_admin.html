@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Method Administration{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Payment Method Administration</h2>
+    
+    <!-- Add New Payment Method Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Add New Payment Method</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('sales.payment_admin') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label">Name</label>
+                        <input type="text" name="name" class="form-control" placeholder="e.g., USDT Tron" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Type</label>
+                        <select name="type" class="form-control" required>
+                            <option value="bank">Bank Account</option>
+                            <option value="crypto">Cryptocurrency</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Display Order</label>
+                        <input type="number" name="display_order" class="form-control" value="0">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Status</label>
+                        <select name="is_active" class="form-control">
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <label class="form-label">Details (Account/Wallet Info)</label>
+                        <textarea name="details" class="form-control" rows="3" placeholder="Bank account details or crypto wallet address" required></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Add Payment Method</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Existing Payment Methods -->
+    <div class="card">
+        <div class="card-header">
+            <h5>Current Payment Methods</h5>
+        </div>
+        <div class="card-body">
+            {% if payment_methods %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Details</th>
+                                <th>Status</th>
+                                <th>Order</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for method in payment_methods %}
+                            <tr>
+                                <td>{{ method.name }}</td>
+                                <td>
+                                    <span class="badge {% if method.type == 'crypto' %}bg-warning{% else %}bg-info{% endif %}">
+                                        {{ method.type|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <small>{{ method.details[:50] }}{% if method.details|length > 50 %}...{% endif %}</small>
+                                </td>
+                                <td>
+                                    <span class="badge {% if method.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if method.is_active %}Active{% else %}Inactive{% endif %}
+                                    </span>
+                                </td>
+                                <td>{{ method.display_order }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('sales.delete_payment_method', method_id=method.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure?')">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">No payment methods configured yet.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Quick Setup for Common Crypto Wallets -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5>Quick Setup - Common Crypto Wallets</h5>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">Click to add common cryptocurrency payment methods:</p>
+            <div class="row">
+                <div class="col-md-2">
+                    <button class="btn btn-outline-primary btn-sm w-100" onclick="addCrypto('USDT Tron', 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t')">USDT Tron</button>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-primary btn-sm w-100" onclick="addCrypto('USDT TON', 'UQ...example')">USDT TON</button>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-primary btn-sm w-100" onclick="addCrypto('USDT BNB', '0x...example')">USDT BNB</button>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-primary btn-sm w-100" onclick="addCrypto('USDT AVAX', '0x...example')">USDT AVAX</button>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-primary btn-sm w-100" onclick="addCrypto('USDT Solana', '5Q4...example')">USDT Solana</button>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-primary btn-sm w-100" onclick="addCrypto('USDT Matic', '0x...example')">USDT Matic</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function addCrypto(name, example) {
+    document.querySelector('input[name="name"]').value = name;
+    document.querySelector('select[name="type"]').value = 'crypto';
+    document.querySelector('textarea[name="details"]').value = example + ' (Replace with your actual wallet address)';
+    document.querySelector('textarea[name="details"]').focus();
+}
+</script>
+{% endblock %}

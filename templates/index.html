@@ -3,6 +3,45 @@
 {% block title %}LawColab - Professional Legal Practice Management{% endblock %}
 
 {% block content %}
+<!-- Sales Popup Integration -->
+<div id="sales-popup" class="popup-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: none; overflow-y: auto;">
+    <div class="popup-content" style="background: white; margin: 20px auto; max-width: 900px; border-radius: 15px; position: relative;">
+        <button class="close-popup" onclick="hidePopup()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 30px; cursor: pointer; color: #666; z-index: 10;">&times;</button>
+        
+        <div class="p-4">
+            <!-- Popup content will be loaded here -->
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold mb-3">⚖️ Welcome to LawColab – The Future of Law Firm Management ⚖️</h2>
+                <p class="lead mb-4">Streamline operations, manage cases, collaborate with clients, and grow profitably.</p>
+                <div class="features-badges mb-4">
+                    <span class="badge bg-success me-2 p-2">🔒 Secure</span>
+                    <span class="badge bg-primary me-2 p-2">📂 Organized</span>
+                    <span class="badge bg-info me-2 p-2">🤝 Collaborative</span>
+                    <span class="badge bg-warning text-dark p-2">💸 Profitable</span>
+                </div>
+                <div class="countdown mb-3">
+                    <p class="h5 text-primary">👉 What used to take days now takes hours</p>
+                    <div class="text-danger">
+                        <i class="fas fa-clock me-2"></i>
+                        <strong>Pre-Order Ends in: <span id="countdown-timer">72:00:00</span></strong>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick signup form -->
+            <div class="text-center">
+                <p class="lead mb-4">🚀 Get early access with a <strong>50% discount</strong> for the first 100 law firms!</p>
+                <a href="{{ url_for('sales.popup_page') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-rocket me-2"></i>Reserve My Access Now!
+                </a>
+                <p class="small text-muted mt-3">
+                    <i class="fas fa-shield-alt me-1 text-success"></i>30-day guarantee • 
+                    <i class="fas fa-lock me-1 text-warning"></i>SSL encrypted
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- Public landing page only - authenticated users are redirected server-side -->
     <!-- Clean, Replit-inspired Landing Page -->
     <div style="background: #ffffff; min-height: 100vh;">
@@ -266,4 +305,94 @@
 
     </div>
 
+{% endblock %}
+
+{% block javascript %}
+<script>
+// Sales popup functionality
+let popupTimer;
+
+function showPopup() {
+    document.getElementById('sales-popup').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function hidePopup() {
+    document.getElementById('sales-popup').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Auto-show popup after 7 seconds or scroll
+let hasScrolled = false;
+
+function initPopup() {
+    if (!sessionStorage.getItem('popup-shown')) {
+        // Show after 7 seconds
+        setTimeout(() => {
+            if (!sessionStorage.getItem('popup-shown')) {
+                showPopup();
+                sessionStorage.setItem('popup-shown', 'true');
+            }
+        }, 7000);
+        
+        // Or show on scroll (whichever comes first)
+        window.addEventListener('scroll', function() {
+            if (!hasScrolled && window.scrollY > 200 && !sessionStorage.getItem('popup-shown')) {
+                hasScrolled = true;
+                setTimeout(() => {
+                    if (!sessionStorage.getItem('popup-shown')) {
+                        showPopup();
+                        sessionStorage.setItem('popup-shown', 'true');
+                    }
+                }, 1000);
+            }
+        });
+    }
+}
+
+// Countdown timer
+function startCountdown() {
+    let hours = 72;
+    let minutes = 0;
+    let seconds = 0;
+    
+    setInterval(() => {
+        seconds--;
+        if (seconds < 0) {
+            seconds = 59;
+            minutes--;
+            if (minutes < 0) {
+                minutes = 59;
+                hours--;
+                if (hours < 0) {
+                    hours = 72;
+                    minutes = 0;
+                    seconds = 0;
+                }
+            }
+        }
+        
+        const timer = document.getElementById('countdown-timer');
+        if (timer) {
+            timer.textContent = 
+                String(hours).padStart(2, '0') + ':' +
+                String(minutes).padStart(2, '0') + ':' +
+                String(seconds).padStart(2, '0');
+        }
+    }, 1000);
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initPopup();
+    startCountdown();
+});
+
+// Close popup on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        hidePopup();
+    }
+});
+</script>
 {% endblock %}

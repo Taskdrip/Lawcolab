@@ -719,11 +719,17 @@ class PopupSettings(db.Model):
     welcome_video_url = db.Column(db.String(500), nullable=True)
     thankyou_video_url = db.Column(db.String(500), nullable=True)
     
-    # Plan pricing
-    starter_price = db.Column(db.Numeric(10, 2), default=29.00)
-    growth_price = db.Column(db.Numeric(10, 2), default=79.00)
-    scale_price = db.Column(db.Numeric(10, 2), default=199.00)
-    lifetime_price = db.Column(db.Numeric(10, 2), default=999.00)
+    # Plan pricing - Updated with higher values
+    starter_price = db.Column(db.Numeric(10, 2), default=97.00)
+    growth_price = db.Column(db.Numeric(10, 2), default=197.00)
+    scale_price = db.Column(db.Numeric(10, 2), default=397.00)
+    founders_price = db.Column(db.Numeric(10, 2), default=1997.00)  # One year founders package
+    
+    # Regular pricing (what they would pay later)
+    starter_regular_price = db.Column(db.Numeric(10, 2), default=197.00)
+    growth_regular_price = db.Column(db.Numeric(10, 2), default=397.00)
+    scale_regular_price = db.Column(db.Numeric(10, 2), default=797.00)
+    founders_regular_price = db.Column(db.Numeric(10, 2), default=3997.00)
     
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
@@ -740,4 +746,16 @@ class CustomerReview(db.Model):
     is_featured = db.Column(db.Boolean, default=False)
     is_active = db.Column(db.Boolean, default=True)
     
+    created_at = db.Column(db.DateTime, default=datetime.now)
+
+
+class PaymentMethod(db.Model):
+    __tablename__ = 'payment_methods'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)  # e.g., "Bank Transfer", "USDT Tron"
+    type = db.Column(db.String(50), nullable=False)  # "bank", "crypto"
+    details = db.Column(db.Text, nullable=False)  # Account details or wallet address
+    is_active = db.Column(db.Boolean, default=True)
+    display_order = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.now)
