@@ -393,7 +393,7 @@
             <div class="container">
                 <div class="text-center mb-5">
                     <h2 class="h1 mb-4" style="color: #333;">🏆 Exclusive Founder Pack</h2>
-                    <p class="lead" style="color: #666; max-width: 700px; margin: 0 auto;">Limited to the first 100 pre-orders only. Get your first year for just $497 plus exclusive bonuses worth over $6,000!</p>
+                    <p class="lead" style="color: #666; max-width: 700px; margin: 0 auto;">Limited to the first 100 pre-orders only. Get your first year for just $1,348 plus exclusive bonuses worth over $6,000!</p>
                 </div>
                 
                 <div class="row justify-content-center">
@@ -614,6 +614,7 @@
                             <h3 class="text-center mb-4">Start Your LawColab Journey</h3>
                             
                             <form action="{{ url_for('sales.submit_lead') }}" method="POST" class="needs-validation" novalidate>
+                                {{ csrf_token() }}
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">Full Name *</label>
@@ -1085,9 +1086,31 @@
                             <div class="urgency-final mb-5" style="background: rgba(255,255,255,0.1); border-radius: 15px; padding: 30px;">
                                 <h4 class="text-warning mb-3">⚡ FINAL CALL: Founder Pack Expires Soon!</h4>
                                 <div class="countdown-large" style="font-size: 2.5rem; font-weight: bold; margin-bottom: 20px;">
-                                    ⏰ <span id="countdown-final">71:58:30</span>
+                                    ⏰ <span id="countdown-final">47:28:17</span>
                                 </div>
-                                <p class="mb-3">Only <span id="spots-final" style="color: #FFD700; font-weight: bold;">23 spots</span> left at this price</p>
+                                <p class="mb-3">Only <span id="spots-final" style="color: #FFD700; font-weight: bold;">11 spots</span> left at this price</p>
+                                <div class="urgency-indicators mb-3">
+                                    <div class="row text-center">
+                                        <div class="col-4">
+                                            <div style="background: rgba(255,215,0,0.2); border-radius: 10px; padding: 15px;">
+                                                <div style="font-size: 1.5rem; font-weight: bold; color: #FFD700;">🔥</div>
+                                                <small style="color: #ddd;">High Demand</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div style="background: rgba(255,215,0,0.2); border-radius: 10px; padding: 15px;">
+                                                <div style="font-size: 1.5rem; font-weight: bold; color: #FFD700;">⚡</div>
+                                                <small style="color: #ddd;">Fast Setup</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div style="background: rgba(255,215,0,0.2); border-radius: 10px; padding: 15px;">
+                                                <div style="font-size: 1.5rem; font-weight: bold; color: #FFD700;">🛡️</div>
+                                                <small style="color: #ddd;">Risk-Free</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="price-reminder">
                                     <span style="text-decoration: line-through; font-size: 1.2rem; color: #ddd;">$3,564/year</span>
                                     <span style="font-size: 2.5rem; font-weight: 800; color: #FFD700; margin: 0 20px;">$1,348/year</span>
@@ -1343,6 +1366,61 @@
 <script>
 function hidePopup() {
     document.getElementById('sales-popup').style.display = 'none';
+}
+
+function processCheckout() {
+    // Scroll to the checkout form section
+    const checkoutSection = document.querySelector('#checkout');
+    if (checkoutSection) {
+        checkoutSection.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'center'
+        });
+        
+        // Add visual highlight effect
+        checkoutSection.style.transition = 'background-color 0.5s ease';
+        const originalBg = checkoutSection.style.background;
+        checkoutSection.style.background = 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)';
+        
+        setTimeout(() => {
+            checkoutSection.style.background = originalBg;
+        }, 1000);
+        
+        // Show a conversion-optimized notification
+        setTimeout(() => {
+            // Create a styled notification instead of alert
+            const notification = document.createElement('div');
+            notification.innerHTML = `
+                <div style="position: fixed; top: 20px; right: 20px; background: linear-gradient(45deg, #28a745, #20c997); color: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 10001; max-width: 400px; font-family: Arial, sans-serif;">
+                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <span style="font-size: 2rem; margin-right: 10px;">🎉</span>
+                        <strong style="font-size: 1.2rem;">FOUNDER PACK RESERVED!</strong>
+                    </div>
+                    <p style="margin: 0; font-size: 1rem;">You're securing $1,348/year (62% OFF regular price). Complete the form below to finalize your Founder Status!</p>
+                    <div style="margin-top: 15px; text-align: center;">
+                        <small style="opacity: 0.9;">⏰ Only 11 spots remaining at this price</small>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 6 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 6000);
+        }, 500);
+    } else {
+        // Fallback - scroll to the contact form
+        const contactForm = document.querySelector('.checkout-card');
+        if (contactForm) {
+            contactForm.scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+    }
     document.body.style.overflow = 'auto';
     
     // Suppress popup for 24 hours when closed
