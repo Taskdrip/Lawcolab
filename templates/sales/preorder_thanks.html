@@ -1,244 +1,94 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You - LawColab Founder Pack</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .thank-you-card {
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .success-icon {
+            font-size: 4rem;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+        .support-btn {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+            box-shadow: 0 8px 25px rgba(40,167,69,0.3);
+            transition: transform 0.3s ease;
+        }
+        .support-btn:hover {
+            transform: translateY(-2px);
+            color: white;
+        }
+        .next-steps {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="thank-you-card">
+        <div class="success-icon">🎉</div>
+        <h1 class="h2 mb-4">Congratulations!</h1>
+        <p class="lead mb-4">Your LawColab Founder Pack has been successfully reserved at the exclusive price of <strong>$1,348/year</strong>!</p>
+        
+        <div class="alert alert-success" role="alert">
+            <strong>Founder Status Confirmed!</strong> You're now part of our exclusive founding members community.
+        </div>
 
-{% block title %}Thank You for Your Pre-Order - LawColab{% endblock %}
+        {% if lead_data %}
+        <p class="mb-3">Thank you <strong>{{ lead_data.name }}</strong> from <strong>{{ lead_data.firm }}</strong>!</p>
+        {% endif %}
 
-{% block content %}
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow-lg">
-                <div class="card-header bg-success text-white text-center">
-                    <h2>🎉 Thank You for Pre-Ordering LawColab!</h2>
-                    <p class="mb-0">Welcome to the future of legal practice management</p>
-                </div>
-                
-                <div class="card-body p-5 text-center">
-                    <!-- Success Animation -->
-                    <div class="success-animation mb-4">
-                        <i class="fas fa-check-circle text-success" style="font-size: 4rem; animation: pulse 2s infinite;"></i>
-                    </div>
-                    
-                    <h3 class="mb-4">Your Pre-Order Has Been Successfully Submitted!</h3>
-                    
-                    <!-- Order Details -->
-                    {% if lead_data %}
-                    <div class="order-confirmation mb-5 p-4" style="background: #f8f9fa; border-radius: 10px;">
-                        <h5 class="mb-3">📋 Your Order Details</h5>
-                        <div class="row text-start">
-                            <div class="col-md-6">
-                                <p><strong>Name:</strong> {{ lead_data.name }}</p>
-                                <p><strong>Law Firm:</strong> {{ lead_data.firm_name }}</p>
-                                <p><strong>Email:</strong> {{ lead_data.email }}</p>
-                            </div>
-                            <div class="col-md-6">
-                                <p><strong>Selected Plan:</strong> 
-                                    {% if lead_data.plan == 'starter' %}
-                                        💼 Starter Plan ($97/month)
-                                    {% elif lead_data.plan == 'growth' %}
-                                        🚀 Growth Plan ($197/month)
-                                    {% elif lead_data.plan == 'scale' %}
-                                        ⚡ Scale Plan ($397/month)
-                                    {% elif lead_data.plan == 'founders' %}
-                                        🏆 Founders Plan ($1,997/year)
-                                    {% endif %}
-                                </p>
-                                <p><strong>Order Reference:</strong> LC-{{ lead_data.name[:3]|upper }}{{ "%05d"|format(range(10000, 99999)|random) }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    <!-- Thank You Video -->
-                    <div class="thankyou-video mb-5">
-                        <h4 class="mb-3">🎬 A Personal Message from Our Founder</h4>
-                        <div class="ratio ratio-16x9">
-                            <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?si=thankyou" 
-                                   title="Thank You Message from LawColab Founder" 
-                                   allowfullscreen 
-                                   class="rounded"
-                                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
-                        </div>
-                        <p class="small text-muted mt-2">Personal thank you and what to expect next</p>
-                    </div>
-                    
-                    <!-- What Happens Next -->
-                    <div class="next-steps mb-5">
-                        <h4 class="mb-4">🚀 What Happens Next?</h4>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <div class="step-card p-3 border rounded">
-                                    <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px;">1</div>
-                                    <h6>Payment Confirmation</h6>
-                                    <p class="small text-muted">Complete your payment using your preferred method from the checkout page</p>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <div class="step-card p-3 border rounded">
-                                    <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px;">2</div>
-                                    <h6>Account Setup</h6>
-                                    <p class="small text-muted">We'll create your personalized LawColab workspace within 24 hours</p>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <div class="step-card p-3 border rounded">
-                                    <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px;">3</div>
-                                    <h6>Onboarding</h6>
-                                    <p class="small text-muted">Personal onboarding session to get your team up and running</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Exclusive Bonuses -->
-                    <div class="bonus-section mb-5 p-4" style="background: #fff3cd; border-radius: 10px;">
-                        <h4 class="mb-3">🎁 Your Exclusive Pre-Order Bonuses</h4>
-                        <div class="row text-start">
-                            <div class="col-md-6">
-                                <ul class="list-unstyled">
-                                    <li class="mb-2"><i class="fas fa-gift text-warning me-2"></i><strong>Client Acquisition Accelerator</strong> ($497 value)</li>
-                                    <li class="mb-2"><i class="fas fa-gift text-warning me-2"></i><strong>Time Mastery Toolkit</strong> ($297 value)</li>
-                                    <li class="mb-2"><i class="fas fa-gift text-warning me-2"></i><strong>Financial Fitness Bootcamp</strong> ($397 value)</li>
-                                </ul>
-                            </div>
-                            <div class="col-md-6">
-                                <ul class="list-unstyled">
-                                    <li class="mb-2"><i class="fas fa-gift text-warning me-2"></i><strong>Continuous Learning Hub</strong> ($197 value)</li>
-                                    <li class="mb-2"><i class="fas fa-gift text-warning me-2"></i><strong>Personal Support Concierge</strong> ($697 value)</li>
-                                    <li class="mb-2"><i class="fas fa-gift text-warning me-2"></i><strong>Complete Setup & Integration</strong> ($397 value)</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="text-center mt-3">
-                            <h5 class="text-success">Total Bonus Value: $2,482 - Yours FREE!</h5>
-                        </div>
-                    </div>
-                    
-                    <!-- Customer Review Form -->
-                    <div class="review-section mb-5 p-4" style="background: #f0f8ff; border-radius: 10px;">
-                        <h5 class="mb-3">⭐ Share Your Experience</h5>
-                        <p class="text-muted mb-3">Help other law firms by sharing your thoughts about LawColab</p>
-                        
-                        <form action="{{ url_for('sales.submit_review') }}" method="POST" class="review-form">
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Your Name *</label>
-                                    <input type="text" class="form-control" name="reviewer_name" value="{{ lead_data.name if lead_data else '' }}" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Law Firm Name *</label>
-                                    <input type="text" class="form-control" name="firm_name" value="{{ lead_data.firm_name if lead_data else '' }}" required>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label class="form-label">Rating *</label>
-                                <div class="star-rating">
-                                    <input type="radio" name="rating" value="5" id="star5" checked>
-                                    <label for="star5"><i class="fas fa-star"></i></label>
-                                    <input type="radio" name="rating" value="4" id="star4">
-                                    <label for="star4"><i class="fas fa-star"></i></label>
-                                    <input type="radio" name="rating" value="3" id="star3">
-                                    <label for="star3"><i class="fas fa-star"></i></label>
-                                    <input type="radio" name="rating" value="2" id="star2">
-                                    <label for="star2"><i class="fas fa-star"></i></label>
-                                    <input type="radio" name="rating" value="1" id="star1">
-                                    <label for="star1"><i class="fas fa-star"></i></label>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label class="form-label">Your Review *</label>
-                                <textarea class="form-control" name="review_text" rows="4" placeholder="Tell us about your experience with LawColab..." required></textarea>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label class="form-label">Location (Optional)</label>
-                                <input type="text" class="form-control" name="location" placeholder="City, Country">
-                            </div>
-                            
-                            <button type="submit" class="btn btn-warning btn-sm">
-                                <i class="fas fa-star me-1"></i>Submit Review
-                            </button>
-                        </form>
-                    </div>
+        <div class="next-steps">
+            <h5>📋 What Happens Next:</h5>
+            <ul class="list-unstyled mt-3">
+                <li class="mb-2">✅ <strong>Account Setup:</strong> Our team will contact you within 2 hours to set up your firm</li>
+                <li class="mb-2">✅ <strong>Payment Processing:</strong> You'll receive secure payment instructions via email</li>
+                <li class="mb-2">✅ <strong>Onboarding:</strong> Dedicated support representative will guide you through setup</li>
+                <li class="mb-2">✅ <strong>Training:</strong> Free 1-on-1 training session to maximize your firm's efficiency</li>
+            </ul>
+        </div>
 
-                    <!-- Action Buttons -->
-                    <div class="action-buttons">
-                        <a href="{{ url_for('sales.checkout') }}" class="btn btn-primary btn-lg me-3">
-                            <i class="fas fa-credit-card me-2"></i>Complete Payment
-                        </a>
-                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg">
-                            <i class="fas fa-home me-2"></i>Back to Home
-                        </a>
-                    </div>
-                    
-                    <!-- Contact Information -->
-                    <div class="contact-info mt-5 p-4" style="background: #e7f3ff; border-radius: 10px;">
-                        <h5 class="mb-3">📞 Need Help? We're Here for You!</h5>
-                        <div class="d-flex justify-content-center gap-3 flex-wrap">
-                            <a href="mailto:support@lawcolab.com" class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-envelope me-2"></i>support@lawcolab.com
-                            </a>
-                            <a href="https://wa.me/2348036622568" class="btn btn-outline-success btn-sm" target="_blank">
-                                <i class="fab fa-whatsapp me-2"></i>WhatsApp Support
-                            </a>
-                            <a href="tel:+2348036622568" class="btn btn-outline-info btn-sm">
-                                <i class="fas fa-phone me-2"></i>+234 803 662 2568
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <a href="{{ url_for('chat.start_support_chat') }}" class="support-btn">
+            💬 Chat with Your Technical Support Rep
+        </a>
+
+        <div class="mt-4">
+            <p class="text-muted small">Need immediate assistance? Email us at <strong>support@lawcolab.com</strong></p>
+        </div>
+
+        <div class="mt-5">
+            <a href="{{ url_for('index') }}" class="btn btn-outline-primary">Return to Home</a>
         </div>
     </div>
-</div>
 
-<style>
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
-}
-
-.star-rating {
-    display: flex;
-    flex-direction: row-reverse;
-    justify-content: flex-end;
-}
-
-.star-rating input {
-    display: none;
-}
-
-.star-rating label {
-    cursor: pointer;
-    color: #ddd;
-    font-size: 1.5rem;
-    margin-right: 5px;
-    transition: color 0.2s;
-}
-
-.star-rating input:checked ~ label,
-.star-rating label:hover,
-.star-rating label:hover ~ label {
-    color: #ffd700;
-}
-
-.star-rating input:checked ~ label {
-    color: #ffd700;
-}
-
-.step-card {
-    transition: all 0.3s ease;
-}
-
-.step-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.step-number {
-    font-weight: bold;
-}
-</style>
-{% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

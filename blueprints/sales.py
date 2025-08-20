@@ -399,7 +399,85 @@ def reset_popup_debug():
     return jsonify({'success': True, 'message': 'Popup suppression reset'})
 
 
+@sales_bp.route('/admin/sales-admin')
+@login_required
+@role_required([ROLE_SUPER_ADMIN])
+def sales_admin():
+    """Main sales administration interface"""
+    settings = PopupSettings.query.first()
+    if not settings:
+        settings = PopupSettings()
+        db.session.add(settings)
+        db.session.commit()
+    
+    # Get payment methods
+    from models import PaymentMethod
+    payment_methods = PaymentMethod.query.order_by(PaymentMethod.display_order, PaymentMethod.name).all()
+    
+    # Get recent leads
+    leads = SalesLead.query.order_by(desc(SalesLead.created_at)).limit(20).all()
+    
+    return render_template('admin/sales_admin.html', 
+                         settings=settings, 
+                         payment_methods=payment_methods,
+                         leads=leads)
+
+@sales_bp.route('/admin/update-popup-settings', methods=['POST'])
+@login_required
+@role_required([ROLE_SUPER_ADMIN])
+def update_popup_settings():
+    """Update popup behavior settings"""
+    try:
+        validate_csrf(request.form.get('csrf_token'))
+        
+        settings = PopupSettings.query.first()
+        if not settings:
+            settings = PopupSettings()
+            db.session.add(settings)
+        
+        settings.popup_enabled = 'popup_enabled' in request.form
+        settings.popup_delay_seconds = int(request.form.get('popup_delay_seconds', 7))
+        settings.founder_price = float(request.form.get('founder_price', 1348))
+        settings.regular_price = float(request.form.get('regular_price', 3548))
+        
+        db.session.commit()
+        flash('Popup settings updated successfully!', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error updating settings: {str(e)}', 'error')
+    
+    return redirect(url_for('sales.sales_admin'))
+
+@sales_bp.route('/admin/update-page-content', methods=['POST'])
+@login_required
+@role_required([ROLE_SUPER_ADMIN])
+def update_page_content():
+    """Update sales page content"""
+    try:
+        validate_csrf(request.form.get('csrf_token'))
+        
+        settings = PopupSettings.query.first()
+        if not settings:
+            settings = PopupSettings()
+            db.session.add(settings)
+        
+        settings.hero_title = request.form.get('hero_title', '').strip()
+        settings.hero_subtitle = request.form.get('hero_subtitle', '').strip()
+        settings.thank_you_message = request.form.get('thank_you_message', '').strip()
+        settings.support_button_text = request.form.get('support_button_text', '').strip()
+        
+        db.session.commit()
+        flash('Page content updated successfully!', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error updating content: {str(e)}', 'error')
+    
+    return redirect(url_for('sales.sales_admin'))
+
 @sales_bp.route('/admin/settings', methods=['GET', 'POST'])
+@login_required
 @role_required([ROLE_SUPER_ADMIN])
 def admin_sales_settings():
     """Admin interface to edit sales page content"""

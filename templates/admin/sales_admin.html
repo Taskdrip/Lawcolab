@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}Sales Admin - LawColab{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Sales Page Administration</h2>
+                <div>
+                    <a href="{{ url_for('sales.popup_page') }}" class="btn btn-success" target="_blank">Preview Sales Page</a>
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-primary">Back to Admin</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="popup-tab" data-bs-toggle="tab" data-bs-target="#popup" type="button" role="tab">Popup Settings</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="content-tab" data-bs-toggle="tab" data-bs-target="#content" type="button" role="tab">Page Content</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment" type="button" role="tab">Payment Methods</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="leads-tab" data-bs-toggle="tab" data-bs-target="#leads" type="button" role="tab">Lead Management</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="adminTabsContent">
+        <!-- Popup Settings Tab -->
+        <div class="tab-pane fade show active" id="popup" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Popup Behavior Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('sales.update_popup_settings') }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Popup Enabled</label>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="popup_enabled" {{ 'checked' if settings.popup_enabled else '' }}>
+                                        <label class="form-check-label">Enable popup on homepage</label>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Delay (seconds)</label>
+                                    <input type="number" class="form-control" name="popup_delay_seconds" value="{{ settings.popup_delay_seconds or 7 }}" min="0" max="60">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Founder Pack Price</label>
+                                    <input type="number" class="form-control" name="founder_price" value="{{ settings.founder_price or 1348 }}" step="0.01">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Regular Price (for comparison)</label>
+                                    <input type="number" class="form-control" name="regular_price" value="{{ settings.regular_price or 3548 }}" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Popup Settings</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Content Tab -->
+        <div class="tab-pane fade" id="content" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Sales Page Content</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('sales.update_page_content') }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <div class="mb-3">
+                            <label class="form-label">Hero Title</label>
+                            <input type="text" class="form-control" name="hero_title" value="{{ settings.hero_title or 'Ready to Transform Your Practice?' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Hero Subtitle</label>
+                            <textarea class="form-control" name="hero_subtitle" rows="2">{{ settings.hero_subtitle or 'Join the 150+ law firms who have already revolutionized their operations with LawColab' }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Thank You Page Message</label>
+                            <textarea class="form-control" name="thank_you_message" rows="4">{{ settings.thank_you_message or 'Your LawColab Founder Pack has been successfully reserved at the exclusive price of $1,348/year!' }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Support Chat Button Text</label>
+                            <input type="text" class="form-control" name="support_button_text" value="{{ settings.support_button_text or 'Chat with Your Technical Support Rep' }}">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Page Content</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Methods Tab -->
+        <div class="tab-pane fade" id="payment" role="tabpanel">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Payment Methods</h5>
+                    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addPaymentModal">Add Payment Method</button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Details</th>
+                                    <th>Active</th>
+                                    <th>Order</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for method in payment_methods %}
+                                <tr>
+                                    <td>{{ method.name }}</td>
+                                    <td>{{ method.type }}</td>
+                                    <td>{{ method.details[:50] }}{% if method.details|length > 50 %}...{% endif %}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if method.is_active else 'secondary' }}">
+                                            {{ 'Active' if method.is_active else 'Inactive' }}
+                                        </span>
+                                    </td>
+                                    <td>{{ method.display_order }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="editPaymentMethod({{ method.id }})">Edit</button>
+                                        <form method="POST" action="{{ url_for('sales.delete_payment_method', method_id=method.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure?')">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lead Management Tab -->
+        <div class="tab-pane fade" id="leads" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Recent Leads</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Name</th>
+                                    <th>Firm</th>
+                                    <th>Email</th>
+                                    <th>Plan</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lead in leads %}
+                                <tr>
+                                    <td>{{ lead.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>{{ lead.name }}</td>
+                                    <td>{{ lead.firm_name }}</td>
+                                    <td>{{ lead.email }}</td>
+                                    <td>{{ lead.plan }}</td>
+                                    <td>
+                                        <select class="form-select form-select-sm" onchange="updateLeadStatus({{ lead.id }}, this.value)">
+                                            <option value="new" {{ 'selected' if lead.status == 'new' else '' }}>New</option>
+                                            <option value="contacted" {{ 'selected' if lead.status == 'contacted' else '' }}>Contacted</option>
+                                            <option value="converted" {{ 'selected' if lead.status == 'converted' else '' }}>Converted</option>
+                                            <option value="lost" {{ 'selected' if lead.status == 'lost' else '' }}>Lost</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="viewLeadDetails({{ lead.id }})">View</button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Payment Method Modal -->
+<div class="modal fade" id="addPaymentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Payment Method</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('sales.add_payment_method') }}" method="POST">
+                <div class="modal-body">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Type</label>
+                        <select class="form-control" name="type" required>
+                            <option value="credit_card">Credit Card</option>
+                            <option value="bank_transfer">Bank Transfer</option>
+                            <option value="crypto">Cryptocurrency</option>
+                            <option value="paypal">PayPal</option>
+                            <option value="mobile_payment">Mobile Payment</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Details/Instructions</label>
+                        <textarea class="form-control" name="details" rows="3" placeholder="Payment instructions or details for customers"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Display Order</label>
+                        <input type="number" class="form-control" name="display_order" value="0">
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="is_active" checked>
+                            <label class="form-check-label">Active</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Payment Method</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateLeadStatus(leadId, status) {
+    fetch('/sales/admin/lead/' + leadId + '/status', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            lead_id: leadId,
+            status: status
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Status updated successfully
+        } else {
+            alert('Error updating status');
+        }
+    });
+}
+
+function editPaymentMethod(methodId) {
+    // Implement edit functionality
+    alert('Edit functionality to be implemented');
+}
+
+function viewLeadDetails(leadId) {
+    // Implement view details functionality
+    alert('View details functionality to be implemented');
+}
+</script>
+{% endblock %}
