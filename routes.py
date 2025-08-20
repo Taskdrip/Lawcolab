@@ -59,8 +59,19 @@ def index():
         else:
             return redirect(url_for('dashboard.client_dashboard'))
     
-    # Show public landing page - avoid database query for performance
-    return render_template('index.html')
+    # Show public landing page with popup settings
+    from models import PopupSettings, CustomerReview
+    from sqlalchemy import desc
+    
+    # Get popup settings for comprehensive popup
+    settings = PopupSettings.query.first()
+    if not settings:
+        settings = PopupSettings()
+    
+    # Get featured reviews
+    reviews = CustomerReview.query.filter_by(is_active=True).order_by(desc(CustomerReview.is_featured), CustomerReview.id).limit(20).all()
+    
+    return render_template('index.html', settings=settings, reviews=reviews)
 
 @app.route('/landing')
 def landing():

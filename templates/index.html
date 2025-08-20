@@ -1,5 +1,24 @@
 {% extends "base.html" %}
 
+{% block additional_css %}
+<style>
+.nav-item {
+    margin-right: 10px;
+}
+
+.navbar-nav .nav-link {
+    padding: 0.5rem 1rem !important;
+    margin-right: 5px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}
+
 {% block title %}LawColab - Professional Legal Practice Management{% endblock %}
 
 {% block content %}
@@ -45,9 +64,9 @@
                     </div>
                 </div>
                 
-                <a href="{{ url_for('sales.popup_page') }}" class="btn btn-primary btn-lg">
+                <button onclick="showPopup()" class="btn btn-primary btn-lg">
                     <i class="fas fa-rocket me-2"></i>Reserve My Access Now!
-                </a>
+                </button>
                 <p class="small text-muted mt-3">
                     <i class="fas fa-shield-alt me-1 text-success"></i>30-day guarantee • 
                     <i class="fas fa-lock me-1 text-warning"></i>SSL encrypted
@@ -459,4 +478,8 @@ document.addEventListener('keydown', function(e) {
     }
 });
 </script>
+
+<!-- Include comprehensive popup -->
+{% include 'sales/comprehensive_popup.html' %}
+
 {% endblock %}
