@@ -1,0 +1,60 @@
+# Replit Prompt: Build a Popup Sales Page with Checkout for LawColab Pre-Sale
+# Features:
+# - Fullscreen popup landing page after X seconds (editable from Admin Dashboard)
+# - One-page sales landing page with plans, pricing, reviews, bonuses
+# - Built-in checkout (Stripe/PayPal integration placeholder)
+# - 20+ customer reviews (5-star style)
+# - Form to capture database: name, email, phone, law firm name, location, address, team size, plan, payment method
+# - Analytics tracking (Google Analytics + custom logging)
+# - Mobile + desktop responsive
+# - Welcome video + thank-you page with video
+# - Admin dashboard to manage popup delay, plans, reviews, and collected leads
+
+from flask import Flask, render_template, request, redirect
+import sqlite3, time
+
+app = Flask(__name__)
+
+# Database init
+def init_db():
+    conn = sqlite3.connect("lawcolab_sales.db")
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS leads
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  name TEXT, firm TEXT, email TEXT, phone TEXT,
+                  country TEXT, address TEXT, team_size TEXT, plan TEXT, payment TEXT, created_at TIMESTAMP)''')
+    conn.commit()
+    conn.close()
+
+init_db()
+
+@app.route("/")
+def home():
+    return render_template("popup.html")
+
+@app.route("/submit", methods=["POST"])
+def submit():
+    data = request.form
+    conn = sqlite3.connect("lawcolab_sales.db")
+    c = conn.cursor()
+    c.execute("INSERT INTO leads (name, firm, email, phone, country, address, team_size, plan, payment, created_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+              (data["name"], data["firm"], data["email"], data["phone"], data["country"], data["address"], data["team_size"], data["plan"], data["payment"], time.time()))
+    conn.commit()
+    conn.close()
+    return redirect("/thankyou")
+
+@app.route("/thankyou")
+def thankyou():
+    return render_template("thankyou.html")
+
+@app.route("/admin")
+def admin():
+    conn = sqlite3.connect("lawcolab_sales.db")
+    c = conn.cursor()
+    c.execute("SELECT * FROM leads")
+    leads = c.fetchall()
+    conn.close()
+    return render_template("admin.html", leads=leads)
+
+if __name__ == "__main__":
+    app.run(debug=True)
