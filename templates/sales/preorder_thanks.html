@@ -113,6 +113,55 @@
                         </div>
                     </div>
                     
+                    <!-- Customer Review Form -->
+                    <div class="review-section mb-5 p-4" style="background: #f0f8ff; border-radius: 10px;">
+                        <h5 class="mb-3">⭐ Share Your Experience</h5>
+                        <p class="text-muted mb-3">Help other law firms by sharing your thoughts about LawColab</p>
+                        
+                        <form action="{{ url_for('sales.submit_review') }}" method="POST" class="review-form">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Your Name *</label>
+                                    <input type="text" class="form-control" name="reviewer_name" value="{{ lead_data.name if lead_data else '' }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Law Firm Name *</label>
+                                    <input type="text" class="form-control" name="firm_name" value="{{ lead_data.firm_name if lead_data else '' }}" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Rating *</label>
+                                <div class="star-rating">
+                                    <input type="radio" name="rating" value="5" id="star5" checked>
+                                    <label for="star5"><i class="fas fa-star"></i></label>
+                                    <input type="radio" name="rating" value="4" id="star4">
+                                    <label for="star4"><i class="fas fa-star"></i></label>
+                                    <input type="radio" name="rating" value="3" id="star3">
+                                    <label for="star3"><i class="fas fa-star"></i></label>
+                                    <input type="radio" name="rating" value="2" id="star2">
+                                    <label for="star2"><i class="fas fa-star"></i></label>
+                                    <input type="radio" name="rating" value="1" id="star1">
+                                    <label for="star1"><i class="fas fa-star"></i></label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Your Review *</label>
+                                <textarea class="form-control" name="review_text" rows="4" placeholder="Tell us about your experience with LawColab..." required></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Location (Optional)</label>
+                                <input type="text" class="form-control" name="location" placeholder="City, Country">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-warning btn-sm">
+                                <i class="fas fa-star me-1"></i>Submit Review
+                            </button>
+                        </form>
+                    </div>
+
                     <!-- Action Buttons -->
                     <div class="action-buttons">
                         <a href="{{ url_for('sales.checkout') }}" class="btn btn-primary btn-lg me-3">
@@ -149,6 +198,34 @@
     0% { transform: scale(1); }
     50% { transform: scale(1.1); }
     100% { transform: scale(1); }
+}
+
+.star-rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+.star-rating input {
+    display: none;
+}
+
+.star-rating label {
+    cursor: pointer;
+    color: #ddd;
+    font-size: 1.5rem;
+    margin-right: 5px;
+    transition: color 0.2s;
+}
+
+.star-rating input:checked ~ label,
+.star-rating label:hover,
+.star-rating label:hover ~ label {
+    color: #ffd700;
+}
+
+.star-rating input:checked ~ label {
+    color: #ffd700;
 }
 
 .step-card {

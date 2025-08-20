@@ -433,3 +433,30 @@ def admin_sales_settings():
         return redirect(url_for('sales.admin_sales_settings'))
     
     return render_template('sales/admin_settings.html', settings=settings)
+
+
+@sales_bp.route('/submit-review', methods=['POST'])
+def submit_review():
+    """Handle customer review submission"""
+    try:
+        # Create new review
+        review = CustomerReview(
+            name=request.form.get('reviewer_name'),
+            firm_name=request.form.get('firm_name'),
+            rating=int(request.form.get('rating', 5)),
+            review_text=request.form.get('review_text'),
+            location=request.form.get('location'),
+            is_active=True,  # Auto-approve reviews from paying customers
+            is_featured=False
+        )
+        
+        db.session.add(review)
+        db.session.commit()
+        
+        flash('Thank you for your review! It helps other law firms discover LawColab.', 'success')
+        return redirect(url_for('sales.preorder_thanks'))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash('Could not submit review. Please try again.', 'error')
+        return redirect(url_for('sales.preorder_thanks'))
