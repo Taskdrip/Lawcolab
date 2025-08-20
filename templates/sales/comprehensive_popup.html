@@ -1,0 +1,528 @@
+{% extends "base.html" %}
+
+{% block title %}LawColab - Complete Legal Practice Management Solution{% endblock %}
+
+{% block content %}
+<!-- Fullscreen Sales Landing Page -->
+<div id="sales-popup" class="popup-container" style="display: none;">
+    <div class="popup-content" style="max-width: 100%; height: 100vh; overflow-y: auto;">
+        <button class="close-popup" onclick="hidePopup()" style="position: fixed; top: 20px; right: 20px; z-index: 1001; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px;">&times;</button>
+        
+        <!-- Hero Section -->
+        <section class="hero-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 80px 0 60px;">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-6">
+                        <h1 class="display-4 fw-bold mb-4">{{ settings.hero_title or "Transform Your Legal Practice with LawColab" }}</h1>
+                        <p class="lead mb-4">{{ settings.hero_subtitle or "The complete practice management solution trusted by 1,000+ law firms worldwide" }}</p>
+                        
+                        <!-- Key Benefits -->
+                        <div class="benefits-list mb-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-check-circle text-warning me-3"></i>
+                                <span>Save 40% of administrative time</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-check-circle text-warning me-3"></i>
+                                <span>Increase revenue by $50K+ annually</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-check-circle text-warning me-3"></i>
+                                <span>Complete client collaboration platform</span>
+                            </div>
+                        </div>
+                        
+                        <a href="#pricing" class="btn btn-warning btn-lg me-3" style="padding: 15px 30px;">
+                            <i class="fas fa-rocket me-2"></i>Get Started Today
+                        </a>
+                        <a href="#demo" class="btn btn-outline-light btn-lg" style="padding: 15px 30px;">
+                            <i class="fas fa-play me-2"></i>Watch Demo
+                        </a>
+                    </div>
+                    
+                    <div class="col-lg-6">
+                        <!-- Hero Image/Video -->
+                        <div class="hero-media">
+                            <img src="{{ settings.hero_image_url or '/static/images/lawcolab-dashboard.png' }}" 
+                                 alt="LawColab Dashboard" 
+                                 class="img-fluid rounded shadow-lg"
+                                 style="border: 3px solid rgba(255,255,255,0.2);">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Demo Video Section -->
+        <section id="demo" class="demo-section py-5 bg-light">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8 text-center">
+                        <h2 class="h2 mb-4">See LawColab in Action</h2>
+                        <p class="lead mb-4">Watch how top law firms are transforming their practice management</p>
+                        
+                        <div class="video-container mb-4">
+                            <div class="ratio ratio-16x9">
+                                <iframe src="{{ settings.demo_video_url or 'https://www.youtube.com/embed/dQw4w9WgXcQ' }}" 
+                                       title="LawColab Demo" 
+                                       allowfullscreen 
+                                       class="rounded shadow"></iframe>
+                            </div>
+                        </div>
+                        
+                        <div class="demo-stats row text-center">
+                            <div class="col-md-3">
+                                <h4 class="text-primary">1,000+</h4>
+                                <p class="text-muted">Active Law Firms</p>
+                            </div>
+                            <div class="col-md-3">
+                                <h4 class="text-success">40%</h4>
+                                <p class="text-muted">Time Savings</p>
+                            </div>
+                            <div class="col-md-3">
+                                <h4 class="text-warning">$50K+</h4>
+                                <p class="text-muted">Revenue Increase</p>
+                            </div>
+                            <div class="col-md-3">
+                                <h4 class="text-info">4.9/5</h4>
+                                <p class="text-muted">Customer Rating</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features-section py-5">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="h2 mb-4">Complete Legal Practice Management</h2>
+                    <p class="lead">Everything you need to run a modern law firm efficiently</p>
+                </div>
+                
+                <div class="row">
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="feature-card h-100 p-4 bg-white rounded shadow-sm">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-users text-primary" style="font-size: 3rem;"></i>
+                            </div>
+                            <h5>Client Management</h5>
+                            <p class="text-muted">Complete client profiles, communication history, and case tracking in one unified platform.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="feature-card h-100 p-4 bg-white rounded shadow-sm">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-file-invoice-dollar text-success" style="font-size: 3rem;"></i>
+                            </div>
+                            <h5>Smart Billing</h5>
+                            <p class="text-muted">Automated time tracking, invoice generation, and payment processing with multi-currency support.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="feature-card h-100 p-4 bg-white rounded shadow-sm">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-project-diagram text-info" style="font-size: 3rem;"></i>
+                            </div>
+                            <h5>Case Management</h5>
+                            <p class="text-muted">Organize cases, deadlines, documents, and team collaboration all in one place.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="feature-card h-100 p-4 bg-white rounded shadow-sm">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-chart-line text-warning" style="font-size: 3rem;"></i>
+                            </div>
+                            <h5>Analytics Dashboard</h5>
+                            <p class="text-muted">Real-time insights into firm performance, revenue trends, and productivity metrics.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="feature-card h-100 p-4 bg-white rounded shadow-sm">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-shield-alt text-danger" style="font-size: 3rem;"></i>
+                            </div>
+                            <h5>Security & Compliance</h5>
+                            <p class="text-muted">Bank-grade security with compliance tools for legal industry standards.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="feature-card h-100 p-4 bg-white rounded shadow-sm">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-mobile-alt text-secondary" style="font-size: 3rem;"></i>
+                            </div>
+                            <h5>Mobile Access</h5>
+                            <p class="text-muted">Full-featured mobile apps for iOS and Android with offline capability.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing Section -->
+        <section id="pricing" class="pricing-section py-5 bg-light">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="h2 mb-4">Choose Your Plan</h2>
+                    <p class="lead">Transparent pricing for every size law firm</p>
+                </div>
+                
+                <div class="row justify-content-center">
+                    <!-- Starter Plan -->
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="pricing-card card h-100 shadow-sm">
+                            <div class="card-header text-center bg-white">
+                                <h5 class="mb-0">Starter</h5>
+                                <p class="text-muted small">Solo Attorneys</p>
+                            </div>
+                            <div class="card-body text-center">
+                                <div class="price-display mb-3">
+                                    <span class="h2 text-primary">${{ "%.0f"|format(settings.starter_price) }}</span>
+                                    <span class="text-muted">/month</span>
+                                </div>
+                                <ul class="list-unstyled text-start">
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Up to 50 clients</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Basic case management</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Time tracking & billing</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Document storage (5GB)</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Email support</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Growth Plan -->
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="pricing-card card h-100 shadow-sm">
+                            <div class="card-header text-center bg-primary text-white">
+                                <h5 class="mb-0">Growth</h5>
+                                <p class="small mb-0">Small Firms</p>
+                            </div>
+                            <div class="card-body text-center">
+                                <div class="price-display mb-3">
+                                    <span class="h2 text-primary">${{ "%.0f"|format(settings.growth_price) }}</span>
+                                    <span class="text-muted">/month</span>
+                                </div>
+                                <ul class="list-unstyled text-start">
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Up to 200 clients</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Advanced case management</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Team collaboration</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Document storage (50GB)</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Priority support</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Scale Plan -->
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="pricing-card card h-100 shadow-sm border-warning">
+                            <div class="card-header text-center bg-warning">
+                                <h5 class="mb-0">Scale</h5>
+                                <p class="small mb-0">Growing Firms</p>
+                                <span class="badge bg-dark">Popular</span>
+                            </div>
+                            <div class="card-body text-center">
+                                <div class="price-display mb-3">
+                                    <span class="h2 text-primary">${{ "%.0f"|format(settings.scale_price) }}</span>
+                                    <span class="text-muted">/month</span>
+                                </div>
+                                <ul class="list-unstyled text-start">
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Unlimited clients</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Full feature access</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Advanced analytics</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Document storage (200GB)</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Phone & chat support</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Founders Plan -->
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="pricing-card card h-100 shadow-lg border-success">
+                            <div class="card-header text-center bg-success text-white">
+                                <h5 class="mb-0">Founders</h5>
+                                <p class="small mb-0">One-Time Payment</p>
+                                <span class="badge bg-warning text-dark">Limited Time</span>
+                            </div>
+                            <div class="card-body text-center">
+                                <div class="price-display mb-3">
+                                    <span class="h2 text-success">${{ "%.0f"|format(settings.founders_price) }}</span>
+                                    <span class="text-muted">/year</span>
+                                </div>
+                                <ul class="list-unstyled text-start">
+                                    <li class="mb-2"><i class="fas fa-crown text-warning me-2"></i>Everything in Scale</li>
+                                    <li class="mb-2"><i class="fas fa-crown text-warning me-2"></i>Priority features</li>
+                                    <li class="mb-2"><i class="fas fa-crown text-warning me-2"></i>White-label options</li>
+                                    <li class="mb-2"><i class="fas fa-crown text-warning me-2"></i>Unlimited storage</li>
+                                    <li class="mb-2"><i class="fas fa-crown text-warning me-2"></i>Dedicated account manager</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Checkout Form Section -->
+        <section class="checkout-section py-5">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="checkout-card bg-white rounded shadow p-5">
+                            <h3 class="text-center mb-4">Start Your LawColab Journey</h3>
+                            
+                            <form action="{{ url_for('sales.submit_lead') }}" method="POST" class="needs-validation" novalidate>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Full Name *</label>
+                                        <input type="text" class="form-control form-control-lg" name="name" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Email Address *</label>
+                                        <input type="email" class="form-control form-control-lg" name="email" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Law Firm Name *</label>
+                                        <input type="text" class="form-control form-control-lg" name="firm_name" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Phone Number</label>
+                                        <input type="tel" class="form-control form-control-lg" name="phone">
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Country</label>
+                                        <select class="form-select form-select-lg" name="country">
+                                            <option value="">Select Country</option>
+                                            <option value="US">United States</option>
+                                            <option value="CA">Canada</option>
+                                            <option value="UK">United Kingdom</option>
+                                            <option value="AU">Australia</option>
+                                            <option value="NG">Nigeria</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Team Size</label>
+                                        <select class="form-select form-select-lg" name="team_size">
+                                            <option value="">Select Size</option>
+                                            <option value="Solo">Solo Practice</option>
+                                            <option value="2-5">2-5 People</option>
+                                            <option value="6-15">6-15 People</option>
+                                            <option value="16-50">16-50 People</option>
+                                            <option value="50+">50+ People</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Select Plan *</label>
+                                        <select class="form-select form-select-lg" name="plan" required>
+                                            <option value="">Choose Plan</option>
+                                            <option value="Starter">Starter - ${{ "%.0f"|format(settings.starter_price) }}/mo</option>
+                                            <option value="Growth" selected>Growth - ${{ "%.0f"|format(settings.growth_price) }}/mo</option>
+                                            <option value="Scale">Scale - ${{ "%.0f"|format(settings.scale_price) }}/mo</option>
+                                            <option value="Founders">Founders - ${{ "%.0f"|format(settings.founders_price) }}/year</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <!-- Payment Methods -->
+                                <div class="payment-methods-section mb-4">
+                                    <h5 class="mb-3">Payment Methods</h5>
+                                    <div class="row">
+                                        <div class="col-lg-2 col-md-3 col-4 mb-3">
+                                            <div class="payment-option text-center p-3 border rounded">
+                                                <i class="fas fa-credit-card text-primary mb-2" style="font-size: 2rem;"></i>
+                                                <p class="small mb-0">Credit Card</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-2 col-md-3 col-4 mb-3">
+                                            <div class="payment-option text-center p-3 border rounded">
+                                                <i class="fas fa-university text-info mb-2" style="font-size: 2rem;"></i>
+                                                <p class="small mb-0">Bank Transfer</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-2 col-md-3 col-4 mb-3">
+                                            <div class="payment-option text-center p-3 border rounded">
+                                                <i class="fab fa-paypal text-primary mb-2" style="font-size: 2rem;"></i>
+                                                <p class="small mb-0">PayPal</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-2 col-md-3 col-4 mb-3">
+                                            <div class="payment-option text-center p-3 border rounded">
+                                                <i class="fab fa-bitcoin text-warning mb-2" style="font-size: 2rem;"></i>
+                                                <p class="small mb-0">Crypto/USDT</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-2 col-md-3 col-4 mb-3">
+                                            <div class="payment-option text-center p-3 border rounded">
+                                                <i class="fas fa-money-check text-success mb-2" style="font-size: 2rem;"></i>
+                                                <p class="small mb-0">Check</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-2 col-md-3 col-4 mb-3">
+                                            <div class="payment-option text-center p-3 border rounded">
+                                                <i class="fas fa-mobile-alt text-dark mb-2" style="font-size: 2rem;"></i>
+                                                <p class="small mb-0">Mobile Pay</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary btn-lg px-5 py-3" style="font-size: 1.2rem;">
+                                        <i class="fas fa-rocket me-2"></i>Start My Free Trial
+                                    </button>
+                                    
+                                    <p class="small text-muted mt-3">
+                                        <i class="fas fa-shield-alt text-success me-1"></i>Secure checkout • 
+                                        <i class="fas fa-undo text-info me-1"></i>30-day money back guarantee • 
+                                        <i class="fas fa-lock text-warning me-1"></i>SSL encrypted
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reviews Section -->
+        <section class="reviews-section py-5 bg-light">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="h2 mb-4">What Law Firms Say About LawColab</h2>
+                    <p class="lead">Join thousands of satisfied legal professionals</p>
+                </div>
+                
+                <div class="row">
+                    {% for review in reviews[:6] %}
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="review-card card h-100 shadow-sm">
+                            <div class="card-body">
+                                <div class="stars mb-3">
+                                    {% for i in range(review.rating) %}
+                                    <i class="fas fa-star text-warning"></i>
+                                    {% endfor %}
+                                </div>
+                                <p class="card-text">"{{ review.review_text }}"</p>
+                                <div class="reviewer-info mt-3">
+                                    <strong>{{ review.name }}</strong><br>
+                                    <small class="text-muted">{{ review.firm_name }}</small>
+                                    {% if review.location %}
+                                    <br><small class="text-muted">{{ review.location }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<style>
+.popup-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.popup-content {
+    background: white;
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    transition: all 0.3s ease;
+}
+
+.pricing-card:hover {
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+.payment-option:hover {
+    background-color: #f8f9fa;
+    border-color: #0066cc !important;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.review-card:hover {
+    transform: translateY(-3px);
+    transition: all 0.3s ease;
+}
+
+.hero-media img {
+    transition: transform 0.3s ease;
+}
+
+.hero-media:hover img {
+    transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+    .popup-content {
+        padding: 0;
+    }
+    
+    .hero-section {
+        padding: 40px 0 30px;
+    }
+    
+    .display-4 {
+        font-size: 2rem;
+    }
+}
+</style>
+
+<script>
+function hidePopup() {
+    document.getElementById('sales-popup').style.display = 'none';
+    document.body.style.overflow = 'auto';
+    
+    // Suppress popup for 24 hours when closed
+    fetch('/sales/api/suppress-popup', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+    }).catch(err => console.log('Could not suppress popup:', err));
+}
+
+// Smooth scrolling for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

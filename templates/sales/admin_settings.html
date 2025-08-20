@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Sales Page Settings - LawColab Admin{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-cog me-2"></i>Sales Page Settings</h3>
+                    <p class="mb-0">Customize your sales landing page content and pricing</p>
+                </div>
+                
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        <!-- Hero Section Settings -->
+                        <div class="settings-section mb-5">
+                            <h5 class="border-bottom pb-2 mb-4"><i class="fas fa-star me-2 text-warning"></i>Hero Section</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Hero Title</label>
+                                    <input type="text" class="form-control" name="hero_title" 
+                                           value="{{ settings.hero_title }}" 
+                                           placeholder="Transform Your Legal Practice with LawColab">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Hero Image URL</label>
+                                    <input type="url" class="form-control" name="hero_image_url" 
+                                           value="{{ settings.hero_image_url }}" 
+                                           placeholder="/static/images/dashboard.png">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Hero Subtitle</label>
+                                <textarea class="form-control" name="hero_subtitle" rows="2" 
+                                          placeholder="The complete practice management solution trusted by 1,000+ law firms worldwide">{{ settings.hero_subtitle }}</textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Demo Video URL</label>
+                                <input type="url" class="form-control" name="demo_video_url" 
+                                       value="{{ settings.demo_video_url }}" 
+                                       placeholder="https://www.youtube.com/embed/VIDEO_ID">
+                                <small class="form-text text-muted">Use YouTube embed URL format</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Pricing Settings -->
+                        <div class="settings-section mb-5">
+                            <h5 class="border-bottom pb-2 mb-4"><i class="fas fa-dollar-sign me-2 text-success"></i>Pricing Plans</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Starter Plan Price</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" name="starter_price" 
+                                               value="{{ settings.starter_price }}" step="0.01" min="0">
+                                        <span class="input-group-text">/month</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Growth Plan Price</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" name="growth_price" 
+                                               value="{{ settings.growth_price }}" step="0.01" min="0">
+                                        <span class="input-group-text">/month</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Scale Plan Price</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" name="scale_price" 
+                                               value="{{ settings.scale_price }}" step="0.01" min="0">
+                                        <span class="input-group-text">/month</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Founders Plan Price</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" name="founders_price" 
+                                               value="{{ settings.founders_price }}" step="0.01" min="0">
+                                        <span class="input-group-text">/year</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Popup Behavior Settings -->
+                        <div class="settings-section mb-5">
+                            <h5 class="border-bottom pb-2 mb-4"><i class="fas fa-window-restore me-2 text-info"></i>Popup Behavior</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="enabled" id="popup-enabled" 
+                                               {{ 'checked' if settings.enabled else '' }}>
+                                        <label class="form-check-label" for="popup-enabled">
+                                            Enable Sales Popup
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Popup Delay (seconds)</label>
+                                    <input type="number" class="form-control" name="delay_seconds" 
+                                           value="{{ settings.delay_seconds }}" min="1" max="60">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Current Preview -->
+                        <div class="settings-section mb-4">
+                            <h5 class="border-bottom pb-2 mb-4"><i class="fas fa-eye me-2 text-secondary"></i>Preview</h5>
+                            
+                            <div class="preview-card p-4 border rounded bg-light">
+                                <h4>{{ settings.hero_title }}</h4>
+                                <p class="text-muted">{{ settings.hero_subtitle }}</p>
+                                
+                                <div class="pricing-preview d-flex gap-3 flex-wrap">
+                                    <span class="badge bg-primary p-2">Starter: ${{ "%.0f"|format(settings.starter_price) }}/mo</span>
+                                    <span class="badge bg-info p-2">Growth: ${{ "%.0f"|format(settings.growth_price) }}/mo</span>
+                                    <span class="badge bg-warning text-dark p-2">Scale: ${{ "%.0f"|format(settings.scale_price) }}/mo</span>
+                                    <span class="badge bg-success p-2">Founders: ${{ "%.0f"|format(settings.founders_price) }}/year</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg me-3">
+                                <i class="fas fa-save me-2"></i>Save Settings
+                            </button>
+                            <a href="{{ url_for('sales.popup_page') }}" class="btn btn-outline-secondary btn-lg" target="_blank">
+                                <i class="fas fa-external-link-alt me-2"></i>Preview Sales Page
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h6>Test Popup</h6>
+                            <a href="/?debug=1" class="btn btn-sm btn-warning" target="_blank">
+                                <i class="fas fa-bug me-1"></i>Test with Debug Mode
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h6>View Analytics</h6>
+                            <a href="#" class="btn btn-sm btn-info">
+                                <i class="fas fa-chart-bar me-1"></i>Sales Analytics (Coming Soon)
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.settings-section {
+    border-left: 4px solid #e3f2fd;
+    padding-left: 1rem;
+}
+
+.preview-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.pricing-preview .badge {
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %}

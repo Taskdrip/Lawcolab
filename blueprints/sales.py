@@ -24,7 +24,7 @@ def popup_page():
     # Get featured reviews
     reviews = CustomerReview.query.filter_by(is_active=True).order_by(desc(CustomerReview.is_featured), CustomerReview.id).limit(20).all()
     
-    return render_template('sales/popup.html', settings=settings, reviews=reviews)
+    return render_template('sales/comprehensive_popup.html', settings=settings, reviews=reviews)
 
 @sales_bp.route('/submit-lead', methods=['POST'])
 def submit_lead():
@@ -397,3 +397,39 @@ def reset_popup_debug():
     db.session.commit()
     
     return jsonify({'success': True, 'message': 'Popup suppression reset'})
+
+
+@sales_bp.route('/admin/settings', methods=['GET', 'POST'])
+@role_required([ROLE_SUPER_ADMIN])
+def admin_sales_settings():
+    """Admin interface to edit sales page content"""
+    settings = PopupSettings.query.first()
+    if not settings:
+        settings = PopupSettings()
+        db.session.add(settings)
+        db.session.commit()
+    
+    if request.method == 'POST':
+        # Update settings from form
+        settings.hero_title = request.form.get('hero_title', settings.hero_title)
+        settings.hero_subtitle = request.form.get('hero_subtitle', settings.hero_subtitle)
+        settings.hero_image_url = request.form.get('hero_image_url', settings.hero_image_url)
+        settings.demo_video_url = request.form.get('demo_video_url', settings.demo_video_url)
+        
+        # Update pricing
+        settings.starter_price = float(request.form.get('starter_price', settings.starter_price))
+        settings.growth_price = float(request.form.get('growth_price', settings.growth_price))
+        settings.scale_price = float(request.form.get('scale_price', settings.scale_price))
+        settings.founders_price = float(request.form.get('founders_price', settings.founders_price))
+        
+        # Update popup behavior
+        settings.enabled = 'enabled' in request.form
+        settings.delay_seconds = int(request.form.get('delay_seconds', settings.delay_seconds))
+        
+        settings.updated_at = datetime.now()
+        db.session.commit()
+        
+        flash('Sales page settings updated successfully!', 'success')
+        return redirect(url_for('sales.admin_sales_settings'))
+    
+    return render_template('sales/admin_settings.html', settings=settings)
