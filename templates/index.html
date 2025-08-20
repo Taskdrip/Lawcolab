@@ -31,6 +31,20 @@
             <!-- Quick signup form -->
             <div class="text-center">
                 <p class="lead mb-4">🚀 Get early access with a <strong>50% discount</strong> for the first 100 law firms!</p>
+                
+                <!-- Payment Method Logos for Homepage -->
+                <div class="payment-logos mb-4">
+                    <p class="small text-muted mb-3">We accept all major payment methods:</p>
+                    <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
+                        <span class="payment-logo badge bg-light text-dark p-2">💳 Credit Card</span>
+                        <span class="payment-logo badge bg-light text-dark p-2">🏦 Bank Transfer</span>
+                        <span class="payment-logo badge bg-light text-dark p-2">💰 USDT</span>
+                        <span class="payment-logo badge bg-light text-dark p-2">💰 PayPal</span>
+                        <span class="payment-logo badge bg-light text-dark p-2">📄 Cheque</span>
+                        <span class="payment-logo badge bg-light text-dark p-2">₿ Crypto</span>
+                    </div>
+                </div>
+                
                 <a href="{{ url_for('sales.popup_page') }}" class="btn btn-primary btn-lg">
                     <i class="fas fa-rocket me-2"></i>Reserve My Access Now!
                 </a>
@@ -324,29 +338,41 @@ function hidePopup() {
 
 // Auto-show popup after 7 seconds or scroll
 let hasScrolled = false;
+let popupShown = false;
 
 function initPopup() {
-    if (!sessionStorage.getItem('popup-shown')) {
+    // Check if we should show popup (only on homepage and not already shown this session)
+    const isHomepage = window.location.pathname === '/' || window.location.pathname === '';
+    
+    if (isHomepage && !sessionStorage.getItem('popup-shown-today')) {
+        console.log('Initializing popup timer for 7 seconds...');
+        
         // Show after 7 seconds
         setTimeout(() => {
-            if (!sessionStorage.getItem('popup-shown')) {
+            if (!popupShown && !sessionStorage.getItem('popup-shown-today')) {
+                console.log('7 seconds passed, showing popup...');
                 showPopup();
-                sessionStorage.setItem('popup-shown', 'true');
+                popupShown = true;
+                sessionStorage.setItem('popup-shown-today', new Date().toDateString());
             }
         }, 7000);
         
         // Or show on scroll (whichever comes first)
         window.addEventListener('scroll', function() {
-            if (!hasScrolled && window.scrollY > 200 && !sessionStorage.getItem('popup-shown')) {
+            if (!hasScrolled && window.scrollY > 300 && !popupShown && !sessionStorage.getItem('popup-shown-today')) {
                 hasScrolled = true;
+                console.log('User scrolled, showing popup...');
                 setTimeout(() => {
-                    if (!sessionStorage.getItem('popup-shown')) {
+                    if (!popupShown && !sessionStorage.getItem('popup-shown-today')) {
                         showPopup();
-                        sessionStorage.setItem('popup-shown', 'true');
+                        popupShown = true;
+                        sessionStorage.setItem('popup-shown-today', new Date().toDateString());
                     }
                 }, 1000);
             }
         });
+    } else {
+        console.log('Popup already shown today or not on homepage');
     }
 }
 
@@ -386,6 +412,21 @@ function startCountdown() {
 document.addEventListener('DOMContentLoaded', function() {
     initPopup();
     startCountdown();
+    
+    // Debug: Add button to clear session storage for testing
+    if (window.location.search.includes('debug=1')) {
+        const debugBtn = document.createElement('button');
+        debugBtn.textContent = 'Clear Popup Session (Debug)';
+        debugBtn.className = 'btn btn-sm btn-warning position-fixed';
+        debugBtn.style.top = '10px';
+        debugBtn.style.right = '10px';
+        debugBtn.style.zIndex = '10000';
+        debugBtn.onclick = function() {
+            sessionStorage.removeItem('popup-shown-today');
+            alert('Popup session cleared. Refresh to test.');
+        };
+        document.body.appendChild(debugBtn);
+    }
 });
 
 // Close popup on escape key

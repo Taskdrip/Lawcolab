@@ -75,8 +75,8 @@ def submit_lead():
         session['lead_data'] = lead_data
         session['lead_id'] = new_lead.id
         
-        flash('Thank you! Redirecting to checkout...', 'success')
-        return redirect(url_for('sales.checkout'))
+        flash('Thank you! Your pre-order has been submitted successfully.', 'success')
+        return redirect(url_for('sales.preorder_thanks'))
         
     except Exception as e:
         db.session.rollback()
@@ -314,3 +314,10 @@ def get_payment_method(method_id):
         'type': method.type,
         'details': method.details
     })
+
+
+@sales_bp.route('/preorder-thanks')
+def preorder_thanks():
+    """Pre-order thank you page"""
+    lead_data = session.get('lead_data')
+    return render_template('sales/preorder_thanks.html', lead_data=lead_data)
