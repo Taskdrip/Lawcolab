@@ -165,7 +165,13 @@
                                     SWIFT Code: FBNNNGLA<br>
                                     Reference: LAWCOLAB-{{ lead_data.name if lead_data else 'FOUNDER' }}
                                 </div>
-                                <small class="text-muted mt-2 d-block">Transfer ${{ settings.founder_price or 1348 }} USD. Please include the reference number and email proof to support@lawcolab.com</small>
+                                <small class="text-muted mt-2 d-block">Transfer 
+                                {% if lead_data.plan == 'Founders' %}$1,348
+                                {% elif lead_data.plan == 'Starter' %} ${{ "%.0f"|format(settings.starter_price) }}
+                                {% elif lead_data.plan == 'Growth' %} ${{ "%.0f"|format(settings.growth_price) }}
+                                {% elif lead_data.plan == 'Scale' %} ${{ "%.0f"|format(settings.scale_price) }}
+                                {% else %} ${{ settings.founder_price or 1348 }}
+                                {% endif %} USD. Please include the reference number and email proof to support@lawcolab.com</small>
                             </div>
                         </div>
 
@@ -183,8 +189,20 @@
                                 <strong>PayPal Payment:</strong><br>
                                 <div class="crypto-address">
                                     PayPal Email: payments@taskdrip.com<br>
-                                    Amount: ${{ settings.founder_price or 1348 }} USD<br>
-                                    Note: LAWCOLAB Founder Pack - {{ lead_data.name if lead_data else 'Customer' }}
+                                    Amount: 
+                                    {% if lead_data.plan == 'Founders' %}$1,348
+                                    {% elif lead_data.plan == 'Starter' %}${{ "%.0f"|format(settings.starter_price) }}
+                                    {% elif lead_data.plan == 'Growth' %}${{ "%.0f"|format(settings.growth_price) }}
+                                    {% elif lead_data.plan == 'Scale' %}${{ "%.0f"|format(settings.scale_price) }}
+                                    {% else %}${{ settings.founder_price or 1348 }}
+                                    {% endif %} USD<br>
+                                    Note: LAWCOLAB 
+                                    {% if lead_data.plan == 'Founders' %}Founder Pack
+                                    {% elif lead_data.plan == 'Starter' %}Starter Plan
+                                    {% elif lead_data.plan == 'Growth' %}Growth Plan
+                                    {% elif lead_data.plan == 'Scale' %}Scale Plan
+                                    {% else %}Founder Pack
+                                    {% endif %} - {{ lead_data.name if lead_data else 'Customer' }}
                                 </div>
                                 <small class="text-muted mt-2 d-block">Send payment as "Friends & Family" to avoid fees, or add 3.5% for goods/services fee</small>
                             </div>
@@ -203,7 +221,13 @@
                             <div class="payment-details mt-3" style="display: none;">
                                 <strong>USDT-TRC20 Address:</strong>
                                 <div class="crypto-address">TXm7w8SDGVqCKPTRKbfFMLKxWkR9VqsKEn</div>
-                                <small class="text-muted mt-2 d-block">Send ${{ settings.founder_price or 1348 }} USDT on Tron network only. Email transaction hash to support@lawcolab.com</small>
+                                <small class="text-muted mt-2 d-block">Send 
+                                {% if lead_data.plan == 'Founders' %}$1,348
+                                {% elif lead_data.plan == 'Starter' %}${{ "%.0f"|format(settings.starter_price) }}
+                                {% elif lead_data.plan == 'Growth' %}${{ "%.0f"|format(settings.growth_price) }}
+                                {% elif lead_data.plan == 'Scale' %}${{ "%.0f"|format(settings.scale_price) }}
+                                {% else %}${{ settings.founder_price or 1348 }}
+                                {% endif %} USDT on Tron network only. Email transaction hash to support@lawcolab.com</small>
                             </div>
                         </div>
 
@@ -220,7 +244,13 @@
                             <div class="payment-details mt-3" style="display: none;">
                                 <strong>TON Wallet Address:</strong>
                                 <div class="crypto-address">UQB8KkPvdyJP8AKQs6QKWpFJqS-KWGCmkPIW8QgJTkQqEGh5</div>
-                                <small class="text-muted mt-2 d-block">Send equivalent of ${{ settings.founder_price or 1348 }} USD in TON. Check current rate and email transaction to support@lawcolab.com</small>
+                                <small class="text-muted mt-2 d-block">Send equivalent of 
+                                {% if lead_data.plan == 'Founders' %}$1,348
+                                {% elif lead_data.plan == 'Starter' %}${{ "%.0f"|format(settings.starter_price) }}
+                                {% elif lead_data.plan == 'Growth' %}${{ "%.0f"|format(settings.growth_price) }}
+                                {% elif lead_data.plan == 'Scale' %}${{ "%.0f"|format(settings.scale_price) }}
+                                {% else %}${{ settings.founder_price or 1348 }}
+                                {% endif %} USD in TON. Check current rate and email transaction to support@lawcolab.com</small>
                             </div>
                         </div>
 
@@ -237,7 +267,13 @@
                             <div class="payment-details mt-3" style="display: none;">
                                 <strong>AVAX Wallet Address:</strong>
                                 <div class="crypto-address">0x742d35Cc6634C0532925a3b8D48E16F6b2e67B8f</div>
-                                <small class="text-muted mt-2 d-block">Send equivalent of ${{ settings.founder_price or 1348 }} USD in AVAX. Email transaction hash to support@lawcolab.com</small>
+                                <small class="text-muted mt-2 d-block">Send equivalent of 
+                                {% if lead_data.plan == 'Founders' %}$1,348
+                                {% elif lead_data.plan == 'Starter' %}${{ "%.0f"|format(settings.starter_price) }}
+                                {% elif lead_data.plan == 'Growth' %}${{ "%.0f"|format(settings.growth_price) }}
+                                {% elif lead_data.plan == 'Scale' %}${{ "%.0f"|format(settings.scale_price) }}
+                                {% else %}${{ settings.founder_price or 1348 }}
+                                {% endif %} USD in AVAX. Email transaction hash to support@lawcolab.com</small>
                             </div>
                         </div>
 
@@ -254,7 +290,13 @@
                             <div class="payment-details mt-3" style="display: none;">
                                 <strong>Solana Wallet Address:</strong>
                                 <div class="crypto-address">8KvwgzKXBEztWhYYfrZ4MdFAe6WjHXzNbzr5B8R2CueT</div>
-                                <small class="text-muted mt-2 d-block">Send equivalent of ${{ settings.founder_price or 1348 }} USD in SOL. Email transaction hash to support@lawcolab.com</small>
+                                <small class="text-muted mt-2 d-block">Send equivalent of 
+                                {% if lead_data.plan == 'Founders' %}$1,348
+                                {% elif lead_data.plan == 'Starter' %}${{ "%.0f"|format(settings.starter_price) }}
+                                {% elif lead_data.plan == 'Growth' %}${{ "%.0f"|format(settings.growth_price) }}
+                                {% elif lead_data.plan == 'Scale' %}${{ "%.0f"|format(settings.scale_price) }}
+                                {% else %}${{ settings.founder_price or 1348 }}
+                                {% endif %} USD in SOL. Email transaction hash to support@lawcolab.com</small>
                             </div>
                         </div>
 
