@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Technical Support - LawColab</title>
+    <title>Technical Support - LAWCOLAB</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -76,7 +76,7 @@
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            <h3>Welcome to LawColab Technical Support!</h3>
+            <h3>Welcome to LAWCOLAB Technical Support!</h3>
             <div class="support-rep">
                 <div class="rep-avatar">👨‍💻</div>
                 <div>
@@ -90,7 +90,7 @@
         <div class="chat-body">
             {% if lead_data %}
             <div class="alert alert-success" role="alert">
-                <strong>🎉 Welcome {{ lead_data.name }}!</strong> Thank you for choosing LawColab Founder Pack. Your account setup is our top priority.
+                <strong>🎉 Welcome {{ lead_data.name }}!</strong> Thank you for choosing LAWCOLAB Founder Pack. Your account setup is our top priority.
             </div>
             {% endif %}
 
@@ -107,7 +107,7 @@
                 <div class="contact-card" onclick="openEmail()">
                     <div class="contact-icon">📧</div>
                     <h6>Email Support</h6>
-                    <p class="text-muted small">support@lawcolab.com</p>
+                    <p class="text-muted small">support@LAWCOLAB.com</p>
                     <p class="small">Detailed help • Response within 2-4 hours</p>
                 </div>
                 
@@ -165,7 +165,7 @@
     <script>
         function openWhatsApp() {
             {% if lead_data %}
-            const message = `Hi Abraham! I just signed up for the LawColab Founder Pack.
+            const message = `Hi Abraham! I just signed up for the LAWCOLAB Founder Pack.
 
 My Details:
 - Name: {{ lead_data.name }}
@@ -174,7 +174,7 @@ My Details:
 
 I'm ready to get started with the setup process. When can we schedule my onboarding session?`;
             {% else %}
-            const message = `Hi Abraham! I'm interested in LawColab and would like to learn more about the Founder Pack and setup process.`;
+            const message = `Hi Abraham! I'm interested in LAWCOLAB and would like to learn more about the Founder Pack and setup process.`;
             {% endif %}
             
             const encodedMessage = encodeURIComponent(message);
@@ -183,10 +183,10 @@ I'm ready to get started with the setup process. When can we schedule my onboard
 
         function openEmail() {
             {% if lead_data %}
-            const subject = `LawColab Founder Pack Setup - {{ lead_data.name }} ({{ lead_data.firm }})`;
+            const subject = `LAWCOLAB Founder Pack Setup - {{ lead_data.name }} ({{ lead_data.firm }})`;
             const body = `Dear Abraham,
 
-I just completed my LawColab Founder Pack registration and I'm excited to get started!
+I just completed my LAWCOLAB Founder Pack registration and I'm excited to get started!
 
 My Details:
 - Name: {{ lead_data.name }}
@@ -202,15 +202,15 @@ Please let me know the next steps for:
 3. Scheduling my complimentary 1-on-1 training session
 4. Any additional information you need from me
 
-Looking forward to transforming our law firm operations with LawColab!
+Looking forward to transforming our law firm operations with LAWCOLAB!
 
 Best regards,
 {{ lead_data.name }}`;
             {% else %}
-            const subject = `LawColab Inquiry - Founder Pack Information`;
+            const subject = `LAWCOLAB Inquiry - Founder Pack Information`;
             const body = `Dear Abraham,
 
-I'm interested in learning more about LawColab and the Founder Pack offering. Could you please provide more information about:
+I'm interested in learning more about LAWCOLAB and the Founder Pack offering. Could you please provide more information about:
 
 1. The setup process
 2. Pricing and payment options
@@ -224,13 +224,13 @@ Best regards,`;
             
             const encodedSubject = encodeURIComponent(subject);
             const encodedBody = encodeURIComponent(body);
-            window.open(`mailto:support@lawcolab.com?subject=${encodedSubject}&body=${encodedBody}`);
+            window.open(`mailto:support@LAWCOLAB.com?subject=${encodedSubject}&body=${encodedBody}`);
         }
 
         function scheduleMeeting() {
             // For now, redirect to WhatsApp with meeting request
             {% if lead_data %}
-            const message = `Hi Abraham! I'd like to schedule a video call for my LawColab Founder Pack setup.
+            const message = `Hi Abraham! I'd like to schedule a video call for my LAWCOLAB Founder Pack setup.
 
 My Details:
 - Name: {{ lead_data.name }}
@@ -239,7 +239,7 @@ My Details:
 
 I'm available for a 30-60 minute video call to discuss setup and get personalized training. What times work best for you this week?`;
             {% else %}
-            const message = `Hi Abraham! I'd like to schedule a video call to learn more about LawColab and discuss the Founder Pack. What times work best for you this week?`;
+            const message = `Hi Abraham! I'd like to schedule a video call to learn more about LAWCOLAB and discuss the Founder Pack. What times work best for you this week?`;
             {% endif %}
             
             const encodedMessage = encodeURIComponent(message);
