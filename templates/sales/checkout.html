@@ -260,7 +260,17 @@
 
                         <div class="text-center mt-4">
                             <button type="submit" class="complete-btn" id="completeBtn" disabled style="background: linear-gradient(45deg, #28a745, #20c997, #17a2b8); border: none; color: white; padding: 18px 50px; border-radius: 25px; font-weight: 700; font-size: 1.2rem; box-shadow: 0 10px 30px rgba(40,167,69,0.4); transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; width: 100%; max-width: 400px;" onmouseover="this.style.transform='translateY(-2px) scale(1.02)'; this.style.boxShadow='0 15px 40px rgba(40,167,69,0.6)'" onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 10px 30px rgba(40,167,69,0.4)'">
-                                Complete Purchase - ${{ settings.founder_price or 1348 }}
+                                {% if lead_data.plan == 'Founders' %}
+                                Complete Purchase - $1,348
+                                {% elif lead_data.plan == 'Starter' %}
+                                Complete Purchase - ${{ "%.0f"|format(settings.starter_price) }}
+                                {% elif lead_data.plan == 'Growth' %}
+                                Complete Purchase - ${{ "%.0f"|format(settings.growth_price) }}
+                                {% elif lead_data.plan == 'Scale' %}
+                                Complete Purchase - ${{ "%.0f"|format(settings.scale_price) }}
+                                {% else %}
+                                Complete Purchase
+                                {% endif %}
                             </button>
                         </div>
                     </form>
@@ -280,32 +290,85 @@
 
                         <hr>
                         
+                        {% if lead_data.plan == 'Founders' %}
                         <div class="d-flex justify-content-between mb-2">
                             <span>LAWCOLAB Founder Pack</span>
-                            <span class="fw-bold">${{ settings.founder_price or 1348 }}</span>
+                            <span class="fw-bold">$1,348</span>
                         </div>
                         
                         <div class="d-flex justify-content-between mb-2 text-success">
                             <span>Founder Discount</span>
-                            <span>-${{ (settings.regular_price or 3548) - (settings.founder_price or 1348) }}</span>
+                            <span>-$2,200</span>
                         </div>
                         
                         <hr>
                         
                         <div class="d-flex justify-content-between mb-3">
                             <strong>Total (1 Year)</strong>
-                            <strong class="text-success">${{ settings.founder_price or 1348 }}</strong>
+                            <strong class="text-success">$1,348</strong>
                         </div>
+                        {% elif lead_data.plan == 'Starter' %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>LAWCOLAB Starter Plan</span>
+                            <span class="fw-bold">${{ "%.0f"|format(settings.starter_price) }}</span>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="d-flex justify-content-between mb-3">
+                            <strong>Total (Monthly)</strong>
+                            <strong class="text-primary">${{ "%.0f"|format(settings.starter_price) }}</strong>
+                        </div>
+                        {% elif lead_data.plan == 'Growth' %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>LAWCOLAB Growth Plan</span>
+                            <span class="fw-bold">${{ "%.0f"|format(settings.growth_price) }}</span>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="d-flex justify-content-between mb-3">
+                            <strong>Total (Monthly)</strong>
+                            <strong class="text-primary">${{ "%.0f"|format(settings.growth_price) }}</strong>
+                        </div>
+                        {% elif lead_data.plan == 'Scale' %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>LAWCOLAB Scale Plan</span>
+                            <span class="fw-bold">${{ "%.0f"|format(settings.scale_price) }}</span>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="d-flex justify-content-between mb-3">
+                            <strong>Total (Monthly)</strong>
+                            <strong class="text-primary">${{ "%.0f"|format(settings.scale_price) }}</strong>
+                        </div>
+                        {% else %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Selected Plan</span>
+                            <span class="fw-bold">Please select a plan</span>
+                        </div>
+                        {% endif %}
 
+                        {% if lead_data.plan == 'Founders' %}
                         <div class="text-center">
                             <div class="badge bg-success mb-2">62% OFF Regular Price</div>
                             <div class="small text-muted">
-                                You save ${{ (settings.regular_price or 3548) - (settings.founder_price or 1348) }} with Founder Pack
+                                You save $2,200 with Founder Pack
                             </div>
                         </div>
+                        {% else %}
+                        <div class="text-center">
+                            <div class="badge bg-primary mb-2">{{ lead_data.plan }} Plan Selected</div>
+                            <div class="small text-muted">
+                                Professional law firm management
+                            </div>
+                        </div>
+                        {% endif %}
 
                         <hr>
 
+                        {% if lead_data.plan == 'Founders' %}
                         <h6>What's Included:</h6>
                         <ul class="list-unstyled small">
                             <li>✅ Enterprise Plan (1 Year)</li>
@@ -315,6 +378,36 @@
                             <li>✅ Advanced Features</li>
                             <li>✅ Founder Status Badge</li>
                         </ul>
+                        {% elif lead_data.plan == 'Starter' %}
+                        <h6>What's Included:</h6>
+                        <ul class="list-unstyled small">
+                            <li>✅ Basic Case Management</li>
+                            <li>✅ Client Portal</li>
+                            <li>✅ Document Storage</li>
+                            <li>✅ Email Support</li>
+                            <li>✅ Up to 5 Cases</li>
+                        </ul>
+                        {% elif lead_data.plan == 'Growth' %}
+                        <h6>What's Included:</h6>
+                        <ul class="list-unstyled small">
+                            <li>✅ Advanced Case Management</li>
+                            <li>✅ Team Collaboration</li>
+                            <li>✅ Client Portal & Communication</li>
+                            <li>✅ Priority Support</li>
+                            <li>✅ Unlimited Cases</li>
+                            <li>✅ Custom Workflows</li>
+                        </ul>
+                        {% elif lead_data.plan == 'Scale' %}
+                        <h6>What's Included:</h6>
+                        <ul class="list-unstyled small">
+                            <li>✅ Enterprise Features</li>
+                            <li>✅ Advanced Analytics</li>
+                            <li>✅ API Access</li>
+                            <li>✅ White-Label Options</li>
+                            <li>✅ Dedicated Support</li>
+                            <li>✅ Custom Integrations</li>
+                        </ul>
+                        {% endif %}
                     </div>
 
                     <div class="text-center mt-3">

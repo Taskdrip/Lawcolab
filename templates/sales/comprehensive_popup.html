@@ -668,12 +668,12 @@
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label">Select Plan *</label>
-                                        <select class="form-select form-select-lg" name="plan" required>
+                                        <select class="form-select form-select-lg" name="plan" id="planSelect" required onchange="updateButtonText()">
                                             <option value="">Choose Plan</option>
-                                            <option value="Starter">Starter - ${{ "%.0f"|format(settings.starter_price) }}/mo</option>
-                                            <option value="Growth" selected>Growth - ${{ "%.0f"|format(settings.growth_price) }}/mo</option>
-                                            <option value="Scale">Scale - ${{ "%.0f"|format(settings.scale_price) }}/mo</option>
-                                            <option value="Founders">Founders - ${{ "%.0f"|format(settings.founders_price) }}/year</option>
+                                            <option value="Starter" data-price="{{ "%.0f"|format(settings.starter_price) }}" data-period="mo">Starter - ${{ "%.0f"|format(settings.starter_price) }}/mo</option>
+                                            <option value="Growth" data-price="{{ "%.0f"|format(settings.growth_price) }}" data-period="mo" selected>Growth - ${{ "%.0f"|format(settings.growth_price) }}/mo</option>
+                                            <option value="Scale" data-price="{{ "%.0f"|format(settings.scale_price) }}" data-period="mo">Scale - ${{ "%.0f"|format(settings.scale_price) }}/mo</option>
+                                            <option value="Founders" data-price="1348" data-period="year">Founders - $1,348/year</option>
                                         </select>
                                     </div>
                                 </div>
@@ -681,8 +681,8 @@
 
                                 
                                 <div class="text-center">
-                                    <button type="submit" class="btn btn-lg w-100" style="background: linear-gradient(45deg, #FFD700, #FFA500); color: #000; font-size: 1rem; font-weight: 700; border: none; border-radius: 12px; box-shadow: 0 8px 25px rgba(255,215,0,0.4); padding: 18px 15px; line-height: 1.3; white-space: nowrap; overflow: visible; text-overflow: clip;">
-                                        🚀 Reserve Founder Pack - $1,348/year
+                                    <button type="submit" id="reserveButton" class="btn btn-lg w-100" style="background: linear-gradient(45deg, #FFD700, #FFA500); color: #000; font-size: 1rem; font-weight: 700; border: none; border-radius: 12px; box-shadow: 0 8px 25px rgba(255,215,0,0.4); padding: 18px 15px; line-height: 1.3; white-space: nowrap; overflow: visible; text-overflow: clip;">
+                                        🚀 Reserve Growth Plan - ${{ "%.0f"|format(settings.growth_price) }}/mo
                                     </button>
                                     
                                     <p class="small text-muted mt-3">
@@ -1394,6 +1394,41 @@
 function hidePopup() {
     document.getElementById('sales-popup').style.display = 'none';
 }
+
+function updateButtonText() {
+    const planSelect = document.getElementById('planSelect');
+    const reserveButton = document.getElementById('reserveButton');
+    const selectedOption = planSelect.options[planSelect.selectedIndex];
+    
+    if (selectedOption.value === '') {
+        reserveButton.innerHTML = '🚀 Choose Plan First';
+        reserveButton.disabled = true;
+        reserveButton.style.background = 'linear-gradient(45deg, #ccc, #999)';
+        return;
+    }
+    
+    reserveButton.disabled = false;
+    reserveButton.style.background = 'linear-gradient(45deg, #FFD700, #FFA500)';
+    
+    const planName = selectedOption.value;
+    const price = selectedOption.getAttribute('data-price');
+    const period = selectedOption.getAttribute('data-period');
+    
+    let buttonText = '';
+    if (planName === 'Founders') {
+        buttonText = `👑 Reserve Founder Pack - $${price}/${period}`;
+        reserveButton.style.background = 'linear-gradient(45deg, #FFD700, #FFA500, #FF8C00)';
+    } else {
+        buttonText = `🚀 Reserve ${planName} Plan - $${price}/${period}`;
+    }
+    
+    reserveButton.innerHTML = buttonText;
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateButtonText();
+});
 
 function processCheckout() {
     // First try to scroll to the checkout form (the actual form to fill out)
