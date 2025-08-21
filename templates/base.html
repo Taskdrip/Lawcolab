@@ -20,11 +20,14 @@
     <!-- Clean Simple Styling with Mobile Optimization -->
     <style>
         /* Simple clean design: white background, black text */
-        body {
+        html, body {
             background-color: #ffffff;
             color: #000000;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             overflow-x: hidden; /* Prevent horizontal scroll */
+            overflow-y: auto; /* Ensure vertical scrolling is enabled */
+            height: auto; /* Allow natural height */
+            min-height: 100vh; /* Minimum full viewport height */
         }
         
         /* Mobile-first responsive container */

@@ -16,6 +16,31 @@
 .navbar-nav .nav-link:hover {
     background-color: #f8f9fa;
 }
+
+/* Ensure scrolling works properly */
+html {
+    overflow-y: scroll !important;
+    scroll-behavior: smooth;
+}
+
+body {
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 100vh;
+    position: relative !important;
+}
+
+/* Fix any fixed positioning issues */
+.container, .container-fluid {
+    position: relative;
+    z-index: 1;
+}
+
+/* Ensure sections don't prevent scrolling */
+section {
+    position: relative;
+    overflow: visible;
+}
 </style>
 {% endblock %}
 
@@ -25,7 +50,7 @@
 <!-- Removed duplicate popup - using comprehensive popup only -->
 <!-- Public landing page only - authenticated users are redirected server-side -->
     <!-- Clean, Replit-inspired Landing Page -->
-    <div style="background: #ffffff; min-height: 100vh;">
+    <div style="background: #ffffff; min-height: 100vh; overflow-y: auto; position: relative;">
         
         <!-- Hero Section -->
         <section class="hero" style="padding: 80px 0; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);">
