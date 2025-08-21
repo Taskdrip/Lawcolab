@@ -121,8 +121,17 @@
 <body>
     <div class="checkout-container">
         <div class="checkout-header">
-            <h2>Complete Your LAWCOLAB Founder Pack Purchase</h2>
-            <p class="mb-0">Just one more step to secure your exclusive founder status!</p>
+            <h2>Complete Your LAWCOLAB 
+            {% if lead_data.plan == 'Founders' %}Founder Pack Purchase
+            {% elif lead_data.plan == 'Starter' %}Starter Plan Purchase
+            {% elif lead_data.plan == 'Growth' %}Growth Plan Purchase
+            {% elif lead_data.plan == 'Scale' %}Scale Plan Purchase
+            {% else %}Plan Purchase
+            {% endif %}</h2>
+            <p class="mb-0">
+            {% if lead_data.plan == 'Founders' %}Just one more step to secure your exclusive founder status!
+            {% else %}Just one more step to activate your professional law firm management solution!
+            {% endif %}</p>
         </div>
         
         <div class="p-4 p-md-5">
