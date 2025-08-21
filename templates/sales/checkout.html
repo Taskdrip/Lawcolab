@@ -81,6 +81,41 @@
             transform: translateY(-2px);
             color: white;
         }
+        
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+            .payment-method {
+                padding: 15px;
+                margin-bottom: 12px;
+            }
+            
+            .payment-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+                margin-right: 12px;
+            }
+            
+            .complete-btn {
+                padding: 20px 30px !important;
+                font-size: 1.1rem !important;
+                width: 100% !important;
+                max-width: none !important;
+            }
+            
+            .checkout-container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .checkout-header {
+                padding: 20px;
+            }
+            
+            .checkout-header h2 {
+                font-size: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -224,7 +259,7 @@
                         </div>
 
                         <div class="text-center mt-4">
-                            <button type="submit" class="complete-btn" id="completeBtn" disabled>
+                            <button type="submit" class="complete-btn" id="completeBtn" disabled style="background: linear-gradient(45deg, #28a745, #20c997, #17a2b8); border: none; color: white; padding: 18px 50px; border-radius: 25px; font-weight: 700; font-size: 1.2rem; box-shadow: 0 10px 30px rgba(40,167,69,0.4); transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; width: 100%; max-width: 400px;" onmouseover="this.style.transform='translateY(-2px) scale(1.02)'; this.style.boxShadow='0 15px 40px rgba(40,167,69,0.6)'" onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 10px 30px rgba(40,167,69,0.4)'">
                                 Complete Purchase - ${{ settings.founder_price or 1348 }}
                             </button>
                         </div>
