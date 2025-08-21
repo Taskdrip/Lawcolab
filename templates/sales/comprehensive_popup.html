@@ -392,8 +392,8 @@
         <section id="founder-pack" class="founder-pack-section py-5" style="background: linear-gradient(45deg, #f8f9fa, #e9ecef);">
             <div class="container">
                 <div class="text-center mb-5">
-                    <h2 class="h1 mb-4" style="color: #333;">🏆 Exclusive Founder Pack</h2>
-                    <p class="lead" style="color: #666; max-width: 700px; margin: 0 auto;">Limited to the first 100 pre-orders only. Get your first year for just $1,348 plus exclusive bonuses worth over $6,000!</p>
+                    <h2 class="display-3 mb-4" style="color: #333; font-weight: 900; background: linear-gradient(45deg, #667eea, #764ba2, #f093fb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-shadow: 0 8px 16px rgba(0,0,0,0.2); font-family: 'Inter', system-ui, sans-serif; letter-spacing: 2px; line-height: 1.2;">🏆 Exclusive Founder Pack</h2>
+                    <p class="lead mb-4" style="font-size: 1.3rem; font-weight: 600; color: #555; line-height: 1.6; text-shadow: 0 2px 4px rgba(0,0,0,0.1); font-family: 'Inter', sans-serif; max-width: 700px; margin: 0 auto;">Limited to the first 100 pre-orders only. Get your first year for just <span style="color: #28a745; font-weight: 800; font-size: 1.4rem;">$1,348</span> plus exclusive bonuses worth over <span style="color: #dc3545; font-weight: 800; font-size: 1.4rem;">$6,000!</span></p>
                 </div>
                 
                 <div class="row justify-content-center">
@@ -487,8 +487,9 @@
                             
                             <!-- CTA Button -->
                             <div class="text-center">
-                                <a href="#checkout" class="btn btn-lg" style="background: linear-gradient(45deg, #FFD700, #FFA500); color: #000 !important; padding: 20px 50px; font-size: 1.4rem; font-weight: 700; border-radius: 15px; border: none; box-shadow: 0 8px 25px rgba(255,215,0,0.4); text-decoration: none; display: inline-block; transition: all 0.3s;">
-                                    👑 Secure My Founder Pack - ${{ settings.founder_price or 1348 }}/year
+                                <a href="#checkout" class="btn btn-lg" style="background: linear-gradient(45deg, #FFD700, #FFA500, #FF8C00); color: #000 !important; padding: 25px 60px; font-size: 1.5rem; font-weight: 800; border-radius: 20px; border: 3px solid #FFD700; box-shadow: 0 12px 35px rgba(255,215,0,0.5), 0 6px 15px rgba(255,140,0,0.3); text-decoration: none; display: inline-block; transition: all 0.4s ease; text-transform: uppercase; letter-spacing: 1px; font-family: 'Inter', sans-serif; position: relative; overflow: hidden;" onmouseover="this.style.transform='translateY(-3px) scale(1.05)'; this.style.boxShadow='0 20px 50px rgba(255,215,0,0.7)'" onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 12px 35px rgba(255,215,0,0.5)'">
+                                    <span style="position: relative; z-index: 2;">👑 Secure My Founder Pack - ${{ settings.founder_price or 1348 }}/year</span>
+                                    <div style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transition: left 0.5s;"></div>
                                 </a>
                                 <p class="small text-muted mt-3 mb-0">
                                     🛡️ 30-day money back guarantee • 
