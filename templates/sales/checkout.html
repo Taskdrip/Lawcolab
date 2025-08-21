@@ -165,22 +165,74 @@
                                 <input type="radio" name="payment_method" value="bank_transfer" class="form-check-input">
                             </div>
                             <div class="payment-details mt-3" style="display: none;">
-                                <strong>Bank Details:</strong><br>
-                                <div class="crypto-address">
-                                    Bank Name: First Bank of Nigeria<br>
-                                    Account Name: Taskdrip Global Solutions<br>
-                                    Account Number: 3124567890<br>
-                                    Routing Number: 221149828<br>
-                                    SWIFT Code: FBNNNGLA<br>
-                                    Reference: LAWCOLAB-{{ lead_data.name if lead_data else 'FOUNDER' }}
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <div class="payment-info-card p-3" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; border-left: 4px solid #007bff;">
+                                            <h6 class="text-primary mb-3"><i class="fas fa-university me-2"></i>Bank Transfer Details</h6>
+                                            
+                                            <div class="row g-2">
+                                                <div class="col-md-6">
+                                                    <div class="payment-field">
+                                                        <small class="text-muted">Bank Name</small>
+                                                        <div class="fw-bold">First Bank of Nigeria</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="payment-field">
+                                                        <small class="text-muted">Account Name</small>
+                                                        <div class="fw-bold">Taskdrip Global Solutions</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="payment-field">
+                                                        <small class="text-muted">Account Number</small>
+                                                        <div class="font-monospace fw-bold text-primary">3124567890</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="payment-field">
+                                                        <small class="text-muted">Routing Number</small>
+                                                        <div class="font-monospace fw-bold text-primary">221149828</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="payment-field">
+                                                        <small class="text-muted">SWIFT Code</small>
+                                                        <div class="font-monospace fw-bold text-primary">FBNNNGLA</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="payment-field">
+                                                        <small class="text-muted">Amount</small>
+                                                        <div class="fw-bold text-success fs-5">
+                                                        {% if lead_data.plan == 'Founders' %}$1,348 USD
+                                                        {% elif lead_data.plan == 'Starter' %} ${{ "%.0f"|format(settings.starter_price) }} USD
+                                                        {% elif lead_data.plan == 'Growth' %} ${{ "%.0f"|format(settings.growth_price) }} USD
+                                                        {% elif lead_data.plan == 'Scale' %} ${{ "%.0f"|format(settings.scale_price) }} USD
+                                                        {% else %} ${{ settings.founder_price or 1348 }} USD
+                                                        {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mt-3 p-2" style="background: rgba(0,123,255,0.1); border-radius: 8px;">
+                                                <small class="text-primary fw-bold">Reference:</small>
+                                                <span class="font-monospace ms-2">LAWCOLAB-
+                                                {% if lead_data.plan == 'Founders' %}FOUNDER
+                                                {% elif lead_data.plan == 'Starter' %}STARTER
+                                                {% elif lead_data.plan == 'Growth' %}GROWTH
+                                                {% elif lead_data.plan == 'Scale' %}SCALE
+                                                {% else %}FOUNDER
+                                                {% endif %}-{{ lead_data.name if lead_data else 'CUSTOMER' }}</span>
+                                            </div>
+                                            
+                                            <div class="alert alert-warning mb-0 mt-3">
+                                                <small><i class="fas fa-exclamation-circle me-1"></i>Include reference number and email proof to support@lawcolab.com</small>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <small class="text-muted mt-2 d-block">Transfer 
-                                {% if lead_data.plan == 'Founders' %}$1,348
-                                {% elif lead_data.plan == 'Starter' %} ${{ "%.0f"|format(settings.starter_price) }}
-                                {% elif lead_data.plan == 'Growth' %} ${{ "%.0f"|format(settings.growth_price) }}
-                                {% elif lead_data.plan == 'Scale' %} ${{ "%.0f"|format(settings.scale_price) }}
-                                {% else %} ${{ settings.founder_price or 1348 }}
-                                {% endif %} USD. Please include the reference number and email proof to support@lawcolab.com</small>
                             </div>
                         </div>
 
@@ -195,25 +247,45 @@
                                 <input type="radio" name="payment_method" value="paypal" class="form-check-input">
                             </div>
                             <div class="payment-details mt-3" style="display: none;">
-                                <strong>PayPal Payment:</strong><br>
-                                <div class="crypto-address">
-                                    PayPal Email: payments@taskdrip.com<br>
-                                    Amount: 
-                                    {% if lead_data.plan == 'Founders' %}$1,348
-                                    {% elif lead_data.plan == 'Starter' %}${{ "%.0f"|format(settings.starter_price) }}
-                                    {% elif lead_data.plan == 'Growth' %}${{ "%.0f"|format(settings.growth_price) }}
-                                    {% elif lead_data.plan == 'Scale' %}${{ "%.0f"|format(settings.scale_price) }}
-                                    {% else %}${{ settings.founder_price or 1348 }}
-                                    {% endif %} USD<br>
-                                    Note: LAWCOLAB 
-                                    {% if lead_data.plan == 'Founders' %}Founder Pack
-                                    {% elif lead_data.plan == 'Starter' %}Starter Plan
-                                    {% elif lead_data.plan == 'Growth' %}Growth Plan
-                                    {% elif lead_data.plan == 'Scale' %}Scale Plan
-                                    {% else %}Founder Pack
-                                    {% endif %} - {{ lead_data.name if lead_data else 'Customer' }}
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <div class="payment-info-card p-3" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; border-left: 4px solid #0070ba;">
+                                            <h6 class="text-primary mb-3"><i class="fas fa-credit-card me-2"></i>PayPal Payment Details</h6>
+                                            
+                                            <div class="payment-field mb-2">
+                                                <strong class="text-dark">Email:</strong>
+                                                <span class="ms-2 badge bg-primary">payments@taskdrip.com</span>
+                                            </div>
+                                            
+                                            <div class="payment-field mb-2">
+                                                <strong class="text-dark">Amount:</strong>
+                                                <span class="ms-2 text-success fw-bold fs-5">
+                                                {% if lead_data.plan == 'Founders' %}$1,348 USD
+                                                {% elif lead_data.plan == 'Starter' %} ${{ "%.0f"|format(settings.starter_price) }} USD
+                                                {% elif lead_data.plan == 'Growth' %} ${{ "%.0f"|format(settings.growth_price) }} USD
+                                                {% elif lead_data.plan == 'Scale' %} ${{ "%.0f"|format(settings.scale_price) }} USD
+                                                {% else %} ${{ settings.founder_price or 1348 }} USD
+                                                {% endif %}
+                                                </span>
+                                            </div>
+                                            
+                                            <div class="payment-field mb-3">
+                                                <strong class="text-dark">Reference:</strong>
+                                                <span class="ms-2 font-monospace text-info">LAWCOLAB-
+                                                {% if lead_data.plan == 'Founders' %}FOUNDER
+                                                {% elif lead_data.plan == 'Starter' %}STARTER
+                                                {% elif lead_data.plan == 'Growth' %}GROWTH
+                                                {% elif lead_data.plan == 'Scale' %}SCALE
+                                                {% else %}FOUNDER
+                                                {% endif %}-{{ lead_data.name if lead_data else 'CUSTOMER' }}</span>
+                                            </div>
+                                            
+                                            <div class="alert alert-info mb-0">
+                                                <small><i class="fas fa-info-circle me-1"></i>Send as "Friends & Family" to avoid fees, or add 3.5% for goods/services</small>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <small class="text-muted mt-2 d-block">Send payment as "Friends & Family" to avoid fees, or add 3.5% for goods/services fee</small>
                             </div>
                         </div>
 
@@ -228,15 +300,36 @@
                                 <input type="radio" name="payment_method" value="usdt_tron" class="form-check-input">
                             </div>
                             <div class="payment-details mt-3" style="display: none;">
-                                <strong>USDT-TRC20 Address:</strong>
-                                <div class="crypto-address">TXm7w8SDGVqCKPTRKbfFMLKxWkR9VqsKEn</div>
-                                <small class="text-muted mt-2 d-block">Send 
-                                {% if lead_data.plan == 'Founders' %}$1,348
-                                {% elif lead_data.plan == 'Starter' %}${{ "%.0f"|format(settings.starter_price) }}
-                                {% elif lead_data.plan == 'Growth' %}${{ "%.0f"|format(settings.growth_price) }}
-                                {% elif lead_data.plan == 'Scale' %}${{ "%.0f"|format(settings.scale_price) }}
-                                {% else %}${{ settings.founder_price or 1348 }}
-                                {% endif %} USDT on Tron network only. Email transaction hash to support@lawcolab.com</small>
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <div class="payment-info-card p-3" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe0e0 100%); border-radius: 12px; border-left: 4px solid #ff0000;">
+                                            <h6 class="text-danger mb-3"><i class="fab fa-bitcoin me-2"></i>USDT (Tron Network) Payment</h6>
+                                            
+                                            <div class="payment-field mb-3">
+                                                <small class="text-muted">Wallet Address (TRC-20)</small>
+                                                <div class="crypto-address p-2 mt-1" style="background: #fff; border: 1px solid #dee2e6; border-radius: 6px;">
+                                                    <code class="text-primary">TXm7w8SDGVqCKPTRKbfFMLKxWkR9VqsKEn</code>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="payment-field mb-3">
+                                                <small class="text-muted">Amount to Send</small>
+                                                <div class="fw-bold text-success fs-5">
+                                                {% if lead_data.plan == 'Founders' %}$1,348 USDT
+                                                {% elif lead_data.plan == 'Starter' %} ${{ "%.0f"|format(settings.starter_price) }} USDT
+                                                {% elif lead_data.plan == 'Growth' %} ${{ "%.0f"|format(settings.growth_price) }} USDT
+                                                {% elif lead_data.plan == 'Scale' %} ${{ "%.0f"|format(settings.scale_price) }} USDT
+                                                {% else %} ${{ settings.founder_price or 1348 }} USDT
+                                                {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="alert alert-danger mb-0">
+                                                <small><i class="fas fa-exclamation-triangle me-1"></i><strong>Tron Network Only!</strong> Email transaction hash to support@lawcolab.com</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -251,15 +344,36 @@
                                 <input type="radio" name="payment_method" value="ton" class="form-check-input">
                             </div>
                             <div class="payment-details mt-3" style="display: none;">
-                                <strong>TON Wallet Address:</strong>
-                                <div class="crypto-address">UQB8KkPvdyJP8AKQs6QKWpFJqS-KWGCmkPIW8QgJTkQqEGh5</div>
-                                <small class="text-muted mt-2 d-block">Send equivalent of 
-                                {% if lead_data.plan == 'Founders' %}$1,348
-                                {% elif lead_data.plan == 'Starter' %}${{ "%.0f"|format(settings.starter_price) }}
-                                {% elif lead_data.plan == 'Growth' %}${{ "%.0f"|format(settings.growth_price) }}
-                                {% elif lead_data.plan == 'Scale' %}${{ "%.0f"|format(settings.scale_price) }}
-                                {% else %}${{ settings.founder_price or 1348 }}
-                                {% endif %} USD in TON. Check current rate and email transaction to support@lawcolab.com</small>
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <div class="payment-info-card p-3" style="background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%); border-radius: 12px; border-left: 4px solid #0088cc;">
+                                            <h6 class="text-info mb-3"><i class="fas fa-gem me-2"></i>TON (The Open Network) Payment</h6>
+                                            
+                                            <div class="payment-field mb-3">
+                                                <small class="text-muted">TON Wallet Address</small>
+                                                <div class="crypto-address p-2 mt-1" style="background: #fff; border: 1px solid #dee2e6; border-radius: 6px;">
+                                                    <code class="text-primary">UQB8KkPvdyJP8AKQs6QKWpFJqS-KWGCmkPIW8QgJTkQqEGh5</code>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="payment-field mb-3">
+                                                <small class="text-muted">USD Equivalent</small>
+                                                <div class="fw-bold text-success fs-5">
+                                                {% if lead_data.plan == 'Founders' %}$1,348 USD
+                                                {% elif lead_data.plan == 'Starter' %} ${{ "%.0f"|format(settings.starter_price) }} USD
+                                                {% elif lead_data.plan == 'Growth' %} ${{ "%.0f"|format(settings.growth_price) }} USD
+                                                {% elif lead_data.plan == 'Scale' %} ${{ "%.0f"|format(settings.scale_price) }} USD
+                                                {% else %} ${{ settings.founder_price or 1348 }} USD
+                                                {% endif %} in TON
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="alert alert-info mb-0">
+                                                <small><i class="fas fa-chart-line me-1"></i>Check current TON rate and email transaction hash to support@lawcolab.com</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -274,15 +388,36 @@
                                 <input type="radio" name="payment_method" value="avax" class="form-check-input">
                             </div>
                             <div class="payment-details mt-3" style="display: none;">
-                                <strong>AVAX Wallet Address:</strong>
-                                <div class="crypto-address">0x742d35Cc6634C0532925a3b8D48E16F6b2e67B8f</div>
-                                <small class="text-muted mt-2 d-block">Send equivalent of 
-                                {% if lead_data.plan == 'Founders' %}$1,348
-                                {% elif lead_data.plan == 'Starter' %}${{ "%.0f"|format(settings.starter_price) }}
-                                {% elif lead_data.plan == 'Growth' %}${{ "%.0f"|format(settings.growth_price) }}
-                                {% elif lead_data.plan == 'Scale' %}${{ "%.0f"|format(settings.scale_price) }}
-                                {% else %}${{ settings.founder_price or 1348 }}
-                                {% endif %} USD in AVAX. Email transaction hash to support@lawcolab.com</small>
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <div class="payment-info-card p-3" style="background: linear-gradient(135deg, #fff0f0 0%, #ffe5e5 100%); border-radius: 12px; border-left: 4px solid #e84142;">
+                                            <h6 class="text-danger mb-3"><i class="fas fa-mountain me-2"></i>AVAX (Avalanche) Payment</h6>
+                                            
+                                            <div class="payment-field mb-3">
+                                                <small class="text-muted">AVAX Wallet Address</small>
+                                                <div class="crypto-address p-2 mt-1" style="background: #fff; border: 1px solid #dee2e6; border-radius: 6px;">
+                                                    <code class="text-primary">0x742d35Cc6634C0532925a3b8D48E16F6b2e67B8f</code>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="payment-field mb-3">
+                                                <small class="text-muted">USD Equivalent</small>
+                                                <div class="fw-bold text-success fs-5">
+                                                {% if lead_data.plan == 'Founders' %}$1,348 USD
+                                                {% elif lead_data.plan == 'Starter' %} ${{ "%.0f"|format(settings.starter_price) }} USD
+                                                {% elif lead_data.plan == 'Growth' %} ${{ "%.0f"|format(settings.growth_price) }} USD
+                                                {% elif lead_data.plan == 'Scale' %} ${{ "%.0f"|format(settings.scale_price) }} USD
+                                                {% else %} ${{ settings.founder_price or 1348 }} USD
+                                                {% endif %} in AVAX
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="alert alert-warning mb-0">
+                                                <small><i class="fas fa-snowflake me-1"></i>Email transaction hash to support@lawcolab.com after payment</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -297,15 +432,36 @@
                                 <input type="radio" name="payment_method" value="solana" class="form-check-input">
                             </div>
                             <div class="payment-details mt-3" style="display: none;">
-                                <strong>Solana Wallet Address:</strong>
-                                <div class="crypto-address">8KvwgzKXBEztWhYYfrZ4MdFAe6WjHXzNbzr5B8R2CueT</div>
-                                <small class="text-muted mt-2 d-block">Send equivalent of 
-                                {% if lead_data.plan == 'Founders' %}$1,348
-                                {% elif lead_data.plan == 'Starter' %}${{ "%.0f"|format(settings.starter_price) }}
-                                {% elif lead_data.plan == 'Growth' %}${{ "%.0f"|format(settings.growth_price) }}
-                                {% elif lead_data.plan == 'Scale' %}${{ "%.0f"|format(settings.scale_price) }}
-                                {% else %}${{ settings.founder_price or 1348 }}
-                                {% endif %} USD in SOL. Email transaction hash to support@lawcolab.com</small>
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <div class="payment-info-card p-3" style="background: linear-gradient(135deg, #f8f0ff 0%, #ede0ff 100%); border-radius: 12px; border-left: 4px solid #9945ff;">
+                                            <h6 class="text-purple mb-3" style="color: #9945ff;"><i class="fas fa-sun me-2"></i>SOL (Solana) Payment</h6>
+                                            
+                                            <div class="payment-field mb-3">
+                                                <small class="text-muted">Solana Wallet Address</small>
+                                                <div class="crypto-address p-2 mt-1" style="background: #fff; border: 1px solid #dee2e6; border-radius: 6px;">
+                                                    <code class="text-primary">8KvwgzKXBEztWhYYfrZ4MdFAe6WjHXzNbzr5B8R2CueT</code>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="payment-field mb-3">
+                                                <small class="text-muted">USD Equivalent</small>
+                                                <div class="fw-bold text-success fs-5">
+                                                {% if lead_data.plan == 'Founders' %}$1,348 USD
+                                                {% elif lead_data.plan == 'Starter' %} ${{ "%.0f"|format(settings.starter_price) }} USD
+                                                {% elif lead_data.plan == 'Growth' %} ${{ "%.0f"|format(settings.growth_price) }} USD
+                                                {% elif lead_data.plan == 'Scale' %} ${{ "%.0f"|format(settings.scale_price) }} USD
+                                                {% else %} ${{ settings.founder_price or 1348 }} USD
+                                                {% endif %} in SOL
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="alert alert-primary mb-0" style="background-color: rgba(153, 69, 255, 0.1); border-color: #9945ff;">
+                                                <small><i class="fas fa-bolt me-1"></i>Lightning-fast payments! Email transaction hash to support@lawcolab.com</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
