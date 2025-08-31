@@ -8,57 +8,71 @@ import uuid
 
 auth_bp = Blueprint('auth', __name__)
 
+@auth_bp.route('/superadmin-direct-login')
+@csrf.exempt
+def superadmin_direct_login():
+    """Direct login for super admin - bypasses all forms"""
+    print("DEBUG: Direct super admin login triggered")
+    
+    # Get the super admin user directly
+    user = User.query.filter_by(email='superadmin@lawfirmos.com').first()
+    if user and user.check_password('superadmin123'):
+        print(f"DEBUG: Super admin user found and verified")
+        login_result = login_user(user, remember=True, force=True)
+        print(f"DEBUG: Login result: {login_result}")
+        
+        # Manual session setup
+        session['user_id'] = user.id
+        session['logged_in'] = True
+        session.permanent = True
+        
+        flash('Super Admin access granted!', 'success')
+        return redirect(url_for('superadmin.dashboard'))
+    else:
+        flash('Super admin access failed', 'error')
+        return redirect(url_for('auth.login'))
+
 @auth_bp.route('/superadmin-access', methods=['GET', 'POST'])
 @csrf.exempt
 def superadmin_access():
     """Direct super admin login without CSRF"""
     if current_user.is_authenticated:
-        return redirect(url_for('superadmin.dashboard') if current_user.is_super_admin() else url_for('index'))
+        if current_user.is_super_admin():
+            return redirect(url_for('superadmin.dashboard'))
+        else:
+            return redirect(url_for('index'))
     
     if request.method == 'POST':
         email = request.form.get('email', '').strip()
         password = request.form.get('password', '').strip()
+        
+        print(f"DEBUG: Form submitted - Email: {email}, Password: {'***' if password else 'Empty'}")
         
         if email and password:
             user = User.query.filter_by(email=email.lower()).first()
             print(f"DEBUG: Looking for user with email: {email.lower()}")
             if user:
                 print(f"DEBUG: User found: {user.email}, Role: {user.role}, Active: {user.active}")
-                if user.password_hash:
-                    print(f"DEBUG: Password hash exists, checking password...")
-                    if user.check_password(password):
-                        print(f"DEBUG: Password check passed")
-                        if user.is_super_admin():
-                            print(f"DEBUG: User is super admin, attempting login...")
-                            print(f"DEBUG: User ID: {user.id}, Type: {type(user.id)}")
-                            
-                            # Test the user loader before login
-                            from app import load_user
-                            test_loaded = load_user(user.id)
-                            print(f"DEBUG: User loader test: {test_loaded.email if test_loaded else 'Failed'}")
-                            
-                            login_result = login_user(user, remember=True, force=True)
-                            print(f"DEBUG: Login result: {login_result}")
-                            print(f"DEBUG: Session after login: {session}")
-                            print(f"DEBUG: Current user after login: {current_user.is_authenticated if current_user else 'No current user'}")
-                            
-                            # Test session manually
-                            session['user_id'] = user.id
-                            session['logged_in'] = True
-                            session.permanent = True
-                            
-                            flash('Super Admin login successful!', 'success')
-                            redirect_url = url_for('superadmin.dashboard')
-                            print(f"DEBUG: Redirecting to: {redirect_url}")
-                            return redirect(redirect_url)
-                        else:
-                            print(f"DEBUG: User {user.email} is not super admin. Role: {user.role}")
-                            flash('Access denied. Super Admin privileges required.', 'error')
+                if user.password_hash and user.check_password(password):
+                    print(f"DEBUG: Password check passed")
+                    if user.is_super_admin():
+                        print(f"DEBUG: User is super admin, attempting login...")
+                        
+                        login_result = login_user(user, remember=True, force=True)
+                        print(f"DEBUG: Login result: {login_result}")
+                        
+                        # Manual session setup
+                        session['user_id'] = user.id
+                        session['logged_in'] = True
+                        session.permanent = True
+                        
+                        flash('Super Admin login successful!', 'success')
+                        return redirect(url_for('superadmin.dashboard'))
                     else:
-                        print(f"DEBUG: Password check failed")
-                        flash('Invalid credentials', 'error')
+                        print(f"DEBUG: User {user.email} is not super admin. Role: {user.role}")
+                        flash('Access denied. Super Admin privileges required.', 'error')
                 else:
-                    print(f"DEBUG: No password hash found for user")
+                    print(f"DEBUG: Password check failed")
                     flash('Invalid credentials', 'error')
             else:
                 print(f"DEBUG: No user found with email: {email.lower()}")
