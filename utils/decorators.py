@@ -31,7 +31,9 @@ def require_admin(f):
     @simple_login_required
     def decorated_function(*args, **kwargs):
         if not (current_user.is_admin() or current_user.is_super_admin()):
+            print(f"DEBUG: Access denied for {current_user.email} - not admin or super admin")
             abort(403)
+        print(f"DEBUG: Admin access granted for {current_user.email}")
         return f(*args, **kwargs)
     return decorated_function
 
@@ -40,6 +42,7 @@ def require_team_member_or_admin(f):
     @simple_login_required
     def decorated_function(*args, **kwargs):
         if not (current_user.is_admin() or current_user.is_team_member() or current_user.is_super_admin()):
+            print(f"DEBUG: Access denied for {current_user.email} - insufficient privileges")
             abort(403)
         return f(*args, **kwargs)
     return decorated_function

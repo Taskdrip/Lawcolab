@@ -45,6 +45,107 @@ def dashboard():
                          recent_admins=recent_admins,
                          support_requests=support_requests)
 
+@superadmin_bp.route('/users')
+@require_super_admin
+def manage_users():
+    """Manage all users on the platform"""
+    search = request.args.get('search', '')
+    role_filter = request.args.get('role', '')
+    page = request.args.get('page', 1, type=int)
+    
+    query = User.query
+    if search:
+        query = query.filter(
+            or_(
+                User.email.contains(search),
+                User.first_name.contains(search),
+                User.last_name.contains(search)
+            )
+        )
+    if role_filter:
+        query = query.filter_by(role=role_filter)
+    
+    users = query.order_by(User.created_at.desc()).paginate(
+        page=page, per_page=20, error_out=False
+    )
+    
+    return render_template('superadmin/manage_users.html', users=users, search=search, role_filter=role_filter)
+
+@superadmin_bp.route('/users/<user_id>/toggle-status', methods=['POST'])
+@require_super_admin
+def toggle_user_status():
+    """Activate/deactivate user account"""
+    user_id = request.form.get('user_id')
+    user = User.query.get_or_404(user_id)
+    
+    user.active = not user.active
+    db.session.commit()
+    
+    status = "activated" if user.active else "deactivated"
+    flash(f'User {user.email} has been {status}.', 'success')
+    return redirect(request.referrer or url_for('superadmin.manage_users'))
+
+@superadmin_bp.route('/users/<user_id>/delete', methods=['POST'])
+@require_super_admin
+def delete_user():
+    """Delete user account"""
+    user_id = request.form.get('user_id')
+    user = User.query.get_or_404(user_id)
+    
+    if user.is_super_admin():
+        flash('Cannot delete super admin account.', 'error')
+        return redirect(request.referrer or url_for('superadmin.manage_users'))
+    
+    email = user.email
+    db.session.delete(user)
+    db.session.commit()
+    
+    flash(f'User {email} has been permanently deleted.', 'success')
+    return redirect(url_for('superadmin.manage_users'))
+
+@superadmin_bp.route('/analytics')
+@require_super_admin
+def platform_analytics():
+    """Comprehensive platform analytics"""
+    from datetime import datetime, timedelta
+    from sqlalchemy import func
+    
+    # Time-based analytics
+    last_30_days = datetime.now() - timedelta(days=30)
+    last_7_days = datetime.now() - timedelta(days=7)
+    
+    # User growth metrics
+    total_users = User.query.count()
+    new_users_30_days = User.query.filter(User.created_at >= last_30_days).count()
+    new_users_7_days = User.query.filter(User.created_at >= last_7_days).count()
+    
+    # Law firm metrics
+    total_firms = LawFirm.query.count()
+    new_firms_30_days = LawFirm.query.filter(LawFirm.created_at >= last_30_days).count()
+    
+    # Project metrics
+    total_projects = Project.query.count()
+    active_projects = Project.query.filter_by(status='active').count()
+    
+    # User role breakdown
+    role_stats = db.session.query(
+        User.role, func.count(User.id)
+    ).group_by(User.role).all()
+    
+    analytics = {
+        'total_users': total_users,
+        'new_users_30_days': new_users_30_days,
+        'new_users_7_days': new_users_7_days,
+        'total_firms': total_firms,
+        'new_firms_30_days': new_firms_30_days,
+        'total_projects': total_projects,
+        'active_projects': active_projects,
+        'role_stats': dict(role_stats),
+        'user_growth_rate': round((new_users_30_days / total_users * 100), 2) if total_users > 0 else 0
+    }
+    
+    return render_template('superadmin/analytics.html', analytics=analytics)
+
 @superadmin_bp.route('/law-firms')
 @require_super_admin
 def manage_law_firms():
