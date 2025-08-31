@@ -67,6 +67,7 @@
                             <th>Law Firm</th>
                             <th>Status</th>
                             <th>Featured</th>
+                            <th>Verification</th>
                             <th>Reviews</th>
                             <th>Rating</th>
                             <th>Views</th>
@@ -105,6 +106,33 @@
                                 <small class="text-muted d-block">Order: {{ showcase.showcase_order }}</small>
                                 {% else %}
                                 <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if showcase.is_verified %}
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <div>
+                                        <span class="badge bg-success">Verified</span>
+                                        {% if showcase.verification_reason %}
+                                        <small class="text-muted d-block">{{ showcase.verification_reason }}</small>
+                                        {% endif %}
+                                        {% if showcase.verified_date %}
+                                        <small class="text-muted d-block">{{ showcase.verified_date.strftime('%m/%d/%Y') }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% else %}
+                                <button class="btn btn-outline-success btn-sm" 
+                                        onclick="showVerificationModal({{ showcase.id }}, '{{ showcase.law_firm.name }}')">
+                                    <i class="fas fa-shield-alt me-1"></i>Grant Badge
+                                </button>
+                                {% endif %}
+                                {% if showcase.is_verified %}
+                                <button class="btn btn-outline-danger btn-sm mt-1" 
+                                        onclick="revokeVerification({{ showcase.id }}, '{{ showcase.law_firm.name }}')">
+                                    <i class="fas fa-times me-1"></i>Revoke
+                                </button>
                                 {% endif %}
                             </td>
                             <td>
@@ -161,4 +189,125 @@
         </div>
     </div>
 </div>
+
+<!-- Verification Modal -->
+<div class="modal fade" id="verificationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Grant Verified Badge</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="verificationForm">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Verified badges should only be granted to law firms that have subscribed to the premium package (1-year discounted plan or higher).
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Law Firm</label>
+                        <input type="text" class="form-control" id="firmNameDisplay" readonly>
+                        <input type="hidden" id="showcaseId">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="verificationReason" class="form-label">Verification Reason</label>
+                        <select class="form-select" id="verificationReason" required>
+                            <option value="">Select reason for verification</option>
+                            <option value="1-year premium subscription">1-Year Premium Subscription</option>
+                            <option value="6-month premium subscription">6-Month Premium Subscription</option>
+                            <option value="3-month premium subscription">3-Month Premium Subscription</option>
+                            <option value="Outstanding law firm">Outstanding Law Firm</option>
+                            <option value="Platform partner">Platform Partner</option>
+                            <option value="Manual review">Manual Review</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="verificationNotes" class="form-label">Additional Notes (Optional)</label>
+                        <textarea class="form-control" id="verificationNotes" rows="3" 
+                                  placeholder="Any additional notes about this verification..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check-circle me-2"></i>Grant Verified Badge
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function showVerificationModal(showcaseId, firmName) {
+    document.getElementById('showcaseId').value = showcaseId;
+    document.getElementById('firmNameDisplay').value = firmName;
+    document.getElementById('verificationReason').value = '';
+    document.getElementById('verificationNotes').value = '';
+    
+    const modal = new bootstrap.Modal(document.getElementById('verificationModal'));
+    modal.show();
+}
+
+function revokeVerification(showcaseId, firmName) {
+    if (!confirm(`Are you sure you want to revoke the verified badge from ${firmName}?`)) {
+        return;
+    }
+    
+    fetch(`/showcase/admin/revoke-verification/${showcaseId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while revoking verification');
+    });
+}
+
+document.getElementById('verificationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const showcaseId = document.getElementById('showcaseId').value;
+    const reason = document.getElementById('verificationReason').value;
+    const notes = document.getElementById('verificationNotes').value;
+    
+    fetch(`/showcase/admin/grant-verification/${showcaseId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            reason: reason,
+            notes: notes
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while granting verification');
+    });
+});
+</script>
 {% endblock %}

@@ -801,6 +801,12 @@ class LawFirmShowcase(db.Model):
     average_rating = db.Column(db.Numeric(3, 2), default=5.0)
     total_views = db.Column(db.Integer, default=0)
     
+    # Verification system
+    is_verified = db.Column(db.Boolean, default=False)
+    verified_date = db.Column(db.DateTime, nullable=True)
+    verified_by_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=True)
+    verification_reason = db.Column(db.String(200), nullable=True)  # e.g., "1-year premium subscription"
+    
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
@@ -808,6 +814,7 @@ class LawFirmShowcase(db.Model):
     law_firm = db.relationship('LawFirm', back_populates='showcase')
     public_reviews = db.relationship('PublicLawFirmReview', back_populates='showcase', cascade='all, delete-orphan')
     public_messages = db.relationship('PublicLawFirmMessage', back_populates='showcase', cascade='all, delete-orphan')
+    verified_by = db.relationship('User', foreign_keys=[verified_by_id])
 
 
 class PublicLawFirmReview(db.Model):

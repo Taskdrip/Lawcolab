@@ -373,6 +373,63 @@ def admin_delete_message(message_id):
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)})
 
+@showcase_bp.route('/admin/grant-verification/<int:showcase_id>', methods=['POST'])
+@login_required
+@role_required(ROLE_SUPER_ADMIN)
+def admin_grant_verification(showcase_id):
+    """Grant verified badge to a law firm showcase"""
+    showcase = LawFirmShowcase.query.get_or_404(showcase_id)
+    
+    try:
+        data = request.get_json()
+        reason = data.get('reason', '').strip()
+        notes = data.get('notes', '').strip()
+        
+        if not reason:
+            return jsonify({'success': False, 'message': 'Verification reason is required'})
+        
+        # Update showcase verification
+        showcase.is_verified = True
+        showcase.verified_date = datetime.now()
+        showcase.verified_by_id = current_user.id
+        showcase.verification_reason = reason
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True, 
+            'message': f'Verified badge granted to {showcase.law_firm.name}'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
+@showcase_bp.route('/admin/revoke-verification/<int:showcase_id>', methods=['POST'])
+@login_required
+@role_required(ROLE_SUPER_ADMIN)
+def admin_revoke_verification(showcase_id):
+    """Revoke verified badge from a law firm showcase"""
+    showcase = LawFirmShowcase.query.get_or_404(showcase_id)
+    
+    try:
+        # Remove verification
+        showcase.is_verified = False
+        showcase.verified_date = None
+        showcase.verified_by_id = None
+        showcase.verification_reason = None
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True, 
+            'message': f'Verified badge revoked from {showcase.law_firm.name}'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
 def update_showcase_stats(showcase_id):
     """Update showcase statistics (reviews count and average rating)"""
     showcase = LawFirmShowcase.query.get(showcase_id)
