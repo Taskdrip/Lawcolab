@@ -27,7 +27,7 @@ class PaymentGateway(db.Model):
     # Metadata
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    created_by_id = db.Column(db.String, db.ForeignKey('users.id'))
+    created_by_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=True)
     
     # Relationships
     escrow_transactions = db.relationship('EscrowTransaction', backref='payment_gateway', lazy='dynamic')

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hire {{ law_firm.name }} - LawColab</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .main-header { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; padding: 2rem 0; }
+        .firm-card { background: white; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); padding: 2rem; margin-bottom: 2rem; }
+        .payment-option { border: 2px solid #e9ecef; border-radius: 10px; padding: 1.5rem; margin-bottom: 1rem; cursor: pointer; transition: all 0.3s; }
+        .payment-option:hover { border-color: #007bff; background-color: #f8f9ff; }
+        .payment-option.selected { border-color: #007bff; background-color: #e3f2fd; }
+        .payment-icon { font-size: 2rem; margin-bottom: 1rem; }
+        .escrow-badge { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; }
+        .security-feature { background: #f8f9fa; border-left: 4px solid #28a745; padding: 1rem; margin: 0.5rem 0; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="main-header">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ url_for('showcase.public_showcase') }}" class="text-white">Law Firms</a></li>
+                    <li class="breadcrumb-item active text-white-50">Hire {{ law_firm.name }}</li>
+                </ol>
+            </nav>
+            <h1><i class="fas fa-handshake me-2"></i>Hire {{ law_firm.name }}</h1>
+            <p class="mb-0">Secure escrow payment system - Your funds are protected until work completion</p>
+        </div>
+    </div>
+
+    <div class="container mt-4">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="row">
+            <!-- Law Firm Information -->
+            <div class="col-lg-4">
+                <div class="firm-card">
+                    <div class="text-center mb-3">
+                        {% if law_firm.logo_url %}
+                        <img src="{{ law_firm.logo_url }}" alt="{{ law_firm.name }}" class="img-fluid rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px; font-size: 2rem;">
+                            {{ law_firm.name[0] }}
+                        </div>
+                        {% endif %}
+                        <h4>{{ law_firm.name }}</h4>
+                        <span class="escrow-badge">
+                            <i class="fas fa-shield-alt me-1"></i>Escrow Protected
+                        </span>
+                    </div>
+                    
+                    {% if law_firm.description %}
+                    <p class="text-muted">{{ law_firm.description }}</p>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <h6><i class="fas fa-envelope text-primary me-2"></i>Contact</h6>
+                        <p class="mb-1">{{ law_firm.email }}</p>
+                        {% if law_firm.phone %}
+                        <p class="mb-0">{{ law_firm.phone }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    {% if lawyers %}
+                    <div class="mb-3">
+                        <h6><i class="fas fa-users text-primary me-2"></i>Our Lawyers</h6>
+                        {% for lawyer in lawyers[:3] %}
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                {{ lawyer.first_name[0] if lawyer.first_name else 'L' }}
+                            </div>
+                            <small>{{ lawyer.full_name }}</small>
+                        </div>
+                        {% endfor %}
+                        {% if lawyers|length > 3 %}
+                        <small class="text-muted">+{{ lawyers|length - 3 }} more lawyers</small>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    {% if recent_projects %}
+                    <div>
+                        <h6><i class="fas fa-trophy text-warning me-2"></i>Recent Success</h6>
+                        <small class="text-muted">{{ recent_projects|length }} completed projects with 100% client satisfaction</small>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Security Features -->
+                <div class="firm-card">
+                    <h5><i class="fas fa-shield-alt text-success me-2"></i>Escrow Protection</h5>
+                    <div class="security-feature">
+                        <strong>Secure Payment Holding</strong>
+                        <p class="mb-0 small">Your payment is held securely until you approve the completed work.</p>
+                    </div>
+                    <div class="security-feature">
+                        <strong>Dispute Resolution</strong>
+                        <p class="mb-0 small">Built-in mediation system for any issues that may arise.</p>
+                    </div>
+                    <div class="security-feature">
+                        <strong>Money Back Guarantee</strong>
+                        <p class="mb-0 small">Full refund if work is not completed as agreed.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hiring Form -->
+            <div class="col-lg-8">
+                <div class="firm-card">
+                    <h3><i class="fas fa-file-contract text-primary me-2"></i>Create Escrow Agreement</h3>
+                    <p class="text-muted">Describe your legal needs and set up secure payment</p>
+                    
+                    <form method="POST" action="{{ url_for('escrow.create_escrow_transaction', firm_id=law_firm.id) }}">
+                        <!-- Service Description -->
+                        <div class="mb-4">
+                            <label for="service_description" class="form-label">Legal Service Description *</label>
+                            <textarea class="form-control" name="service_description" id="service_description" rows="4" required
+                                      placeholder="Describe the legal services you need (e.g., contract review, incorporation, litigation support, etc.)"></textarea>
+                            <div class="form-text">Be specific about your requirements and expected deliverables</div>
+                        </div>
+
+                        <!-- Amount -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="amount" class="form-label">Service Amount ($) *</label>
+                                <input type="number" class="form-control" name="amount" id="amount" min="1" step="0.01" required
+                                       placeholder="1000.00">
+                                <div class="form-text">Base amount for the legal services</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="deadline" class="form-label">Expected Completion</label>
+                                <input type="date" class="form-control" name="deadline" id="deadline">
+                                <div class="form-text">When do you need this completed?</div>
+                            </div>
+                        </div>
+
+                        <!-- Lawyer Assignment -->
+                        {% if lawyers %}
+                        <div class="mb-4">
+                            <label for="assigned_lawyer_id" class="form-label">Preferred Lawyer (Optional)</label>
+                            <select class="form-select" name="assigned_lawyer_id" id="assigned_lawyer_id">
+                                <option value="">Any available lawyer</option>
+                                {% for lawyer in lawyers %}
+                                <option value="{{ lawyer.id }}">{{ lawyer.full_name }}{% if lawyer.specialization %} - {{ lawyer.specialization }}{% endif %}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% endif %}
+
+                        <!-- Payment Method Selection -->
+                        <div class="mb-4">
+                            <label class="form-label">Choose Payment Method *</label>
+                            <div class="row">
+                                {% for gateway in payment_gateways %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="payment-option" onclick="selectPayment('{{ gateway.id }}', '{{ gateway.name }}')">
+                                        <input type="radio" name="payment_gateway_id" value="{{ gateway.id }}" class="d-none" required>
+                                        <div class="text-center">
+                                            {% if gateway.name == 'stripe' %}
+                                                <i class="fab fa-stripe payment-icon text-primary"></i>
+                                                <h6>Credit/Debit Card</h6>
+                                                <small class="text-muted">Visa, Mastercard, American Express</small>
+                                            {% elif gateway.name == 'paystack' %}
+                                                <i class="fas fa-credit-card payment-icon text-success"></i>
+                                                <h6>Paystack</h6>
+                                                <small class="text-muted">Cards, Bank Transfer, Mobile Money</small>
+                                            {% elif gateway.name == 'crypto' %}
+                                                <i class="fab fa-bitcoin payment-icon text-warning"></i>
+                                                <h6>Cryptocurrency</h6>
+                                                <small class="text-muted">Bitcoin, Ethereum, USDT</small>
+                                            {% elif gateway.name == 'bank_transfer' %}
+                                                <i class="fas fa-university payment-icon text-info"></i>
+                                                <h6>Bank Transfer</h6>
+                                                <small class="text-muted">Direct wire transfer</small>
+                                            {% endif %}
+                                            <div class="mt-2">
+                                                <small class="text-success">Fee: {{ "%.1f"|format(gateway.transaction_fee_percent * 100) }}%{% if gateway.fixed_fee > 0 %} + ${{ gateway.fixed_fee }}{% endif %}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Cost Breakdown -->
+                        <div class="mb-4">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6>Cost Breakdown</h6>
+                                    <div class="d-flex justify-content-between">
+                                        <span>Service Amount:</span>
+                                        <span id="service-amount">$0.00</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>Payment Processing Fee:</span>
+                                        <span id="processing-fee">$0.00</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>Platform Fee (5%):</span>
+                                        <span id="platform-fee">$0.00</span>
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between fw-bold">
+                                        <span>Total Amount:</span>
+                                        <span id="total-amount">$0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="fas fa-lock me-2"></i>Create Secure Escrow Agreement
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let selectedGateway = null;
+        const gateways = {
+            {% for gateway in payment_gateways %}
+            '{{ gateway.id }}': {
+                'fee_percent': {{ gateway.transaction_fee_percent }},
+                'fixed_fee': {{ gateway.fixed_fee }}
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        };
+
+        function selectPayment(gatewayId, gatewayName) {
+            // Remove previous selection
+            document.querySelectorAll('.payment-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Add selection to clicked option
+            event.currentTarget.classList.add('selected');
+            
+            // Check the radio button
+            const radio = event.currentTarget.querySelector('input[type="radio"]');
+            radio.checked = true;
+            
+            selectedGateway = gatewayId;
+            updateCostBreakdown();
+        }
+
+        function updateCostBreakdown() {
+            const amountInput = document.getElementById('amount');
+            const amount = parseFloat(amountInput.value) || 0;
+            
+            let processingFee = 0;
+            if (selectedGateway && gateways[selectedGateway]) {
+                const gateway = gateways[selectedGateway];
+                processingFee = (amount * gateway.fee_percent) + gateway.fixed_fee;
+            }
+            
+            const platformFee = amount * 0.05; // 5% platform fee
+            const total = amount + processingFee + platformFee;
+            
+            document.getElementById('service-amount').textContent = '$' + amount.toFixed(2);
+            document.getElementById('processing-fee').textContent = '$' + processingFee.toFixed(2);
+            document.getElementById('platform-fee').textContent = '$' + platformFee.toFixed(2);
+            document.getElementById('total-amount').textContent = '$' + total.toFixed(2);
+        }
+
+        // Update cost breakdown when amount changes
+        document.getElementById('amount').addEventListener('input', updateCostBreakdown);
+        
+        // Initial calculation
+        updateCostBreakdown();
+    </script>
+</body>
+</html>
