@@ -21,19 +21,36 @@ def superadmin_access():
         
         if email and password:
             user = User.query.filter_by(email=email.lower()).first()
-            if user and user.password_hash and user.check_password(password):
-                print(f"DEBUG: User found: {user.email}, Role: {user.role}")
-                if user.is_super_admin():
-                    login_user(user, remember=True)
-                    print(f"DEBUG: Super admin logged in successfully: {user.email}")
-                    flash('Super Admin login successful!', 'success')
-                    return redirect(url_for('superadmin.dashboard'))
+            print(f"DEBUG: Looking for user with email: {email.lower()}")
+            if user:
+                print(f"DEBUG: User found: {user.email}, Role: {user.role}, Active: {user.active}")
+                if user.password_hash:
+                    print(f"DEBUG: Password hash exists, checking password...")
+                    if user.check_password(password):
+                        print(f"DEBUG: Password check passed")
+                        if user.is_super_admin():
+                            print(f"DEBUG: User is super admin, attempting login...")
+                            login_result = login_user(user, remember=True)
+                            print(f"DEBUG: Login result: {login_result}")
+                            print(f"DEBUG: Current user after login: {current_user.is_authenticated if current_user else 'No current user'}")
+                            flash('Super Admin login successful!', 'success')
+                            redirect_url = url_for('superadmin.dashboard')
+                            print(f"DEBUG: Redirecting to: {redirect_url}")
+                            return redirect(redirect_url)
+                        else:
+                            print(f"DEBUG: User {user.email} is not super admin. Role: {user.role}")
+                            flash('Access denied. Super Admin privileges required.', 'error')
+                    else:
+                        print(f"DEBUG: Password check failed")
+                        flash('Invalid credentials', 'error')
                 else:
-                    print(f"DEBUG: User {user.email} is not super admin. Role: {user.role}")
-                    flash('Access denied. Super Admin privileges required.', 'error')
+                    print(f"DEBUG: No password hash found for user")
+                    flash('Invalid credentials', 'error')
             else:
+                print(f"DEBUG: No user found with email: {email.lower()}")
                 flash('Invalid credentials', 'error')
         else:
+            print(f"DEBUG: Missing email or password. Email: {bool(email)}, Password: {bool(password)}")
             flash('Please enter both email and password', 'error')
     
     return render_template('auth/superadmin_login.html')
