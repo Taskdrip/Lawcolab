@@ -72,12 +72,12 @@
                             </a>
                         </div>
                         <div class="col-md-2 mb-2">
-                            <a href="{{ url_for('projects.list_projects') }}" class="btn quick-action-btn w-100">
+                            <a href="{{ url_for('projects.list') }}" class="btn quick-action-btn w-100">
                                 <i class="fas fa-briefcase me-1"></i>All Projects
                             </a>
                         </div>
                         <div class="col-md-2 mb-2">
-                            <a href="{{ url_for('invoices.list_invoices') }}" class="btn quick-action-btn w-100">
+                            <a href="{{ url_for('invoices.list') }}" class="btn quick-action-btn w-100">
                                 <i class="fas fa-file-invoice me-1"></i>All Invoices
                             </a>
                         </div>
@@ -86,17 +86,17 @@
                     <!-- Additional Admin Functions Row -->
                     <div class="row mt-3">
                         <div class="col-md-2 mb-2">
-                            <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-outline-success w-100">
+                            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-success w-100">
                                 <i class="fas fa-cog me-1"></i>Admin Panel
                             </a>
                         </div>
                         <div class="col-md-2 mb-2">
-                            <a href="{{ url_for('team.list_team_members') }}" class="btn btn-outline-info w-100">
+                            <a href="{{ url_for('team.list_team') }}" class="btn btn-outline-info w-100">
                                 <i class="fas fa-user-friends me-1"></i>Team Management
                             </a>
                         </div>
                         <div class="col-md-2 mb-2">
-                            <a href="{{ url_for('clients.list_clients') }}" class="btn btn-outline-warning w-100">
+                            <a href="{{ url_for('clients.list') }}" class="btn btn-outline-warning w-100">
                                 <i class="fas fa-users me-1"></i>Client Management
                             </a>
                         </div>
