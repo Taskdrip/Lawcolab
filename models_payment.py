@@ -27,7 +27,7 @@ class PaymentGateway(db.Model):
     # Metadata
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    created_by_id = db.Column(db.String, db.ForeignKey('users.id'))
     
     # Relationships
     escrow_transactions = db.relationship('EscrowTransaction', backref='payment_gateway', lazy='dynamic')
@@ -69,9 +69,9 @@ class EscrowTransaction(db.Model):
     id = db.Column(db.String(32), primary_key=True)  # UUID
     
     # Parties
-    client_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    law_firm_id = db.Column(db.Integer, db.ForeignKey('law_firm.id'), nullable=False)
-    assigned_lawyer_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    client_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    law_firm_id = db.Column(db.Integer, db.ForeignKey('law_firms.id'), nullable=False)
+    assigned_lawyer_id = db.Column(db.String, db.ForeignKey('users.id'))
     
     # Transaction details
     service_description = db.Column(db.Text, nullable=False)
@@ -100,7 +100,7 @@ class EscrowTransaction(db.Model):
     # Escrow specific
     escrow_released = db.Column(db.Boolean, default=False)
     escrow_released_at = db.Column(db.DateTime)
-    escrow_released_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    escrow_released_by_id = db.Column(db.String, db.ForeignKey('users.id'))
     
     # Fee calculation
     platform_fee = db.Column(db.Numeric(10, 2), default=0.0)
@@ -131,7 +131,7 @@ class EscrowTransaction(db.Model):
     def can_release_escrow(self, user):
         """Check if user can release escrow funds"""
         return (user.is_super_admin() or 
-                user.id == self.client_id or 
+                users.id == self.client_id or 
                 (user.law_firm_id == self.law_firm_id and user.is_admin()))
     
     def release_escrow(self, released_by_user, notes=None):
@@ -147,14 +147,14 @@ class EscrowTransaction(db.Model):
         
         self.escrow_released = True
         self.escrow_released_at = datetime.utcnow()
-        self.escrow_released_by_id = released_by_user.id
+        self.escrow_released_by_id = released_by_users.id
         self.status = 'completed'
         
         # Log the release
         log = EscrowTransactionLog(
             transaction_id=self.id,
             action='escrow_released',
-            performed_by_id=released_by_user.id,
+            performed_by_id=released_by_users.id,
             notes=notes or f"Escrow released by {released_by_user.full_name}"
         )
         db.session.add(log)
@@ -178,7 +178,7 @@ class EscrowMilestone(db.Model):
     due_date = db.Column(db.DateTime)
     completed_at = db.Column(db.DateTime)
     approved_at = db.Column(db.DateTime)
-    approved_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    approved_by_id = db.Column(db.String, db.ForeignKey('users.id'))
     
     # Files and evidence
     deliverable_files = db.Column(db.Text)  # JSON array of file paths
@@ -193,7 +193,7 @@ class EscrowTransactionLog(db.Model):
     transaction_id = db.Column(db.String(32), db.ForeignKey('escrow_transactions.id'), nullable=False)
     
     action = db.Column(db.String(50), nullable=False)  # created, paid, started, completed, disputed, etc.
-    performed_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    performed_by_id = db.Column(db.String, db.ForeignKey('users.id'))
     notes = db.Column(db.Text)
     
     # Additional data
@@ -221,7 +221,7 @@ class CryptoWallet(db.Model):
     encrypted_private_key = db.Column(db.Text)  # Only if automated processing needed
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    created_by_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
 class BankAccount(db.Model):
     """Bank account configuration for wire transfers"""
@@ -246,4 +246,4 @@ class BankAccount(db.Model):
     verification_notes = db.Column(db.Text)
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    created_by_id = db.Column(db.Integer, db.ForeignKey('users.id'))

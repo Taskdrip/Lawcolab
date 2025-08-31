@@ -27,12 +27,12 @@ from blueprints.sales import sales_bp
 # Import showcase blueprint
 from blueprints.showcase import showcase_bp
 
-# Import payment management blueprints - temporarily disabled
-# from blueprints.payment_management import payment_mgmt_bp
-# from blueprints.escrow_public import escrow_bp
+# Import payment management blueprints
+from blueprints.payment_management import payment_mgmt_bp
+from blueprints.escrow_public import escrow_bp
 
-# Import payment models - temporarily disabled
-# import models_payment  # noqa: F401
+# Import payment models
+import models_payment  # noqa: F401
 
 # Register blueprints
 app.register_blueprint(auth_bp, url_prefix="/auth")
@@ -50,8 +50,8 @@ app.register_blueprint(invoices_bp, url_prefix="/invoices")
 app.register_blueprint(invoice_chat_bp, url_prefix="/invoice-chat")
 app.register_blueprint(sales_bp, url_prefix="/sales")
 app.register_blueprint(showcase_bp, url_prefix="/showcase")
-# app.register_blueprint(payment_mgmt_bp)  # Temporarily disabled
-# app.register_blueprint(escrow_bp)  # Temporarily disabled
+app.register_blueprint(payment_mgmt_bp)  # Payment management
+app.register_blueprint(escrow_bp)  # Escrow system
 
 # Make session permanent
 @app.before_request
