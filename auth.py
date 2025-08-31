@@ -36,7 +36,27 @@ def superadmin_access():
                             flash('Super Admin login successful!', 'success')
                             redirect_url = url_for('superadmin.dashboard')
                             print(f"DEBUG: Redirecting to: {redirect_url}")
-                            return redirect(redirect_url)
+                            # Create a simple response to test if login worked
+                            from flask import Response
+                            return Response(f"""
+                            <html>
+                            <head><title>Super Admin Login Success</title></head>
+                            <body>
+                                <h1>Super Admin Login Successful!</h1>
+                                <p>User: {user.email}</p>
+                                <p>Role: {user.role}</p>
+                                <p>Login successful: {login_result}</p>
+                                <p>Current user authenticated: {current_user.is_authenticated}</p>
+                                <p>Is super admin: {current_user.is_super_admin()}</p>
+                                <a href="{redirect_url}">Go to Super Admin Dashboard</a>
+                                <script>
+                                    setTimeout(() => {{
+                                        window.location.href = '{redirect_url}';
+                                    }}, 2000);
+                                </script>
+                            </body>
+                            </html>
+                            """)
                         else:
                             print(f"DEBUG: User {user.email} is not super admin. Role: {user.role}")
                             flash('Access denied. Super Admin privileges required.', 'error')

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin Dashboard - LAWCOLAB</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .main-header { background: linear-gradient(135deg, #0066cc 0%, #004499 100%); color: white; padding: 2rem 0; }
+        .stats-card { background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 1.5rem; margin-bottom: 1rem; }
+        .quick-action-btn { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border: none; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="main-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h1><i class="fas fa-shield-alt me-2"></i>Super Admin Dashboard</h1>
+                    <p class="mb-0">Platform Management Portal - LAWCOLAB</p>
+                </div>
+                <div class="col-auto">
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light">
+                        <i class="fas fa-sign-out-alt me-1"></i>Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Quick Actions -->
+        <div class="row mb-4">
+            <div class="col">
+                <div class="stats-card">
+                    <h3><i class="fas fa-bolt text-warning me-2"></i>Quick Actions</h3>
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('showcase.admin_manage') }}" class="btn quick-action-btn w-100">
+                                <i class="fas fa-award me-1"></i>Manage Showcases
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('superadmin.manage_law_firms') }}" class="btn quick-action-btn w-100">
+                                <i class="fas fa-building me-1"></i>Manage Law Firms
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('superadmin.view_users') }}" class="btn quick-action-btn w-100">
+                                <i class="fas fa-users me-1"></i>View Users
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('superadmin.platform_analytics') }}" class="btn quick-action-btn w-100">
+                                <i class="fas fa-chart-line me-1"></i>Analytics
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Platform Statistics -->
+        <div class="row">
+            <div class="col-md-2 mb-3">
+                <div class="stats-card text-center">
+                    <i class="fas fa-building fa-2x text-primary mb-2"></i>
+                    <h4>{{ stats.total_law_firms }}</h4>
+                    <p class="text-muted mb-0">Law Firms</p>
+                </div>
+            </div>
+            <div class="col-md-2 mb-3">
+                <div class="stats-card text-center">
+                    <i class="fas fa-users fa-2x text-success mb-2"></i>
+                    <h4>{{ stats.total_users }}</h4>
+                    <p class="text-muted mb-0">Total Users</p>
+                </div>
+            </div>
+            <div class="col-md-2 mb-3">
+                <div class="stats-card text-center">
+                    <i class="fas fa-user-tie fa-2x text-info mb-2"></i>
+                    <h4>{{ stats.total_admins }}</h4>
+                    <p class="text-muted mb-0">Admins</p>
+                </div>
+            </div>
+            <div class="col-md-2 mb-3">
+                <div class="stats-card text-center">
+                    <i class="fas fa-user-friends fa-2x text-warning mb-2"></i>
+                    <h4>{{ stats.total_team_members }}</h4>
+                    <p class="text-muted mb-0">Team Members</p>
+                </div>
+            </div>
+            <div class="col-md-2 mb-3">
+                <div class="stats-card text-center">
+                    <i class="fas fa-user-check fa-2x text-secondary mb-2"></i>
+                    <h4>{{ stats.total_clients }}</h4>
+                    <p class="text-muted mb-0">Clients</p>
+                </div>
+            </div>
+            <div class="col-md-2 mb-3">
+                <div class="stats-card text-center">
+                    <i class="fas fa-briefcase fa-2x text-danger mb-2"></i>
+                    <h4>{{ stats.total_projects }}</h4>
+                    <p class="text-muted mb-0">Projects</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Law Firms -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="stats-card">
+                    <h4><i class="fas fa-building text-primary me-2"></i>Recent Law Firms</h4>
+                    {% if recent_law_firms %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for firm in recent_law_firms %}
+                                    <tr>
+                                        <td>{{ firm.name }}</td>
+                                        <td>{{ firm.created_at.strftime('%m/%d/%Y') if firm.created_at else 'N/A' }}</td>
+                                        <td>
+                                            <a href="{{ url_for('superadmin.view_firm', firm_id=firm.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No law firms registered yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="stats-card">
+                    <h4><i class="fas fa-user-tie text-info me-2"></i>Recent Admins</h4>
+                    {% if recent_admins %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Created</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for admin in recent_admins %}
+                                    <tr>
+                                        <td>{{ admin.full_name }}</td>
+                                        <td>{{ admin.email }}</td>
+                                        <td>{{ admin.created_at.strftime('%m/%d/%Y') if admin.created_at else 'N/A' }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No recent admin signups.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

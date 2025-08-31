@@ -39,7 +39,7 @@ def dashboard():
         'total_projects': total_projects
     }
     
-    return render_template('superadmin/dashboard.html', 
+    return render_template('superadmin/simple_dashboard.html', 
                          stats=stats,
                          recent_law_firms=recent_law_firms,
                          recent_admins=recent_admins,
