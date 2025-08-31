@@ -22,11 +22,14 @@ def superadmin_access():
         if email and password:
             user = User.query.filter_by(email=email.lower()).first()
             if user and user.password_hash and user.check_password(password):
+                print(f"DEBUG: User found: {user.email}, Role: {user.role}")
                 if user.is_super_admin():
                     login_user(user, remember=True)
+                    print(f"DEBUG: Super admin logged in successfully: {user.email}")
                     flash('Super Admin login successful!', 'success')
                     return redirect(url_for('superadmin.dashboard'))
                 else:
+                    print(f"DEBUG: User {user.email} is not super admin. Role: {user.role}")
                     flash('Access denied. Super Admin privileges required.', 'error')
             else:
                 flash('Invalid credentials', 'error')
