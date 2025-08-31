@@ -14,16 +14,22 @@ def login():
         return redirect(url_for('index'))
     
     form = LoginForm()
-    if form.validate_on_submit():
-        email = form.email.data
-        if email:
+    
+    # Handle form submission
+    if request.method == 'POST':
+        # Manual form processing to bypass CSRF issues
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '').strip()
+        remember_me = bool(request.form.get('remember_me'))
+        
+        if email and password:
             user = User.query.filter_by(email=email.lower()).first()
-            if user and user.password_hash and user.check_password(form.password.data):
+            if user and user.password_hash and user.check_password(password):
                 if not user.active:
                     flash('Your account has been deactivated. Please contact support.', 'error')
                     return render_template('auth/login.html', form=form)
                 
-                login_user(user, remember=form.remember_me.data)
+                login_user(user, remember=remember_me)
                 
                 # Redirect to intended page or dashboard
                 next_page = request.args.get('next')
@@ -40,7 +46,7 @@ def login():
             else:
                 flash('Invalid email or password', 'error')
         else:
-            flash('Please enter a valid email address', 'error')
+            flash('Please enter both email and password', 'error')
     
     return render_template('auth/login.html', form=form)
 

@@ -14,8 +14,13 @@ class Base(DeclarativeBase):
 
 # Initialize Flask app
 app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET")
+app.secret_key = os.environ.get("SESSION_SECRET") or "fallback-secret-key-for-development"
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+
+# CSRF Configuration
+app.config['WTF_CSRF_ENABLED'] = True
+app.config['WTF_CSRF_TIME_LIMIT'] = None  # No time limit for CSRF tokens
+app.config['WTF_CSRF_SSL_STRICT'] = False  # Allow HTTP for development
 
 # Database configuration optimized for performance
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
