@@ -3,12 +3,40 @@ from flask_login import login_user, logout_user, login_required, current_user
 from urllib.parse import urlparse
 from models import User, LawFirm, ROLE_ADMIN, ROLE_TEAM_MEMBER, ROLE_CLIENT
 from forms import LoginForm, SignupForm, ProfileForm, ChangePasswordForm
-from app import db
+from app import db, csrf
 import uuid
 
 auth_bp = Blueprint('auth', __name__)
 
+@auth_bp.route('/superadmin-access', methods=['GET', 'POST'])
+@csrf.exempt
+def superadmin_access():
+    """Direct super admin login without CSRF"""
+    if current_user.is_authenticated:
+        return redirect(url_for('superadmin.dashboard') if current_user.is_super_admin() else url_for('index'))
+    
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '').strip()
+        
+        if email and password:
+            user = User.query.filter_by(email=email.lower()).first()
+            if user and user.password_hash and user.check_password(password):
+                if user.is_super_admin():
+                    login_user(user, remember=True)
+                    flash('Super Admin login successful!', 'success')
+                    return redirect(url_for('superadmin.dashboard'))
+                else:
+                    flash('Access denied. Super Admin privileges required.', 'error')
+            else:
+                flash('Invalid credentials', 'error')
+        else:
+            flash('Please enter both email and password', 'error')
+    
+    return render_template('auth/superadmin_login.html')
+
 @auth_bp.route('/login', methods=['GET', 'POST'])
+@csrf.exempt
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))

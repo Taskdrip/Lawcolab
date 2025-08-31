@@ -44,6 +44,11 @@ db.init_app(app)
 # Initialize CSRF protection
 csrf = CSRFProtect(app)
 
+# Exempt login route from CSRF protection
+@csrf.exempt
+def csrf_exempt_login():
+    pass
+
 # Create uploads directory
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
