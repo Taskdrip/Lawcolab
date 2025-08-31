@@ -24,6 +24,9 @@ from blueprints.invoice_chat.routes import invoice_chat_bp
 # Import sales blueprint
 from blueprints.sales import sales_bp
 
+# Import showcase blueprint
+from blueprints.showcase import showcase_bp
+
 # Register blueprints
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(dashboard_bp, url_prefix="/dashboard")
@@ -39,6 +42,7 @@ app.register_blueprint(enhanced_chat_bp, url_prefix='/enhanced-chat')
 app.register_blueprint(invoices_bp, url_prefix="/invoices")
 app.register_blueprint(invoice_chat_bp, url_prefix="/invoice-chat")
 app.register_blueprint(sales_bp, url_prefix="/sales")
+app.register_blueprint(showcase_bp, url_prefix="/showcase")
 
 # Make session permanent
 @app.before_request
@@ -60,7 +64,7 @@ def index():
             return redirect(url_for('dashboard.client_dashboard'))
     
     # Show public landing page with popup settings
-    from models import PopupSettings, CustomerReview
+    from models import PopupSettings, CustomerReview, LawFirmShowcase
     from sqlalchemy import desc
     
     # Get popup settings for comprehensive popup
@@ -71,7 +75,13 @@ def index():
     # Get featured reviews
     reviews = CustomerReview.query.filter_by(is_active=True).order_by(desc(CustomerReview.is_featured), CustomerReview.id).limit(20).all()
     
-    return render_template('index.html', settings=settings, reviews=reviews)
+    # Get featured law firm showcases
+    featured_showcases = LawFirmShowcase.query.filter_by(
+        is_featured=True, 
+        is_active=True
+    ).order_by(LawFirmShowcase.showcase_order.asc()).limit(6).all()
+    
+    return render_template('index.html', settings=settings, reviews=reviews, featured_showcases=featured_showcases)
 
 @app.route('/landing')
 def landing():

@@ -242,6 +242,7 @@ class LawFirm(db.Model):
     # Multi-tenancy relationships
     users = db.relationship('User', back_populates='law_firm')
     projects = db.relationship('Project', back_populates='law_firm')
+    showcase = db.relationship('LawFirmShowcase', back_populates='law_firm', uselist=False)
     
     def get_support_chat_room(self):
         """Get or create support chat room with super admin"""
@@ -770,3 +771,107 @@ class PopupSuppression(db.Model):
     suppressed_until = db.Column(db.DateTime, nullable=True)
     has_ordered = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.now)
+
+
+# Law Firm Showcase Models
+class LawFirmShowcase(db.Model):
+    __tablename__ = 'law_firm_showcases'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    law_firm_id = db.Column(db.Integer, db.ForeignKey('law_firms.id'), nullable=False)
+    is_featured = db.Column(db.Boolean, default=False)
+    is_active = db.Column(db.Boolean, default=True)
+    showcase_order = db.Column(db.Integer, default=0)
+    
+    # Public display fields
+    public_title = db.Column(db.String(200), nullable=True)
+    public_description = db.Column(db.Text, nullable=True)
+    hero_image_url = db.Column(db.String(500), nullable=True)
+    logo_image_url = db.Column(db.String(500), nullable=True)
+    
+    # Social media and contact
+    website_url = db.Column(db.String(300), nullable=True)
+    facebook_url = db.Column(db.String(300), nullable=True)
+    linkedin_url = db.Column(db.String(300), nullable=True)
+    twitter_url = db.Column(db.String(300), nullable=True)
+    instagram_url = db.Column(db.String(300), nullable=True)
+    
+    # Showcase stats
+    total_reviews = db.Column(db.Integer, default=0)
+    average_rating = db.Column(db.Numeric(3, 2), default=5.0)
+    total_views = db.Column(db.Integer, default=0)
+    
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    
+    # Relationships
+    law_firm = db.relationship('LawFirm', back_populates='showcase')
+    public_reviews = db.relationship('PublicLawFirmReview', back_populates='showcase', cascade='all, delete-orphan')
+    public_messages = db.relationship('PublicLawFirmMessage', back_populates='showcase', cascade='all, delete-orphan')
+
+
+class PublicLawFirmReview(db.Model):
+    __tablename__ = 'public_law_firm_reviews'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    showcase_id = db.Column(db.Integer, db.ForeignKey('law_firm_showcases.id'), nullable=False)
+    
+    # Reviewer information
+    reviewer_name = db.Column(db.String(200), nullable=False)
+    reviewer_email = db.Column(db.String(300), nullable=True)
+    reviewer_company = db.Column(db.String(200), nullable=True)
+    reviewer_location = db.Column(db.String(200), nullable=True)
+    
+    # Review content
+    rating = db.Column(db.Integer, nullable=False, default=5)  # 1-5 stars
+    review_title = db.Column(db.String(300), nullable=True)
+    review_text = db.Column(db.Text, nullable=False)
+    
+    # Moderation
+    is_approved = db.Column(db.Boolean, default=True)
+    is_featured = db.Column(db.Boolean, default=False)
+    is_visible = db.Column(db.Boolean, default=True)
+    
+    # Metadata
+    ip_address = db.Column(db.String(45), nullable=True)
+    user_agent = db.Column(db.Text, nullable=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    approved_at = db.Column(db.DateTime, nullable=True)
+    
+    # Relationships
+    showcase = db.relationship('LawFirmShowcase', back_populates='public_reviews')
+
+
+class PublicLawFirmMessage(db.Model):
+    __tablename__ = 'public_law_firm_messages'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    showcase_id = db.Column(db.Integer, db.ForeignKey('law_firm_showcases.id'), nullable=False)
+    
+    # Sender information
+    sender_name = db.Column(db.String(200), nullable=False)
+    sender_email = db.Column(db.String(300), nullable=False)
+    sender_phone = db.Column(db.String(50), nullable=True)
+    sender_company = db.Column(db.String(200), nullable=True)
+    
+    # Message content
+    subject = db.Column(db.String(300), nullable=False)
+    message_text = db.Column(db.Text, nullable=False)
+    message_type = db.Column(db.String(50), default='inquiry')  # inquiry, consultation, quote
+    
+    # Status tracking
+    is_read = db.Column(db.Boolean, default=False)
+    is_replied = db.Column(db.Boolean, default=False)
+    priority = db.Column(db.String(20), default='normal')  # urgent, high, normal, low
+    
+    # Metadata
+    ip_address = db.Column(db.String(45), nullable=True)
+    user_agent = db.Column(db.Text, nullable=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    read_at = db.Column(db.DateTime, nullable=True)
+    replied_at = db.Column(db.DateTime, nullable=True)
+    
+    # Relationships
+    showcase = db.relationship('LawFirmShowcase', back_populates='public_messages')

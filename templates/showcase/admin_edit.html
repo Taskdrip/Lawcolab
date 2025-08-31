@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Showcase - {{ showcase.law_firm.name }} - LAWCOLAB{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Edit Showcase</h2>
+            <p class="text-muted mb-0">{{ showcase.law_firm.name }}</p>
+        </div>
+        <div>
+            <a href="{{ url_for('showcase.firm_profile', showcase_id=showcase.id) }}" 
+               target="_blank" class="btn btn-outline-primary">
+                <i class="fas fa-eye me-2"></i>View Public Profile
+            </a>
+            <a href="{{ url_for('showcase.admin_manage') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Manage
+            </a>
+        </div>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Showcase Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('showcase.admin_update', showcase_id=showcase.id) }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        
+                        <!-- Basic Information -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <h6 class="text-primary">Basic Information</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Public Title</label>
+                                <input type="text" class="form-control" name="public_title" 
+                                       value="{{ showcase.public_title or '' }}" 
+                                       placeholder="{{ showcase.law_firm.name }}">
+                                <small class="text-muted">Leave blank to use law firm name</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Website URL</label>
+                                <input type="url" class="form-control" name="website_url" 
+                                       value="{{ showcase.website_url or '' }}" 
+                                       placeholder="https://example.com">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Public Description</label>
+                                <textarea class="form-control" name="public_description" rows="3" 
+                                          placeholder="Describe the law firm's services and expertise...">{{ showcase.public_description or '' }}</textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Images -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <h6 class="text-primary">Images</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Hero Image URL</label>
+                                <input type="url" class="form-control" name="hero_image_url" 
+                                       value="{{ showcase.hero_image_url or '' }}" 
+                                       placeholder="https://example.com/hero-image.jpg">
+                                <small class="text-muted">Large banner image for the profile header</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Logo Image URL</label>
+                                <input type="url" class="form-control" name="logo_image_url" 
+                                       value="{{ showcase.logo_image_url or '' }}" 
+                                       placeholder="https://example.com/logo.png">
+                                <small class="text-muted">Square logo image</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Social Media -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <h6 class="text-primary">Social Media Links</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Facebook URL</label>
+                                <input type="url" class="form-control" name="facebook_url" 
+                                       value="{{ showcase.facebook_url or '' }}" 
+                                       placeholder="https://facebook.com/yourpage">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">LinkedIn URL</label>
+                                <input type="url" class="form-control" name="linkedin_url" 
+                                       value="{{ showcase.linkedin_url or '' }}" 
+                                       placeholder="https://linkedin.com/company/yourcompany">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Twitter URL</label>
+                                <input type="url" class="form-control" name="twitter_url" 
+                                       value="{{ showcase.twitter_url or '' }}" 
+                                       placeholder="https://twitter.com/yourhandle">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Instagram URL</label>
+                                <input type="url" class="form-control" name="instagram_url" 
+                                       value="{{ showcase.instagram_url or '' }}" 
+                                       placeholder="https://instagram.com/yourhandle">
+                            </div>
+                        </div>
+                        
+                        <!-- Display Settings -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <h6 class="text-primary">Display Settings</h6>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="is_active" 
+                                           {% if showcase.is_active %}checked{% endif %}>
+                                    <label class="form-check-label">Active</label>
+                                </div>
+                                <small class="text-muted">Show this showcase publicly</small>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="is_featured" 
+                                           {% if showcase.is_featured %}checked{% endif %}>
+                                    <label class="form-check-label">Featured</label>
+                                </div>
+                                <small class="text-muted">Display on homepage</small>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Display Order</label>
+                                <input type="number" class="form-control" name="showcase_order" 
+                                       value="{{ showcase.showcase_order }}" min="0">
+                                <small class="text-muted">Lower numbers appear first</small>
+                            </div>
+                        </div>
+                        
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Update Showcase
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Statistics -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Statistics</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 text-center">
+                        <div class="col-6">
+                            <div class="border rounded p-3">
+                                <div class="h4 mb-1 text-primary">{{ showcase.total_reviews }}</div>
+                                <small class="text-muted">Reviews</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="border rounded p-3">
+                                <div class="h4 mb-1 text-success">{{ showcase.total_views }}</div>
+                                <small class="text-muted">Views</small>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="border rounded p-3">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <div class="rating-stars me-2">
+                                        {% for i in range(1, 6) %}
+                                        {% if i <= showcase.average_rating %}
+                                        <i class="fas fa-star text-warning"></i>
+                                        {% else %}
+                                        <i class="far fa-star text-muted"></i>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <span class="h5 mb-0">{{ "%.1f"|format(showcase.average_rating) }}</span>
+                                </div>
+                                <small class="text-muted">Average Rating</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Links -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('showcase.admin_reviews', showcase_id=showcase.id) }}" 
+                           class="btn btn-outline-primary">
+                            <i class="fas fa-star me-2"></i>Manage Reviews
+                        </a>
+                        <a href="{{ url_for('showcase.admin_messages', showcase_id=showcase.id) }}" 
+                           class="btn btn-outline-info">
+                            <i class="fas fa-envelope me-2"></i>View Messages
+                        </a>
+                        <a href="{{ url_for('showcase.firm_profile', showcase_id=showcase.id) }}" 
+                           target="_blank" class="btn btn-outline-success">
+                            <i class="fas fa-external-link-alt me-2"></i>Public Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

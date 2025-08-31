@@ -1,0 +1,493 @@
+{% extends "base.html" %}
+
+{% block title %}{{ showcase.public_title or showcase.law_firm.name }} - LAWCOLAB{% endblock %}
+
+{% block content %}
+<div style="background: #ffffff; min-height: 100vh;">
+    
+    <!-- Hero Section -->
+    <section class="firm-hero" style="background: linear-gradient(135deg, #0066cc 0%, #004499 100%); padding: 80px 0; position: relative; overflow: hidden;">
+        {% if showcase.hero_image_url %}
+        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('{{ showcase.hero_image_url }}'); background-size: cover; background-position: center; opacity: 0.3;"></div>
+        {% endif %}
+        
+        <div class="container" style="position: relative; z-index: 2;">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="d-flex align-items-center mb-4">
+                        {% if showcase.logo_image_url %}
+                        <img src="{{ showcase.logo_image_url }}" alt="{{ showcase.public_title }}" 
+                             style="width: 80px; height: 80px; border-radius: 12px; margin-right: 20px; background: white; padding: 8px;">
+                        {% else %}
+                        <div style="width: 80px; height: 80px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 20px;">
+                            <i class="fas fa-balance-scale" style="color: #0066cc; font-size: 2.5rem;"></i>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <h1 style="color: white; margin: 0; font-weight: 700; font-size: 2.5rem;">
+                                {{ showcase.public_title or showcase.law_firm.name }}
+                            </h1>
+                            <div class="d-flex align-items-center mt-2">
+                                <div class="rating-stars me-3">
+                                    {% for i in range(1, 6) %}
+                                    {% if i <= showcase.average_rating %}
+                                    <i class="fas fa-star" style="color: #ffc107; font-size: 1.2rem;"></i>
+                                    {% else %}
+                                    <i class="far fa-star" style="color: rgba(255,255,255,0.5); font-size: 1.2rem;"></i>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <span style="color: rgba(255,255,255,0.9); font-size: 1.1rem;">
+                                    {{ "%.1f"|format(showcase.average_rating) }} ({{ showcase.total_reviews }} reviews)
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p style="color: rgba(255,255,255,0.9); font-size: 1.2rem; line-height: 1.6; margin-bottom: 2rem;">
+                        {{ showcase.public_description or showcase.law_firm.description or 'Professional legal services' }}
+                    </p>
+                    
+                    <div class="hero-actions d-flex gap-3 flex-wrap">
+                        <a href="#contact" class="btn btn-light btn-lg" style="border-radius: 8px; padding: 12px 24px; font-weight: 600;">
+                            <i class="fas fa-envelope me-2"></i>Contact Us
+                        </a>
+                        {% if showcase.website_url %}
+                        <a href="{{ showcase.website_url }}" target="_blank" class="btn btn-outline-light btn-lg" style="border-radius: 8px; padding: 12px 24px; font-weight: 600;">
+                            <i class="fas fa-external-link-alt me-2"></i>Visit Website
+                        </a>
+                        {% endif %}
+                        <a href="#reviews" class="btn btn-outline-light btn-lg" style="border-radius: 8px; padding: 12px 24px; font-weight: 600;">
+                            <i class="fas fa-star me-2"></i>Read Reviews
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="firm-contact-card p-4" style="background: rgba(255,255,255,0.1); border-radius: 16px; backdrop-filter: blur(10px);">
+                        <h5 style="color: white; margin-bottom: 1rem;">Contact Information</h5>
+                        
+                        {% if showcase.law_firm.email %}
+                        <div class="contact-item d-flex align-items-center mb-3">
+                            <i class="fas fa-envelope" style="color: #ffc107; font-size: 1.2rem; margin-right: 12px; width: 20px;"></i>
+                            <a href="mailto:{{ showcase.law_firm.email }}" style="color: white; text-decoration: none;">
+                                {{ showcase.law_firm.email }}
+                            </a>
+                        </div>
+                        {% endif %}
+                        
+                        {% if showcase.law_firm.phone %}
+                        <div class="contact-item d-flex align-items-center mb-3">
+                            <i class="fas fa-phone" style="color: #ffc107; font-size: 1.2rem; margin-right: 12px; width: 20px;"></i>
+                            <a href="tel:{{ showcase.law_firm.phone }}" style="color: white; text-decoration: none;">
+                                {{ showcase.law_firm.phone }}
+                            </a>
+                        </div>
+                        {% endif %}
+                        
+                        {% if showcase.law_firm.address %}
+                        <div class="contact-item d-flex align-items-start mb-3">
+                            <i class="fas fa-map-marker-alt" style="color: #ffc107; font-size: 1.2rem; margin-right: 12px; width: 20px; margin-top: 2px;"></i>
+                            <span style="color: white;">{{ showcase.law_firm.address }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Social Media Links -->
+                        {% if showcase.facebook_url or showcase.linkedin_url or showcase.twitter_url or showcase.instagram_url %}
+                        <div class="social-links mt-4">
+                            <h6 style="color: white; margin-bottom: 1rem;">Follow Us</h6>
+                            <div class="d-flex gap-2">
+                                {% if showcase.facebook_url %}
+                                <a href="{{ showcase.facebook_url }}" target="_blank" class="social-link">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                {% endif %}
+                                {% if showcase.linkedin_url %}
+                                <a href="{{ showcase.linkedin_url }}" target="_blank" class="social-link">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+                                {% endif %}
+                                {% if showcase.twitter_url %}
+                                <a href="{{ showcase.twitter_url }}" target="_blank" class="social-link">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                {% endif %}
+                                {% if showcase.instagram_url %}
+                                <a href="{{ showcase.instagram_url }}" target="_blank" class="social-link">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Reviews Section -->
+    <section id="reviews" class="reviews-section py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="h1 mb-4" style="color: #333;">Client Reviews</h2>
+                <p class="lead" style="color: #666;">See what our clients say about our legal services</p>
+                
+                <!-- Rating Summary -->
+                <div class="rating-summary mt-4">
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            <div class="rating-overview p-4" style="background: #f8f9fa; border-radius: 12px;">
+                                <div class="row align-items-center">
+                                    <div class="col-md-4 text-center">
+                                        <div style="font-size: 3rem; font-weight: 700; color: #0066cc;">
+                                            {{ "%.1f"|format(showcase.average_rating) }}
+                                        </div>
+                                        <div class="rating-stars mb-2">
+                                            {% for i in range(1, 6) %}
+                                            {% if i <= showcase.average_rating %}
+                                            <i class="fas fa-star" style="color: #ffc107; font-size: 1.5rem;"></i>
+                                            {% else %}
+                                            <i class="far fa-star" style="color: #ddd; font-size: 1.5rem;"></i>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        <div style="color: #666;">{{ showcase.total_reviews }} Reviews</div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        {% for rating in range(5, 0, -1) %}
+                                        <div class="d-flex align-items-center mb-2">
+                                            <span style="width: 20px; color: #666;">{{ rating }}</span>
+                                            <i class="fas fa-star" style="color: #ffc107; margin: 0 8px;"></i>
+                                            <div class="progress flex-grow-1" style="height: 8px;">
+                                                {% set count = rating_distribution.get(rating, 0) %}
+                                                {% set percentage = (count / showcase.total_reviews * 100) if showcase.total_reviews > 0 else 0 %}
+                                                <div class="progress-bar" style="width: {{ percentage }}%; background: #ffc107;"></div>
+                                            </div>
+                                            <span style="width: 30px; text-align: right; color: #666; font-size: 0.9rem; margin-left: 8px;">
+                                                {{ rating_distribution.get(rating, 0) }}
+                                            </span>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Featured Reviews -->
+            {% if featured_reviews %}
+            <div class="row mb-5">
+                {% for review in featured_reviews %}
+                <div class="col-lg-4 mb-4">
+                    <div class="review-card h-100 p-4" style="background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-left: 4px solid #ffc107;">
+                        <div class="rating-stars mb-3">
+                            {% for i in range(1, 6) %}
+                            {% if i <= review.rating %}
+                            <i class="fas fa-star" style="color: #ffc107;"></i>
+                            {% else %}
+                            <i class="far fa-star" style="color: #ddd;"></i>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        
+                        {% if review.review_title %}
+                        <h5 style="color: #333; margin-bottom: 1rem;">{{ review.review_title }}</h5>
+                        {% endif %}
+                        
+                        <p style="color: #666; line-height: 1.6; margin-bottom: 1rem;">
+                            "{{ review.review_text }}"
+                        </p>
+                        
+                        <div class="reviewer-info">
+                            <strong style="color: #333;">{{ review.reviewer_name }}</strong>
+                            {% if review.reviewer_company %}
+                            <div style="color: #888; font-size: 0.9rem;">{{ review.reviewer_company }}</div>
+                            {% endif %}
+                            {% if review.reviewer_location %}
+                            <div style="color: #888; font-size: 0.9rem;">
+                                <i class="fas fa-map-marker-alt me-1"></i>{{ review.reviewer_location }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- All Reviews -->
+            {% if all_reviews %}
+            <div class="all-reviews">
+                <h4 class="mb-4" style="color: #333;">All Reviews</h4>
+                {% for review in all_reviews %}
+                <div class="review-item p-4 mb-3" style="background: #f8f9fa; border-radius: 12px;">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <div class="rating-stars mb-2">
+                                {% for i in range(1, 6) %}
+                                {% if i <= review.rating %}
+                                <i class="fas fa-star" style="color: #ffc107;"></i>
+                                {% else %}
+                                <i class="far fa-star" style="color: #ddd;"></i>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            <strong style="color: #333;">{{ review.reviewer_name }}</strong>
+                            {% if review.reviewer_company %}
+                            <span style="color: #888;"> • {{ review.reviewer_company }}</span>
+                            {% endif %}
+                        </div>
+                        <small style="color: #888;">{{ review.created_at.strftime('%B %d, %Y') }}</small>
+                    </div>
+                    
+                    {% if review.review_title %}
+                    <h6 style="color: #333; margin-bottom: 1rem;">{{ review.review_title }}</h6>
+                    {% endif %}
+                    
+                    <p style="color: #666; line-height: 1.6; margin: 0;">{{ review.review_text }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Add Review Button -->
+            <div class="text-center mt-5">
+                <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#reviewModal" style="border-radius: 8px; padding: 12px 24px;">
+                    <i class="fas fa-star me-2"></i>Write a Review
+                </button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section py-5" style="background: #f8f9fa;">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="h1 mb-4" style="color: #333;">Get In Touch</h2>
+                <p class="lead" style="color: #666;">Ready to discuss your legal needs? Send us a message!</p>
+            </div>
+            
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="contact-form p-5" style="background: white; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.08);">
+                        
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                        {% endwith %}
+                        
+                        <form action="{{ url_for('showcase.send_message', showcase_id=showcase.id) }}" method="POST">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Your Name *</label>
+                                    <input type="text" class="form-control form-control-lg" name="sender_name" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Email Address *</label>
+                                    <input type="email" class="form-control form-control-lg" name="sender_email" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control form-control-lg" name="sender_phone">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Company/Organization</label>
+                                    <input type="text" class="form-control form-control-lg" name="sender_company">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Message Type</label>
+                                    <select class="form-select form-select-lg" name="message_type">
+                                        <option value="inquiry">General Inquiry</option>
+                                        <option value="consultation">Legal Consultation</option>
+                                        <option value="quote">Request Quote</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Subject *</label>
+                                    <input type="text" class="form-control form-control-lg" name="subject" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Message *</label>
+                                    <textarea class="form-control" name="message_text" rows="5" required placeholder="Please describe your legal needs..."></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg" style="border-radius: 8px; padding: 12px 40px;">
+                                    <i class="fas fa-paper-plane me-2"></i>Send Message
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Write a Review</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('showcase.submit_review', showcase_id=showcase.id) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Your Name *</label>
+                            <input type="text" class="form-control" name="reviewer_name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" class="form-control" name="reviewer_email">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Company/Organization</label>
+                            <input type="text" class="form-control" name="reviewer_company">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Location</label>
+                            <input type="text" class="form-control" name="reviewer_location" placeholder="City, State">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Rating *</label>
+                            <div class="rating-input">
+                                <input type="hidden" name="rating" value="5" id="ratingValue">
+                                <div class="rating-stars-input">
+                                    <i class="fas fa-star" data-rating="1"></i>
+                                    <i class="fas fa-star" data-rating="2"></i>
+                                    <i class="fas fa-star" data-rating="3"></i>
+                                    <i class="fas fa-star" data-rating="4"></i>
+                                    <i class="fas fa-star" data-rating="5"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Review Title</label>
+                            <input type="text" class="form-control" name="review_title" placeholder="Brief title for your review">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Your Review *</label>
+                            <textarea class="form-control" name="review_text" rows="4" required placeholder="Share your experience with this law firm..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.social-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.social-link:hover {
+    background: rgba(255,255,255,0.3);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.rating-stars-input {
+    font-size: 2rem;
+    color: #ddd;
+    cursor: pointer;
+}
+
+.rating-stars-input i {
+    margin-right: 5px;
+    transition: color 0.2s ease;
+}
+
+.rating-stars-input i:hover,
+.rating-stars-input i.active {
+    color: #ffc107;
+}
+
+.review-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12) !important;
+}
+
+@media (max-width: 768px) {
+    .firm-hero {
+        padding: 40px 0 !important;
+    }
+    
+    .hero-actions {
+        flex-direction: column !important;
+    }
+    
+    .hero-actions .btn {
+        width: 100% !important;
+        margin-bottom: 10px !important;
+    }
+}
+</style>
+
+<script>
+// Rating input functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const ratingStars = document.querySelectorAll('.rating-stars-input i');
+    const ratingValue = document.getElementById('ratingValue');
+    
+    ratingStars.forEach((star, index) => {
+        star.addEventListener('click', function() {
+            const rating = parseInt(this.dataset.rating);
+            ratingValue.value = rating;
+            
+            ratingStars.forEach((s, i) => {
+                if (i < rating) {
+                    s.classList.add('active');
+                } else {
+                    s.classList.remove('active');
+                }
+            });
+        });
+        
+        star.addEventListener('mouseover', function() {
+            const rating = parseInt(this.dataset.rating);
+            
+            ratingStars.forEach((s, i) => {
+                if (i < rating) {
+                    s.style.color = '#ffc107';
+                } else {
+                    s.style.color = '#ddd';
+                }
+            });
+        });
+    });
+    
+    // Set default 5-star rating
+    ratingStars.forEach(star => star.classList.add('active'));
+});
+</script>
+{% endblock %}

@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Messages - {{ showcase.law_firm.name }} - LAWCOLAB{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Manage Messages</h2>
+            <p class="text-muted mb-0">{{ showcase.public_title or showcase.law_firm.name }}</p>
+        </div>
+        <div>
+            <a href="{{ url_for('showcase.firm_profile', showcase_id=showcase.id) }}" 
+               target="_blank" class="btn btn-outline-primary">
+                <i class="fas fa-eye me-2"></i>View Public Profile
+            </a>
+            <a href="{{ url_for('showcase.admin_edit', showcase_id=showcase.id) }}" class="btn btn-secondary">
+                <i class="fas fa-edit me-2"></i>Edit Showcase
+            </a>
+            <a href="{{ url_for('showcase.admin_manage') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Manage
+            </a>
+        </div>
+    </div>
+    
+    <!-- Message Statistics -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-primary">{{ messages|length }}</h3>
+                    <p class="text-muted mb-0">Total Messages</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-warning">{{ messages|rejectattr('is_read')|list|length }}</h3>
+                    <p class="text-muted mb-0">Unread</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-success">{{ messages|selectattr('is_read')|list|length }}</h3>
+                    <p class="text-muted mb-0">Read</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-info">{{ messages|selectattr('is_replied')|list|length }}</h3>
+                    <p class="text-muted mb-0">Replied</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Messages List -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">All Messages</h5>
+        </div>
+        <div class="card-body">
+            {% if messages %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Sender</th>
+                            <th>Subject</th>
+                            <th>Type</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for message in messages %}
+                        <tr class="{{ 'table-warning' if not message.is_read else '' }}">
+                            <td>
+                                <div>
+                                    <div class="fw-bold">{{ message.sender_name }}</div>
+                                    <small class="text-muted">{{ message.sender_email }}</small>
+                                    {% if message.sender_company %}
+                                    <div><small class="text-muted">{{ message.sender_company }}</small></div>
+                                    {% endif %}
+                                    {% if message.sender_phone %}
+                                    <div><small class="text-muted">
+                                        <i class="fas fa-phone me-1"></i>{{ message.sender_phone }}
+                                    </small></div>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="text-truncate" style="max-width: 200px;" title="{{ message.subject }}">
+                                    {{ message.subject }}
+                                </div>
+                            </td>
+                            <td>
+                                {% if message.message_type == 'inquiry' %}
+                                <span class="badge bg-info">Inquiry</span>
+                                {% elif message.message_type == 'consultation' %}
+                                <span class="badge bg-primary">Consultation</span>
+                                {% elif message.message_type == 'quote' %}
+                                <span class="badge bg-success">Quote Request</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ message.message_type|title }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if message.priority == 'urgent' %}
+                                <span class="badge bg-danger">Urgent</span>
+                                {% elif message.priority == 'high' %}
+                                <span class="badge bg-warning">High</span>
+                                {% elif message.priority == 'normal' %}
+                                <span class="badge bg-secondary">Normal</span>
+                                {% else %}
+                                <span class="badge bg-light text-dark">Low</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column gap-1">
+                                    {% if message.is_read %}
+                                    <span class="badge bg-success">Read</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">Unread</span>
+                                    {% endif %}
+                                    
+                                    {% if message.is_replied %}
+                                    <span class="badge bg-info">Replied</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <small>{{ message.created_at.strftime('%m/%d/%Y') }}</small>
+                                <div><small class="text-muted">{{ message.created_at.strftime('%I:%M %p') }}</small></div>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#messageModal{{ message.id }}" 
+                                            onclick="markAsRead({{ message.id }})"
+                                            title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <a href="mailto:{{ message.sender_email }}?subject=Re: {{ message.subject }}" 
+                                       class="btn btn-outline-success" 
+                                       title="Reply by Email">
+                                        <i class="fas fa-reply"></i>
+                                    </a>
+                                    {% if not message.is_read %}
+                                    <button class="btn btn-outline-info" 
+                                            onclick="markAsRead({{ message.id }})" 
+                                            title="Mark as Read">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    {% endif %}
+                                    <button class="btn btn-outline-danger" 
+                                            onclick="deleteMessage({{ message.id }})" 
+                                            title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-envelope text-muted" style="font-size: 3rem;"></i>
+                <h5 class="text-muted mt-3">No Messages Yet</h5>
+                <p class="text-muted">Messages from potential clients will appear here when they contact you through the public profile.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Message Detail Modals -->
+{% for message in messages %}
+<div class="modal fade" id="messageModal{{ message.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Message Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Sender Name</label>
+                        <input type="text" class="form-control" value="{{ message.sender_name }}" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <input type="text" class="form-control" value="{{ message.sender_email }}" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Phone</label>
+                        <input type="text" class="form-control" value="{{ message.sender_phone or 'Not provided' }}" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Company</label>
+                        <input type="text" class="form-control" value="{{ message.sender_company or 'Not provided' }}" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Message Type</label>
+                        <input type="text" class="form-control" value="{{ message.message_type|title }}" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Priority</label>
+                        <input type="text" class="form-control" value="{{ message.priority|title }}" readonly>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Subject</label>
+                        <input type="text" class="form-control" value="{{ message.subject }}" readonly>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-control" rows="6" readonly>{{ message.message_text }}</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Received</label>
+                        <input type="text" class="form-control" value="{{ message.created_at.strftime('%B %d, %Y at %I:%M %p') }}" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Status</label>
+                        <div class="d-flex gap-2">
+                            {% if message.is_read %}
+                            <span class="badge bg-success">Read</span>
+                            {% else %}
+                            <span class="badge bg-warning">Unread</span>
+                            {% endif %}
+                            
+                            {% if message.is_replied %}
+                            <span class="badge bg-info">Replied</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="mailto:{{ message.sender_email }}?subject=Re: {{ message.subject }}" 
+                   class="btn btn-success">
+                    <i class="fas fa-reply me-2"></i>Reply by Email
+                </a>
+                {% if not message.is_read %}
+                <button type="button" class="btn btn-info" onclick="markAsRead({{ message.id }})">
+                    <i class="fas fa-check me-2"></i>Mark as Read
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<script>
+function markAsRead(messageId) {
+    fetch(`/showcase/admin/message/${messageId}/read`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function deleteMessage(messageId) {
+    if (!confirm('Are you sure you want to delete this message?')) {
+        return;
+    }
+    
+    fetch(`/showcase/admin/message/${messageId}/delete`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred');
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,123 @@
+<!-- Featured Law Firms Section for Homepage -->
+<section class="featured-firms py-5" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="h1 mb-4" style="color: #333; font-weight: 700;">Featured Law Firms</h2>
+            <p class="lead" style="color: #666;">Discover top-rated legal professionals using LAWCOLAB</p>
+        </div>
+        
+        {% if showcases %}
+        <div class="row g-4">
+            {% for showcase in showcases %}
+            <div class="col-lg-4 col-md-6">
+                <div class="firm-card h-100" style="background: white; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); transition: all 0.3s ease; overflow: hidden; border: none;">
+                    
+                    <!-- Hero Image -->
+                    <div class="card-hero" style="height: 200px; background: linear-gradient(135deg, #0066cc 0%, #004499 100%); position: relative; overflow: hidden;">
+                        {% if showcase.hero_image_url %}
+                        <img src="{{ showcase.hero_image_url }}" alt="{{ showcase.public_title }}" 
+                             style="width: 100%; height: 100%; object-fit: cover;">
+                        {% endif %}
+                        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.6)); padding: 20px;">
+                            <div class="d-flex align-items-center">
+                                {% if showcase.logo_image_url %}
+                                <img src="{{ showcase.logo_image_url }}" alt="{{ showcase.public_title }}" 
+                                     style="width: 50px; height: 50px; border-radius: 8px; margin-right: 12px; background: white; padding: 4px;">
+                                {% else %}
+                                <div style="width: 50px; height: 50px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                                    <i class="fas fa-balance-scale" style="color: #0066cc; font-size: 1.5rem;"></i>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <h5 style="color: white; margin: 0; font-weight: 600;">{{ showcase.public_title or showcase.law_firm.name }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Card Body -->
+                    <div class="card-body p-4">
+                        <p style="color: #666; margin-bottom: 1rem; line-height: 1.6;">
+                            {{ (showcase.public_description or showcase.law_firm.description or 'Professional legal services')[:120] }}
+                            {% if (showcase.public_description or showcase.law_firm.description or '')| length > 120 %}...{% endif %}
+                        </p>
+                        
+                        <!-- Rating and Reviews -->
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="rating-stars me-2">
+                                {% for i in range(1, 6) %}
+                                {% if i <= showcase.average_rating %}
+                                <i class="fas fa-star" style="color: #ffc107; font-size: 1rem;"></i>
+                                {% else %}
+                                <i class="far fa-star" style="color: #ddd; font-size: 1rem;"></i>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            <span style="color: #666; font-size: 0.9rem;">
+                                {{ "%.1f"|format(showcase.average_rating) }} ({{ showcase.total_reviews }} reviews)
+                            </span>
+                        </div>
+                        
+                        <!-- Location -->
+                        {% if showcase.law_firm.address %}
+                        <div class="mb-3">
+                            <small style="color: #888;">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                {{ showcase.law_firm.address.split(',')[0] }}
+                            </small>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Action Button -->
+                        <div class="d-grid">
+                            <a href="{{ url_for('showcase.firm_profile', showcase_id=showcase.id) }}" 
+                               class="btn btn-primary" 
+                               style="background: #0066cc; border: none; border-radius: 8px; padding: 12px; font-weight: 600; transition: all 0.3s ease;">
+                                View Profile & Reviews
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="#" class="btn btn-outline-primary btn-lg" style="border-radius: 8px; padding: 12px 24px;">
+                View All Law Firms
+            </a>
+        </div>
+        
+        {% else %}
+        <div class="text-center py-5">
+            <div style="font-size: 4rem; color: #ddd; margin-bottom: 1rem;">
+                <i class="fas fa-building"></i>
+            </div>
+            <h4 style="color: #666;">No Featured Law Firms Yet</h4>
+            <p style="color: #888;">Check back soon to discover amazing legal professionals!</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<style>
+.firm-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15) !important;
+}
+
+.btn-primary:hover {
+    background: #0052a3 !important;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+    .card-hero {
+        height: 150px !important;
+    }
+    
+    .firm-card {
+        margin-bottom: 1.5rem;
+    }
+}
+</style>

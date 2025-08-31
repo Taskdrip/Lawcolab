@@ -284,6 +284,11 @@ section {
             </div>
         </section>
 
+        <!-- Featured Law Firms -->
+        {% if featured_showcases %}
+        {% include 'showcase/featured_firms.html' %}
+        {% endif %}
+
         <!-- Footer CTA -->
         <section style="padding: 80px 0; background: #f8fafc;">
             <div class="container text-center">
