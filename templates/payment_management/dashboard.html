@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Management - Super Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .main-header { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 1.5rem 0; }
+        .metric-card { background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 1.5rem; text-align: center; margin-bottom: 1rem; }
+        .metric-value { font-size: 2rem; font-weight: bold; color: #007bff; }
+        .metric-label { color: #6c757d; font-size: 0.9rem; }
+        .gateway-card { background: white; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 1rem; margin-bottom: 1rem; }
+        .gateway-active { border-left: 4px solid #28a745; }
+        .gateway-inactive { border-left: 4px solid #dc3545; }
+        .quick-action { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="main-header">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ url_for('superadmin.dashboard') }}" class="text-white">Super Admin</a></li>
+                    <li class="breadcrumb-item active text-white-50">Payment Management</li>
+                </ol>
+            </nav>
+            <h1><i class="fas fa-credit-card me-2"></i>Payment Management Dashboard</h1>
+            <p class="mb-0">Comprehensive escrow and payment gateway management system</p>
+        </div>
+    </div>
+
+    <div class="container mt-4">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Key Metrics -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-value">{{ stats.active_gateways }}/{{ stats.total_gateways }}</div>
+                    <div class="metric-label">Active Gateways</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-value">{{ stats.total_transactions }}</div>
+                    <div class="metric-label">Total Transactions</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-value">{{ stats.pending_transactions }}</div>
+                    <div class="metric-label">Pending Transactions</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-value">${{ "%.2f"|format(stats.total_revenue) }}</div>
+                    <div class="metric-label">Platform Revenue</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-2">
+                <a href="{{ url_for('payment_management.manage_gateways') }}" class="btn quick-action text-white w-100 p-3">
+                    <i class="fas fa-cogs fa-2x d-block mb-2"></i>
+                    Manage Gateways
+                </a>
+            </div>
+            <div class="col-md-3 mb-2">
+                <a href="{{ url_for('payment_management.manage_transactions') }}" class="btn quick-action text-white w-100 p-3">
+                    <i class="fas fa-exchange-alt fa-2x d-block mb-2"></i>
+                    View Transactions
+                </a>
+            </div>
+            <div class="col-md-3 mb-2">
+                <a href="{{ url_for('payment_management.manage_crypto_wallets') }}" class="btn quick-action text-white w-100 p-3">
+                    <i class="fab fa-bitcoin fa-2x d-block mb-2"></i>
+                    Crypto Wallets
+                </a>
+            </div>
+            <div class="col-md-3 mb-2">
+                <a href="{{ url_for('payment_management.payment_analytics') }}" class="btn quick-action text-white w-100 p-3">
+                    <i class="fas fa-chart-pie fa-2x d-block mb-2"></i>
+                    Analytics
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Payment Gateways Overview -->
+            <div class="col-md-6">
+                <div class="gateway-card">
+                    <h4><i class="fas fa-credit-card text-primary me-2"></i>Payment Gateways</h4>
+                    {% for gateway in gateways %}
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <div>
+                            <strong>{{ gateway.display_name }}</strong>
+                            <small class="d-block text-muted">{{ gateway.name.title() }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-{{ 'success' if gateway.is_active else 'danger' }}">
+                                {{ 'Active' if gateway.is_active else 'Inactive' }}
+                            </span>
+                            {% if gateway.test_mode %}
+                            <span class="badge bg-warning">Test Mode</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No payment gateways configured.</p>
+                    {% endfor %}
+                    
+                    <div class="mt-3">
+                        <a href="{{ url_for('payment_management.create_gateway') }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i>Add Gateway
+                        </a>
+                        <a href="{{ url_for('payment_management.manage_gateways') }}" class="btn btn-outline-secondary btn-sm">
+                            View All
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="col-md-6">
+                <div class="gateway-card">
+                    <h4><i class="fas fa-list text-success me-2"></i>Recent Transactions</h4>
+                    {% for transaction in recent_transactions %}
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <div>
+                            <strong>${{ transaction.amount }}</strong>
+                            <small class="d-block text-muted">{{ transaction.client.full_name }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-{{ 'success' if transaction.status == 'completed' else 'warning' if transaction.status == 'pending' else 'info' }}">
+                                {{ transaction.status.title() }}
+                            </span>
+                            <small class="d-block text-muted">{{ transaction.created_at.strftime('%m/%d') }}</small>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No transactions yet.</p>
+                    {% endfor %}
+                    
+                    <div class="mt-3">
+                        <a href="{{ url_for('payment_management.manage_transactions') }}" class="btn btn-outline-primary btn-sm">
+                            View All Transactions
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Escrow System Features -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="gateway-card">
+                    <h4><i class="fas fa-shield-alt text-warning me-2"></i>Escrow System Features</h4>
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            <i class="fas fa-lock fa-3x text-primary mb-2"></i>
+                            <h6>Secure Escrow</h6>
+                            <p class="small text-muted">Funds held securely until work completion</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <i class="fas fa-handshake fa-3x text-success mb-2"></i>
+                            <h6>Multiple Gateways</h6>
+                            <p class="small text-muted">Stripe, Paystack, Crypto, Bank Transfer</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <i class="fas fa-tasks fa-3x text-info mb-2"></i>
+                            <h6>Milestone Payments</h6>
+                            <p class="small text-muted">Break large projects into milestones</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <i class="fas fa-gavel fa-3x text-warning mb-2"></i>
+                            <h6>Dispute Resolution</h6>
+                            <p class="small text-muted">Built-in dispute management system</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

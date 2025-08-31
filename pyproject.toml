@@ -20,4 +20,5 @@ dependencies = [
     "requests>=2.32.4",
     "reportlab>=4.4.3",
     "weasyprint>=66.0",
+    "cryptography>=45.0.6",
 ]

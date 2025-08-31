@@ -71,7 +71,7 @@ def manage_users():
     
     return render_template('superadmin/manage_users.html', users=users, search=search, role_filter=role_filter)
 
-@superadmin_bp.route('/users/<user_id>/toggle-status', methods=['POST'])
+@superadmin_bp.route('/users/toggle-status', methods=['POST'])
 @require_super_admin
 def toggle_user_status():
     """Activate/deactivate user account"""
@@ -85,7 +85,7 @@ def toggle_user_status():
     flash(f'User {user.email} has been {status}.', 'success')
     return redirect(request.referrer or url_for('superadmin.manage_users'))
 
-@superadmin_bp.route('/users/<user_id>/delete', methods=['POST'])
+@superadmin_bp.route('/users/delete', methods=['POST'])
 @require_super_admin
 def delete_user():
     """Delete user account"""

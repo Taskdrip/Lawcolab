@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'Edit' if gateway else 'Add' }} Payment Gateway - Super Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .main-header { background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%); color: white; padding: 1.5rem 0; }
+        .form-card { background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 2rem; }
+        .config-section { background: #f8f9fa; border-radius: 8px; padding: 1.5rem; margin: 1rem 0; border-left: 4px solid #007bff; }
+        .help-text { font-size: 0.875rem; color: #6c757d; margin-top: 0.25rem; }
+        .gateway-icon { font-size: 3rem; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="main-header">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ url_for('superadmin.dashboard') }}" class="text-white">Super Admin</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('payment_management.payment_dashboard') }}" class="text-white">Payments</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('payment_management.manage_gateways') }}" class="text-white">Gateways</a></li>
+                    <li class="breadcrumb-item active text-white-50">{{ 'Edit' if gateway else 'Add' }} Gateway</li>
+                </ol>
+            </nav>
+            <h1><i class="fas fa-{{ 'edit' if gateway else 'plus' }} me-2"></i>{{ 'Edit' if gateway else 'Add' }} Payment Gateway</h1>
+            <p class="mb-0">Configure payment processing system with encrypted key storage</p>
+        </div>
+    </div>
+
+    <div class="container mt-4">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="form-card">
+                    <form method="POST">
+                        {% if gateway %}
+                        <input type="hidden" name="gateway_id" value="{{ gateway.id }}">
+                        {% endif %}
+                        
+                        <!-- Basic Information -->
+                        <div class="mb-4">
+                            <h4><i class="fas fa-info-circle text-primary me-2"></i>Basic Information</h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="name" class="form-label">Gateway Type *</label>
+                                    <select class="form-select" name="name" id="name" required onchange="updateGatewayConfig()">
+                                        <option value="">Select Gateway Type</option>
+                                        <option value="stripe" {{ 'selected' if gateway and gateway.name == 'stripe' }}>Stripe</option>
+                                        <option value="paystack" {{ 'selected' if gateway and gateway.name == 'paystack' }}>Paystack</option>
+                                        <option value="crypto" {{ 'selected' if gateway and gateway.name == 'crypto' }}>Cryptocurrency</option>
+                                        <option value="bank_transfer" {{ 'selected' if gateway and gateway.name == 'bank_transfer' }}>Bank Transfer</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="display_name" class="form-label">Display Name *</label>
+                                    <input type="text" class="form-control" name="display_name" id="display_name" 
+                                           value="{{ gateway.display_name if gateway }}" required>
+                                    <div class="help-text">Name shown to users during checkout</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="is_active" id="is_active"
+                                               {{ 'checked' if gateway and gateway.is_active }}>
+                                        <label class="form-check-label" for="is_active">
+                                            <strong>Active</strong>
+                                        </label>
+                                        <div class="help-text">Allow this gateway to process payments</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="test_mode" id="test_mode"
+                                               {{ 'checked' if gateway and gateway.test_mode else 'checked' }}>
+                                        <label class="form-check-label" for="test_mode">
+                                            <strong>Test Mode</strong>
+                                        </label>
+                                        <div class="help-text">Use test/sandbox environment</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fee Configuration -->
+                        <div class="mb-4">
+                            <h4><i class="fas fa-percentage text-success me-2"></i>Fee Configuration</h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="transaction_fee_percent" class="form-label">Transaction Fee (%)</label>
+                                    <input type="number" class="form-control" name="transaction_fee_percent" 
+                                           step="0.01" min="0" max="100" 
+                                           value="{{ (gateway.transaction_fee_percent * 100) if gateway else '2.90' }}">
+                                    <div class="help-text">Percentage fee per transaction (e.g., 2.90 for 2.9%)</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="fixed_fee" class="form-label">Fixed Fee ($)</label>
+                                    <input type="number" class="form-control" name="fixed_fee" 
+                                           step="0.01" min="0" 
+                                           value="{{ gateway.fixed_fee if gateway else '0.30' }}">
+                                    <div class="help-text">Fixed amount added to each transaction</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="min_amount" class="form-label">Minimum Amount ($)</label>
+                                    <input type="number" class="form-control" name="min_amount" 
+                                           step="0.01" min="0" 
+                                           value="{{ gateway.min_amount if gateway else '1.00' }}">
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="max_amount" class="form-label">Maximum Amount ($)</label>
+                                    <input type="number" class="form-control" name="max_amount" 
+                                           step="0.01" min="0" 
+                                           value="{{ gateway.max_amount if gateway else '999999.99' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gateway Configuration -->
+                        <div id="gateway-config" class="mb-4" style="display: none;">
+                            <!-- Stripe Configuration -->
+                            <div id="stripe-config" class="config-section" style="display: none;">
+                                <h5><i class="fab fa-stripe text-primary me-2"></i>Stripe Configuration</h5>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="stripe_publishable_key" class="form-label">Publishable Key</label>
+                                        <input type="text" class="form-control" name="stripe_publishable_key" 
+                                               placeholder="pk_test_... or pk_live_...">
+                                        <div class="help-text">Stripe publishable key for client-side</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="stripe_secret_key" class="form-label">Secret Key</label>
+                                        <input type="password" class="form-control" name="stripe_secret_key" 
+                                               placeholder="sk_test_... or sk_live_...">
+                                        <div class="help-text">Stripe secret key (encrypted storage)</div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="stripe_webhook_secret" class="form-label">Webhook Secret</label>
+                                    <input type="password" class="form-control" name="stripe_webhook_secret" 
+                                           placeholder="whsec_...">
+                                    <div class="help-text">Webhook endpoint secret for verification</div>
+                                </div>
+                            </div>
+
+                            <!-- Paystack Configuration -->
+                            <div id="paystack-config" class="config-section" style="display: none;">
+                                <h5><i class="fas fa-credit-card text-success me-2"></i>Paystack Configuration</h5>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="paystack_public_key" class="form-label">Public Key</label>
+                                        <input type="text" class="form-control" name="paystack_public_key" 
+                                               placeholder="pk_test_... or pk_live_...">
+                                        <div class="help-text">Paystack public key for client-side</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="paystack_secret_key" class="form-label">Secret Key</label>
+                                        <input type="password" class="form-control" name="paystack_secret_key" 
+                                               placeholder="sk_test_... or sk_live_...">
+                                        <div class="help-text">Paystack secret key (encrypted storage)</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Crypto Configuration -->
+                            <div id="crypto-config" class="config-section" style="display: none;">
+                                <h5><i class="fab fa-bitcoin text-warning me-2"></i>Cryptocurrency Configuration</h5>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="crypto_api_key" class="form-label">API Key</label>
+                                        <input type="password" class="form-control" name="crypto_api_key" 
+                                               placeholder="Crypto payment processor API key">
+                                        <div class="help-text">CoinPayments, BitPay, or similar service API key</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="crypto_merchant_id" class="form-label">Merchant ID</label>
+                                        <input type="text" class="form-control" name="crypto_merchant_id" 
+                                               placeholder="Merchant/Store ID">
+                                        <div class="help-text">Your merchant identifier</div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="crypto_webhook_secret" class="form-label">Webhook Secret</label>
+                                    <input type="password" class="form-control" name="crypto_webhook_secret" 
+                                           placeholder="IPN/webhook secret">
+                                    <div class="help-text">Secret for payment notifications</div>
+                                </div>
+                            </div>
+
+                            <!-- Bank Transfer Configuration -->
+                            <div id="bank-config" class="config-section" style="display: none;">
+                                <h5><i class="fas fa-university text-info me-2"></i>Bank Transfer Configuration</h5>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="account_verification" id="account_verification">
+                                            <label class="form-check-label" for="account_verification">
+                                                Require Account Verification
+                                            </label>
+                                            <div class="help-text">Verify bank account details before accepting transfers</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="manual_approval" id="manual_approval" checked>
+                                            <label class="form-check-label" for="manual_approval">
+                                                Manual Approval Required
+                                            </label>
+                                            <div class="help-text">Manually verify transfers before releasing escrow</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('payment_management.manage_gateways') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>{{ 'Update' if gateway else 'Create' }} Gateway
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Help Sidebar -->
+            <div class="col-lg-4">
+                <div class="form-card">
+                    <h5><i class="fas fa-question-circle text-info me-2"></i>Setup Help</h5>
+                    
+                    <div class="mb-3">
+                        <h6>Security Notice</h6>
+                        <p class="small text-muted">All API keys and sensitive configuration data are encrypted before storage using Fernet encryption. Keys are never stored in plain text.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Gateway Features</h6>
+                        <ul class="small text-muted">
+                            <li><strong>Stripe:</strong> Global coverage, cards, ACH, bank transfers</li>
+                            <li><strong>Paystack:</strong> African markets, mobile money, cards</li>
+                            <li><strong>Crypto:</strong> Bitcoin, Ethereum, stablecoins</li>
+                            <li><strong>Bank Transfer:</strong> Wire transfers, manual verification</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Testing Mode</h6>
+                        <p class="small text-muted">When test mode is enabled, only test API keys will be used and no real payments will be processed. Always test before going live!</p>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        <strong>Important:</strong> Configure webhook endpoints in your payment provider's dashboard to receive real-time payment updates.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function updateGatewayConfig() {
+            const gatewayType = document.getElementById('name').value;
+            const configSection = document.getElementById('gateway-config');
+            const configs = ['stripe-config', 'paystack-config', 'crypto-config', 'bank-config'];
+            
+            // Hide all config sections
+            configs.forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+            
+            if (gatewayType) {
+                configSection.style.display = 'block';
+                document.getElementById(gatewayType + '-config').style.display = 'block';
+                
+                // Update display name if empty
+                const displayNameField = document.getElementById('display_name');
+                if (!displayNameField.value) {
+                    const names = {
+                        'stripe': 'Stripe',
+                        'paystack': 'Paystack',
+                        'crypto': 'Cryptocurrency',
+                        'bank_transfer': 'Bank Transfer'
+                    };
+                    displayNameField.value = names[gatewayType] || '';
+                }
+            } else {
+                configSection.style.display = 'none';
+            }
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateGatewayConfig();
+        });
+    </script>
+</body>
+</html>

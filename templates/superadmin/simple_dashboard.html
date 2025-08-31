@@ -51,19 +51,24 @@
                 <div class="stats-card">
                     <h3><i class="fas fa-bolt text-warning me-2"></i>Quick Actions</h3>
                     <div class="row">
-                        <div class="col-md-4 mb-2">
+                        <div class="col-md-3 mb-2">
                             <a href="{{ url_for('superadmin.manage_law_firms') }}" class="btn quick-action-btn w-100">
                                 <i class="fas fa-building me-1"></i>Law Firms
                             </a>
                         </div>
-                        <div class="col-md-4 mb-2">
+                        <div class="col-md-3 mb-2">
                             <a href="{{ url_for('superadmin.manage_users') }}" class="btn quick-action-btn w-100">
                                 <i class="fas fa-users me-1"></i>Users  
                             </a>
                         </div>
-                        <div class="col-md-4 mb-2">
+                        <div class="col-md-3 mb-2">
                             <a href="{{ url_for('superadmin.platform_analytics') }}" class="btn quick-action-btn w-100">
                                 <i class="fas fa-chart-line me-1"></i>Analytics
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('payment_management.payment_dashboard') }}" class="btn quick-action-btn w-100 btn-success">
+                                <i class="fas fa-credit-card me-1"></i>Payments
                             </a>
                         </div>
                     </div>

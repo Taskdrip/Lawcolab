@@ -61,6 +61,8 @@ class User(UserMixin, db.Model):
     # Chat relationships
     sent_messages = db.relationship('DirectMessage', back_populates='sender', foreign_keys='DirectMessage.sender_id')
     received_messages = db.relationship('DirectMessage', back_populates='receiver', foreign_keys='DirectMessage.receiver_id')
+    
+    # Payment relationships will be added after models are properly configured
 
     @property
     def full_name(self):
@@ -243,6 +245,7 @@ class LawFirm(db.Model):
     users = db.relationship('User', back_populates='law_firm')
     projects = db.relationship('Project', back_populates='law_firm')
     showcase = db.relationship('LawFirmShowcase', back_populates='law_firm', uselist=False)
+    # escrow_transactions relationship will be added after models are properly configured
     
     def get_support_chat_room(self):
         """Get or create support chat room with super admin"""
