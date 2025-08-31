@@ -32,6 +32,9 @@ def create_super_admin():
             is_verified=True
         )
         
+        # Set password for super admin
+        super_admin.set_password('superadmin123')
+        
         db.session.add(super_admin)
         db.session.commit()
         

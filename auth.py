@@ -28,7 +28,9 @@ def login():
                 # Redirect to intended page or dashboard
                 next_page = request.args.get('next')
                 if not next_page or urlparse(next_page).netloc != '':
-                    if user.is_admin():
+                    if user.is_super_admin():
+                        next_page = url_for('superadmin.dashboard')
+                    elif user.is_admin():
                         next_page = url_for('admin.admin_dashboard')
                     elif user.is_team_member():
                         next_page = url_for('index')
