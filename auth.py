@@ -30,33 +30,27 @@ def superadmin_access():
                         print(f"DEBUG: Password check passed")
                         if user.is_super_admin():
                             print(f"DEBUG: User is super admin, attempting login...")
-                            login_result = login_user(user, remember=True)
+                            print(f"DEBUG: User ID: {user.id}, Type: {type(user.id)}")
+                            
+                            # Test the user loader before login
+                            from app import load_user
+                            test_loaded = load_user(user.id)
+                            print(f"DEBUG: User loader test: {test_loaded.email if test_loaded else 'Failed'}")
+                            
+                            login_result = login_user(user, remember=True, force=True)
                             print(f"DEBUG: Login result: {login_result}")
+                            print(f"DEBUG: Session after login: {session}")
                             print(f"DEBUG: Current user after login: {current_user.is_authenticated if current_user else 'No current user'}")
+                            
+                            # Test session manually
+                            session['user_id'] = user.id
+                            session['logged_in'] = True
+                            session.permanent = True
+                            
                             flash('Super Admin login successful!', 'success')
                             redirect_url = url_for('superadmin.dashboard')
                             print(f"DEBUG: Redirecting to: {redirect_url}")
-                            # Create a simple response to test if login worked
-                            from flask import Response
-                            return Response(f"""
-                            <html>
-                            <head><title>Super Admin Login Success</title></head>
-                            <body>
-                                <h1>Super Admin Login Successful!</h1>
-                                <p>User: {user.email}</p>
-                                <p>Role: {user.role}</p>
-                                <p>Login successful: {login_result}</p>
-                                <p>Current user authenticated: {current_user.is_authenticated}</p>
-                                <p>Is super admin: {current_user.is_super_admin()}</p>
-                                <a href="{redirect_url}">Go to Super Admin Dashboard</a>
-                                <script>
-                                    setTimeout(() => {{
-                                        window.location.href = '{redirect_url}';
-                                    }}, 2000);
-                                </script>
-                            </body>
-                            </html>
-                            """)
+                            return redirect(redirect_url)
                         else:
                             print(f"DEBUG: User {user.email} is not super admin. Role: {user.role}")
                             flash('Access denied. Super Admin privileges required.', 'error')
