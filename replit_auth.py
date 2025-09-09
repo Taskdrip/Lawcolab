@@ -23,7 +23,14 @@ login_manager = LoginManager(app)
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(user_id)
+    print(f"DEBUG: Attempting to load user with ID: {user_id}")
+    try:
+        user = User.query.filter_by(id=str(user_id)).first()
+        print(f"DEBUG: User loader result: {user.email if user else 'None'}")
+        return user
+    except Exception as e:
+        print(f"DEBUG: User loader error: {str(e)}")
+        return None
 
 class UserSessionStorage(BaseStorage):
 
@@ -152,6 +159,7 @@ def require_login(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated:
+            print(f"DEBUG: User not authenticated, redirecting to login")
             session["next_url"] = get_next_navigation_url(request)
             return redirect(url_for('auth.login'))
 
@@ -160,6 +168,7 @@ def require_login(f):
             if hasattr(g, 'flask_dance_replit') and replit.token:
                 expires_in = replit.token.get('expires_in', 0)
                 if expires_in < 0:
+                    issuer_url = os.environ.get('ISSUER_URL', "https://replit.com/oidc")
                     refresh_token_url = issuer_url + "/token"
                     try:
                         token = replit.refresh_token(token_url=refresh_token_url,

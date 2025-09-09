@@ -105,7 +105,10 @@ def login():
                     flash('Your account has been deactivated. Please contact support.', 'error')
                     return render_template('auth/login.html', form=form)
                 
-                login_user(user, remember=remember_me)
+                login_result = login_user(user, remember=remember_me)
+                print(f"DEBUG: Login user result: {login_result}")
+                print(f"DEBUG: Session after login: {dict(session)}")
+                print(f"DEBUG: Current user authenticated: {current_user.is_authenticated}")
                 
                 # Redirect to intended page or dashboard
                 next_page = request.args.get('next')
