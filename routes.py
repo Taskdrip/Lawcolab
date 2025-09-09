@@ -60,6 +60,25 @@ app.register_blueprint(simple_checkout_bp, url_prefix="/payment")  # Simple paym
 def make_session_permanent():
     session.permanent = True
 
+@app.route('/popup')
+def popup_page():
+    """Direct popup route - accessible without sales prefix"""
+    from models import PopupSettings, CustomerReview
+    from sqlalchemy import desc
+    
+    # Get popup settings
+    settings = PopupSettings.query.first()
+    if not settings:
+        # Create default settings
+        settings = PopupSettings()
+        db.session.add(settings)
+        db.session.commit()
+    
+    # Get featured reviews
+    reviews = CustomerReview.query.filter_by(is_active=True).order_by(desc(CustomerReview.is_featured), CustomerReview.id).limit(20).all()
+    
+    return render_template('sales/comprehensive_popup.html', settings=settings, reviews=reviews)
+
 @app.route('/')
 def index():
     """Main landing page - shows public landing if not authenticated, redirects to dashboard if authenticated"""
