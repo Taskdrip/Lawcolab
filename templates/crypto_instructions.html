@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% set page_title = "Crypto Payment Instructions - LawColab" %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Order Details -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Payment Order: {{ order_ref }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Amount:</strong> ₦{{ "{:,.2f}".format(amount) }}<br>
+                            <strong>Description:</strong> {{ description }}<br>
+                            <strong>Customer:</strong> {{ customer_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Email:</strong> {{ customer_email }}<br>
+                            <strong>Order Reference:</strong> {{ order_ref }}<br>
+                            <span class="badge bg-warning">Pending Payment</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Crypto Payment Instructions -->
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-warning text-dark text-center py-4">
+                    <h3 class="mb-0"><i class="fab fa-bitcoin me-2"></i>Cryptocurrency Payment</h3>
+                    <p class="mb-0">Send crypto to our wallet addresses below</p>
+                </div>
+                
+                <div class="card-body p-5">
+                    <!-- Rate Information -->
+                    <div class="alert alert-info border-0 mb-4">
+                        <h6 class="alert-heading"><i class="fas fa-chart-line me-2"></i>Exchange Rate Information</h6>
+                        <p class="mb-0">
+                            <strong>NGN Amount:</strong> ₦{{ "{:,.2f}".format(amount) }}<br>
+                            <strong>Note:</strong> Send the equivalent crypto amount based on current market rates. Check your exchange or wallet for the most current rate.
+                        </p>
+                    </div>
+                    
+                    <!-- Crypto Wallets -->
+                    <div class="mb-4">
+                        <h5><i class="fas fa-wallet me-2"></i>Choose Your Cryptocurrency</h5>
+                        {% for wallet in crypto_wallets %}
+                        <div class="card crypto-wallet mb-3">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <h6 class="mb-1">{{ wallet.name }}</h6>
+                                        <p class="mb-2 text-muted">{{ wallet.network }}</p>
+                                        <div class="wallet-address">
+                                            <strong>Wallet Address:</strong><br>
+                                            <span class="font-monospace text-break" id="wallet-{{ loop.index }}">{{ wallet.address }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-center">
+                                        <button type="button" class="btn btn-warning" onclick="copyText('{{ wallet.address }}', this)">
+                                            <i class="fas fa-copy"></i> Copy Address
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Instructions -->
+                    <div class="mb-4">
+                        <h5><i class="fas fa-list-ol me-2"></i>How to Complete Payment</h5>
+                        <ol class="list-group list-group-numbered">
+                            <li class="list-group-item border-0">
+                                <strong>Choose your cryptocurrency</strong> from the options above
+                            </li>
+                            <li class="list-group-item border-0">
+                                <strong>Calculate the equivalent amount</strong> using current market rates
+                            </li>
+                            <li class="list-group-item border-0">
+                                <strong>Send the crypto</strong> to the corresponding wallet address
+                            </li>
+                            <li class="list-group-item border-0">
+                                <strong>Copy the transaction hash</strong> from your wallet or exchange
+                            </li>
+                            <li class="list-group-item border-0">
+                                <strong>Email the transaction details</strong> to <a href="mailto:payments@lawcolab.com">payments@lawcolab.com</a>
+                            </li>
+                        </ol>
+                    </div>
+                    
+                    <!-- Email Template -->
+                    <div class="card border-info mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="fas fa-envelope me-2"></i>Email Template for Payment Proof</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="bg-light p-3 rounded">
+                                <strong>Subject:</strong> Crypto Payment Proof - {{ order_ref }}<br><br>
+                                <strong>Message:</strong><br>
+                                Order Reference: {{ order_ref }}<br>
+                                Amount: ₦{{ "{:,.2f}".format(amount) }}<br>
+                                Cryptocurrency: [BTC/ETH/USDT]<br>
+                                Crypto Amount Sent: [Amount]<br>
+                                Transaction Hash: [Your TX Hash]<br>
+                                Wallet Address Used: [Address you sent to]<br><br>
+                                Customer: {{ customer_name }}<br>
+                                Email: {{ customer_email }}
+                            </div>
+                            <div class="text-center mt-3">
+                                <a href="mailto:payments@lawcolab.com?subject=Crypto Payment Proof - {{ order_ref }}&body=Order Reference: {{ order_ref }}%0AAmount: ₦{{ '{:,.2f}'.format(amount) }}%0ACryptocurrency: [BTC/ETH/USDT]%0ACrypto Amount Sent: [Amount]%0ATransaction Hash: [Your TX Hash]%0AWallet Address Used: [Address you sent to]%0A%0ACustomer: {{ customer_name }}%0AEmail: {{ customer_email }}" 
+                                   class="btn btn-info">
+                                    <i class="fas fa-envelope me-2"></i>Open Email Template
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Important Notes -->
+                    <div class="alert alert-warning border-0">
+                        <h6 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Important Notes</h6>
+                        <ul class="mb-0">
+                            <li>Send <strong>only the specified cryptocurrency</strong> to the correct address</li>
+                            <li>Double-check the <strong>network/blockchain</strong> before sending</li>
+                            <li>Minimum transaction confirmations required: <strong>3-6 blocks</strong></li>
+                            <li>Payment verification takes <strong>30 minutes to 2 hours</strong></li>
+                            <li>Include order reference <strong>{{ order_ref }}</strong> in your email</li>
+                            <li>Contact support for help: <strong>support@lawcolab.com</strong> or <strong>+234 803 662 2568</strong></li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Contact Information -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-envelope fa-2x text-primary mb-2"></i>
+                                    <h6>Email Payment Proof</h6>
+                                    <a href="mailto:payments@lawcolab.com?subject=Crypto Payment Proof - {{ order_ref }}" class="btn btn-outline-primary btn-sm">
+                                        payments@lawcolab.com
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-phone fa-2x text-success mb-2"></i>
+                                    <h6>WhatsApp Support</h6>
+                                    <a href="https://wa.me/2348036622568?text=Crypto payment inquiry for order {{ order_ref }}" class="btn btn-outline-success btn-sm" target="_blank">
+                                        +234 803 662 2568
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="text-center mt-4">
+                <a href="{{ url_for('simple_checkout.payment_success', order_ref=order_ref) }}" class="btn btn-warning me-2">
+                    <i class="fas fa-check me-2"></i>I've Sent the Crypto
+                </a>
+                <a href="{{ url_for('simple_checkout.checkout') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Checkout
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.crypto-wallet {
+    transition: all 0.3s ease;
+}
+
+.crypto-wallet:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.wallet-address {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+}
+</style>
+
+<script>
+function copyText(text, button) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Show success feedback
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        button.classList.add('btn-success');
+        button.classList.remove('btn-warning');
+        
+        setTimeout(function() {
+            button.innerHTML = originalText;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-warning');
+        }, 2000);
+    }).catch(function(err) {
+        console.error('Could not copy text: ', err);
+        alert('Failed to copy. Please copy manually.');
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% set page_title = "Payment Status - LawColab" %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Order Status -->
+            <div class="card border-0 shadow-lg">
+                <div class="card-header text-center py-4 
+                    {% if order.status == 'confirmed' %}bg-success text-white
+                    {% elif order.status == 'failed' %}bg-danger text-white
+                    {% else %}bg-warning text-dark{% endif %}">
+                    
+                    {% if order.status == 'confirmed' %}
+                        <i class="fas fa-check-circle fa-3x mb-3"></i>
+                        <h3 class="mb-0">Payment Confirmed!</h3>
+                        <p class="mb-0">Your payment has been successfully verified</p>
+                    {% elif order.status == 'failed' %}
+                        <i class="fas fa-times-circle fa-3x mb-3"></i>
+                        <h3 class="mb-0">Payment Failed</h3>
+                        <p class="mb-0">There was an issue with your payment</p>
+                    {% else %}
+                        <i class="fas fa-clock fa-3x mb-3"></i>
+                        <h3 class="mb-0">Payment Pending</h3>
+                        <p class="mb-0">We're verifying your payment</p>
+                    {% endif %}
+                </div>
+                
+                <div class="card-body p-5">
+                    <!-- Order Details -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Order Reference</h6>
+                            <p class="h5">{{ order.order_reference }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Amount</h6>
+                            <p class="h5 text-primary">₦{{ "{:,.2f}".format(order.amount) }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Customer</h6>
+                            <p>{{ order.customer_name }}<br>{{ order.customer_email }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Order Date</h6>
+                            <p>{{ order.created_at.strftime('%d %B %Y, %I:%M %p') }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <h6 class="text-muted">Description</h6>
+                            <p>{{ order.description }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Transaction History -->
+                    {% if transactions %}
+                    <div class="mb-4">
+                        <h5><i class="fas fa-history me-2"></i>Transaction History</h5>
+                        {% for transaction in transactions %}
+                        <div class="card mb-3 {% if transaction.status == 'confirmed' %}border-success{% elif transaction.status == 'failed' %}border-danger{% else %}border-warning{% endif %}">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <h6 class="mb-1">
+                                            {{ transaction.transaction_reference }}
+                                            {% if transaction.status == 'confirmed' %}
+                                                <span class="badge bg-success ms-2">Confirmed</span>
+                                            {% elif transaction.status == 'failed' %}
+                                                <span class="badge bg-danger ms-2">Failed</span>
+                                            {% else %}
+                                                <span class="badge bg-warning ms-2">Pending</span>
+                                            {% endif %}
+                                        </h6>
+                                        <p class="mb-0 text-muted">
+                                            {{ transaction.payment_method.replace('_', ' ').title() }} • 
+                                            {{ transaction.created_at.strftime('%d %b %Y, %I:%M %p') }}
+                                        </p>
+                                        
+                                        {% if transaction.payment_method == 'bank_transfer' and transaction.bank_reference %}
+                                        <small class="text-muted">Bank Ref: {{ transaction.bank_reference }}</small>
+                                        {% endif %}
+                                        
+                                        {% if transaction.payment_method == 'crypto' and transaction.crypto_tx_hash %}
+                                        <small class="text-muted">Crypto TX: {{ transaction.crypto_tx_hash[:16] }}...</small>
+                                        {% endif %}
+                                        
+                                        {% if transaction.verification_notes %}
+                                        <div class="mt-2">
+                                            <small class="text-info"><i class="fas fa-comment me-1"></i>{{ transaction.verification_notes }}</small>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <span class="h6">₦{{ "{:,.2f}".format(transaction.amount) }}</span>
+                                        {% if transaction.confirmed_at %}
+                                        <br><small class="text-success">Confirmed: {{ transaction.confirmed_at.strftime('%d %b, %I:%M %p') }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Status-specific content -->
+                    {% if order.status == 'confirmed' %}
+                    <div class="alert alert-success border-0">
+                        <h6 class="alert-heading"><i class="fas fa-check-circle me-2"></i>Payment Successful!</h6>
+                        <p class="mb-0">
+                            Your payment has been confirmed and processed. 
+                            {% if order.confirmed_at %}
+                            Confirmed on {{ order.confirmed_at.strftime('%d %B %Y at %I:%M %p') }}.
+                            {% endif %}
+                        </p>
+                        <hr>
+                        <p class="mb-0">You will receive a confirmation email shortly. Thank you for your business!</p>
+                    </div>
+                    
+                    {% elif order.status == 'failed' %}
+                    <div class="alert alert-danger border-0">
+                        <h6 class="alert-heading"><i class="fas fa-times-circle me-2"></i>Payment Failed</h6>
+                        <p class="mb-0">
+                            Unfortunately, we could not verify your payment. This might be due to:
+                        </p>
+                        <ul class="mt-2 mb-0">
+                            <li>Incorrect amount transferred</li>
+                            <li>Invalid payment proof</li>
+                            <li>Payment to wrong account</li>
+                            <li>Expired transaction</li>
+                        </ul>
+                    </div>
+                    
+                    {% else %}
+                    <div class="alert alert-warning border-0">
+                        <h6 class="alert-heading"><i class="fas fa-clock me-2"></i>Payment Under Review</h6>
+                        <p class="mb-0">
+                            We are currently verifying your payment. This process typically takes 1-2 hours during business hours.
+                        </p>
+                        <hr>
+                        <p class="mb-0">
+                            <strong>Next steps:</strong> You'll receive an email notification once your payment is confirmed.
+                            This page will automatically refresh every 30 seconds.
+                        </p>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Action Buttons -->
+                    <div class="text-center mt-4">
+                        {% if order.status == 'pending' %}
+                        <button type="button" class="btn btn-primary me-2" onclick="window.location.reload()">
+                            <i class="fas fa-sync-alt me-2"></i>Refresh Status
+                        </button>
+                        {% endif %}
+                        
+                        {% if order.status == 'failed' %}
+                        <a href="{{ url_for('payment_checkout.checkout', amount=order.amount, description=order.description, email=order.customer_email, name=order.customer_name) }}" class="btn btn-primary me-2">
+                            <i class="fas fa-redo me-2"></i>Try Again
+                        </a>
+                        {% endif %}
+                        
+                        <a href="mailto:support@lawcolab.com?subject=Payment Inquiry - {{ order.order_reference }}" class="btn btn-outline-primary">
+                            <i class="fas fa-envelope me-2"></i>Contact Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Help Section -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-body text-center">
+                    <h6><i class="fas fa-question-circle me-2"></i>Need Help?</h6>
+                    <p class="text-muted mb-0">
+                        Contact our support team at <strong>support@lawcolab.com</strong> or call <strong>+234 803 662 2568</strong>
+                        <br>Include your order reference: <strong>{{ order.order_reference }}</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if order.status == 'pending' %}
+<script>
+// Auto-refresh every 30 seconds for pending payments
+setTimeout(function() {
+    window.location.reload();
+}, 30000);
+
+// Show loading indicator when refreshing
+function showLoading() {
+    const btn = document.querySelector('.btn-primary');
+    if (btn) {
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Refreshing...';
+        btn.disabled = true;
+    }
+}
+
+// Refresh button click handler
+document.querySelector('.btn-primary')?.addEventListener('click', showLoading);
+</script>
+{% endif %}
+{% endblock %}

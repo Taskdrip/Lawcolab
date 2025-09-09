@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+{% set page_title = "Crypto Payment - LawColab" %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Order Details -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Order #{{ order.order_reference }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Amount:</strong> ₦{{ "{:,.2f}".format(order.amount) }}<br>
+                            <strong>Description:</strong> {{ order.description }}<br>
+                            <strong>Customer:</strong> {{ order.customer_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Order Date:</strong> {{ order.created_at.strftime('%d %b %Y, %I:%M %p') }}<br>
+                            <strong>Expires:</strong> {{ order.expires_at.strftime('%d %b %Y, %I:%M %p') }}<br>
+                            <span class="badge bg-warning">{{ order.status.title() }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Crypto Payment Instructions -->
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-warning text-dark text-center py-4">
+                    <h3 class="mb-0"><i class="fab fa-bitcoin me-2"></i>Cryptocurrency Payment</h3>
+                    <p class="mb-0">Send crypto to our wallet address below</p>
+                </div>
+                
+                <div class="card-body p-5">
+                    <!-- Crypto Wallets -->
+                    <div class="mb-4">
+                        <h5><i class="fas fa-wallet me-2"></i>Choose Your Cryptocurrency</h5>
+                        {% for wallet in crypto_wallets %}
+                        <div class="card crypto-wallet mb-3" data-wallet-id="{{ wallet.id }}">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <h6 class="mb-1">{{ wallet.display_name }}</h6>
+                                        <p class="mb-2 text-muted">{{ wallet.network }} Network</p>
+                                        <div class="wallet-address">
+                                            <strong>Wallet Address:</strong><br>
+                                            <span class="font-monospace text-break" id="wallet-{{ wallet.id }}">{{ wallet.wallet_address }}</span>
+                                            <button type="button" class="btn btn-sm btn-outline-primary ms-2" onclick="copyWalletAddress('{{ wallet.id }}')">
+                                                <i class="fas fa-copy"></i> Copy
+                                            </button>
+                                        </div>
+                                        {% if wallet.payment_instructions %}
+                                        <small class="text-info">{{ wallet.payment_instructions }}</small>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-4 text-center">
+                                        {% if wallet.qr_code_url %}
+                                        <img src="{{ wallet.qr_code_url }}" alt="QR Code" class="img-fluid mb-2" style="max-width: 120px;">
+                                        <br>
+                                        {% endif %}
+                                        <button type="button" class="btn btn-warning select-wallet" data-wallet-id="{{ wallet.id }}">
+                                            Select {{ wallet.currency }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Instructions -->
+                    <div class="mb-4">
+                        <h5><i class="fas fa-list-ol me-2"></i>How to Complete Payment</h5>
+                        <ol class="list-group list-group-numbered">
+                            <li class="list-group-item border-0">
+                                <strong>Choose your cryptocurrency</strong> from the options above
+                            </li>
+                            <li class="list-group-item border-0">
+                                <strong>Send the equivalent amount</strong> to the provided wallet address
+                            </li>
+                            <li class="list-group-item border-0">
+                                <strong>Copy the transaction hash</strong> from your wallet or exchange
+                            </li>
+                            <li class="list-group-item border-0">
+                                <strong>Submit the details</strong> using the form below
+                            </li>
+                        </ol>
+                    </div>
+                    
+                    <!-- Payment Submission Form -->
+                    <div class="card border-warning" id="payment-form" style="display: none;">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="fas fa-paper-plane me-2"></i>Submit Crypto Payment</h6>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" action="{{ url_for('payment_checkout.submit_crypto_payment', order_id=order.id) }}">
+                                <input type="hidden" id="wallet_id" name="wallet_id" value="">
+                                
+                                <div class="mb-3">
+                                    <label for="crypto_currency" class="form-label">Cryptocurrency *</label>
+                                    <input type="text" class="form-control" id="crypto_currency" name="crypto_currency" readonly>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="crypto_amount" class="form-label">Amount Sent *</label>
+                                    <input type="text" class="form-control" id="crypto_amount" name="crypto_amount" 
+                                           placeholder="e.g., 0.00123456" required>
+                                    <div class="form-text">Enter the exact amount you sent (not the NGN equivalent)</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="crypto_tx_hash" class="form-label">Transaction Hash *</label>
+                                    <input type="text" class="form-control font-monospace" id="crypto_tx_hash" name="crypto_tx_hash" 
+                                           placeholder="0x1234567890abcdef..." required>
+                                    <div class="form-text">Copy the transaction hash from your wallet or blockchain explorer</div>
+                                </div>
+                                
+                                <div class="alert alert-info border-0">
+                                    <small>
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Important:</strong> Make sure you send to the correct address and network. 
+                                        Wrong network transfers cannot be recovered.
+                                    </small>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-warning btn-lg">
+                                        <i class="fas fa-paper-plane me-2"></i>Submit Payment Details
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Crypto Rate Information -->
+                    <div class="alert alert-info border-0 mt-4">
+                        <h6 class="alert-heading"><i class="fas fa-chart-line me-2"></i>Exchange Rate Information</h6>
+                        <p class="mb-0">
+                            <strong>NGN Amount:</strong> ₦{{ "{:,.2f}".format(order.amount) }}<br>
+                            <strong>Note:</strong> Send the equivalent crypto amount based on current market rates. 
+                            Rates fluctuate frequently, so check your exchange or wallet for the most current rate.
+                        </p>
+                    </div>
+                    
+                    <!-- Important Notes -->
+                    <div class="alert alert-warning border-0">
+                        <h6 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Important Notes</h6>
+                        <ul class="mb-0">
+                            <li>Send <strong>only the specified cryptocurrency</strong> to the address</li>
+                            <li>Double-check the <strong>network/blockchain</strong> before sending</li>
+                            <li>Minimum transaction confirmations required: <strong>3-6 blocks</strong></li>
+                            <li>Payment verification takes <strong>30 minutes to 2 hours</strong></li>
+                            <li>Contact support for help: <strong>support@lawcolab.com</strong></li>
+                            <li>This payment link expires on <strong>{{ order.expires_at.strftime('%d %b %Y at %I:%M %p') }}</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="text-center mt-4">
+                <a href="{{ url_for('payment_checkout.payment_status', order_id=order.id) }}" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-eye me-2"></i>Check Payment Status
+                </a>
+                <a href="{{ url_for('payment_checkout.checkout') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Checkout
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.crypto-wallet {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.crypto-wallet:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.crypto-wallet.selected {
+    border-color: #ffc107;
+    box-shadow: 0 4px 20px rgba(255,193,7,0.3);
+}
+
+.wallet-address {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+}
+</style>
+
+<script>
+let selectedWallet = null;
+
+// Handle wallet selection
+document.querySelectorAll('.select-wallet').forEach(button => {
+    button.addEventListener('click', function() {
+        const walletId = this.dataset.walletId;
+        selectWallet(walletId);
+    });
+});
+
+function selectWallet(walletId) {
+    // Remove previous selection
+    document.querySelectorAll('.crypto-wallet').forEach(wallet => {
+        wallet.classList.remove('selected');
+    });
+    
+    // Select new wallet
+    const selectedWalletCard = document.querySelector(`[data-wallet-id="${walletId}"]`);
+    selectedWalletCard.classList.add('selected');
+    
+    // Get wallet info
+    const walletData = getWalletData(walletId);
+    
+    // Update form
+    document.getElementById('wallet_id').value = walletId;
+    document.getElementById('crypto_currency').value = walletData.currency;
+    
+    // Show payment form
+    document.getElementById('payment-form').style.display = 'block';
+    document.getElementById('payment-form').scrollIntoView({ behavior: 'smooth' });
+    
+    selectedWallet = walletId;
+}
+
+function getWalletData(walletId) {
+    // This would normally come from the server, but for now we'll extract from DOM
+    const walletCard = document.querySelector(`[data-wallet-id="${walletId}"]`);
+    const displayName = walletCard.querySelector('h6').textContent;
+    const currency = displayName.split('(')[1].split(')')[0]; // Extract currency from "Bitcoin (BTC)"
+    
+    return {
+        id: walletId,
+        currency: currency,
+        displayName: displayName
+    };
+}
+
+function copyWalletAddress(walletId) {
+    const addressElement = document.getElementById(`wallet-${walletId}`);
+    const text = addressElement.textContent.trim();
+    
+    navigator.clipboard.writeText(text).then(function() {
+        // Show success message
+        const btn = addressElement.parentElement.querySelector('button');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        btn.classList.remove('btn-outline-primary');
+        btn.classList.add('btn-success');
+        
+        setTimeout(function() {
+            btn.innerHTML = originalText;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-primary');
+        }, 2000);
+    }).catch(function(err) {
+        console.error('Could not copy text: ', err);
+        alert('Failed to copy. Please copy manually.');
+    });
+}
+
+// Auto-refresh payment status every 60 seconds
+setTimeout(function() {
+    window.location.href = "{{ url_for('payment_checkout.payment_status', order_id=order.id) }}";
+}, 60000);
+</script>
+{% endblock %}

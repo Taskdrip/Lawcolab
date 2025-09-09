@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% set page_title = "LawColab Payment Checkout" %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <h3 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Secure Payment</h3>
+                    <p class="mb-0">Pay with Bank Transfer or Cryptocurrency</p>
+                </div>
+                
+                <div class="card-body p-5">
+                    <!-- Order Summary -->
+                    <div class="alert alert-info border-0 mb-4">
+                        <h5><i class="fas fa-receipt me-2"></i>Payment Details</h5>
+                        <div class="row">
+                            <div class="col-sm-7">
+                                <strong>Service:</strong> {{ description }}
+                            </div>
+                            <div class="col-sm-5 text-end">
+                                <span class="h4 text-primary">₦{{ "{:,.2f}".format(amount) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Form -->
+                    <form method="POST" action="{{ url_for('simple_checkout.create_order') }}">
+                        <!-- Customer Information -->
+                        <div class="mb-4">
+                            <h5 class="mb-3"><i class="fas fa-user me-2"></i>Your Information</h5>
+                            <div class="mb-3">
+                                <label for="customer_name" class="form-label">Full Name *</label>
+                                <input type="text" class="form-control" id="customer_name" name="customer_name" 
+                                       value="{{ customer_name }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="customer_email" class="form-label">Email Address *</label>
+                                <input type="email" class="form-control" id="customer_email" name="customer_email" 
+                                       value="{{ customer_email }}" required>
+                            </div>
+                        </div>
+                        
+                        <!-- Payment Method Selection -->
+                        <div class="mb-4">
+                            <h5 class="mb-3"><i class="fas fa-credit-card me-2"></i>Payment Method</h5>
+                            
+                            <!-- Bank Transfer -->
+                            <div class="card mb-3 border-primary">
+                                <div class="card-body">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="payment_method" 
+                                               id="bank_transfer" value="bank_transfer" checked>
+                                        <label class="form-check-label w-100" for="bank_transfer">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="mb-1"><i class="fas fa-university me-2 text-primary"></i>Bank Transfer</h6>
+                                                    <small class="text-muted">Transfer to Zenith Bank account</small>
+                                                </div>
+                                                <span class="badge bg-success">Recommended</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Crypto Payment -->
+                            <div class="card mb-3 border-warning">
+                                <div class="card-body">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="payment_method" 
+                                               id="crypto" value="crypto">
+                                        <label class="form-check-label w-100" for="crypto">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="mb-1"><i class="fab fa-bitcoin me-2 text-warning"></i>Cryptocurrency</h6>
+                                                    <small class="text-muted">Bitcoin, Ethereum, USDT</small>
+                                                </div>
+                                                <span class="badge bg-info">Fast</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Hidden fields -->
+                        <input type="hidden" name="amount" value="{{ amount }}">
+                        <input type="hidden" name="description" value="{{ description }}">
+                        
+                        <!-- Submit Button -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg py-3">
+                                <i class="fas fa-lock me-2"></i>Continue to Payment
+                                <span class="ms-2">₦{{ "{:,.2f}".format(amount) }}</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Security Features -->
+            <div class="row mt-4 text-center">
+                <div class="col-md-6">
+                    <i class="fas fa-shield-alt fa-2x text-success mb-2"></i>
+                    <h6>Secure</h6>
+                    <small class="text-muted">Bank-grade security</small>
+                </div>
+                <div class="col-md-6">
+                    <i class="fas fa-headset fa-2x text-info mb-2"></i>
+                    <h6>Support</h6>
+                    <small class="text-muted">24/7 assistance</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.payment-method .card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.payment-method .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+</style>
+
+<script>
+// Make cards clickable
+document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('click', function() {
+        const radio = this.querySelector('input[type="radio"]');
+        if (radio) {
+            radio.checked = true;
+        }
+    });
+});
+</script>
+{% endblock %}

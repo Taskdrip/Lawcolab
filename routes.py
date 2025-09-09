@@ -30,6 +30,7 @@ from blueprints.showcase import showcase_bp
 # Import payment management blueprints
 from blueprints.payment_management import payment_mgmt_bp
 from blueprints.escrow_public import escrow_bp
+from simple_checkout import simple_checkout_bp
 
 # Import payment models
 import models_payment  # noqa: F401
@@ -52,6 +53,7 @@ app.register_blueprint(sales_bp, url_prefix="/sales")
 app.register_blueprint(showcase_bp, url_prefix="/showcase")
 app.register_blueprint(payment_mgmt_bp)  # Payment management
 app.register_blueprint(escrow_bp)  # Escrow system
+app.register_blueprint(simple_checkout_bp, url_prefix="/payment")  # Simple payment checkout
 
 # Make session permanent
 @app.before_request

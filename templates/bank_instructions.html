@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% set page_title = "Bank Transfer Instructions - LawColab" %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Order Details -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Payment Order: {{ order_ref }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Amount:</strong> ₦{{ "{:,.2f}".format(amount) }}<br>
+                            <strong>Description:</strong> {{ description }}<br>
+                            <strong>Customer:</strong> {{ customer_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Email:</strong> {{ customer_email }}<br>
+                            <strong>Order Reference:</strong> {{ order_ref }}<br>
+                            <span class="badge bg-warning">Pending Payment</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bank Transfer Instructions -->
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-success text-white text-center py-4">
+                    <h3 class="mb-0"><i class="fas fa-university me-2"></i>Bank Transfer Instructions</h3>
+                    <p class="mb-0">Transfer to our Zenith Bank account below</p>
+                </div>
+                
+                <div class="card-body p-5">
+                    <!-- Bank Details -->
+                    <div class="alert alert-info border-0 mb-4">
+                        <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Bank Account Details</h5>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="fw-bold text-dark">Account Name:</label>
+                                    <div class="h6 text-primary">{{ bank_details.account_name }}</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="fw-bold text-dark">Account Number:</label>
+                                    <div class="h6 text-primary" id="account-number">{{ bank_details.account_number }}</div>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="copyText('{{ bank_details.account_number }}', this)">
+                                        <i class="fas fa-copy"></i> Copy
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="fw-bold text-dark">Bank Name:</label>
+                                    <div class="h6 text-primary">{{ bank_details.bank_name }}</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="fw-bold text-dark">Amount to Transfer:</label>
+                                    <div class="h4 text-success" id="transfer-amount">₦{{ "{:,.2f}".format(amount) }}</div>
+                                    <button type="button" class="btn btn-sm btn-outline-success" onclick="copyText('{{ amount }}', this)">
+                                        <i class="fas fa-copy"></i> Copy Amount
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <label class="fw-bold text-dark">Order Reference:</label>
+                            <div class="h6 text-warning" id="order-ref">{{ order_ref }}</div>
+                            <button type="button" class="btn btn-sm btn-outline-warning" onclick="copyText('{{ order_ref }}', this)">
+                                <i class="fas fa-copy"></i> Copy Reference
+                            </button>
+                            <small class="text-muted d-block mt-2">Include this reference in your transfer description</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Instructions -->
+                    <div class="mb-4">
+                        <h5><i class="fas fa-list-ol me-2"></i>How to Complete Payment</h5>
+                        <ol class="list-group list-group-numbered">
+                            <li class="list-group-item border-0">
+                                <strong>Open your mobile banking app</strong> or visit your bank's website
+                            </li>
+                            <li class="list-group-item border-0">
+                                <strong>Transfer the exact amount</strong> (₦{{ "{:,.2f}".format(amount) }}) to the account above
+                            </li>
+                            <li class="list-group-item border-0">
+                                <strong>Include the order reference</strong> ({{ order_ref }}) in the transaction description
+                            </li>
+                            <li class="list-group-item border-0">
+                                <strong>Take a screenshot</strong> of your successful transfer
+                            </li>
+                            <li class="list-group-item border-0">
+                                <strong>Send the screenshot</strong> to <a href="mailto:payments@lawcolab.com">payments@lawcolab.com</a> for verification
+                            </li>
+                        </ol>
+                    </div>
+                    
+                    <!-- Important Notes -->
+                    <div class="alert alert-warning border-0">
+                        <h6 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Important Notes</h6>
+                        <ul class="mb-0">
+                            <li>Transfer the <strong>exact amount</strong> shown above</li>
+                            <li>Include the <strong>order reference</strong> in your transfer description</li>
+                            <li>Payments are verified within <strong>2-4 hours</strong> during business hours</li>
+                            <li>Keep your bank receipt until payment is confirmed</li>
+                            <li>Contact support for help: <strong>support@lawcolab.com</strong> or <strong>+234 803 662 2568</strong></li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Contact Information -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-envelope fa-2x text-primary mb-2"></i>
+                                    <h6>Email Payment Proof</h6>
+                                    <a href="mailto:payments@lawcolab.com?subject=Payment Proof - {{ order_ref }}" class="btn btn-outline-primary btn-sm">
+                                        payments@lawcolab.com
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-phone fa-2x text-success mb-2"></i>
+                                    <h6>WhatsApp Support</h6>
+                                    <a href="https://wa.me/2348036622568?text=Payment inquiry for order {{ order_ref }}" class="btn btn-outline-success btn-sm" target="_blank">
+                                        +234 803 662 2568
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="text-center mt-4">
+                <a href="{{ url_for('simple_checkout.payment_success', order_ref=order_ref) }}" class="btn btn-success me-2">
+                    <i class="fas fa-check me-2"></i>I've Made the Transfer
+                </a>
+                <a href="{{ url_for('simple_checkout.checkout') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Checkout
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyText(text, button) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Show success feedback
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        button.classList.add('btn-success');
+        button.classList.remove('btn-outline-primary', 'btn-outline-success', 'btn-outline-warning');
+        
+        setTimeout(function() {
+            button.innerHTML = originalText;
+            button.classList.remove('btn-success');
+            button.classList.add(button.innerHTML.includes('Amount') ? 'btn-outline-success' : 
+                               button.innerHTML.includes('Reference') ? 'btn-outline-warning' : 'btn-outline-primary');
+        }, 2000);
+    }).catch(function(err) {
+        console.error('Could not copy text: ', err);
+        alert('Failed to copy. Please copy manually.');
+    });
+}
+</script>
+{% endblock %}

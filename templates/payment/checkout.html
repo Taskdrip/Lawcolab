@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% set page_title = "Secure Checkout - LawColab" %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <h3 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Secure Checkout</h3>
+                    <p class="mb-0">Choose your preferred payment method</p>
+                </div>
+                
+                <div class="card-body p-5">
+                    <!-- Order Summary -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="alert alert-info border-0">
+                                <h5 class="alert-heading"><i class="fas fa-receipt me-2"></i>Order Summary</h5>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <strong>Description:</strong><br>
+                                        {{ description }}
+                                    </div>
+                                    <div class="col-sm-6 text-end">
+                                        <strong>Amount:</strong><br>
+                                        <span class="h4 text-primary">₦{{ "{:,.2f}".format(amount) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Form -->
+                    <form method="POST" action="{{ url_for('payment_checkout.create_payment_order') }}">
+                        <!-- Customer Information -->
+                        <div class="mb-4">
+                            <h5 class="mb-3"><i class="fas fa-user me-2"></i>Customer Information</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="customer_name" class="form-label">Full Name *</label>
+                                    <input type="text" class="form-control" id="customer_name" name="customer_name" 
+                                           value="{{ customer_name }}" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="customer_email" class="form-label">Email Address *</label>
+                                    <input type="email" class="form-control" id="customer_email" name="customer_email" 
+                                           value="{{ customer_email }}" required>
+                                </div>
+                                <div class="col-md-12 mb-3">
+                                    <label for="customer_phone" class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="customer_phone" name="customer_phone" 
+                                           placeholder="+234 800 000 0000">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Payment Method Selection -->
+                        <div class="mb-4">
+                            <h5 class="mb-3"><i class="fas fa-credit-card me-2"></i>Payment Method</h5>
+                            
+                            <!-- Bank Transfer Option -->
+                            {% if bank_accounts %}
+                            <div class="payment-method mb-3">
+                                <div class="card border-primary">
+                                    <div class="card-body">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="payment_method" 
+                                                   id="bank_transfer" value="bank_transfer" checked>
+                                            <label class="form-check-label w-100" for="bank_transfer">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <h6 class="mb-1"><i class="fas fa-university me-2 text-primary"></i>Bank Transfer</h6>
+                                                        <small class="text-muted">Transfer directly to our bank account</small>
+                                                    </div>
+                                                    <span class="badge bg-success">Instant</span>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Crypto Payment Option -->
+                            {% if crypto_wallets %}
+                            <div class="payment-method mb-3">
+                                <div class="card border-warning">
+                                    <div class="card-body">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="payment_method" 
+                                                   id="crypto" value="crypto" {% if not bank_accounts %}checked{% endif %}>
+                                            <label class="form-check-label w-100" for="crypto">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <h6 class="mb-1"><i class="fab fa-bitcoin me-2 text-warning"></i>Cryptocurrency</h6>
+                                                        <small class="text-muted">Pay with Bitcoin, Ethereum, USDT, etc.</small>
+                                                    </div>
+                                                    <span class="badge bg-info">Fast</span>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Hidden fields -->
+                        <input type="hidden" name="amount" value="{{ amount }}">
+                        <input type="hidden" name="description" value="{{ description }}">
+                        
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg py-3">
+                                <i class="fas fa-lock me-2"></i>Proceed to Payment
+                                <span class="ms-2">₦{{ "{:,.2f}".format(amount) }}</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Security Notice -->
+                        <div class="text-center mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Your payment is secured with 256-bit SSL encryption
+                            </small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Features -->
+            <div class="row mt-4">
+                <div class="col-md-4 text-center">
+                    <i class="fas fa-shield-alt fa-2x text-success mb-2"></i>
+                    <h6>Secure Payments</h6>
+                    <small class="text-muted">Bank-grade security</small>
+                </div>
+                <div class="col-md-4 text-center">
+                    <i class="fas fa-clock fa-2x text-info mb-2"></i>
+                    <h6>Quick Processing</h6>
+                    <small class="text-muted">Fast verification</small>
+                </div>
+                <div class="col-md-4 text-center">
+                    <i class="fas fa-headset fa-2x text-warning mb-2"></i>
+                    <h6>24/7 Support</h6>
+                    <small class="text-muted">Always here to help</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.payment-method .card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.payment-method .card:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.payment-method input[type="radio"]:checked + label .card {
+    border-width: 2px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+</style>
+
+<script>
+// Make entire card clickable
+document.querySelectorAll('.payment-method .card').forEach(card => {
+    card.addEventListener('click', function() {
+        const radio = this.querySelector('input[type="radio"]');
+        if (radio) {
+            radio.checked = true;
+        }
+    });
+});
+</script>
+{% endblock %}

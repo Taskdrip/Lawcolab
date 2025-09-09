@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% set page_title = "Payment Submitted - LawColab" %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-success text-white text-center py-4">
+                    <i class="fas fa-check-circle fa-3x mb-3"></i>
+                    <h3 class="mb-0">Payment Submitted!</h3>
+                    <p class="mb-0">We're processing your payment</p>
+                </div>
+                
+                <div class="card-body p-5 text-center">
+                    <h5 class="mb-3">Order Reference: <span class="text-primary">{{ order_ref }}</span></h5>
+                    
+                    <div class="alert alert-info border-0">
+                        <h6 class="alert-heading"><i class="fas fa-clock me-2"></i>What happens next?</h6>
+                        <ul class="text-start mb-0">
+                            <li>We'll verify your payment within 2-4 hours</li>
+                            <li>You'll receive a confirmation email once verified</li>
+                            <li>Our team will then process your order</li>
+                            <li>You'll be contacted for next steps</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6>Save this reference number:</h6>
+                        <div class="input-group">
+                            <input type="text" class="form-control text-center fw-bold" value="{{ order_ref }}" readonly>
+                            <button class="btn btn-outline-primary" type="button" onclick="copyText('{{ order_ref }}', this)">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <i class="fas fa-envelope fa-2x text-primary mb-2"></i>
+                                    <h6>Questions?</h6>
+                                    <a href="mailto:support@lawcolab.com?subject=Order {{ order_ref }}" class="btn btn-outline-primary btn-sm">
+                                        Email Support
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <i class="fas fa-phone fa-2x text-success mb-2"></i>
+                                    <h6>Urgent Help?</h6>
+                                    <a href="https://wa.me/2348036622568?text=Order inquiry for {{ order_ref }}" class="btn btn-outline-success btn-sm" target="_blank">
+                                        WhatsApp Us
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="{{ url_for('index') }}" class="btn btn-primary">
+                            <i class="fas fa-home me-2"></i>Return to Homepage
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyText(text, button) {
+    navigator.clipboard.writeText(text).then(function() {
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i>';
+        button.classList.add('btn-success');
+        button.classList.remove('btn-outline-primary');
+        
+        setTimeout(function() {
+            button.innerHTML = originalText;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-primary');
+        }, 2000);
+    }).catch(function(err) {
+        alert('Failed to copy. Please copy manually.');
+    });
+}
+</script>
+{% endblock %}
