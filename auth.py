@@ -15,7 +15,7 @@ def superadmin_direct_login():
     print("DEBUG: Direct super admin login triggered")
     
     # Get the super admin user directly
-    user = User.query.filter_by(email='superadmin@lawfirmos.com').first()
+    user = User.query.filter_by(email='superadmin@lawcolab.com').first()
     if user and user.check_password('superadmin123'):
         print(f"DEBUG: Super admin user found and verified")
         login_result = login_user(user, remember=True, force=True)
