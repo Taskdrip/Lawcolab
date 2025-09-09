@@ -21,3 +21,9 @@ def start_support_chat():
 def support_chat():
     """Support chat interface"""
     return render_template('chat/support_chat.html')
+
+@chat_bp.route('/')
+@login_required
+def chat_home():
+    """Main chat interface - redirect to enhanced chat"""
+    return redirect(url_for('enhanced_chat.support_chat'))
