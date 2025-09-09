@@ -605,52 +605,31 @@ def setup_demo_payments():
         
         demo_payments = [
             {
-                'name': 'Bank Transfer',
+                'name': 'Bank Transfer (Wire)',
                 'type': 'bank_transfer',
-                'details': 'Bank Name: First Bank of Nigeria\nAccount: Taskdrip Global Solutions\nAccount Number: 3124567890\nRouting: 221149828\nSWIFT: FBNNNGLA',
+                'details': 'Bank Name: Zenith Bank\nAccount Name: Lawcolab Global\nAccount Number: 1310505179\nCurrency: NGN\nReference: LAWCOLAB-FOUNDER - Abraham',
                 'display_order': 1,
                 'is_active': True
             },
             {
-                'name': 'PayPal',
-                'type': 'paypal', 
-                'details': 'PayPal Email: payments@taskdrip.com\nSend as Friends & Family to avoid fees',
+                'name': 'Bitcoin (BTC)',
+                'type': 'crypto',
+                'details': 'Network: Bitcoin\nAddress: 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa\nNote: Email transaction hash to payments@lawcolab.com',
                 'display_order': 2,
                 'is_active': True
             },
             {
-                'name': 'USDT (Tron)',
+                'name': 'Ethereum (ETH)',
                 'type': 'crypto',
-                'details': 'Network: Tron (TRC-20)\nAddress: TXm7w8SDGVqCKPTRKbfFMLKxWkR9VqsKEn\nNote: Email transaction hash to support@lawcolab.com',
+                'details': 'Network: Ethereum\nAddress: 0x742d35Cc6634C0532925a3b8D2c82E8B1b1C8B4F\nNote: Email transaction hash to payments@lawcolab.com',
                 'display_order': 3,
                 'is_active': True
             },
             {
-                'name': 'USDT (BSC)',
+                'name': 'USDT (TRC20)',
                 'type': 'crypto',
-                'details': 'Network: Binance Smart Chain\nAddress: 0x742d35Cc6634C0532925a3b8D48E16F6b2e67B8f\nNote: Email transaction hash to support@lawcolab.com',
+                'details': 'Network: Tron (TRC-20)\nAddress: TRX9Ym4pJKvhCVJzBJQjGT6A8cYYf8Qz9X\nNote: Email transaction hash to payments@lawcolab.com',
                 'display_order': 4,
-                'is_active': True
-            },
-            {
-                'name': 'TON',
-                'type': 'crypto',
-                'details': 'Network: The Open Network\nAddress: UQB8KkPvdyJP8AKQs6QKWpFJqS-KWGCmkPIW8QgJTkQqEGh5\nNote: Send USD equivalent in TON',
-                'display_order': 5,
-                'is_active': True
-            },
-            {
-                'name': 'AVAX',
-                'type': 'crypto',
-                'details': 'Network: Avalanche C-Chain\nAddress: 0x742d35Cc6634C0532925a3b8D48E16F6b2e67B8f\nNote: Send USD equivalent in AVAX',
-                'display_order': 6,
-                'is_active': True
-            },
-            {
-                'name': 'Solana',
-                'type': 'crypto',
-                'details': 'Network: Solana\nAddress: 8KvwgzKXBEztWhYYfrZ4MdFAe6WjHXzNbzr5B8R2CueT\nNote: Send USD equivalent in SOL',
-                'display_order': 7,
                 'is_active': True
             }
         ]

@@ -1,10 +1,14 @@
 {% extends "base.html" %}
-
-{% block title %}Payment Method Administration{% endblock %}
+{% set page_title = "Payment Methods Admin - LawColab" %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2>Payment Method Administration</h2>
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-credit-card me-2"></i>Payment Methods Administration</h2>
+        <a href="{{ url_for('sales.setup_demo_payments') }}" class="btn btn-warning">
+            <i class="fas fa-sync-alt me-2"></i>Reset to Lawcolab Methods
+        </a>
+    </div>
     
     <!-- Add New Payment Method Form -->
     <div class="card mb-4">
@@ -22,7 +26,7 @@
                     <div class="col-md-3">
                         <label class="form-label">Type</label>
                         <select name="type" class="form-control" required>
-                            <option value="bank">Bank Account</option>
+                            <option value="bank_transfer">Bank Transfer</option>
                             <option value="crypto">Cryptocurrency</option>
                         </select>
                     </div>
@@ -40,8 +44,9 @@
                 </div>
                 <div class="row mt-3">
                     <div class="col-12">
-                        <label class="form-label">Details (Account/Wallet Info)</label>
-                        <textarea name="details" class="form-control" rows="3" placeholder="Bank account details or crypto wallet address" required></textarea>
+                        <label class="form-label">Payment Details</label>
+                        <textarea name="details" class="form-control" rows="6" required 
+                                  placeholder="For Bank Transfer:&#10;Bank Name: Zenith Bank&#10;Account Name: Lawcolab Global&#10;Account Number: 1310505179&#10;&#10;For Crypto:&#10;Network: Bitcoin&#10;Address: 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa&#10;Note: Email TX hash to payments@lawcolab.com"></textarea>
                     </div>
                 </div>
                 <button type="submit" class="btn btn-primary mt-3">Add Payment Method</button>
@@ -73,12 +78,18 @@
                             <tr>
                                 <td>{{ method.name }}</td>
                                 <td>
-                                    <span class="badge {% if method.type == 'crypto' %}bg-warning{% else %}bg-info{% endif %}">
-                                        {{ method.type|title }}
-                                    </span>
+                                    {% if method.type == 'bank_transfer' %}
+                                        <span class="badge bg-success"><i class="fas fa-university"></i> Bank Transfer</span>
+                                    {% elif method.type == 'crypto' %}
+                                        <span class="badge bg-warning"><i class="fab fa-bitcoin"></i> Crypto</span>
+                                    {% else %}
+                                        <span class="badge bg-info">{{ method.type|title }}</span>
+                                    {% endif %}
                                 </td>
                                 <td>
-                                    <small>{{ method.details[:50] }}{% if method.details|length > 50 %}...{% endif %}</small>
+                                    <button class="btn btn-outline-info btn-sm" onclick="showDetails({{ method.id }}, '{{ method.name|safe }}', '{{ method.details|safe }}')">
+                                        <i class="fas fa-eye"></i> View Details
+                                    </button>
                                 </td>
                                 <td>
                                     <span class="badge {% if method.is_active %}bg-success{% else %}bg-danger{% endif %}">
@@ -103,42 +114,126 @@
         </div>
     </div>
     
-    <!-- Quick Setup for Common Crypto Wallets -->
+    <!-- Payment Method Templates -->
     <div class="card mt-4">
         <div class="card-header">
-            <h5>Quick Setup - Common Crypto Wallets</h5>
+            <h5>Quick Setup Templates</h5>
         </div>
         <div class="card-body">
-            <p class="text-muted">Click to add common cryptocurrency payment methods:</p>
+            <p class="text-muted">Click to pre-fill common payment methods:</p>
             <div class="row">
-                <div class="col-md-2">
-                    <button class="btn btn-outline-primary btn-sm w-100" onclick="addCrypto('USDT Tron', 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t')">USDT Tron</button>
+                <div class="col-md-3">
+                    <button class="btn btn-outline-success btn-sm w-100 mb-2" onclick="fillBankTransfer()">
+                        <i class="fas fa-university"></i> Bank Transfer Template
+                    </button>
                 </div>
-                <div class="col-md-2">
-                    <button class="btn btn-outline-primary btn-sm w-100" onclick="addCrypto('USDT TON', 'UQ...example')">USDT TON</button>
+                <div class="col-md-3">
+                    <button class="btn btn-outline-warning btn-sm w-100 mb-2" onclick="fillBitcoin()">
+                        <i class="fab fa-bitcoin"></i> Bitcoin Template
+                    </button>
                 </div>
-                <div class="col-md-2">
-                    <button class="btn btn-outline-primary btn-sm w-100" onclick="addCrypto('USDT BNB', '0x...example')">USDT BNB</button>
+                <div class="col-md-3">
+                    <button class="btn btn-outline-primary btn-sm w-100 mb-2" onclick="fillEthereum()">
+                        <i class="fab fa-ethereum"></i> Ethereum Template
+                    </button>
                 </div>
-                <div class="col-md-2">
-                    <button class="btn btn-outline-primary btn-sm w-100" onclick="addCrypto('USDT AVAX', '0x...example')">USDT AVAX</button>
-                </div>
-                <div class="col-md-2">
-                    <button class="btn btn-outline-primary btn-sm w-100" onclick="addCrypto('USDT Solana', '5Q4...example')">USDT Solana</button>
-                </div>
-                <div class="col-md-2">
-                    <button class="btn btn-outline-primary btn-sm w-100" onclick="addCrypto('USDT Matic', '0x...example')">USDT Matic</button>
+                <div class="col-md-3">
+                    <button class="btn btn-outline-info btn-sm w-100 mb-2" onclick="fillUSDT()">
+                        <i class="fas fa-coins"></i> USDT Template
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Payment Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-info-circle me-2"></i>Payment Method Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="paymentDetails"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-function addCrypto(name, example) {
-    document.querySelector('input[name="name"]').value = name;
+function showDetails(id, name, details) {
+    document.getElementById('paymentDetails').innerHTML = `
+        <h6><strong>${name}</strong></h6>
+        <hr>
+        <pre style="white-space: pre-wrap; font-family: inherit; background: #f8f9fa; padding: 15px; border-radius: 5px;">${details}</pre>
+    `;
+    new bootstrap.Modal(document.getElementById('detailsModal')).show();
+}
+
+function fillBankTransfer() {
+    document.querySelector('input[name="name"]').value = 'Bank Transfer (Local)';
+    document.querySelector('select[name="type"]').value = 'bank_transfer';
+    document.querySelector('textarea[name="details"]').value = `Bank Name: Zenith Bank
+Account Name: Lawcolab Global
+Account Number: 1310505179
+Currency: NGN
+
+Instructions:
+1. Transfer the exact amount shown
+2. Include your order reference in the description
+3. Send payment confirmation to payments@lawcolab.com
+4. Processing time: 2-4 hours during business hours`;
+    document.querySelector('textarea[name="details"]').focus();
+}
+
+function fillBitcoin() {
+    document.querySelector('input[name="name"]').value = 'Bitcoin (BTC)';
     document.querySelector('select[name="type"]').value = 'crypto';
-    document.querySelector('textarea[name="details"]').value = example + ' (Replace with your actual wallet address)';
+    document.querySelector('textarea[name="details"]').value = `Bitcoin Wallet Address:
+[YOUR_BTC_ADDRESS_HERE]
+
+Instructions:
+1. Send the equivalent BTC amount based on current rates
+2. Copy the transaction hash after payment
+3. Email transaction details to payments@lawcolab.com
+4. Include your order reference number
+5. Processing time: 1-2 hours after 3 confirmations`;
+    document.querySelector('textarea[name="details"]').focus();
+}
+
+function fillEthereum() {
+    document.querySelector('input[name="name"]').value = 'Ethereum (ETH)';
+    document.querySelector('select[name="type"]').value = 'crypto';
+    document.querySelector('textarea[name="details"]').value = `Ethereum Wallet Address:
+[YOUR_ETH_ADDRESS_HERE]
+
+Instructions:
+1. Send the equivalent ETH amount based on current rates
+2. Copy the transaction hash after payment
+3. Email transaction details to payments@lawcolab.com
+4. Include your order reference number
+5. Processing time: 1-2 hours after confirmations`;
+    document.querySelector('textarea[name="details"]').focus();
+}
+
+function fillUSDT() {
+    document.querySelector('input[name="name"]').value = 'USDT (TRC20)';
+    document.querySelector('select[name="type"]').value = 'crypto';
+    document.querySelector('textarea[name="details"]').value = `USDT Tron (TRC20) Wallet Address:
+[YOUR_USDT_TRC20_ADDRESS_HERE]
+
+Instructions:
+1. Send the exact USD amount in USDT on Tron network
+2. Use the TRC20 network for lowest fees
+3. Copy the transaction hash after payment
+4. Email transaction details to payments@lawcolab.com
+5. Include your order reference number
+6. Processing time: 1-2 hours`;
     document.querySelector('textarea[name="details"]').focus();
 }
 </script>
