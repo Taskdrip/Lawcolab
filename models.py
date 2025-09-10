@@ -724,16 +724,16 @@ class PopupSettings(db.Model):
     thankyou_video_url = db.Column(db.String(500), nullable=True)
     
     # Plan pricing - Updated with higher values
-    starter_price = db.Column(db.Numeric(10, 2), default=97.00)
-    growth_price = db.Column(db.Numeric(10, 2), default=197.00)
-    scale_price = db.Column(db.Numeric(10, 2), default=397.00)
-    founders_price = db.Column(db.Numeric(10, 2), default=1997.00)  # One year founders package
+    starter_price = db.Column(db.Numeric(10, 2), default=70.00)
+    growth_price = db.Column(db.Numeric(10, 2), default=190.00)
+    scale_price = db.Column(db.Numeric(10, 2), default=750.00)
+    founders_price = db.Column(db.Numeric(10, 2), default=750.00)  # One year enterprise package
     
     # Regular pricing (what they would pay later)
-    starter_regular_price = db.Column(db.Numeric(10, 2), default=197.00)
-    growth_regular_price = db.Column(db.Numeric(10, 2), default=397.00)
-    scale_regular_price = db.Column(db.Numeric(10, 2), default=797.00)
-    founders_regular_price = db.Column(db.Numeric(10, 2), default=3997.00)
+    starter_regular_price = db.Column(db.Numeric(10, 2), default=70.00)
+    growth_regular_price = db.Column(db.Numeric(10, 2), default=210.00)
+    scale_regular_price = db.Column(db.Numeric(10, 2), default=840.00)
+    founders_regular_price = db.Column(db.Numeric(10, 2), default=840.00)
     
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
