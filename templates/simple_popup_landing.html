@@ -228,19 +228,19 @@
         let popupTimer = null;
         let popupShown = false;
 
-        // Auto-show popup after 7 seconds - REDIRECT ONLY (BLOCK IF BACK FROM POPUP)
+        // Auto-redirect to separate popup page after 12 seconds
         {% if auto_popup %}
         // Check if user came from popup page (block auto-popup on back navigation)
         if (!document.referrer.includes('/sales/popup')) {
-            console.log("Server says show popup, initializing timer for 7 seconds...");
+            console.log("Landing page loaded, starting 12-second timer for popup redirect...");
             popupTimer = setTimeout(function() {
                 if (!popupShown) {
-                    console.log("7 seconds passed, showing popup...");
+                    console.log("12 seconds passed, redirecting to separate popup page...");
                     redirectToPopup();
                 }
-            }, 7000);
+            }, 12000);
         } else {
-            console.log("User came from popup page, blocking auto-popup");
+            console.log("User came from popup page, blocking auto-redirect");
         }
         {% endif %}
 
@@ -253,8 +253,9 @@
             popupShown = true;
             if (popupTimer) clearTimeout(popupTimer);
             
-            // Direct redirect to separate popup page - NO LOADING CONTENT HERE
-            window.location.replace('/sales/popup');
+            // REDIRECT TO COMPLETELY SEPARATE POPUP PAGE - DIFFERENT URL
+            console.log("Redirecting to separate popup page...");
+            window.location.href = '/sales/popup';
         }
 
         // Clean up on page unload
