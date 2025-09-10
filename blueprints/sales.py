@@ -12,8 +12,11 @@ sales_bp = Blueprint('sales', __name__)
 
 @sales_bp.route('/popup')
 def popup_page():
-    """Display the fullscreen popup sales page"""
-    return render_template('sales/working_popup.html')
+    """Display the fullscreen popup sales page - STANDALONE NO INHERITANCE"""
+    from flask import Response
+    with open('templates/sales/working_popup.html', 'r') as f:
+        content = f.read()
+    return Response(content, mimetype='text/html')
 
 @sales_bp.route('/popup-content')
 def popup_content():
