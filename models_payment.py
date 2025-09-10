@@ -216,6 +216,7 @@ class CryptoWallet(db.Model):
     
     is_active = db.Column(db.Boolean, default=True)
     minimum_confirmations = db.Column(db.Integer, default=6)
+    display_order = db.Column(db.Integer, default=0)
     
     # Encrypted private data (if needed for automated processing)
     encrypted_private_key = db.Column(db.Text)  # Only if automated processing needed

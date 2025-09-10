@@ -252,6 +252,93 @@ def create_bank_account():
     
     return render_template('payment_management/bank_account_form.html')
 
+@payment_mgmt_bp.route('/crypto-wallets/<int:wallet_id>/toggle', methods=['POST'])
+@require_super_admin
+def toggle_crypto_wallet(wallet_id):
+    """Toggle crypto wallet active status"""
+    wallet = CryptoWallet.query.get_or_404(wallet_id)
+    wallet.is_active = not wallet.is_active
+    db.session.commit()
+    
+    return jsonify({'success': True, 'status': 'active' if wallet.is_active else 'inactive'})
+
+@payment_mgmt_bp.route('/crypto-wallets/edit/<int:wallet_id>', methods=['GET', 'POST'])
+@require_super_admin
+def edit_crypto_wallet(wallet_id):
+    """Edit crypto wallet"""
+    wallet = CryptoWallet.query.get_or_404(wallet_id)
+    
+    if request.method == 'POST':
+        wallet.currency = request.form.get('currency', '').upper()
+        wallet.wallet_address = request.form.get('wallet_address', '')
+        wallet.network = request.form.get('network', '')
+        wallet.minimum_confirmations = int(request.form.get('minimum_confirmations', 6))
+        wallet.is_active = request.form.get('is_active') == 'on'
+        
+        db.session.commit()
+        
+        flash(f'{wallet.currency} wallet updated successfully!', 'success')
+        return redirect(url_for('payment_management.manage_crypto_wallets'))
+    
+    return render_template('payment_management/crypto_wallet_form.html', wallet=wallet, is_edit=True)
+
+@payment_mgmt_bp.route('/bank-accounts/<int:account_id>/toggle', methods=['POST'])
+@require_super_admin
+def toggle_bank_account(account_id):
+    """Toggle bank account active status"""
+    account = BankAccount.query.get_or_404(account_id)
+    account.is_active = not account.is_active
+    db.session.commit()
+    
+    return jsonify({'success': True, 'status': 'active' if account.is_active else 'inactive'})
+
+@payment_mgmt_bp.route('/bank-accounts/<int:account_id>/set-primary', methods=['POST'])
+@require_super_admin
+def set_primary_bank_account(account_id):
+    """Set bank account as primary"""
+    # First, unset all primary accounts
+    BankAccount.query.update({'is_primary': False})
+    
+    # Set this account as primary
+    account = BankAccount.query.get_or_404(account_id)
+    account.is_primary = True
+    db.session.commit()
+    
+    return jsonify({'success': True})
+
+@payment_mgmt_bp.route('/bank-accounts/edit/<int:account_id>', methods=['GET', 'POST'])
+@require_super_admin
+def edit_bank_account(account_id):
+    """Edit bank account"""
+    account = BankAccount.query.get_or_404(account_id)
+    
+    if request.method == 'POST':
+        account.account_name = request.form.get('account_name', '')
+        account.bank_name = request.form.get('bank_name', '')
+        account.account_number = request.form.get('account_number', '')
+        account.routing_number = request.form.get('routing_number', '')
+        account.iban = request.form.get('iban', '')
+        account.swift_code = request.form.get('swift_code', '')
+        account.currency = request.form.get('currency', 'USD')
+        account.country = request.form.get('country', '')
+        account.is_active = request.form.get('is_active') == 'on'
+        
+        # Handle primary account setting
+        is_primary = request.form.get('is_primary') == 'on'
+        if is_primary and not account.is_primary:
+            # Unset all other primary accounts
+            BankAccount.query.update({'is_primary': False})
+            account.is_primary = True
+        elif not is_primary and account.is_primary:
+            account.is_primary = False
+        
+        db.session.commit()
+        
+        flash(f'Bank account for {account.bank_name} updated successfully!', 'success')
+        return redirect(url_for('payment_management.manage_bank_accounts'))
+    
+    return render_template('payment_management/bank_account_form.html', account=account, is_edit=True)
+
 @payment_mgmt_bp.route('/analytics')
 @require_super_admin
 def payment_analytics():
