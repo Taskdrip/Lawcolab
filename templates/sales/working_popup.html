@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAWCOLAB - Exclusive Founder Pack - Limited Time!</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            overflow-x: hidden; 
+            background: white; 
+            color: #333;
+            line-height: 1.6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        
+        .countdown-banner {
+            background: linear-gradient(45deg, #ff4757, #ff3742);
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .hero-section {
+            background: white;
+            padding: 40px 0;
+            text-align: center;
+        }
+        
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .brand-icon {
+            background: #0066cc;
+            border-radius: 15px;
+            padding: 15px;
+            color: white;
+            font-size: 2rem;
+        }
+        
+        .hero-title {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 800;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+            line-height: 1.1;
+        }
+        
+        .hero-subtitle {
+            font-size: clamp(1.1rem, 3vw, 1.5rem);
+            color: #666;
+            margin-bottom: 30px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .pricing-section {
+            background: #f8f9fa;
+            padding: 60px 0;
+        }
+        
+        .pricing-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .price-badge {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #1a1a1a;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        
+        .price {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #0066cc;
+            margin-bottom: 10px;
+        }
+        
+        .price-note {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .feature-list {
+            text-align: left;
+            margin-bottom: 30px;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .cta-button {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #1a1a1a;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+            transition: transform 0.3s ease;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            color: #1a1a1a;
+            text-decoration: none;
+        }
+        
+        .reviews-section {
+            padding: 60px 0;
+            background: white;
+        }
+        
+        .review-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 4px solid #0066cc;
+        }
+        
+        .close-popup {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1001;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        @media (max-width: 768px) {
+            .pricing-card {
+                padding: 30px 20px;
+                margin-bottom: 30px;
+            }
+            
+            .container {
+                padding: 0 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="close-popup" onclick="window.history.back()">
+        <i class="fas fa-times"></i>
+    </button>
+
+    <!-- Countdown Banner -->
+    <div class="countdown-banner">
+        🔥 EXCLUSIVE FOUNDER PACK - Limited Time! Pre-Order Ends In: <span id="countdown-timer">47:28:17</span>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="brand-logo">
+                <div class="brand-icon">
+                    <i class="fas fa-balance-scale"></i>
+                </div>
+                <div>
+                    <h1 style="margin: 0; font-size: 2.5rem; color: #1a1a1a;">LAWCOLAB</h1>
+                    <p style="margin: 0; color: #666; font-size: 1.1rem;">The Future of Law Firm Management</p>
+                </div>
+            </div>
+            
+            <h2 class="hero-title">
+                Transform Your Legal Practice<br>
+                <span style="color: #0066cc;">Before Everyone Else</span>
+            </h2>
+            
+            <p class="hero-subtitle">
+                Join the exclusive group of forward-thinking legal professionals who are getting early access to the most comprehensive law firm management platform ever built.
+            </p>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="pricing-card">
+                        <div class="price-badge">
+                            🚀 FOUNDER PACK - 70% OFF
+                        </div>
+                        
+                        <div class="price">
+                            $750 <span style="font-size: 1.5rem; color: #999; text-decoration: line-through;">$2,500</span>
+                        </div>
+                        
+                        <p class="price-note">
+                            One-time payment • Lifetime access • No monthly fees
+                        </p>
+                        
+                        <ul class="feature-list list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i> Complete law firm management platform</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Unlimited client & case management</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Team collaboration tools</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Professional invoicing & billing</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Document management system</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Real-time messaging & chat</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Advanced analytics & reporting</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Mobile-responsive design</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Priority support & updates</li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Founder status & exclusive benefits</strong></li>
+                        </ul>
+                        
+                        <a href="/sales/checkout" class="cta-button">
+                            <i class="fas fa-rocket me-2"></i>Secure My Founder Pack
+                        </a>
+                        
+                        <p style="margin-top: 20px; font-size: 0.9rem; color: #666;">
+                            <i class="fas fa-shield-alt me-1"></i> Secure payment • 30-day money-back guarantee
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section class="reviews-section">
+        <div class="container">
+            <h3 class="text-center mb-5" style="font-size: 2.5rem; font-weight: 700;">What Legal Professionals Say</h3>
+            
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="review-card">
+                        <div class="d-flex align-items-center mb-3">
+                            <div style="background: #0066cc; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 15px;">
+                                SA
+                            </div>
+                            <div>
+                                <h6 style="margin: 0; font-weight: 600;">Sarah Anderson</h6>
+                                <small style="color: #666;">Managing Partner, Anderson & Associates</small>
+                            </div>
+                        </div>
+                        <p style="font-style: italic; margin: 0;">
+                            "Finally, a platform that understands how law firms actually work. The team collaboration features alone have saved us 15 hours per week."
+                        </p>
+                        <div class="mt-2">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="review-card">
+                        <div class="d-flex align-items-center mb-3">
+                            <div style="background: #28a745; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 15px;">
+                                MJ
+                            </div>
+                            <div>
+                                <h6 style="margin: 0; font-weight: 600;">Michael Johnson</h6>
+                                <small style="color: #666;">Solo Practitioner, Johnson Law</small>
+                            </div>
+                        </div>
+                        <p style="font-style: italic; margin: 0;">
+                            "The billing and invoicing system is incredibly intuitive. I can now send professional invoices in minutes, not hours."
+                        </p>
+                        <div class="mt-2">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="review-card">
+                        <div class="d-flex align-items-center mb-3">
+                            <div style="background: #dc3545; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 15px;">
+                                LR
+                            </div>
+                            <div>
+                                <h6 style="margin: 0; font-weight: 600;">Lisa Rodriguez</h6>
+                                <small style="color: #666;">Senior Associate, Martinez Law Group</small>
+                            </div>
+                        </div>
+                        <p style="font-style: italic; margin: 0;">
+                            "The client communication tools have transformed how we interact with our clients. Everything is organized and professional."
+                        </p>
+                        <div class="mt-2">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="review-card">
+                        <div class="d-flex align-items-center mb-3">
+                            <div style="background: #6f42c1; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 15px;">
+                                DW
+                            </div>
+                            <div>
+                                <h6 style="margin: 0; font-weight: 600;">David Wilson</h6>
+                                <small style="color: #666;">Partner, Wilson & Partners LLP</small>
+                            </div>
+                        </div>
+                        <p style="font-style: italic; margin: 0;">
+                            "We've tried many practice management tools, but LAWCOLAB is the first one that actually makes our work easier, not harder."
+                        </p>
+                        <div class="mt-2">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="/sales/checkout" class="cta-button">
+                    <i class="fas fa-lock me-2"></i>Get My Founder Pack Now
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Countdown timer functionality
+        function updateCountdown() {
+            const countdownElements = document.querySelectorAll('#countdown-timer');
+            countdownElements.forEach(element => {
+                element.textContent = '47:28:17';
+            });
+        }
+        
+        // Update countdown every second
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+    </script>
+</body>
+</html>

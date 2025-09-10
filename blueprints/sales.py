@@ -13,18 +13,7 @@ sales_bp = Blueprint('sales', __name__)
 @sales_bp.route('/popup')
 def popup_page():
     """Display the fullscreen popup sales page"""
-    # Get popup settings
-    settings = PopupSettings.query.first()
-    if not settings:
-        # Create default settings
-        settings = PopupSettings()
-        db.session.add(settings)
-        db.session.commit()
-    
-    # Get featured reviews
-    reviews = CustomerReview.query.filter_by(is_active=True).order_by(desc(CustomerReview.is_featured), CustomerReview.id).limit(20).all()
-    
-    return render_template('sales/comprehensive_popup.html', settings=settings, reviews=reviews)
+    return render_template('sales/working_popup.html')
 
 @sales_bp.route('/popup-content')
 def popup_content():
