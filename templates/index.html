@@ -70,10 +70,10 @@ section {
                                    style="background: #0066cc; color: white; padding: 16px 32px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; border: none; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,102,204,0.3);">
                                     <i class="fas fa-rocket me-2"></i>Start Free Trial
                                 </a>
-                                <button onclick="showComprehensivePopup()" 
-                                   style="background: transparent; color: #0066cc; padding: 16px 32px; border: 2px solid #0066cc; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; transition: all 0.3s; cursor: pointer;">
+                                <a href="/sales/popup" 
+                                   style="background: transparent; color: #0066cc; padding: 16px 32px; border: 2px solid #0066cc; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; transition: all 0.3s;">
                                     <i class="fas fa-star me-2"></i>Pre-Sale Launch
-                                </button>
+                                </a>
                                 <a href="{{ url_for('pricing') }}" 
                                    style="background: transparent; color: #666; padding: 16px 32px; border: 1px solid #ccc; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; transition: all 0.3s;">
                                     <i class="fas fa-tag me-2"></i>View Pricing
@@ -205,10 +205,10 @@ section {
                                style="background: #0066cc; color: white; padding: 18px 36px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1.1rem; display: inline-flex; align-items: center; box-shadow: 0 4px 15px rgba(0,102,204,0.3); transition: all 0.3s;">
                                 <i class="fas fa-rocket me-2"></i>Start Free Trial
                             </a>
-                            <button onclick="showComprehensivePopup()" 
-                               style="background: transparent; color: #0066cc; padding: 18px 36px; border: 2px solid #0066cc; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1.1rem; display: inline-flex; align-items: center; cursor: pointer; transition: all 0.3s;">
+                            <a href="/sales/popup" 
+                               style="background: transparent; color: #0066cc; padding: 18px 36px; border: 2px solid #0066cc; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1.1rem; display: inline-flex; align-items: center; transition: all 0.3s;">
                                 <i class="fas fa-tag me-2"></i>View Pricing & Pre-Order
-                            </button>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -227,6 +227,24 @@ section {
                     </p>
                 </div>
                 
+                <!-- Founders Pack Banner -->
+                <div class="row justify-content-center mb-4">
+                    <div class="col-lg-6">
+                        <div style="background: linear-gradient(45deg, #FFD700, #FFA500); border-radius: 15px; padding: 20px; text-align: center; position: relative; transform: scale(1.02); box-shadow: 0 8px 25px rgba(255,215,0,0.3);">
+                            <div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #dc2626; color: white; padding: 5px 15px; border-radius: 15px; font-size: 0.8rem; font-weight: 700;">
+                                ⚡ EXCLUSIVE FOUNDER PACK
+                            </div>
+                            <h2 style="color: #1a1a1a; font-size: 2.5rem; font-weight: 800; margin: 20px 0 10px 0;">$1,290</h2>
+                            <p style="color: #1a1a1a; font-size: 1rem; margin: 0;"><strike style="color: #999;">$4,200</strike> - Save 70% Forever</p>
+                            <p style="color: #1a1a1a; font-weight: 600; margin: 10px 0;">👑 Lifetime Founder Status + Price Lock</p>
+                            <a href="/sales/checkout?plan=founders" style="background: #1a1a1a; color: #FFD700; padding: 15px 30px; border-radius: 25px; text-decoration: none; font-weight: 700; display: inline-block; margin-top: 10px; font-size: 1.1rem;">
+                                🚀 Secure Founder Status
+                            </a>
+                            <p style="font-size: 0.85rem; color: #1a1a1a; margin-top: 10px; font-weight: 600;">⏰ Limited: Only 53 spots left</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row justify-content-center g-4">
                     <div class="col-lg-3 col-md-6">
                         <div style="background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 2rem; text-align: center; height: 100%; position: relative; transition: all 0.2s;">
@@ -244,38 +262,38 @@ section {
                     <div class="col-lg-3 col-md-6">
                         <div style="background: white; border: 2px solid #0066cc; border-radius: 12px; padding: 2rem; text-align: center; height: 100%; position: relative; transition: all 0.2s;">
                             <div style="background: #0066cc; color: white; padding: 8px 16px; border-radius: 20px; font-size: 0.875rem; font-weight: 600; margin-bottom: 1.5rem; display: inline-block;">
-                                Most Popular
+                                Starter
                             </div>
                             <h3 style="font-size: 2rem; font-weight: 700; color: #1a1a1a; margin-bottom: 0.5rem;">$70</h3>
                             <p style="color: #64748b; margin-bottom: 2rem;">per month</p>
-                            <a href="{{ url_for('auth.signup') }}" 
+                            <a href="/sales/checkout?plan=starter" 
                                style="background: #0066cc; color: white; width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 600; text-decoration: none; display: block; text-align: center;">
                                 Get started
                             </a>
                         </div>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                        <div style="background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 2rem; text-align: center; height: 100%; position: relative; transition: all 0.2s;">
-                            <div style="background: #f0fdf4; color: #16a34a; padding: 8px 16px; border-radius: 20px; font-size: 0.875rem; font-weight: 600; margin-bottom: 1.5rem; display: inline-block;">
-                                Best Value
+                        <div style="background: white; border: 2px solid #28a745; border-radius: 12px; padding: 2rem; text-align: center; height: 100%; position: relative; transition: all 0.2s;">
+                            <div style="background: #28a745; color: white; padding: 8px 16px; border-radius: 20px; font-size: 0.875rem; font-weight: 600; margin-bottom: 1.5rem; display: inline-block;">
+                                💎 Best Value
                             </div>
                             <h3 style="font-size: 2rem; font-weight: 700; color: #1a1a1a; margin-bottom: 0.5rem;">$190</h3>
                             <p style="color: #64748b; margin-bottom: 2rem;">per 3 months</p>
-                            <a href="{{ url_for('auth.signup') }}" 
-                               style="background: #16a34a; color: white; width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 600; text-decoration: none; display: block; text-align: center;">
+                            <a href="/sales/checkout?plan=professional" 
+                               style="background: #28a745; color: white; width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 600; text-decoration: none; display: block; text-align: center;">
                                 Save 10%
                             </a>
                         </div>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                        <div style="background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 2rem; text-align: center; height: 100%; position: relative; transition: all 0.2s;">
-                            <div style="background: #fef3c7; color: #d97706; padding: 8px 16px; border-radius: 20px; font-size: 0.875rem; font-weight: 600; margin-bottom: 1.5rem; display: inline-block;">
-                                Enterprise
+                        <div style="background: white; border: 2px solid #FF8C00; border-radius: 12px; padding: 2rem; text-align: center; height: 100%; position: relative; transition: all 0.2s;">
+                            <div style="background: #FF8C00; color: white; padding: 8px 16px; border-radius: 20px; font-size: 0.875rem; font-weight: 600; margin-bottom: 1.5rem; display: inline-block;">
+                                🚀 Enterprise
                             </div>
                             <h3 style="font-size: 2rem; font-weight: 700; color: #1a1a1a; margin-bottom: 0.5rem;">$750</h3>
                             <p style="color: #64748b; margin-bottom: 2rem;">per year</p>
-                            <a href="{{ url_for('auth.signup') }}" 
-                               style="background: #d97706; color: white; width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 600; text-decoration: none; display: block; text-align: center;">
+                            <a href="/sales/checkout?plan=enterprise" 
+                               style="background: #FF8C00; color: white; width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 600; text-decoration: none; display: block; text-align: center;">
                                 Save 20%
                             </a>
                         </div>
@@ -315,157 +333,5 @@ section {
         </section>
 
     </div>
-
-{% endblock %}
-
-{% block javascript %}
-<script>
-// Sales popup functionality
-let popupTimer;
-
-// Show comprehensive popup directly
-function showComprehensivePopup() {
-    const popup = document.getElementById('sales-popup');
-    if (popup) {
-        popup.style.display = 'block';
-        document.body.style.overflow = 'hidden';
-    }
-}
-
-function showPopup() {
-    showComprehensivePopup();
-}
-
-function hidePopup() {
-    document.getElementById('sales-popup').style.display = 'none';
-    document.body.style.overflow = 'auto';
-    
-    // Suppress popup for 24 hours when closed
-    fetch('/sales/api/suppress-popup', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    }).catch(err => console.log('Could not suppress popup:', err));
-}
-
-// Auto-show popup after 7 seconds or scroll
-let hasScrolled = false;
-let popupShown = false;
-
-function initPopup() {
-    // Check if we should show popup based on server-side logic
-    fetch('/sales/api/should-show-popup')
-        .then(response => response.json())
-        .then(data => {
-            if (data.show) {
-                console.log('Server says show popup, initializing timer for 7 seconds...');
-                
-                // Show after 7 seconds
-                setTimeout(() => {
-                    if (!popupShown) {
-                        console.log('7 seconds passed, showing popup...');
-                        showComprehensivePopup();
-                        popupShown = true;
-                    }
-                }, 7000);
-                
-                // Or show on scroll (whichever comes first)
-                window.addEventListener('scroll', function() {
-                    if (!hasScrolled && window.scrollY > 300 && !popupShown) {
-                        hasScrolled = true;
-                        console.log('User scrolled, showing popup...');
-                        setTimeout(() => {
-                            if (!popupShown) {
-                                showComprehensivePopup();
-                                popupShown = true;
-                            }
-                        }, 1000);
-                    }
-                });
-            } else {
-                console.log('Server says don\'t show popup:', data.reason);
-            }
-        })
-        .catch(err => {
-            console.log('Could not check popup status, defaulting to show');
-            // Fallback to showing popup if API fails
-            setTimeout(() => {
-                if (!popupShown) {
-                    showComprehensivePopup();
-                    popupShown = true;
-                }
-            }, 7000);
-        });
-}
-
-// Countdown timer
-function startCountdown() {
-    let hours = 72;
-    let minutes = 0;
-    let seconds = 0;
-    
-    setInterval(() => {
-        seconds--;
-        if (seconds < 0) {
-            seconds = 59;
-            minutes--;
-            if (minutes < 0) {
-                minutes = 59;
-                hours--;
-                if (hours < 0) {
-                    hours = 72;
-                    minutes = 0;
-                    seconds = 0;
-                }
-            }
-        }
-        
-        const timer = document.getElementById('countdown-timer');
-        if (timer) {
-            timer.textContent = 
-                String(hours).padStart(2, '0') + ':' +
-                String(minutes).padStart(2, '0') + ':' +
-                String(seconds).padStart(2, '0');
-        }
-    }, 1000);
-}
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
-    initPopup();
-    startCountdown();
-    
-    // Debug: Add button to reset popup suppression for testing
-    if (window.location.search.includes('debug=1')) {
-        const debugBtn = document.createElement('button');
-        debugBtn.textContent = 'Reset Popup (Debug)';
-        debugBtn.className = 'btn btn-sm btn-warning position-fixed';
-        debugBtn.style.top = '10px';
-        debugBtn.style.right = '10px';
-        debugBtn.style.zIndex = '10000';
-        debugBtn.onclick = function() {
-            fetch('/sales/api/reset-popup-debug', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'}
-            }).then(() => {
-                alert('Popup suppression reset. Refresh to test.');
-                location.reload();
-            });
-        };
-        document.body.appendChild(debugBtn);
-    }
-});
-
-// Close popup on escape key
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        hidePopup();
-    }
-});
-</script>
-
-<!-- Include comprehensive popup only -->
-{% include 'sales/comprehensive_popup.html' %}
 
 {% endblock %}
