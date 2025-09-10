@@ -228,15 +228,20 @@
         let popupTimer = null;
         let popupShown = false;
 
-        // Auto-show popup after 7 seconds - REDIRECT ONLY
+        // Auto-show popup after 7 seconds - REDIRECT ONLY (BLOCK IF BACK FROM POPUP)
         {% if auto_popup %}
-        console.log("Server says show popup, initializing timer for 7 seconds...");
-        popupTimer = setTimeout(function() {
-            if (!popupShown) {
-                console.log("7 seconds passed, showing popup...");
-                redirectToPopup();
-            }
-        }, 7000);
+        // Check if user came from popup page (block auto-popup on back navigation)
+        if (!document.referrer.includes('/sales/popup')) {
+            console.log("Server says show popup, initializing timer for 7 seconds...");
+            popupTimer = setTimeout(function() {
+                if (!popupShown) {
+                    console.log("7 seconds passed, showing popup...");
+                    redirectToPopup();
+                }
+            }, 7000);
+        } else {
+            console.log("User came from popup page, blocking auto-popup");
+        }
         {% endif %}
 
         function showPopup() {
