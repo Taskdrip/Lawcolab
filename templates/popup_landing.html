@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block additional_css %}
+<style>
+.nav-item {
+    margin-right: 10px;
+}
+
+.navbar-nav .nav-link {
+    padding: 0.5rem 1rem !important;
+    margin-right: 5px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    background-color: #f8f9fa;
+}
+
+/* Ensure scrolling works properly */
+html {
+    overflow-y: scroll !important;
+    scroll-behavior: smooth;
+}
+
+body {
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 100vh;
+    position: relative !important;
+}
+
+/* Fix any fixed positioning issues */
+.container, .container-fluid {
+    position: relative;
+    z-index: 1;
+}
+
+/* Ensure sections don't prevent scrolling */
+section {
+    position: relative;
+    overflow: visible;
+}
+
+/* Popup overlay styles */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 10000;
+    display: none;
+    overflow-y: auto;
+}
+
+.popup-overlay.show {
+    display: block;
+}
+</style>
+{% endblock %}
+
+{% block title %}LAWCOLAB - Professional Legal Practice Management{% endblock %}
+
+{% block content %}
+<!-- Main Landing Page Content -->
+<div style="background: #ffffff; min-height: 100vh; overflow-y: auto; position: relative;">
+    
+    <!-- Hero Section -->
+    <section class="hero" style="padding: 80px 0; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-5 mb-lg-0">
+                    <div class="hero-content">
+                        <h1 style="font-size: 3.5rem; font-weight: 700; line-height: 1.1; color: #1a1a1a; margin-bottom: 1.5rem;">
+                            Legal practice <br>
+                            <span style="color: #0066cc;">made simple</span>
+                        </h1>
+                        <p style="font-size: 1.25rem; color: #64748b; line-height: 1.6; margin-bottom: 2rem; max-width: 480px;">
+                            All-in-one platform for legal practitioners and law firms to manage operations, clients, teams, projects, cases, invoices, communication, and collaboration.
+                        </p>
+                        <div class="hero-actions" style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 1.5rem;">
+                            <a href="{{ url_for('auth.signup') }}" 
+                               style="background: #0066cc; color: white; padding: 16px 32px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; border: none; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,102,204,0.3);">
+                                <i class="fas fa-rocket me-2"></i>Start Free Trial
+                            </a>
+                            <button onclick="showComprehensivePopup()" 
+                               style="background: transparent; color: #0066cc; padding: 16px 32px; border: 2px solid #0066cc; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; transition: all 0.3s; cursor: pointer;">
+                                <i class="fas fa-star me-2"></i>Pre-Sale Launch
+                            </button>
+                            <a href="{{ url_for('pricing') }}" 
+                               style="background: transparent; color: #666; padding: 16px 32px; border: 1px solid #ccc; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; transition: all 0.3s;">
+                                <i class="fas fa-tag me-2"></i>View Pricing
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="hero-visual" style="position: relative;">
+                        <div style="background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1); padding: 2rem; max-width: 500px; margin-left: auto;">
+                            <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
+                                <div style="background: #0066cc; border-radius: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
+                                    <i class="fas fa-balance-scale" style="color: white; font-size: 1.5rem;"></i>
+                                </div>
+                                <div>
+                                    <h4 style="margin: 0; font-size: 1.25rem; color: #1a1a1a;">LAWCOLAB</h4>
+                                    <p style="margin: 0; color: #64748b; font-size: 0.9rem;">Professional workspace</p>
+                                </div>
+                            </div>
+                            
+                            <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem;">
+                                <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                                    <div style="background: #f1f5f9; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem;">
+                                        <i class="fas fa-users" style="color: #0066cc; font-size: 0.9rem;"></i>
+                                    </div>
+                                    <span style="color: #334155; font-weight: 500;">Team Management</span>
+                                </div>
+                                <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                                    <div style="background: #f1f5f9; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem;">
+                                        <i class="fas fa-comments" style="color: #0066cc; font-size: 0.9rem;"></i>
+                                    </div>
+                                    <span style="color: #334155; font-weight: 500;">Real-time Chat</span>
+                                </div>
+                                <div style="display: flex; align-items: center;">
+                                    <div style="background: #f1f5f9; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem;">
+                                        <i class="fas fa-folder" style="color: #0066cc; font-size: 0.9rem;"></i>
+                                    </div>
+                                    <span style="color: #334155; font-weight: 500;">Project Collaboration</span>
+                                </div>
+                            </div>
+                            
+                            <button style="background: #0066cc; color: white; width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                                Access Dashboard
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section style="padding: 80px 0; background: #f8fafc;">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 style="font-size: 2.5rem; font-weight: 700; color: #1a1a1a; margin-bottom: 1rem;">Everything you need to run your firm</h2>
+                <p style="font-size: 1.1rem; color: #64748b; max-width: 600px; margin: 0 auto;">From client management to billing, LAWCOLAB provides all the tools modern legal practices need.</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div style="background: white; border-radius: 12px; padding: 2rem; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); height: 100%;">
+                        <div style="background: #e6f2ff; border-radius: 12px; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                            <i class="fas fa-users" style="color: #0066cc; font-size: 2rem;"></i>
+                        </div>
+                        <h4 style="font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Client Management</h4>
+                        <p style="color: #64748b; line-height: 1.6;">Comprehensive client profiles, communication history, and case tracking in one place.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div style="background: white; border-radius: 12px; padding: 2rem; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); height: 100%;">
+                        <div style="background: #e6f7e6; border-radius: 12px; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                            <i class="fas fa-folder-open" style="color: #28a745; font-size: 2rem;"></i>
+                        </div>
+                        <h4 style="font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Case Management</h4>
+                        <p style="color: #64748b; line-height: 1.6;">Organize cases, deadlines, documents, and team collaboration efficiently.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div style="background: white; border-radius: 12px; padding: 2rem; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); height: 100%;">
+                        <div style="background: #fff3e0; border-radius: 12px; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                            <i class="fas fa-receipt" style="color: #ffa500; font-size: 2rem;"></i>
+                        </div>
+                        <h4 style="font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Billing & Invoicing</h4>
+                        <p style="color: #64748b; line-height: 1.6;">Professional invoicing with time tracking and multiple payment options.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section style="padding: 80px 0; background: #0066cc;">
+        <div class="container text-center">
+            <h2 style="color: white; font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem;">Ready to transform your practice?</h2>
+            <p style="color: rgba(255,255,255,0.9); font-size: 1.1rem; margin-bottom: 2rem;">Join hundreds of legal professionals already using LAWCOLAB.</p>
+            <a href="{{ url_for('auth.signup') }}" 
+               style="background: white; color: #0066cc; padding: 16px 32px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; transition: all 0.3s;">
+                <i class="fas fa-rocket me-2"></i>Get Started Today
+            </a>
+        </div>
+    </section>
+</div>
+
+<!-- Popup Overlay -->
+<div id="popup-overlay" class="popup-overlay">
+    {% include 'sales/comprehensive_popup.html' %}
+</div>
+
+<script>
+console.log("Server says show popup, initializing timer for 7 seconds...");
+
+// Auto-show popup after 7 seconds if auto_popup is enabled
+{% if auto_popup %}
+setTimeout(function() {
+    console.log("7 seconds passed, showing popup...");
+    showComprehensivePopup();
+}, 7000);
+{% endif %}
+
+function showComprehensivePopup() {
+    const overlay = document.getElementById('popup-overlay');
+    const popup = document.getElementById('sales-popup');
+    if (overlay && popup) {
+        overlay.classList.add('show');
+        popup.style.display = 'block';
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+}
+
+function hidePopup() {
+    const overlay = document.getElementById('popup-overlay');
+    const popup = document.getElementById('sales-popup');
+    if (overlay && popup) {
+        overlay.classList.remove('show');
+        popup.style.display = 'none';
+        document.body.style.overflow = 'auto'; // Restore scrolling
+    }
+}
+
+// Close popup on overlay click
+document.getElementById('popup-overlay').addEventListener('click', function(e) {
+    if (e.target === this) {
+        hidePopup();
+    }
+});
+
+// Close popup on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        hidePopup();
+    }
+});
+</script>
+
+{% endblock %}
