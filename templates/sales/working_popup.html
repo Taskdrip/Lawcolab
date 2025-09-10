@@ -11,10 +11,13 @@
             margin: 0; 
             padding: 0; 
             overflow-x: hidden; 
+            overflow-y: auto;
             background: white; 
             color: #333;
             line-height: 1.6;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            height: auto;
+            min-height: 100vh;
         }
         
         .countdown-banner {
@@ -209,46 +212,137 @@
         </div>
     </section>
 
-    <!-- Pricing Section -->
+    <!-- Why Founder Pack Section -->
+    <section style="background: #f8f9fa; padding: 60px 0;">
+        <div class="container">
+            <h3 class="text-center mb-5" style="font-size: 2.5rem; font-weight: 700; color: #1a1a1a;">Why The Founder Pack Is Your Best Decision</h3>
+            
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div style="text-align: center; padding: 30px 20px; background: white; border-radius: 15px; height: 100%; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                        <div style="background: #FFD700; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                            <i class="fas fa-clock" style="font-size: 2rem; color: #1a1a1a;"></i>
+                        </div>
+                        <h5 style="color: #1a1a1a; font-weight: 600; margin-bottom: 15px;">Limited Time Only</h5>
+                        <p style="color: #666; line-height: 1.6;">Only 100 founder spots available. Once they're gone, the price jumps to $4,200/year. You'll never see this price again.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div style="text-align: center; padding: 30px 20px; background: white; border-radius: 15px; height: 100%; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                        <div style="background: #28a745; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                            <i class="fas fa-crown" style="font-size: 2rem; color: white;"></i>
+                        </div>
+                        <h5 style="color: #1a1a1a; font-weight: 600; margin-bottom: 15px;">Founder Status Forever</h5>
+                        <p style="color: #666; line-height: 1.6;">Permanent founder badge, exclusive features, early access to new tools, and VIP support that regular users will never get.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div style="text-align: center; padding: 30px 20px; background: white; border-radius: 15px; height: 100%; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                        <div style="background: #dc3545; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                            <i class="fas fa-dollar-sign" style="font-size: 2rem; color: white;"></i>
+                        </div>
+                        <h5 style="color: #1a1a1a; font-weight: 600; margin-bottom: 15px;">Massive Savings</h5>
+                        <p style="color: #666; line-height: 1.6;">Save $2,910 in your first year alone. That's enough to hire an additional paralegal or invest in your firm's growth.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Comparison Section -->
     <section class="pricing-section">
         <div class="container">
+            <h3 class="text-center mb-5" style="font-size: 2.5rem; font-weight: 700;">Choose Your Plan</h3>
+            
             <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="pricing-card">
-                        <div class="price-badge">
-                            🚀 FOUNDER PACK - 70% OFF
+                <!-- Starter Plan -->
+                <div class="col-lg-4 mb-4">
+                    <div class="pricing-card" style="border: 2px solid #dee2e6;">
+                        <h4 style="color: #1a1a1a; margin-bottom: 20px;">Starter Plan</h4>
+                        <div class="price" style="font-size: 2.5rem; color: #666;">
+                            $97/month
                         </div>
+                        <p class="price-note">Billed monthly • Basic features</p>
                         
-                        <div class="price">
-                            $750 <span style="font-size: 1.5rem; color: #999; text-decoration: line-through;">$2,500</span>
-                        </div>
-                        
-                        <p class="price-note">
-                            One-time payment • Lifetime access • No monthly fees
-                        </p>
-                        
-                        <ul class="feature-list list-unstyled">
-                            <li><i class="fas fa-check text-success me-2"></i> Complete law firm management platform</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Unlimited client & case management</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Team collaboration tools</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Professional invoicing & billing</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Document management system</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Real-time messaging & chat</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Advanced analytics & reporting</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Mobile-responsive design</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Priority support & updates</li>
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Founder status & exclusive benefits</strong></li>
+                        <ul class="feature-list list-unstyled" style="text-align: left;">
+                            <li><i class="fas fa-check text-success me-2"></i> Up to 50 clients</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Basic case management</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Email support</li>
+                            <li><i class="fas fa-check text-success me-2"></i> 5GB storage</li>
+                            <li><i class="fas fa-times text-danger me-2"></i> No team collaboration</li>
+                            <li><i class="fas fa-times text-danger me-2"></i> No advanced analytics</li>
                         </ul>
                         
-                        <a href="/sales/checkout" class="cta-button">
-                            <i class="fas fa-rocket me-2"></i>Secure My Founder Pack
+                        <a href="/sales/checkout?plan=starter" style="background: #6c757d; color: white; padding: 12px 30px; border-radius: 8px; text-decoration: none; display: inline-block; margin-top: 20px;">
+                            Choose Starter
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Professional Plan -->
+                <div class="col-lg-4 mb-4">
+                    <div class="pricing-card" style="border: 2px solid #0066cc;">
+                        <h4 style="color: #1a1a1a; margin-bottom: 20px;">Professional</h4>
+                        <div class="price" style="font-size: 2.5rem; color: #0066cc;">
+                            $297/month
+                        </div>
+                        <p class="price-note">Billed monthly • Full features</p>
+                        
+                        <ul class="feature-list list-unstyled" style="text-align: left;">
+                            <li><i class="fas fa-check text-success me-2"></i> Unlimited clients & cases</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Team collaboration</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Priority support</li>
+                            <li><i class="fas fa-check text-success me-2"></i> 100GB storage</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Advanced analytics</li>
+                            <li><i class="fas fa-check text-success me-2"></i> All integrations</li>
+                        </ul>
+                        
+                        <a href="/sales/checkout?plan=professional" style="background: #0066cc; color: white; padding: 12px 30px; border-radius: 8px; text-decoration: none; display: inline-block; margin-top: 20px;">
+                            Choose Professional
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Founder Pack -->
+                <div class="col-lg-4 mb-4">
+                    <div class="pricing-card" style="border: 3px solid #FFD700; position: relative; transform: scale(1.05);">
+                        <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: linear-gradient(45deg, #FFD700, #FFA500); color: #1a1a1a; padding: 8px 20px; border-radius: 25px; font-weight: 700; font-size: 0.9rem;">
+                            🔥 BEST VALUE - 70% OFF
+                        </div>
+                        
+                        <h4 style="color: #1a1a1a; margin-bottom: 20px; margin-top: 20px;">Founder Pack</h4>
+                        <div class="price" style="font-size: 2.5rem; color: #FFD700;">
+                            $1,290/year
+                        </div>
+                        <p style="color: #999; text-decoration: line-through; margin: 0;">Regular: $4,200/year</p>
+                        <p class="price-note">Annual billing • Founder benefits</p>
+                        
+                        <ul class="feature-list list-unstyled" style="text-align: left;">
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Everything in Professional</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Founder status & badge</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Lifetime price lock</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Exclusive early features</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>VIP support channel</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Unlimited everything</strong></li>
+                        </ul>
+                        
+                        <a href="/sales/checkout?plan=founder" class="cta-button" style="transform: none;">
+                            <i class="fas fa-rocket me-2"></i>Secure Founder Pack
                         </a>
                         
-                        <p style="margin-top: 20px; font-size: 0.9rem; color: #666;">
-                            <i class="fas fa-shield-alt me-1"></i> Secure payment • 30-day money-back guarantee
+                        <p style="margin-top: 15px; font-size: 0.85rem; color: #d4af37; font-weight: 600;">
+                            ⚡ Only 47 spots remaining
                         </p>
                     </div>
                 </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <p style="color: #666; font-size: 0.9rem;">
+                    <i class="fas fa-shield-alt me-1"></i> All plans include 30-day money-back guarantee
+                </p>
             </div>
         </div>
     </section>
@@ -356,11 +450,60 @@
                 </div>
             </div>
             
-            <div class="text-center mt-4">
-                <a href="/sales/checkout" class="cta-button">
-                    <i class="fas fa-lock me-2"></i>Get My Founder Pack Now
-                </a>
+            <div class="text-center mt-5">
+                <div style="background: linear-gradient(45deg, #FFD700, #FFA500); padding: 40px; border-radius: 15px; margin: 40px 0;">
+                    <h4 style="color: #1a1a1a; font-weight: 700; margin-bottom: 20px;">🚨 Don't Miss Out - Act Fast!</h4>
+                    <p style="color: #1a1a1a; font-size: 1.1rem; margin-bottom: 25px;">
+                        This founder pricing will <strong>NEVER</strong> be available again. When these 100 spots are gone, 
+                        the price jumps to $4,200/year and you'll lose founder status forever.
+                    </p>
+                    <a href="/sales/checkout?plan=founder" class="cta-button" style="background: #1a1a1a; font-size: 1.2rem; padding: 18px 45px;">
+                        <i class="fas fa-crown me-2"></i>Claim My Founder Spot Now
+                    </a>
+                    <p style="margin-top: 15px; font-size: 0.9rem; color: #1a1a1a;">
+                        <i class="fas fa-clock me-1"></i> Limited time • <i class="fas fa-users me-1"></i> Only 47 spots left
+                    </p>
+                </div>
             </div>
+            
+            <!-- Footer Section -->
+            <footer style="background: #1a1a1a; color: white; padding: 60px 0; margin-top: 60px;">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <h5 style="color: #FFD700; margin-bottom: 20px;">LAWCOLAB</h5>
+                            <p style="color: #ccc; line-height: 1.6;">
+                                The future of legal practice management. Trusted by law firms worldwide for streamlined operations and enhanced productivity.
+                            </p>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <h6 style="color: white; margin-bottom: 20px;">Contact Support</h6>
+                            <p style="color: #ccc; margin-bottom: 10px;">
+                                <i class="fas fa-envelope me-2"></i> taskdrip@gmail.com
+                            </p>
+                            <p style="color: #ccc; margin-bottom: 10px;">
+                                <i class="fab fa-whatsapp me-2"></i> +234 803 662 2568
+                            </p>
+                            <p style="color: #ccc;">
+                                <i class="fas fa-clock me-2"></i> 24/7 Support Available
+                            </p>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <h6 style="color: white; margin-bottom: 20px;">Secure & Trusted</h6>
+                            <p style="color: #ccc; line-height: 1.6;">
+                                <i class="fas fa-shield-alt me-2"></i> Bank-level security<br>
+                                <i class="fas fa-lock me-2"></i> SSL encrypted<br>
+                                <i class="fas fa-award me-2"></i> Legal industry compliant
+                            </p>
+                        </div>
+                    </div>
+                    <div style="border-top: 1px solid #444; padding-top: 30px; margin-top: 30px; text-align: center;">
+                        <p style="color: #ccc; margin: 0;">
+                            © 2025 LAWCOLAB. All rights reserved. Built by <strong style="color: #FFD700;">Taskdrip</strong>
+                        </p>
+                    </div>
+                </div>
+            </footer>
         </div>
     </section>
 
