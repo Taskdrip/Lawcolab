@@ -281,43 +281,43 @@
                             </div>
                         </div>
 
-                        <!-- TON -->
-                        <div class="payment-method" onclick="selectPayment('ton')">
+                        <!-- USDT TON -->
+                        <div class="payment-method" onclick="selectPayment('usdt_ton')">
                             <div class="d-flex align-items-center">
                                 <div class="payment-icon" style="background: linear-gradient(45deg, #0088cc, #005fa3);">💎</div>
                                 <div class="flex-grow-1">
-                                    <h6 class="mb-1">TON (The Open Network)</h6>
-                                    <small class="text-muted">Ultra-fast blockchain payments</small>
+                                    <h6 class="mb-1">USDT (TON Network)</h6>
+                                    <small class="text-muted">Ultra-fast USDT on TON blockchain</small>
                                 </div>
-                                <input type="radio" name="payment_method" value="ton" class="form-check-input">
+                                <input type="radio" name="payment_method" value="usdt_ton" class="form-check-input">
                             </div>
                             <div class="payment-details mt-3" style="display: none;">
                                 <div class="row g-3">
                                     <div class="col-12">
                                         <div class="payment-info-card p-3" style="background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%); border-radius: 12px; border-left: 4px solid #0088cc;">
-                                            <h6 class="text-info mb-3"><i class="fas fa-gem me-2"></i>TON (The Open Network) Payment</h6>
+                                            <h6 class="text-info mb-3"><i class="fab fa-bitcoin me-2"></i>USDT (TON Network) Payment</h6>
                                             
                                             <div class="payment-field mb-3">
-                                                <small class="text-muted">TON Wallet Address</small>
+                                                <small class="text-muted">USDT Wallet Address (TON Network)</small>
                                                 <div class="crypto-address p-2 mt-1" style="background: #fff; border: 1px solid #dee2e6; border-radius: 6px;">
                                                     <code class="text-primary">UQB8KkPvdyJP8AKQs6QKWpFJqS-KWGCmkPIW8QgJTkQqEGh5</code>
                                                 </div>
                                             </div>
                                             
                                             <div class="payment-field mb-3">
-                                                <small class="text-muted">USD Equivalent</small>
+                                                <small class="text-muted">Amount to Send</small>
                                                 <div class="fw-bold text-success fs-5">
-                                                {% if lead_data.plan == 'Founders' %}${{ "%.0f"|format(settings.founders_price or 750) }} USD
-                                                {% elif lead_data.plan == 'Starter' %} ${{ "%.0f"|format(settings.starter_price) }} USD
-                                                {% elif lead_data.plan == 'Growth' %} ${{ "%.0f"|format(settings.growth_price) }} USD
-                                                {% elif lead_data.plan == 'Scale' %} ${{ "%.0f"|format(settings.scale_price) }} USD
-                                                {% else %} ${{ settings.founder_price or 1348 }} USD
-                                                {% endif %} in TON
+                                                {% if lead_data.plan == 'Founders' %}${{ "%.0f"|format(settings.founders_price or 750) }} USDT
+                                                {% elif lead_data.plan == 'Starter' %} ${{ "%.0f"|format(settings.starter_price) }} USDT
+                                                {% elif lead_data.plan == 'Growth' %} ${{ "%.0f"|format(settings.growth_price) }} USDT
+                                                {% elif lead_data.plan == 'Scale' %} ${{ "%.0f"|format(settings.scale_price) }} USDT
+                                                {% else %} ${{ settings.founder_price or 1348 }} USDT
+                                                {% endif %}
                                                 </div>
                                             </div>
                                             
                                             <div class="alert alert-info mb-0">
-                                                <small><i class="fas fa-chart-line me-1"></i>Check current TON rate and email transaction hash to payments@lawcolab.com</small>
+                                                <small><i class="fas fa-rocket me-1"></i><strong>TON Network Only!</strong> Email transaction hash to payments@lawcolab.com</small>
                                             </div>
                                         </div>
                                     </div>
@@ -325,43 +325,43 @@
                             </div>
                         </div>
 
-                        <!-- Avalanche -->
-                        <div class="payment-method" onclick="selectPayment('avax')">
+                        <!-- USDT BNB -->
+                        <div class="payment-method" onclick="selectPayment('usdt_bnb')">
                             <div class="d-flex align-items-center">
-                                <div class="payment-icon" style="background: linear-gradient(45deg, #e84142, #d32f2f);">🏔️</div>
+                                <div class="payment-icon" style="background: linear-gradient(45deg, #f3ba2f, #e8a317);">🔶</div>
                                 <div class="flex-grow-1">
-                                    <h6 class="mb-1">AVAX (Avalanche)</h6>
-                                    <small class="text-muted">High-speed avalanche network</small>
+                                    <h6 class="mb-1">USDT (BNB Chain)</h6>
+                                    <small class="text-muted">Fast USDT on Binance Smart Chain</small>
                                 </div>
-                                <input type="radio" name="payment_method" value="avax" class="form-check-input">
+                                <input type="radio" name="payment_method" value="usdt_bnb" class="form-check-input">
                             </div>
                             <div class="payment-details mt-3" style="display: none;">
                                 <div class="row g-3">
                                     <div class="col-12">
-                                        <div class="payment-info-card p-3" style="background: linear-gradient(135deg, #fff0f0 0%, #ffe5e5 100%); border-radius: 12px; border-left: 4px solid #e84142;">
-                                            <h6 class="text-danger mb-3"><i class="fas fa-mountain me-2"></i>AVAX (Avalanche) Payment</h6>
+                                        <div class="payment-info-card p-3" style="background: linear-gradient(135deg, #fff9e6 0%, #fff3cc 100%); border-radius: 12px; border-left: 4px solid #f3ba2f;">
+                                            <h6 class="text-warning mb-3"><i class="fab fa-bitcoin me-2"></i>USDT (BNB Chain) Payment</h6>
                                             
                                             <div class="payment-field mb-3">
-                                                <small class="text-muted">AVAX Wallet Address</small>
+                                                <small class="text-muted">USDT Wallet Address (BEP-20)</small>
                                                 <div class="crypto-address p-2 mt-1" style="background: #fff; border: 1px solid #dee2e6; border-radius: 6px;">
                                                     <code class="text-primary">0x742d35Cc6634C0532925a3b8D48E16F6b2e67B8f</code>
                                                 </div>
                                             </div>
                                             
                                             <div class="payment-field mb-3">
-                                                <small class="text-muted">USD Equivalent</small>
+                                                <small class="text-muted">Amount to Send</small>
                                                 <div class="fw-bold text-success fs-5">
-                                                {% if lead_data.plan == 'Founders' %}${{ "%.0f"|format(settings.founders_price or 750) }} USD
-                                                {% elif lead_data.plan == 'Starter' %} ${{ "%.0f"|format(settings.starter_price) }} USD
-                                                {% elif lead_data.plan == 'Growth' %} ${{ "%.0f"|format(settings.growth_price) }} USD
-                                                {% elif lead_data.plan == 'Scale' %} ${{ "%.0f"|format(settings.scale_price) }} USD
-                                                {% else %} ${{ settings.founder_price or 1348 }} USD
-                                                {% endif %} in AVAX
+                                                {% if lead_data.plan == 'Founders' %}${{ "%.0f"|format(settings.founders_price or 750) }} USDT
+                                                {% elif lead_data.plan == 'Starter' %} ${{ "%.0f"|format(settings.starter_price) }} USDT
+                                                {% elif lead_data.plan == 'Growth' %} ${{ "%.0f"|format(settings.growth_price) }} USDT
+                                                {% elif lead_data.plan == 'Scale' %} ${{ "%.0f"|format(settings.scale_price) }} USDT
+                                                {% else %} ${{ settings.founder_price or 1348 }} USDT
+                                                {% endif %}
                                                 </div>
                                             </div>
                                             
                                             <div class="alert alert-warning mb-0">
-                                                <small><i class="fas fa-snowflake me-1"></i>Email transaction hash to payments@lawcolab.com after payment</small>
+                                                <small><i class="fas fa-bolt me-1"></i><strong>BNB Chain Only!</strong> Email transaction hash to payments@lawcolab.com</small>
                                             </div>
                                         </div>
                                     </div>
@@ -369,43 +369,87 @@
                             </div>
                         </div>
 
-                        <!-- Solana -->
-                        <div class="payment-method" onclick="selectPayment('solana')">
+                        <!-- USDT Avalanche -->
+                        <div class="payment-method" onclick="selectPayment('usdt_avax')">
+                            <div class="d-flex align-items-center">
+                                <div class="payment-icon" style="background: linear-gradient(45deg, #e84142, #d32f2f);">🏔️</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">USDT (Avalanche)</h6>
+                                    <small class="text-muted">High-speed USDT on Avalanche network</small>
+                                </div>
+                                <input type="radio" name="payment_method" value="usdt_avax" class="form-check-input">
+                            </div>
+                            <div class="payment-details mt-3" style="display: none;">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <div class="payment-info-card p-3" style="background: linear-gradient(135deg, #fff0f0 0%, #ffe5e5 100%); border-radius: 12px; border-left: 4px solid #e84142;">
+                                            <h6 class="text-danger mb-3"><i class="fab fa-bitcoin me-2"></i>USDT (Avalanche) Payment</h6>
+                                            
+                                            <div class="payment-field mb-3">
+                                                <small class="text-muted">USDT Wallet Address (C-Chain)</small>
+                                                <div class="crypto-address p-2 mt-1" style="background: #fff; border: 1px solid #dee2e6; border-radius: 6px;">
+                                                    <code class="text-primary">0x742d35Cc6634C0532925a3b8D48E16F6b2e67B8f</code>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="payment-field mb-3">
+                                                <small class="text-muted">Amount to Send</small>
+                                                <div class="fw-bold text-success fs-5">
+                                                {% if lead_data.plan == 'Founders' %}${{ "%.0f"|format(settings.founders_price or 750) }} USDT
+                                                {% elif lead_data.plan == 'Starter' %} ${{ "%.0f"|format(settings.starter_price) }} USDT
+                                                {% elif lead_data.plan == 'Growth' %} ${{ "%.0f"|format(settings.growth_price) }} USDT
+                                                {% elif lead_data.plan == 'Scale' %} ${{ "%.0f"|format(settings.scale_price) }} USDT
+                                                {% else %} ${{ settings.founder_price or 1348 }} USDT
+                                                {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="alert alert-danger mb-0">
+                                                <small><i class="fas fa-snowflake me-1"></i><strong>Avalanche C-Chain Only!</strong> Email transaction hash to payments@lawcolab.com</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- USDT Solana -->
+                        <div class="payment-method" onclick="selectPayment('usdt_solana')">
                             <div class="d-flex align-items-center">
                                 <div class="payment-icon" style="background: linear-gradient(45deg, #9945ff, #7c3aed);">☀️</div>
                                 <div class="flex-grow-1">
-                                    <h6 class="mb-1">SOL (Solana)</h6>
-                                    <small class="text-muted">Lightning-fast Solana payments</small>
+                                    <h6 class="mb-1">USDT (Solana)</h6>
+                                    <small class="text-muted">Lightning-fast USDT on Solana network</small>
                                 </div>
-                                <input type="radio" name="payment_method" value="solana" class="form-check-input">
+                                <input type="radio" name="payment_method" value="usdt_solana" class="form-check-input">
                             </div>
                             <div class="payment-details mt-3" style="display: none;">
                                 <div class="row g-3">
                                     <div class="col-12">
                                         <div class="payment-info-card p-3" style="background: linear-gradient(135deg, #f8f0ff 0%, #ede0ff 100%); border-radius: 12px; border-left: 4px solid #9945ff;">
-                                            <h6 class="text-purple mb-3" style="color: #9945ff;"><i class="fas fa-sun me-2"></i>SOL (Solana) Payment</h6>
+                                            <h6 class="text-purple mb-3" style="color: #9945ff;"><i class="fab fa-bitcoin me-2"></i>USDT (Solana) Payment</h6>
                                             
                                             <div class="payment-field mb-3">
-                                                <small class="text-muted">Solana Wallet Address</small>
+                                                <small class="text-muted">USDT Wallet Address (SPL Token)</small>
                                                 <div class="crypto-address p-2 mt-1" style="background: #fff; border: 1px solid #dee2e6; border-radius: 6px;">
                                                     <code class="text-primary">8KvwgzKXBEztWhYYfrZ4MdFAe6WjHXzNbzr5B8R2CueT</code>
                                                 </div>
                                             </div>
                                             
                                             <div class="payment-field mb-3">
-                                                <small class="text-muted">USD Equivalent</small>
+                                                <small class="text-muted">Amount to Send</small>
                                                 <div class="fw-bold text-success fs-5">
-                                                {% if lead_data.plan == 'Founders' %}${{ "%.0f"|format(settings.founders_price or 750) }} USD
-                                                {% elif lead_data.plan == 'Starter' %} ${{ "%.0f"|format(settings.starter_price) }} USD
-                                                {% elif lead_data.plan == 'Growth' %} ${{ "%.0f"|format(settings.growth_price) }} USD
-                                                {% elif lead_data.plan == 'Scale' %} ${{ "%.0f"|format(settings.scale_price) }} USD
-                                                {% else %} ${{ settings.founder_price or 1348 }} USD
-                                                {% endif %} in SOL
+                                                {% if lead_data.plan == 'Founders' %}${{ "%.0f"|format(settings.founders_price or 750) }} USDT
+                                                {% elif lead_data.plan == 'Starter' %} ${{ "%.0f"|format(settings.starter_price) }} USDT
+                                                {% elif lead_data.plan == 'Growth' %} ${{ "%.0f"|format(settings.growth_price) }} USDT
+                                                {% elif lead_data.plan == 'Scale' %} ${{ "%.0f"|format(settings.scale_price) }} USDT
+                                                {% else %} ${{ settings.founder_price or 1348 }} USDT
+                                                {% endif %}
                                                 </div>
                                             </div>
                                             
                                             <div class="alert alert-primary mb-0" style="background-color: rgba(153, 69, 255, 0.1); border-color: #9945ff;">
-                                                <small><i class="fas fa-bolt me-1"></i>Lightning-fast payments! Email transaction hash to payments@lawcolab.com</small>
+                                                <small><i class="fas fa-bolt me-1"></i><strong>Solana Network Only!</strong> Email transaction hash to payments@lawcolab.com</small>
                                             </div>
                                         </div>
                                     </div>
