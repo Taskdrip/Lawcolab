@@ -184,24 +184,28 @@
         let popupTimer = null;
         let popupShown = false;
 
-        // Auto-show popup after 7 seconds
+        // Auto-show popup after 7 seconds - REDIRECT ONLY
         {% if auto_popup %}
         console.log("Server says show popup, initializing timer for 7 seconds...");
         popupTimer = setTimeout(function() {
             if (!popupShown) {
                 console.log("7 seconds passed, showing popup...");
-                showPopup();
+                redirectToPopup();
             }
         }, 7000);
         {% endif %}
 
         function showPopup() {
+            redirectToPopup();
+        }
+
+        function redirectToPopup() {
             if (popupShown) return;
             popupShown = true;
             if (popupTimer) clearTimeout(popupTimer);
             
-            // Redirect to full popup page
-            window.location.href = '/sales/popup';
+            // Direct redirect to separate popup page - NO LOADING CONTENT HERE
+            window.location.replace('/sales/popup');
         }
 
         // Clean up on page unload
