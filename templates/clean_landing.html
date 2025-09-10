@@ -2,53 +2,58 @@
 
 {% block additional_css %}
 <style>
-.nav-item {
-    margin-right: 10px;
-}
-
-.navbar-nav .nav-link {
-    padding: 0.5rem 1rem !important;
-    margin-right: 5px;
-    border-radius: 5px;
-    transition: all 0.3s ease;
-}
-
-.navbar-nav .nav-link:hover {
-    background-color: #f8f9fa;
-}
-
-/* Ensure scrolling works properly */
-html {
-    overflow-y: scroll !important;
-    scroll-behavior: smooth;
-}
-
 body {
     overflow-y: auto !important;
-    height: auto !important;
     min-height: 100vh;
-    position: relative !important;
+    background: #ffffff;
 }
 
-/* Fix any fixed positioning issues */
-.container, .container-fluid {
-    position: relative;
-    z-index: 1;
+.hero-section {
+    padding: 80px 0;
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
 }
 
-/* Ensure sections don't prevent scrolling */
-section {
-    position: relative;
-    overflow: visible;
+.features-section {
+    padding: 80px 0;
+    background: #f8fafc;
 }
 
-/* Popup overlay styles */
+.cta-section {
+    padding: 80px 0;
+    background: #0066cc;
+}
+
+.feature-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    height: 100%;
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+.feature-icon {
+    border-radius: 12px;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+/* Popup overlay styles - completely separate */
 .popup-overlay {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     background: rgba(0, 0, 0, 0.8);
     z-index: 10000;
     display: none;
@@ -58,17 +63,32 @@ section {
 .popup-overlay.show {
     display: block;
 }
+
+.popup-container {
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+}
+
+.popup-content {
+    max-width: 100%;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: white;
+}
 </style>
 {% endblock %}
 
-{% block title %}LAWCOLAB - Professional Legal Practice Management{% endblock %}
+{% block title %}LAWCOLAB - Transform Your Legal Practice{% endblock %}
 
 {% block content %}
-<!-- Main Landing Page Content -->
-<div style="background: #ffffff; min-height: 100vh; overflow-y: auto; position: relative;">
+<!-- Clean Landing Page Content Only -->
+<div class="landing-page">
     
     <!-- Hero Section -->
-    <section class="hero" style="padding: 80px 0; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);">
+    <section class="hero-section">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6 mb-5 mb-lg-0">
@@ -82,17 +102,15 @@ section {
                         </p>
                         <div class="hero-actions" style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 1.5rem;">
                             <a href="{{ url_for('auth.signup') }}" 
-                               style="background: #0066cc; color: white; padding: 16px 32px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; border: none; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,102,204,0.3);">
+                               class="btn btn-primary btn-lg"
+                               style="background: #0066cc; border: none; padding: 16px 32px; border-radius: 10px; font-weight: 600; box-shadow: 0 4px 15px rgba(0,102,204,0.3);">
                                 <i class="fas fa-rocket me-2"></i>Start Free Trial
                             </a>
-                            <button onclick="showComprehensivePopup()" 
-                               style="background: transparent; color: #0066cc; padding: 16px 32px; border: 2px solid #0066cc; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; transition: all 0.3s; cursor: pointer;">
+                            <button onclick="showSalesPopup()" 
+                                   class="btn btn-outline-primary btn-lg"
+                                   style="border: 2px solid #0066cc; padding: 16px 32px; border-radius: 10px; font-weight: 600; background: transparent; color: #0066cc;">
                                 <i class="fas fa-star me-2"></i>Pre-Sale Launch
                             </button>
-                            <a href="{{ url_for('pricing') }}" 
-                               style="background: transparent; color: #666; padding: 16px 32px; border: 1px solid #ccc; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; transition: all 0.3s;">
-                                <i class="fas fa-tag me-2"></i>View Pricing
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -141,7 +159,7 @@ section {
     </section>
 
     <!-- Features Section -->
-    <section style="padding: 80px 0; background: #f8fafc;">
+    <section class="features-section">
         <div class="container">
             <div class="text-center mb-5">
                 <h2 style="font-size: 2.5rem; font-weight: 700; color: #1a1a1a; margin-bottom: 1rem;">Everything you need to run your firm</h2>
@@ -150,8 +168,8 @@ section {
             
             <div class="row">
                 <div class="col-md-4 mb-4">
-                    <div style="background: white; border-radius: 12px; padding: 2rem; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); height: 100%;">
-                        <div style="background: #e6f2ff; border-radius: 12px; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: #e6f2ff;">
                             <i class="fas fa-users" style="color: #0066cc; font-size: 2rem;"></i>
                         </div>
                         <h4 style="font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Client Management</h4>
@@ -159,8 +177,8 @@ section {
                     </div>
                 </div>
                 <div class="col-md-4 mb-4">
-                    <div style="background: white; border-radius: 12px; padding: 2rem; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); height: 100%;">
-                        <div style="background: #e6f7e6; border-radius: 12px; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: #e6f7e6;">
                             <i class="fas fa-folder-open" style="color: #28a745; font-size: 2rem;"></i>
                         </div>
                         <h4 style="font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Case Management</h4>
@@ -168,12 +186,39 @@ section {
                     </div>
                 </div>
                 <div class="col-md-4 mb-4">
-                    <div style="background: white; border-radius: 12px; padding: 2rem; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); height: 100%;">
-                        <div style="background: #fff3e0; border-radius: 12px; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: #fff3e0;">
                             <i class="fas fa-receipt" style="color: #ffa500; font-size: 2rem;"></i>
                         </div>
                         <h4 style="font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Billing & Invoicing</h4>
                         <p style="color: #64748b; line-height: 1.6;">Professional invoicing with time tracking and multiple payment options.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: #f3e5f5;">
+                            <i class="fas fa-comments" style="color: #6f42c1; font-size: 2rem;"></i>
+                        </div>
+                        <h4 style="font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Team Communication</h4>
+                        <p style="color: #64748b; line-height: 1.6;">Real-time messaging and collaboration tools for your entire team.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: #fce4ec;">
+                            <i class="fas fa-chart-line" style="color: #e91e63; font-size: 2rem;"></i>
+                        </div>
+                        <h4 style="font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Analytics & Reports</h4>
+                        <p style="color: #64748b; line-height: 1.6;">Insights into firm performance, profitability, and growth opportunities.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: #e8f5e8;">
+                            <i class="fas fa-shield-alt" style="color: #4caf50; font-size: 2rem;"></i>
+                        </div>
+                        <h4 style="font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Security & Compliance</h4>
+                        <p style="color: #64748b; line-height: 1.6;">Bank-level security with legal industry compliance standards.</p>
                     </div>
                 </div>
             </div>
@@ -181,66 +226,99 @@ section {
     </section>
 
     <!-- CTA Section -->
-    <section style="padding: 80px 0; background: #0066cc;">
+    <section class="cta-section">
         <div class="container text-center">
             <h2 style="color: white; font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem;">Ready to transform your practice?</h2>
-            <p style="color: rgba(255,255,255,0.9); font-size: 1.1rem; margin-bottom: 2rem;">Join hundreds of legal professionals already using LAWCOLAB.</p>
-            <a href="{{ url_for('auth.signup') }}" 
-               style="background: white; color: #0066cc; padding: 16px 32px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; transition: all 0.3s;">
-                <i class="fas fa-rocket me-2"></i>Get Started Today
-            </a>
+            <p style="color: rgba(255,255,255,0.9); font-size: 1.1rem; margin-bottom: 2rem;">Join hundreds of legal professionals already using LAWCOLAB to streamline their operations and grow their firms.</p>
+            <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;">
+                <a href="{{ url_for('auth.signup') }}" 
+                   class="btn btn-light btn-lg"
+                   style="background: white; color: #0066cc; padding: 16px 32px; border-radius: 10px; font-weight: 600; border: none;">
+                    <i class="fas fa-rocket me-2"></i>Get Started Today
+                </a>
+                <button onclick="showSalesPopup()" 
+                       class="btn btn-outline-light btn-lg"
+                       style="border: 2px solid white; padding: 16px 32px; border-radius: 10px; font-weight: 600; background: transparent; color: white;">
+                    <i class="fas fa-crown me-2"></i>Founder Pack
+                </button>
+            </div>
         </div>
     </section>
 </div>
 
-<!-- Popup Overlay -->
-<div id="popup-overlay" class="popup-overlay">
-    {% include 'sales/comprehensive_popup.html' %}
+<!-- Completely Separate Popup Overlay -->
+<div id="sales-popup-overlay" class="popup-overlay">
+    <div class="popup-container">
+        <div class="popup-content">
+            <!-- Popup content will be loaded here -->
+        </div>
+    </div>
 </div>
 
 <script>
-console.log("Server says show popup, initializing timer for 7 seconds...");
+// Clean popup system
+let popupTimer = null;
+let popupShown = false;
 
-// Auto-show popup after 7 seconds if auto_popup is enabled
+// Auto-show popup after 7 seconds (only if auto_popup is enabled)
 {% if auto_popup %}
-setTimeout(function() {
-    console.log("7 seconds passed, showing popup...");
-    showComprehensivePopup();
+console.log("Server says show popup, initializing timer for 7 seconds...");
+popupTimer = setTimeout(function() {
+    if (!popupShown) {
+        console.log("7 seconds passed, showing popup...");
+        showSalesPopup();
+    }
 }, 7000);
 {% endif %}
 
-function showComprehensivePopup() {
-    const overlay = document.getElementById('popup-overlay');
-    const popup = document.getElementById('sales-popup');
-    if (overlay && popup) {
-        overlay.classList.add('show');
-        popup.style.display = 'block';
-        document.body.style.overflow = 'hidden'; // Prevent background scrolling
-    }
+function showSalesPopup() {
+    if (popupShown) return; // Prevent multiple calls
+    
+    popupShown = true;
+    if (popupTimer) clearTimeout(popupTimer);
+    
+    const overlay = document.getElementById('sales-popup-overlay');
+    const popupContent = overlay.querySelector('.popup-content');
+    
+    // Load popup content dynamically
+    fetch('/sales/popup-content')
+        .then(response => response.text())
+        .then(html => {
+            popupContent.innerHTML = html;
+            overlay.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        })
+        .catch(error => {
+            console.error('Error loading popup:', error);
+            // Fallback: redirect to popup page
+            window.location.href = '/sales/popup';
+        });
 }
 
-function hidePopup() {
-    const overlay = document.getElementById('popup-overlay');
-    const popup = document.getElementById('sales-popup');
-    if (overlay && popup) {
-        overlay.classList.remove('show');
-        popup.style.display = 'none';
-        document.body.style.overflow = 'auto'; // Restore scrolling
-    }
+function hideSalesPopup() {
+    const overlay = document.getElementById('sales-popup-overlay');
+    overlay.classList.remove('show');
+    document.body.style.overflow = 'auto';
+    popupShown = false;
 }
 
 // Close popup on overlay click
-document.getElementById('popup-overlay').addEventListener('click', function(e) {
+document.getElementById('sales-popup-overlay').addEventListener('click', function(e) {
     if (e.target === this) {
-        hidePopup();
+        hideSalesPopup();
     }
 });
 
 // Close popup on escape key
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
-        hidePopup();
+        hideSalesPopup();
     }
+});
+
+// Clean up on page unload
+window.addEventListener('beforeunload', function() {
+    if (popupTimer) clearTimeout(popupTimer);
 });
 </script>
 

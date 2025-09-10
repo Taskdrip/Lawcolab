@@ -62,28 +62,8 @@ def make_session_permanent():
 
 @app.route('/popup')
 def popup_page():
-    """Landing page with automatic popup overlay after 7 seconds"""
-    from models import PopupSettings, CustomerReview, LawFirmShowcase
-    from sqlalchemy import desc
-    
-    # Get popup settings
-    settings = PopupSettings.query.first()
-    if not settings:
-        # Create default settings
-        settings = PopupSettings()
-        db.session.add(settings)
-        db.session.commit()
-    
-    # Get featured reviews
-    reviews = CustomerReview.query.filter_by(is_active=True).order_by(desc(CustomerReview.is_featured), CustomerReview.id).limit(20).all()
-    
-    # Get featured law firm showcases
-    featured_showcases = LawFirmShowcase.query.filter_by(
-        is_featured=True, 
-        is_active=True
-    ).order_by(LawFirmShowcase.showcase_order.asc()).limit(6).all()
-    
-    return render_template('popup_landing.html', settings=settings, reviews=reviews, featured_showcases=featured_showcases, auto_popup=True)
+    """Clean landing page with automatic popup overlay after 7 seconds"""
+    return render_template('clean_landing.html', auto_popup=True)
 
 @app.route('/')
 def index():

@@ -26,6 +26,25 @@ def popup_page():
     
     return render_template('sales/comprehensive_popup.html', settings=settings, reviews=reviews)
 
+@sales_bp.route('/popup-content')
+def popup_content():
+    """Returns just the popup content for dynamic loading"""
+    from models import PopupSettings, CustomerReview
+    from sqlalchemy import desc
+    
+    # Get popup settings
+    settings = PopupSettings.query.first()
+    if not settings:
+        # Create default settings
+        settings = PopupSettings()
+        db.session.add(settings)
+        db.session.commit()
+    
+    # Get featured reviews
+    reviews = CustomerReview.query.filter_by(is_active=True).order_by(desc(CustomerReview.is_featured), CustomerReview.id).limit(20).all()
+    
+    return render_template('sales/popup_content_only.html', settings=settings, reviews=reviews)
+
 @sales_bp.route('/submit-lead', methods=['POST'])
 def submit_lead():
     """Handle lead form submission"""
