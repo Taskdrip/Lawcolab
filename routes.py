@@ -62,8 +62,8 @@ def make_session_permanent():
 
 @app.route('/popup')
 def popup_page():
-    """Clean landing page with automatic popup overlay after 7 seconds"""
-    return render_template('clean_landing.html', auto_popup=True)
+    """Simple clean landing page with automatic popup redirect after 7 seconds"""
+    return render_template('simple_popup_landing.html', auto_popup=True)
 
 @app.route('/')
 def index():

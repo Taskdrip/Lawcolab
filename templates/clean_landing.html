@@ -277,37 +277,18 @@ function showSalesPopup() {
     popupShown = true;
     if (popupTimer) clearTimeout(popupTimer);
     
-    const overlay = document.getElementById('sales-popup-overlay');
-    const popupContent = overlay.querySelector('.popup-content');
-    
-    // Load popup content dynamically
-    fetch('/sales/popup-content')
-        .then(response => response.text())
-        .then(html => {
-            popupContent.innerHTML = html;
-            overlay.classList.add('show');
-            document.body.style.overflow = 'hidden';
-        })
-        .catch(error => {
-            console.error('Error loading popup:', error);
-            // Fallback: redirect to popup page
-            window.location.href = '/sales/popup';
-        });
+    // Simply redirect to the full popup page to avoid any mixing
+    window.location.href = '/sales/popup';
 }
 
 function hideSalesPopup() {
     const overlay = document.getElementById('sales-popup-overlay');
-    overlay.classList.remove('show');
-    document.body.style.overflow = 'auto';
+    if (overlay) {
+        overlay.classList.remove('show');
+        document.body.style.overflow = 'auto';
+    }
     popupShown = false;
 }
-
-// Close popup on overlay click
-document.getElementById('sales-popup-overlay').addEventListener('click', function(e) {
-    if (e.target === this) {
-        hideSalesPopup();
-    }
-});
 
 // Close popup on escape key
 document.addEventListener('keydown', function(e) {
