@@ -123,7 +123,7 @@
         <div class="checkout-header">
             <h2>Complete Your LAWCOLAB 
             {% if lead_data.plan == 'Founders' %}Founder Pack Purchase
-            {% elif lead_data.plan == 'Starter' %}Starter Plan Purchase
+            {% elif lead_data.plan == 'Starter' %}Starter Pack Purchase
             {% elif lead_data.plan == 'Growth' %}Growth Plan Purchase
             {% elif lead_data.plan == 'Scale' %}Scale Plan Purchase
             {% else %}Plan Purchase
@@ -132,6 +132,13 @@
             {% if lead_data.plan == 'Founders' %}Just one more step to secure your exclusive founder status!
             {% else %}Just one more step to activate your professional law firm management solution!
             {% endif %}</p>
+            
+            <!-- Payment Countdown Timer -->
+            <div id="payment-countdown" style="background: linear-gradient(45deg, #ff4757, #ff3742); color: white; padding: 15px; margin-top: 20px; border-radius: 10px; text-align: center; display: none;">
+                <div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 5px;">⏰ Complete Payment Within:</div>
+                <div id="countdown-timer" style="font-size: 2rem; font-weight: 800; font-family: 'Courier New', monospace;">20:00</div>
+                <div style="font-size: 0.9rem; margin-top: 5px;">Upload receipt or transaction hash before time expires</div>
+            </div>
         </div>
         
         <div class="p-4 p-md-5">
@@ -507,16 +514,41 @@
                             <strong class="text-success">${{ "%.0f"|format(settings.founders_price or 750) }}</strong>
                         </div>
                         {% elif lead_data.plan == 'Starter' %}
+                        <!-- Starter Pack Billing Options -->
+                        <div class="mb-3">
+                            <h6>Choose Billing Period:</h6>
+                            <div class="billing-options">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="billing_period" id="monthly" value="monthly" checked onchange="updateStarterPrice()">
+                                    <label class="form-check-label" for="monthly">
+                                        <strong>Monthly - $39/month</strong> <small class="text-muted">(Billed monthly)</small>
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="billing_period" id="quarterly" value="quarterly" onchange="updateStarterPrice()">
+                                    <label class="form-check-label" for="quarterly">
+                                        <strong>Quarterly - $90/3 months</strong> <small class="text-success">(Save $27)</small>
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="billing_period" id="yearly" value="yearly" onchange="updateStarterPrice()">
+                                    <label class="form-check-label" for="yearly">
+                                        <strong>Yearly - $350/year</strong> <small class="text-success">(Save $118)</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="d-flex justify-content-between mb-2">
-                            <span>LAWCOLAB Starter Plan</span>
-                            <span class="fw-bold">${{ "%.0f"|format(settings.starter_price) }}</span>
+                            <span>LAWCOLAB Starter Pack</span>
+                            <span class="fw-bold" id="starter-price-display">$39</span>
                         </div>
                         
                         <hr>
                         
                         <div class="d-flex justify-content-between mb-3">
-                            <strong>Total (Monthly)</strong>
-                            <strong class="text-primary">${{ "%.0f"|format(settings.starter_price) }}</strong>
+                            <strong id="billing-period-label">Total (Monthly)</strong>
+                            <strong class="text-primary" id="starter-total-display">$39</strong>
                         </div>
                         {% elif lead_data.plan == 'Growth' %}
                         <div class="d-flex justify-content-between mb-2">
@@ -580,11 +612,13 @@
                         {% elif lead_data.plan == 'Starter' %}
                         <h6>What's Included:</h6>
                         <ul class="list-unstyled small">
-                            <li>✅ Basic Case Management</li>
-                            <li>✅ Client Portal</li>
-                            <li>✅ Document Storage</li>
-                            <li>✅ Email Support</li>
-                            <li>✅ Up to 5 Cases</li>
+                            <li>✅ Unlimited Clients & Cases</li>
+                            <li>✅ Full Case Management</li>
+                            <li>✅ Team Collaboration</li>
+                            <li>✅ Priority Support</li>
+                            <li>✅ 50GB Storage</li>
+                            <li>✅ Advanced Analytics</li>
+                            <li>✅ Client Portal & Communication</li>
                         </ul>
                         {% elif lead_data.plan == 'Growth' %}
                         <h6>What's Included:</h6>
@@ -639,6 +673,61 @@
             
             // Enable submit button
             document.getElementById('completeBtn').disabled = false;
+            
+            // Start countdown timer
+            startPaymentCountdown();
+        }
+        
+        function updateStarterPrice() {
+            const period = document.querySelector('input[name="billing_period"]:checked').value;
+            const priceDisplay = document.getElementById('starter-price-display');
+            const totalDisplay = document.getElementById('starter-total-display');
+            const billingLabel = document.getElementById('billing-period-label');
+            
+            switch(period) {
+                case 'monthly':
+                    priceDisplay.textContent = '$39';
+                    totalDisplay.textContent = '$39';
+                    billingLabel.textContent = 'Total (Monthly)';
+                    break;
+                case 'quarterly':
+                    priceDisplay.textContent = '$90';
+                    totalDisplay.textContent = '$90';
+                    billingLabel.textContent = 'Total (Quarterly)';
+                    break;
+                case 'yearly':
+                    priceDisplay.textContent = '$350';
+                    totalDisplay.textContent = '$350';
+                    billingLabel.textContent = 'Total (Yearly)';
+                    break;
+            }
+        }
+        
+        let countdownInterval;
+        
+        function startPaymentCountdown() {
+            // Show countdown timer
+            document.getElementById('payment-countdown').style.display = 'block';
+            
+            // Set initial time (20 minutes = 1200 seconds)
+            let timeLeft = 1200;
+            
+            // Update countdown every second
+            countdownInterval = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                
+                document.getElementById('countdown-timer').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    alert('Payment time expired! Please refresh the page to restart.');
+                    document.getElementById('completeBtn').disabled = true;
+                }
+                
+                timeLeft--;
+            }, 1000);
         }
 
         // Copy address to clipboard functionality
