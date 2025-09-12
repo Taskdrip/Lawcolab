@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout - LAWCOLAB Founder Pack</title>
+    <title>Checkout - LAWCOLAB {{ selected_plan.title() }} Plan</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -122,14 +122,14 @@
     <div class="checkout-container">
         <div class="checkout-header">
             <h2>Complete Your LAWCOLAB 
-            {% if lead_data.plan == 'Founders' %}Founder Pack Purchase
-            {% elif lead_data.plan == 'Starter' %}Starter Pack Purchase
-            {% elif lead_data.plan == 'Growth' %}Growth Plan Purchase
-            {% elif lead_data.plan == 'Scale' %}Scale Plan Purchase
+            {% if selected_plan == 'founders' %}Founder Pack Purchase
+            {% elif selected_plan == 'starter' %}Starter Pack Purchase
+            {% elif selected_plan == 'growth' %}Growth Plan Purchase
+            {% elif selected_plan == 'scale' %}Scale Plan Purchase
             {% else %}Plan Purchase
             {% endif %}</h2>
             <p class="mb-0">
-            {% if lead_data.plan == 'Founders' %}Just one more step to secure your exclusive founder status!
+            {% if selected_plan == 'founders' %}Just one more step to secure your exclusive founder status!
             {% else %}Just one more step to activate your professional law firm management solution!
             {% endif %}</p>
             
@@ -212,11 +212,11 @@
                                                     <div class="payment-field">
                                                         <small class="text-muted">Amount</small>
                                                         <div class="fw-bold text-success fs-5">
-                                                        {% if lead_data.plan == 'Founders' %}${{ "%.0f"|format(settings.founders_price or 750) }} USD
-                                                        {% elif lead_data.plan == 'Starter' %} ${{ "%.0f"|format(settings.starter_price) }} USD
-                                                        {% elif lead_data.plan == 'Growth' %} ${{ "%.0f"|format(settings.growth_price) }} USD
-                                                        {% elif lead_data.plan == 'Scale' %} ${{ "%.0f"|format(settings.scale_price) }} USD
-                                                        {% else %} ${{ settings.founder_price or 1348 }} USD
+                                                        {% if selected_plan == 'founders' %}${{ "%.0f"|format(settings.founders_price or 579) }} USD
+                                                        {% elif selected_plan == 'starter' %} ${{ "%.0f"|format(settings.starter_price) }} USD
+                                                        {% elif selected_plan == 'growth' %} ${{ "%.0f"|format(settings.growth_price) }} USD
+                                                        {% elif selected_plan == 'scale' %} ${{ "%.0f"|format(settings.scale_price) }} USD
+                                                        {% else %} ${{ settings.founders_price or 579 }} USD
                                                         {% endif %}
                                                         </div>
                                                     </div>
@@ -226,10 +226,10 @@
                                             <div class="mt-3 p-2" style="background: rgba(0,123,255,0.1); border-radius: 8px;">
                                                 <small class="text-primary fw-bold">Reference:</small>
                                                 <span class="font-monospace ms-2">LAWCOLAB-
-                                                {% if lead_data.plan == 'Founders' %}FOUNDER
-                                                {% elif lead_data.plan == 'Starter' %}STARTER
-                                                {% elif lead_data.plan == 'Growth' %}GROWTH
-                                                {% elif lead_data.plan == 'Scale' %}SCALE
+                                                {% if selected_plan == 'founders' %}FOUNDER
+                                                {% elif selected_plan == 'starter' %}STARTER
+                                                {% elif selected_plan == 'growth' %}GROWTH
+                                                {% elif selected_plan == 'scale' %}SCALE
                                                 {% else %}FOUNDER
                                                 {% endif %}-{{ lead_data.name if lead_data else 'CUSTOMER' }}</span>
                                             </div>
@@ -270,11 +270,11 @@
                                             <div class="payment-field mb-3">
                                                 <small class="text-muted">Amount to Send</small>
                                                 <div class="fw-bold text-success fs-5">
-                                                {% if lead_data.plan == 'Founders' %}${{ "%.0f"|format(settings.founders_price or 750) }} USDT
-                                                {% elif lead_data.plan == 'Starter' %} ${{ "%.0f"|format(settings.starter_price) }} USDT
-                                                {% elif lead_data.plan == 'Growth' %} ${{ "%.0f"|format(settings.growth_price) }} USDT
-                                                {% elif lead_data.plan == 'Scale' %} ${{ "%.0f"|format(settings.scale_price) }} USDT
-                                                {% else %} ${{ settings.founder_price or 1348 }} USDT
+                                                {% if selected_plan == 'founders' %}${{ "%.0f"|format(settings.founders_price or 579) }} USDT
+                                                {% elif selected_plan == 'starter' %} ${{ "%.0f"|format(settings.starter_price) }} USDT
+                                                {% elif selected_plan == 'growth' %} ${{ "%.0f"|format(settings.growth_price) }} USDT
+                                                {% elif selected_plan == 'scale' %} ${{ "%.0f"|format(settings.scale_price) }} USDT
+                                                {% else %} ${{ settings.founders_price or 579 }} USDT
                                                 {% endif %}
                                                 </div>
                                             </div>
@@ -314,11 +314,11 @@
                                             <div class="payment-field mb-3">
                                                 <small class="text-muted">Amount to Send</small>
                                                 <div class="fw-bold text-success fs-5">
-                                                {% if lead_data.plan == 'Founders' %}${{ "%.0f"|format(settings.founders_price or 750) }} USDT
-                                                {% elif lead_data.plan == 'Starter' %} ${{ "%.0f"|format(settings.starter_price) }} USDT
-                                                {% elif lead_data.plan == 'Growth' %} ${{ "%.0f"|format(settings.growth_price) }} USDT
-                                                {% elif lead_data.plan == 'Scale' %} ${{ "%.0f"|format(settings.scale_price) }} USDT
-                                                {% else %} ${{ settings.founder_price or 1348 }} USDT
+                                                {% if selected_plan == 'founders' %}${{ "%.0f"|format(settings.founders_price or 579) }} USDT
+                                                {% elif selected_plan == 'starter' %} ${{ "%.0f"|format(settings.starter_price) }} USDT
+                                                {% elif selected_plan == 'growth' %} ${{ "%.0f"|format(settings.growth_price) }} USDT
+                                                {% elif selected_plan == 'scale' %} ${{ "%.0f"|format(settings.scale_price) }} USDT
+                                                {% else %} ${{ settings.founders_price or 579 }} USDT
                                                 {% endif %}
                                                 </div>
                                             </div>
@@ -358,11 +358,11 @@
                                             <div class="payment-field mb-3">
                                                 <small class="text-muted">Amount to Send</small>
                                                 <div class="fw-bold text-success fs-5">
-                                                {% if lead_data.plan == 'Founders' %}${{ "%.0f"|format(settings.founders_price or 750) }} USDT
-                                                {% elif lead_data.plan == 'Starter' %} ${{ "%.0f"|format(settings.starter_price) }} USDT
-                                                {% elif lead_data.plan == 'Growth' %} ${{ "%.0f"|format(settings.growth_price) }} USDT
-                                                {% elif lead_data.plan == 'Scale' %} ${{ "%.0f"|format(settings.scale_price) }} USDT
-                                                {% else %} ${{ settings.founder_price or 1348 }} USDT
+                                                {% if selected_plan == 'founders' %}${{ "%.0f"|format(settings.founders_price or 579) }} USDT
+                                                {% elif selected_plan == 'starter' %} ${{ "%.0f"|format(settings.starter_price) }} USDT
+                                                {% elif selected_plan == 'growth' %} ${{ "%.0f"|format(settings.growth_price) }} USDT
+                                                {% elif selected_plan == 'scale' %} ${{ "%.0f"|format(settings.scale_price) }} USDT
+                                                {% else %} ${{ settings.founders_price or 579 }} USDT
                                                 {% endif %}
                                                 </div>
                                             </div>
@@ -402,11 +402,11 @@
                                             <div class="payment-field mb-3">
                                                 <small class="text-muted">Amount to Send</small>
                                                 <div class="fw-bold text-success fs-5">
-                                                {% if lead_data.plan == 'Founders' %}${{ "%.0f"|format(settings.founders_price or 750) }} USDT
-                                                {% elif lead_data.plan == 'Starter' %} ${{ "%.0f"|format(settings.starter_price) }} USDT
-                                                {% elif lead_data.plan == 'Growth' %} ${{ "%.0f"|format(settings.growth_price) }} USDT
-                                                {% elif lead_data.plan == 'Scale' %} ${{ "%.0f"|format(settings.scale_price) }} USDT
-                                                {% else %} ${{ settings.founder_price or 1348 }} USDT
+                                                {% if selected_plan == 'founders' %}${{ "%.0f"|format(settings.founders_price or 579) }} USDT
+                                                {% elif selected_plan == 'starter' %} ${{ "%.0f"|format(settings.starter_price) }} USDT
+                                                {% elif selected_plan == 'growth' %} ${{ "%.0f"|format(settings.growth_price) }} USDT
+                                                {% elif selected_plan == 'scale' %} ${{ "%.0f"|format(settings.scale_price) }} USDT
+                                                {% else %} ${{ settings.founders_price or 579 }} USDT
                                                 {% endif %}
                                                 </div>
                                             </div>
@@ -446,11 +446,11 @@
                                             <div class="payment-field mb-3">
                                                 <small class="text-muted">Amount to Send</small>
                                                 <div class="fw-bold text-success fs-5">
-                                                {% if lead_data.plan == 'Founders' %}${{ "%.0f"|format(settings.founders_price or 750) }} USDT
-                                                {% elif lead_data.plan == 'Starter' %} ${{ "%.0f"|format(settings.starter_price) }} USDT
-                                                {% elif lead_data.plan == 'Growth' %} ${{ "%.0f"|format(settings.growth_price) }} USDT
-                                                {% elif lead_data.plan == 'Scale' %} ${{ "%.0f"|format(settings.scale_price) }} USDT
-                                                {% else %} ${{ settings.founder_price or 1348 }} USDT
+                                                {% if selected_plan == 'founders' %}${{ "%.0f"|format(settings.founders_price or 579) }} USDT
+                                                {% elif selected_plan == 'starter' %} ${{ "%.0f"|format(settings.starter_price) }} USDT
+                                                {% elif selected_plan == 'growth' %} ${{ "%.0f"|format(settings.growth_price) }} USDT
+                                                {% elif selected_plan == 'scale' %} ${{ "%.0f"|format(settings.scale_price) }} USDT
+                                                {% else %} ${{ settings.founders_price or 579 }} USDT
                                                 {% endif %}
                                                 </div>
                                             </div>
@@ -467,7 +467,7 @@
                         <div class="text-center mt-4">
                             <button type="submit" class="complete-btn" id="completeBtn" disabled style="background: linear-gradient(45deg, #28a745, #20c997, #17a2b8); border: none; color: white; padding: 18px 50px; border-radius: 25px; font-weight: 700; font-size: 1.2rem; box-shadow: 0 10px 30px rgba(40,167,69,0.4); transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; width: 100%; max-width: 400px;" onmouseover="this.style.transform='translateY(-2px) scale(1.02)'; this.style.boxShadow='0 15px 40px rgba(40,167,69,0.6)'" onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 10px 30px rgba(40,167,69,0.4)'">
                                 {% if lead_data.plan == 'Founders' %}
-                                Complete Purchase - $1,348
+                                Complete Purchase - ${{ "%.0f"|format(settings.founders_price or 579) }}
                                 {% elif lead_data.plan == 'Starter' %}
                                 Complete Purchase - ${{ "%.0f"|format(settings.starter_price) }}
                                 {% elif lead_data.plan == 'Growth' %}
@@ -511,44 +511,19 @@
                         
                         <div class="d-flex justify-content-between mb-3">
                             <strong>Total (1 Year)</strong>
-                            <strong class="text-success">${{ "%.0f"|format(settings.founders_price or 750) }}</strong>
+                            <strong class="text-success">${{ "%.0f"|format(settings.founders_price or 579) }}</strong>
                         </div>
                         {% elif lead_data.plan == 'Starter' %}
-                        <!-- Starter Pack Billing Options -->
-                        <div class="mb-3">
-                            <h6>Choose Billing Period:</h6>
-                            <div class="billing-options">
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="billing_period" id="monthly" value="monthly" checked onchange="updateStarterPrice()">
-                                    <label class="form-check-label" for="monthly">
-                                        <strong>Monthly - $39/month</strong> <small class="text-muted">(Billed monthly)</small>
-                                    </label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="billing_period" id="quarterly" value="quarterly" onchange="updateStarterPrice()">
-                                    <label class="form-check-label" for="quarterly">
-                                        <strong>Quarterly - $90/3 months</strong> <small class="text-success">(Save $27)</small>
-                                    </label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="billing_period" id="yearly" value="yearly" onchange="updateStarterPrice()">
-                                    <label class="form-check-label" for="yearly">
-                                        <strong>Yearly - $350/year</strong> <small class="text-success">(Save $118)</small>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        
                         <div class="d-flex justify-content-between mb-2">
-                            <span>LAWCOLAB Starter Pack</span>
-                            <span class="fw-bold" id="starter-price-display">$39</span>
+                            <span>LAWCOLAB Starter Plan</span>
+                            <span class="fw-bold">${{ "%.0f"|format(settings.starter_price) }}</span>
                         </div>
                         
                         <hr>
                         
                         <div class="d-flex justify-content-between mb-3">
-                            <strong id="billing-period-label">Total (Monthly)</strong>
-                            <strong class="text-primary" id="starter-total-display">$39</strong>
+                            <strong>Total (Monthly)</strong>
+                            <strong class="text-primary">${{ "%.0f"|format(settings.starter_price) }}</strong>
                         </div>
                         {% elif lead_data.plan == 'Growth' %}
                         <div class="d-flex justify-content-between mb-2">
@@ -602,43 +577,43 @@
                         {% if lead_data.plan == 'Founders' %}
                         <h6>What's Included:</h6>
                         <ul class="list-unstyled small">
-                            <li>✅ Enterprise Plan (1 Year)</li>
-                            <li>✅ White-Label Rights</li>
-                            <li>✅ Priority Support 24/7</li>
-                            <li>✅ VIP Onboarding</li>
-                            <li>✅ Advanced Features</li>
-                            <li>✅ Founder Status Badge</li>
+                            <li>✅ Everything in Scale Plan</li>
+                            <li>✅ AI-Powered Legal Analytics</li>
+                            <li>✅ Custom Workflow Builder</li>
+                            <li>✅ Advanced API Access</li>
+                            <li>✅ White-Label Solutions</li>
+                            <li>✅ Dedicated Success Manager</li>
+                            <li>✅ Priority Feature Requests</li>
+                            <li>✅ Lifetime Founder Status</li>
                         </ul>
                         {% elif lead_data.plan == 'Starter' %}
                         <h6>What's Included:</h6>
                         <ul class="list-unstyled small">
-                            <li>✅ Unlimited Clients & Cases</li>
-                            <li>✅ Full Case Management</li>
-                            <li>✅ Team Collaboration</li>
-                            <li>✅ Priority Support</li>
-                            <li>✅ 50GB Storage</li>
-                            <li>✅ Advanced Analytics</li>
-                            <li>✅ Client Portal & Communication</li>
+                            <li>✅ Up to 50 Clients</li>
+                            <li>✅ Basic Case Management</li>
+                            <li>✅ Email Support</li>
+                            <li>✅ 10GB Storage</li>
+                            <li>✅ Client Portal</li>
                         </ul>
                         {% elif lead_data.plan == 'Growth' %}
                         <h6>What's Included:</h6>
                         <ul class="list-unstyled small">
-                            <li>✅ Advanced Case Management</li>
+                            <li>✅ Unlimited Clients & Cases</li>
                             <li>✅ Team Collaboration</li>
-                            <li>✅ Client Portal & Communication</li>
                             <li>✅ Priority Support</li>
-                            <li>✅ Unlimited Cases</li>
-                            <li>✅ Custom Workflows</li>
+                            <li>✅ 100GB Storage</li>
+                            <li>✅ Advanced Analytics</li>
+                            <li>✅ All Integrations</li>
                         </ul>
                         {% elif lead_data.plan == 'Scale' %}
                         <h6>What's Included:</h6>
                         <ul class="list-unstyled small">
-                            <li>✅ Enterprise Features</li>
-                            <li>✅ Advanced Analytics</li>
-                            <li>✅ API Access</li>
-                            <li>✅ White-Label Options</li>
-                            <li>✅ Dedicated Support</li>
+                            <li>✅ Everything in Growth Plan</li>
+                            <li>✅ Unlimited Team Members</li>
+                            <li>✅ Advanced Reporting & Analytics</li>
                             <li>✅ Custom Integrations</li>
+                            <li>✅ 24/7 Priority Support</li>
+                            <li>✅ Multi-office Management</li>
                         </ul>
                         {% endif %}
                     </div>
@@ -678,30 +653,7 @@
             startPaymentCountdown();
         }
         
-        function updateStarterPrice() {
-            const period = document.querySelector('input[name="billing_period"]:checked').value;
-            const priceDisplay = document.getElementById('starter-price-display');
-            const totalDisplay = document.getElementById('starter-total-display');
-            const billingLabel = document.getElementById('billing-period-label');
-            
-            switch(period) {
-                case 'monthly':
-                    priceDisplay.textContent = '$39';
-                    totalDisplay.textContent = '$39';
-                    billingLabel.textContent = 'Total (Monthly)';
-                    break;
-                case 'quarterly':
-                    priceDisplay.textContent = '$90';
-                    totalDisplay.textContent = '$90';
-                    billingLabel.textContent = 'Total (Quarterly)';
-                    break;
-                case 'yearly':
-                    priceDisplay.textContent = '$350';
-                    totalDisplay.textContent = '$350';
-                    billingLabel.textContent = 'Total (Yearly)';
-                    break;
-            }
-        }
+        // Removed billing period selection - now using separate plans
         
         let countdownInterval;
         

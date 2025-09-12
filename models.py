@@ -723,13 +723,11 @@ class PopupSettings(db.Model):
     welcome_video_url = db.Column(db.String(500), nullable=True)
     thankyou_video_url = db.Column(db.String(500), nullable=True)
     
-    # Plan pricing - Updated with higher values
-    starter_price = db.Column(db.Numeric(10, 2), default=39.00)  # Monthly
-    starter_quarterly_price = db.Column(db.Numeric(10, 2), default=90.00)  # Quarterly
-    starter_yearly_price = db.Column(db.Numeric(10, 2), default=350.00)  # Yearly
-    growth_price = db.Column(db.Numeric(10, 2), default=190.00)
-    scale_price = db.Column(db.Numeric(10, 2), default=750.00)
-    founders_price = db.Column(db.Numeric(10, 2), default=750.00)  # One year enterprise package with enhanced features
+    # Plan pricing - Corrected to separate plans
+    starter_price = db.Column(db.Numeric(10, 2), default=39.00)  # Starter Plan
+    growth_price = db.Column(db.Numeric(10, 2), default=90.00)  # Growth Plan
+    scale_price = db.Column(db.Numeric(10, 2), default=350.00)  # Scale Plan
+    founders_price = db.Column(db.Numeric(10, 2), default=579.00)  # Founders Pack with enhanced features
     
     # Regular pricing (what they would pay later)
     starter_regular_price = db.Column(db.Numeric(10, 2), default=70.00)

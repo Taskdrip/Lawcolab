@@ -262,60 +262,79 @@
             </a>
         </div>
 
-        <!-- 1 Month Plan -->
+        <!-- Starter Plan -->
         <div class="pricing-card">
-            <div class="plan-name">1 Month</div>
-            <div class="plan-price"><span class="currency">$</span>70</div>
-            <div class="plan-period">Great for small firms</div>
+            <div class="plan-name">Starter Plan</div>
+            <div class="plan-price"><span class="currency">$</span>39</div>
+            <div class="plan-period">per month • Essential features</div>
             <ul class="plan-features">
-                <li><i class="fas fa-check"></i> All trial features</li>
+                <li><i class="fas fa-check"></i> Up to 50 clients</li>
+                <li><i class="fas fa-check"></i> Basic case management</li>
+                <li><i class="fas fa-check"></i> Email support</li>
+                <li><i class="fas fa-check"></i> 10GB storage</li>
+                <li><i class="fas fa-check"></i> Client portal</li>
+                <li><i class="fas fa-check"></i> Document management</li>
+            </ul>
+            <a href="{{ url_for('enhanced_chat.support_chat') }}" class="plan-button secondary">
+                Get Started
+            </a>
+        </div>
+
+        <!-- Growth Plan -->
+        <div class="pricing-card">
+            <div class="pricing-badge save">Most Popular</div>
+            <div class="plan-name">Growth Plan</div>
+            <div class="plan-price"><span class="currency">$</span>90</div>
+            <div class="plan-period">per month • Advanced features</div>
+            <ul class="plan-features">
+                <li><i class="fas fa-check"></i> Unlimited clients & cases</li>
+                <li><i class="fas fa-check"></i> Team collaboration</li>
                 <li><i class="fas fa-check"></i> Priority support</li>
-                <li><i class="fas fa-check"></i> Custom branding</li>
-                <li><i class="fas fa-check"></i> Advanced reports</li>
-                <li><i class="fas fa-check"></i> Data backup</li>
-                <li><i class="fas fa-check"></i> Mobile access</li>
+                <li><i class="fas fa-check"></i> 100GB storage</li>
+                <li><i class="fas fa-check"></i> Advanced analytics</li>
+                <li><i class="fas fa-check"></i> All integrations</li>
             </ul>
             <a href="{{ url_for('enhanced_chat.support_chat') }}" class="plan-button secondary">
                 Get Started
             </a>
         </div>
 
-        <!-- 3 Months Plan -->
+
+        <!-- Scale Plan -->
         <div class="pricing-card">
-            <div class="pricing-badge save">Save $20</div>
-            <div class="plan-name">3 Months</div>
-            <div class="plan-price"><span class="currency">$</span>190</div>
-            <div class="plan-period">$63 per month</div>
+            <div class="pricing-badge">Premium</div>
+            <div class="plan-name">Scale Plan</div>
+            <div class="plan-price"><span class="currency">$</span>350</div>
+            <div class="plan-period">per month • Premium features</div>
             <ul class="plan-features">
-                <li><i class="fas fa-check"></i> All monthly features</li>
-                <li><i class="fas fa-check"></i> Extended storage</li>
-                <li><i class="fas fa-check"></i> API access</li>
+                <li><i class="fas fa-check"></i> Everything in Growth Plan</li>
+                <li><i class="fas fa-check"></i> Unlimited team members</li>
+                <li><i class="fas fa-check"></i> Advanced reporting & analytics</li>
                 <li><i class="fas fa-check"></i> Custom integrations</li>
-                <li><i class="fas fa-check"></i> Training sessions</li>
-                <li><i class="fas fa-check"></i> Phone support</li>
+                <li><i class="fas fa-check"></i> 24/7 priority support</li>
+                <li><i class="fas fa-check"></i> Multi-office management</li>
             </ul>
             <a href="{{ url_for('enhanced_chat.support_chat') }}" class="plan-button secondary">
                 Get Started
             </a>
         </div>
 
-
-        <!-- 1 Year Plan -->
-        <div class="pricing-card">
-            <div class="pricing-badge best">Best Value - Save $90</div>
-            <div class="plan-name">1 Year</div>
-            <div class="plan-price"><span class="currency">$</span>750</div>
-            <div class="plan-period">$62.50 per month - Maximum savings</div>
+        <!-- Founders Pack -->
+        <div class="pricing-card featured">
+            <div class="pricing-badge best">Founders Pack</div>
+            <div class="plan-name">Exclusive Founders</div>
+            <div class="plan-price"><span class="currency">$</span>579</div>
+            <div class="plan-period">per year • Save 77% Forever</div>
             <ul class="plan-features">
-                <li><i class="fas fa-check"></i> All premium features</li>
-                <li><i class="fas fa-check"></i> Unlimited everything</li>
-                <li><i class="fas fa-check"></i> Personal account manager</li>
-                <li><i class="fas fa-check"></i> Custom development</li>
-                <li><i class="fas fa-check"></i> 24/7 support</li>
-                <li><i class="fas fa-check"></i> Enterprise features</li>
+                <li><i class="fas fa-crown text-warning"></i> Everything in Scale Plan</li>
+                <li><i class="fas fa-crown text-warning"></i> AI-Powered Legal Analytics</li>
+                <li><i class="fas fa-crown text-warning"></i> Custom Workflow Builder</li>
+                <li><i class="fas fa-crown text-warning"></i> Advanced API Access</li>
+                <li><i class="fas fa-crown text-warning"></i> White-Label Solutions</li>
+                <li><i class="fas fa-crown text-warning"></i> Dedicated Success Manager</li>
             </ul>
-            <a href="{{ url_for('enhanced_chat.support_chat') }}" class="plan-button primary">
-                Get Started
+            <a href="/sales/popup" class="plan-button primary">
+                🏆 Secure Founder Status
             </a>
         </div>
     </div>

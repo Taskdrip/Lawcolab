@@ -267,24 +267,22 @@
                         <div style="background: #28a745; color: white; padding: 8px 15px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; display: inline-block; margin-bottom: 15px;">
                             🚀 New Pricing
                         </div>
-                        <h4 style="color: #1a1a1a; margin-bottom: 20px;">Starter Pack</h4>
-                        <div style="margin-bottom: 20px;">
-                            <div class="price" style="font-size: 1.8rem; color: #28a745; margin-bottom: 5px;">$39/month</div>
-                            <div class="price" style="font-size: 1.8rem; color: #28a745; margin-bottom: 5px;">$90/quarterly</div>
-                            <div class="price" style="font-size: 1.8rem; color: #28a745;">$350/yearly</div>
+                        <h4 style="color: #1a1a1a; margin-bottom: 20px;">Starter Plan</h4>
+                        <div class="price" style="font-size: 2.5rem; color: #28a745;">
+                            $39
                         </div>
-                        <p class="price-note">Flexible billing • Professional features</p>
+                        <p class="price-note">per month • Essential features</p>
                         
                         <ul class="feature-list list-unstyled" style="text-align: left;">
-                            <li><i class="fas fa-check text-success me-2"></i> Unlimited clients</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Full case management</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Team collaboration</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Priority support</li>
-                            <li><i class="fas fa-check text-success me-2"></i> 50GB storage</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Advanced analytics</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Up to 50 clients</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Basic case management</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Email support</li>
+                            <li><i class="fas fa-check text-success me-2"></i> 10GB storage</li>
+                            <li><i class="fas fa-times text-danger me-2"></i> No team collaboration</li>
+                            <li><i class="fas fa-times text-danger me-2"></i> No advanced analytics</li>
                         </ul>
                         
-                        <a href="/sales/checkout?plan=Starter" style="background: linear-gradient(45deg, #28a745, #20c997); color: white; padding: 15px 40px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 600; width: 100%; text-align: center; box-shadow: 0 4px 15px rgba(40,167,69,0.3); transition: all 0.3s ease;">
+                        <a href="javascript:void(0)" onclick="selectPlan('starter', 'Starter Plan - $39/month')" style="background: linear-gradient(45deg, #28a745, #20c997); color: white; padding: 15px 40px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 600; width: 100%; text-align: center; box-shadow: 0 4px 15px rgba(40,167,69,0.3); transition: all 0.3s ease;">
                             Choose Starter
                         </a>
                     </div>
@@ -296,11 +294,11 @@
                         <div style="background: #28a745; color: white; padding: 8px 15px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; display: inline-block; margin-bottom: 15px;">
                             💎 Best Value
                         </div>
-                        <h4 style="color: #1a1a1a; margin-bottom: 20px;">Professional</h4>
+                        <h4 style="color: #1a1a1a; margin-bottom: 20px;">Growth Plan</h4>
                         <div class="price" style="font-size: 2.5rem; color: #28a745;">
-                            $190
+                            $90
                         </div>
-                        <p class="price-note">per 3 months • Save 10%</p>
+                        <p class="price-note">per month • Advanced features</p>
                         
                         <ul class="feature-list list-unstyled" style="text-align: left;">
                             <li><i class="fas fa-check text-success me-2"></i> Unlimited clients & cases</li>
@@ -311,8 +309,8 @@
                             <li><i class="fas fa-check text-success me-2"></i> All integrations</li>
                         </ul>
                         
-                        <a href="/sales/checkout?plan=professional" style="background: linear-gradient(45deg, #28a745, #20c997); color: white; padding: 18px 45px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 700; width: 100%; text-align: center; box-shadow: 0 6px 20px rgba(40,167,69,0.4); transition: all 0.3s ease; transform: translateY(-2px);">
-                            💰 Save 10% - Choose Plan
+                        <a href="javascript:void(0)" onclick="selectPlan('growth', 'Growth Plan - $90/month')" style="background: linear-gradient(45deg, #28a745, #20c997); color: white; padding: 18px 45px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 700; width: 100%; text-align: center; box-shadow: 0 6px 20px rgba(40,167,69,0.4); transition: all 0.3s ease; transform: translateY(-2px);">
+                            Choose Growth Plan
                         </a>
                     </div>
                 </div>
@@ -324,23 +322,23 @@
                             🚀 Enterprise
                         </div>
                         
-                        <h4 style="color: #1a1a1a; margin-bottom: 20px;">Enterprise</h4>
+                        <h4 style="color: #1a1a1a; margin-bottom: 20px;">Scale Plan</h4>
                         <div class="price" style="font-size: 2.5rem; color: #FF8C00;">
-                            $750
+                            $350
                         </div>
-                        <p class="price-note">per year • Save 20%</p>
+                        <p class="price-note">per month • Premium features</p>
                         
                         <ul class="feature-list list-unstyled" style="text-align: left;">
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Everything in Professional</strong></li>
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Founder status & badge</strong></li>
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Lifetime price lock</strong></li>
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Exclusive early features</strong></li>
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>VIP support channel</strong></li>
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Unlimited everything</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Everything in Growth Plan</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Unlimited team members</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Advanced reporting & analytics</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Custom integrations</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>24/7 priority support</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Multi-office management</strong></li>
                         </ul>
                         
-                        <a href="/sales/checkout?plan=enterprise" style="background: linear-gradient(45deg, #FF8C00, #FF6B35); color: white; padding: 18px 45px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 700; width: 100%; text-align: center; box-shadow: 0 6px 20px rgba(255,140,0,0.4); transition: all 0.3s ease; transform: translateY(-2px);">
-                            💎 Save 20% - Go Enterprise
+                        <a href="javascript:void(0)" onclick="selectPlan('scale', 'Scale Plan - $350/month')" style="background: linear-gradient(45deg, #FF8C00, #FF6B35); color: white; padding: 18px 45px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 700; width: 100%; text-align: center; box-shadow: 0 6px 20px rgba(255,140,0,0.4); transition: all 0.3s ease; transform: translateY(-2px);">
+                            Choose Scale Plan
                         </a>
                         
                         <p style="margin-top: 15px; font-size: 0.85rem; color: #d4af37; font-weight: 600;">
@@ -358,21 +356,23 @@
                         
                         <h4 style="color: #1a1a1a; margin-bottom: 20px; margin-top: 30px;">Exclusive Founders</h4>
                         <div class="price" style="font-size: 2.5rem; color: #FFD700;">
-                            $750
+                            $579
                         </div>
-                        <p style="color: #999; text-decoration: line-through; margin: 0; font-size: 1rem;">Regular: $3,000</p>
-                        <p class="price-note">per year • Save 75% Forever</p>
+                        <p style="color: #999; text-decoration: line-through; margin: 0; font-size: 1rem;">Regular: $2,500</p>
+                        <p class="price-note">per year • Save 77% Forever</p>
                         
                         <ul class="feature-list list-unstyled" style="text-align: left;">
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Everything in Enterprise</strong></li>
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Customized New Features</strong></li>
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Enhanced Support Access</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Everything in Scale Plan</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>AI-Powered Legal Analytics</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Custom Workflow Builder</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Advanced API Access</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>White-Label Solutions</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Dedicated Success Manager</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Priority Feature Requests</strong></li>
                             <li><i class="fas fa-crown text-warning me-2"></i> <strong>Lifetime Founder Status</strong></li>
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Price Lock Forever</strong></li>
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Founder Badge & Recognition</strong></li>
                         </ul>
                         
-                        <a href="/sales/checkout?plan=founders" style="background: linear-gradient(45deg, #FFD700, #FFA500); color: #1a1a1a; padding: 20px 45px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 800; width: 100%; text-align: center; box-shadow: 0 8px 25px rgba(255,215,0,0.5); transition: all 0.3s ease; transform: translateY(-3px);">
+                        <a href="javascript:void(0)" onclick="selectPlan('founders', 'Founder Pack - $579/year')" style="background: linear-gradient(45deg, #FFD700, #FFA500); color: #1a1a1a; padding: 20px 45px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 800; width: 100%; text-align: center; box-shadow: 0 8px 25px rgba(255,215,0,0.5); transition: all 0.3s ease; transform: translateY(-3px);">
                             👑 Secure Founder Status
                         </a>
                         
@@ -494,19 +494,66 @@
                 </div>
             </div>
             
+            <!-- Lead Collection Form -->
             <div class="text-center mt-5">
-                <div style="background: linear-gradient(45deg, #FFD700, #FFA500); padding: 40px; border-radius: 15px; margin: 40px 0;">
-                    <h4 style="color: #1a1a1a; font-weight: 700; margin-bottom: 20px;">🚨 Don't Miss Out - Act Fast!</h4>
-                    <p style="color: #1a1a1a; font-size: 1.1rem; margin-bottom: 25px;">
-                        This founder pricing will <strong>NEVER</strong> be available again. When these 100 spots are gone, 
-                        the price jumps to $4,200/year and you'll lose founder status forever.
+                <div style="background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); padding: 50px 40px; border-radius: 20px; margin: 40px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                    <h4 style="color: #1a1a1a; font-weight: 700; margin-bottom: 20px;">🚀 Ready to Transform Your Practice?</h4>
+                    <p style="color: #666; font-size: 1.1rem; margin-bottom: 30px;">
+                        Complete your information below to proceed with your selected plan. Join hundreds of law firms already using LAWCOLAB to streamline their operations.
                     </p>
-                    <a href="/sales/checkout?plan=founder" class="cta-button" style="background: #1a1a1a; font-size: 1.2rem; padding: 18px 45px;">
-                        <i class="fas fa-crown me-2"></i>Claim My Founder Spot Now
-                    </a>
-                    <p style="margin-top: 15px; font-size: 0.9rem; color: #1a1a1a;">
-                        <i class="fas fa-clock me-1"></i> Limited time • <i class="fas fa-users me-1"></i> Only 47 spots left
-                    </p>
+                    
+                    <!-- Lead Form -->
+                    <form action="/sales/submit-lead" method="POST" style="max-width: 600px; margin: 0 auto;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <input type="hidden" name="plan" id="selected-plan" value="">
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" style="text-align: left; display: block; font-weight: 600; color: #333; margin-bottom: 8px;">Full Name *</label>
+                                <input type="text" name="name" class="form-control" required style="border-radius: 8px; border: 2px solid #e9ecef; padding: 12px 15px;">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" style="text-align: left; display: block; font-weight: 600; color: #333; margin-bottom: 8px;">Law Firm Name *</label>
+                                <input type="text" name="firm" class="form-control" required style="border-radius: 8px; border: 2px solid #e9ecef; padding: 12px 15px;">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" style="text-align: left; display: block; font-weight: 600; color: #333; margin-bottom: 8px;">Email Address *</label>
+                                <input type="email" name="email" class="form-control" required style="border-radius: 8px; border: 2px solid #e9ecef; padding: 12px 15px;">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" style="text-align: left; display: block; font-weight: 600; color: #333; margin-bottom: 8px;">Phone Number</label>
+                                <input type="tel" name="phone" class="form-control" style="border-radius: 8px; border: 2px solid #e9ecef; padding: 12px 15px;">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" style="text-align: left; display: block; font-weight: 600; color: #333; margin-bottom: 8px;">Country</label>
+                                <input type="text" name="country" class="form-control" style="border-radius: 8px; border: 2px solid #e9ecef; padding: 12px 15px;">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" style="text-align: left; display: block; font-weight: 600; color: #333; margin-bottom: 8px;">Team Size</label>
+                                <select name="team_size" class="form-control" style="border-radius: 8px; border: 2px solid #e9ecef; padding: 12px 15px;">
+                                    <option value="">Select team size</option>
+                                    <option value="1-5">1-5 lawyers</option>
+                                    <option value="6-15">6-15 lawyers</option>
+                                    <option value="16-50">16-50 lawyers</option>
+                                    <option value="50+">50+ lawyers</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Selected Plan Display -->
+                        <div class="mb-4" id="plan-selection-display" style="background: #f8f9fa; padding: 20px; border-radius: 10px; border: 2px solid #28a745;">
+                            <h6 style="margin: 0; color: #28a745; font-weight: 600;">Selected Plan: <span id="plan-name">Please select a plan above</span></h6>
+                            <p style="margin: 0; color: #666; font-size: 0.9rem; margin-top: 5px;">Go back up to select your preferred plan, then complete this form.</p>
+                        </div>
+                        
+                        <button type="submit" class="cta-button" style="background: linear-gradient(45deg, #28a745, #20c997); color: white; border: none; font-size: 1.2rem; padding: 18px 45px; width: 100%; max-width: 400px;">
+                            <i class="fas fa-arrow-right me-2"></i>Continue to Checkout
+                        </button>
+                        
+                        <p style="margin-top: 15px; font-size: 0.85rem; color: #666;">
+                            <i class="fas fa-shield-alt me-1"></i> Your information is secure and will only be used to process your order.
+                        </p>
+                    </form>
                 </div>
             </div>
             
@@ -565,6 +612,100 @@
         // Update countdown every second
         setInterval(updateCountdown, 1000);
         updateCountdown();
+        
+        // Plan selection functionality
+        function selectPlan(planId, planName) {
+            // Update hidden form field
+            const planInput = document.getElementById('selected-plan');
+            if (planInput) {
+                planInput.value = planId;
+            }
+            
+            // Update plan display
+            const planNameElement = document.getElementById('plan-name');
+            if (planNameElement) {
+                planNameElement.textContent = planName;
+            }
+            
+            // Update the plan selection display styling
+            const planDisplay = document.getElementById('plan-selection-display');
+            if (planDisplay) {
+                planDisplay.style.background = '#e8f5e8';
+                planDisplay.style.borderColor = '#28a745';
+                
+                // Update the instruction text
+                const instructionText = planDisplay.querySelector('p');
+                if (instructionText) {
+                    instructionText.textContent = 'Perfect! Complete the form below to proceed with your ' + planName + '.';
+                    instructionText.style.color = '#28a745';
+                }
+            }
+            
+            // Scroll to the form section smoothly
+            const formSection = document.querySelector('#plan-selection-display');
+            if (formSection) {
+                formSection.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            }
+            
+            // Add visual feedback - highlight the selected plan button
+            // Remove previous selections
+            const allPlanButtons = document.querySelectorAll('[onclick^="selectPlan"]');
+            allPlanButtons.forEach(button => {
+                button.style.border = 'none';
+                button.style.boxShadow = button.getAttribute('data-original-shadow') || button.style.boxShadow;
+            });
+            
+            // Highlight selected plan button
+            const selectedButton = event.target;
+            selectedButton.style.border = '3px solid #28a745';
+            selectedButton.style.boxShadow = '0 0 20px rgba(40, 167, 69, 0.5)';
+            
+            // Show success message
+            const successMessage = document.createElement('div');
+            successMessage.innerHTML = '<i class="fas fa-check-circle me-2"></i>Plan selected successfully!';
+            successMessage.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #28a745;
+                color: white;
+                padding: 15px 25px;
+                border-radius: 8px;
+                font-weight: 600;
+                z-index: 9999;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                animation: slideIn 0.3s ease;
+            `;
+            
+            document.body.appendChild(successMessage);
+            
+            // Remove success message after 3 seconds
+            setTimeout(() => {
+                if (successMessage && successMessage.parentNode) {
+                    successMessage.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => {
+                        successMessage.remove();
+                    }, 300);
+                }
+            }, 3000);
+        }
+        
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>

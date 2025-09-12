@@ -97,6 +97,25 @@ def submit_lead():
 @sales_bp.route('/checkout')
 def checkout_page():
     """Checkout page with payment options"""
+    # Get plan parameter from URL
+    plan = request.args.get('plan', '').lower()
+    valid_plans = ['starter', 'growth', 'scale', 'founder']
+    
+    # Validate plan parameter
+    if plan and plan not in valid_plans:
+        flash('Invalid plan selected. Please try again.', 'error')
+        return redirect(url_for('sales.popup_page'))
+    
+    # Store plan in session if provided
+    if plan:
+        session['selected_plan'] = plan
+    
+    # Check if we have a plan either from URL or session
+    selected_plan = session.get('selected_plan')
+    if not selected_plan:
+        flash('Please select a plan first.', 'warning')
+        return redirect(url_for('sales.popup_page'))
+    
     lead_data = session.get('lead_data')
     if not lead_data:
         flash('Please complete the registration form first.', 'warning')
@@ -112,6 +131,7 @@ def checkout_page():
     
     return render_template('sales/checkout.html', 
                          lead_data=lead_data, 
+                         selected_plan=selected_plan,
                          payment_methods=payment_methods,
                          settings=settings)
 
@@ -129,12 +149,15 @@ def complete_checkout():
             flash('Please select a payment method.', 'error')
             return redirect(url_for('sales.checkout_page'))
         
-        # Update lead with payment method choice
+        # Update lead with payment method choice and selected plan
         lead_id = session.get('lead_id')
+        selected_plan = session.get('selected_plan')
         if lead_id:
             lead = SalesLead.query.get(lead_id)
             if lead:
                 lead.payment_method = payment_method
+                if selected_plan:
+                    lead.plan = selected_plan
                 lead.status = 'payment_pending'
                 db.session.commit()
         
@@ -236,6 +259,9 @@ def update_settings():
 def update_lead_status():
     """Update lead status"""
     try:
+        if not request.json:
+            return jsonify({'success': False, 'message': 'No JSON data provided'}), 400
+        
         lead_id = request.json.get('lead_id')
         new_status = request.json.get('status')
         
@@ -328,13 +354,12 @@ def add_payment_method():
     try:
         validate_csrf(request.form.get('csrf_token'))
         
-        payment_method = PaymentMethod(
-            name=request.form.get('name', '').strip(),
-            type=request.form.get('type', '').strip(),
-            details=request.form.get('details', '').strip(),
-            is_active=bool(int(request.form.get('is_active', 1))),
-            display_order=int(request.form.get('display_order', 0))
-        )
+        payment_method = PaymentMethod()
+        payment_method.name = request.form.get('name', '').strip()
+        payment_method.type = request.form.get('type', '').strip()
+        payment_method.details = request.form.get('details', '').strip()
+        payment_method.is_active = bool(int(request.form.get('is_active', 1)))
+        payment_method.display_order = int(request.form.get('display_order', 0))
         
         db.session.add(payment_method)
         db.session.commit()
@@ -392,11 +417,10 @@ def preorder_thanks():
     # Check if suppression record exists
     suppression = PopupSuppression.query.filter_by(ip_address=client_ip).first()
     if not suppression:
-        suppression = PopupSuppression(
-            ip_address=client_ip,
-            user_agent=user_agent,
-            has_ordered=True
-        )
+        suppression = PopupSuppression()
+        suppression.ip_address = client_ip
+        suppression.user_agent = user_agent
+        suppression.has_ordered = True
         db.session.add(suppression)
     else:
         suppression.has_ordered = True
@@ -437,11 +461,10 @@ def suppress_popup():
     
     suppression = PopupSuppression.query.filter_by(ip_address=client_ip).first()
     if not suppression:
-        suppression = PopupSuppression(
-            ip_address=client_ip,
-            user_agent=user_agent,
-            suppressed_until=suppress_until
-        )
+        suppression = PopupSuppression()
+        suppression.ip_address = client_ip
+        suppression.user_agent = user_agent
+        suppression.suppressed_until = suppress_until
         db.session.add(suppression)
     else:
         suppression.suppressed_until = suppress_until
@@ -501,8 +524,8 @@ def update_popup_settings():
         
         settings.popup_enabled = 'popup_enabled' in request.form
         settings.popup_delay_seconds = int(request.form.get('popup_delay_seconds', 7))
-        settings.founder_price = float(request.form.get('founder_price', 1348))
-        settings.regular_price = float(request.form.get('regular_price', 3548))
+        settings.founders_price = float(request.form.get('founders_price', 579))
+        settings.starter_price = float(request.form.get('starter_price', 39))
         
         db.session.commit()
         flash('Popup settings updated successfully!', 'success')
@@ -526,10 +549,9 @@ def update_page_content():
             settings = PopupSettings()
             db.session.add(settings)
         
-        settings.hero_title = request.form.get('hero_title', '').strip()
-        settings.hero_subtitle = request.form.get('hero_subtitle', '').strip()
-        settings.thank_you_message = request.form.get('thank_you_message', '').strip()
-        settings.support_button_text = request.form.get('support_button_text', '').strip()
+        # Only update fields that exist in PopupSettings model
+        settings.welcome_video_url = request.form.get('welcome_video_url', '').strip()
+        settings.thankyou_video_url = request.form.get('thankyou_video_url', '').strip()
         
         db.session.commit()
         flash('Page content updated successfully!', 'success')
@@ -553,10 +575,9 @@ def admin_sales_settings():
     
     if request.method == 'POST':
         # Update settings from form
-        settings.hero_title = request.form.get('hero_title', settings.hero_title)
-        settings.hero_subtitle = request.form.get('hero_subtitle', settings.hero_subtitle)
-        settings.hero_image_url = request.form.get('hero_image_url', settings.hero_image_url)
-        settings.demo_video_url = request.form.get('demo_video_url', settings.demo_video_url)
+        # Update existing fields only
+        settings.welcome_video_url = request.form.get('welcome_video_url', settings.welcome_video_url)
+        settings.thankyou_video_url = request.form.get('thankyou_video_url', settings.thankyou_video_url)
         
         # Update pricing
         settings.starter_price = float(request.form.get('starter_price', settings.starter_price))
@@ -565,8 +586,8 @@ def admin_sales_settings():
         settings.founders_price = float(request.form.get('founders_price', settings.founders_price))
         
         # Update popup behavior
-        settings.enabled = 'enabled' in request.form
-        settings.delay_seconds = int(request.form.get('delay_seconds', settings.delay_seconds))
+        settings.popup_enabled = 'popup_enabled' in request.form
+        settings.popup_delay_seconds = int(request.form.get('popup_delay_seconds', settings.popup_delay_seconds))
         
         settings.updated_at = datetime.now()
         db.session.commit()
@@ -582,15 +603,14 @@ def submit_review():
     """Handle customer review submission"""
     try:
         # Create new review
-        review = CustomerReview(
-            name=request.form.get('reviewer_name'),
-            firm_name=request.form.get('firm_name'),
-            rating=int(request.form.get('rating', 5)),
-            review_text=request.form.get('review_text'),
-            location=request.form.get('location'),
-            is_active=True,  # Auto-approve reviews from paying customers
-            is_featured=False
-        )
+        review = CustomerReview()
+        review.name = request.form.get('reviewer_name')
+        review.firm_name = request.form.get('firm_name')
+        review.rating = int(request.form.get('rating', 5))
+        review.review_text = request.form.get('review_text')
+        review.location = request.form.get('location')
+        review.is_active = True  # Auto-approve reviews from paying customers
+        review.is_featured = False
         
         db.session.add(review)
         db.session.commit()
@@ -646,13 +666,12 @@ def setup_demo_payments():
         ]
         
         for payment_data in demo_payments:
-            method = PaymentMethod(
-                name=payment_data['name'],
-                type=payment_data['type'],
-                details=payment_data['details'],
-                display_order=payment_data['display_order'],
-                is_active=payment_data['is_active']
-            )
+            method = PaymentMethod()
+            method.name = payment_data['name']
+            method.type = payment_data['type']
+            method.details = payment_data['details']
+            method.display_order = payment_data['display_order']
+            method.is_active = payment_data['is_active']
             db.session.add(method)
         
         db.session.commit()
