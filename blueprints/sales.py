@@ -148,7 +148,7 @@ def checkout_page():
 
 @sales_bp.route('/checkout/complete', methods=['POST'])
 def complete_checkout():
-    """Complete the checkout process"""
+    """Complete the checkout process - redirect to payment pending instead of congratulations"""
     try:
         lead_data = session.get('lead_data')
         if not lead_data:
@@ -175,10 +175,12 @@ def complete_checkout():
         # Store payment method in session
         session['payment_method'] = payment_method
         
-        return redirect(url_for('sales.preorder_thanks'))
+        # Redirect to payment pending instead of preorder thanks
+        return redirect(url_for('sales.payment_pending'))
         
     except Exception as e:
-        flash(f'Error processing checkout: {str(e)}', 'error')
+        db.session.rollback()
+        flash('An error occurred processing your request. Please try again.', 'error')
         return redirect(url_for('sales.checkout_page'))
 
 @sales_bp.route('/thankyou')
@@ -416,9 +418,30 @@ def get_payment_method(method_id):
     })
 
 
+@sales_bp.route('/payment-pending')
+def payment_pending():
+    """Payment pending page with countdown and confirmation options"""
+    lead_data = session.get('lead_data')
+    if not lead_data:
+        flash('Session expired. Please start over.', 'error')
+        return redirect(url_for('sales.popup_page'))
+    
+    selected_plan = session.get('selected_plan')
+    payment_method = session.get('payment_method')
+    
+    settings = PopupSettings.query.first()
+    if not settings:
+        settings = PopupSettings()
+    
+    return render_template('sales/payment_pending.html', 
+                         lead_data=lead_data, 
+                         selected_plan=selected_plan,
+                         payment_method=payment_method,
+                         settings=settings)
+
 @sales_bp.route('/preorder-thanks')
 def preorder_thanks():
-    """Pre-order thank you page"""
+    """Pre-order thank you page - now only shown after payment confirmation"""
     lead_data = session.get('lead_data')
     
     # Mark this IP as having ordered to suppress future popups
@@ -437,6 +460,14 @@ def preorder_thanks():
         suppression.has_ordered = True
     
     db.session.commit()
+    
+    # Update lead status to paid (assuming payment confirmed)
+    lead_id = session.get('lead_id')
+    if lead_id:
+        lead = SalesLead.query.get(lead_id)
+        if lead:
+            lead.status = 'paid'
+            db.session.commit()
     
     return render_template('sales/preorder_thanks.html', lead_data=lead_data)
 

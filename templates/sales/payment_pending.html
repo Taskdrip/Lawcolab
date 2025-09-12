@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Payment - LAWCOLAB {{ lead_data.plan }} Plan</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .payment-pending-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            margin: 2rem auto;
+            max-width: 800px;
+            overflow: hidden;
+        }
+        
+        .countdown-header {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .countdown-timer {
+            font-size: 3rem;
+            font-weight: 800;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .payment-status {
+            padding: 2rem;
+        }
+        
+        .upload-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        
+        .file-upload {
+            border: 3px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .file-upload:hover {
+            border-color: #28a745;
+            background: #f8fff8;
+        }
+        
+        .file-upload.dragover {
+            border-color: #007bff;
+            background: #f0f8ff;
+        }
+        
+        .support-section {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+        }
+        
+        .support-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .support-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: white;
+            color: white;
+            text-decoration: none;
+            transform: translateY(-2px);
+        }
+        
+        .confirm-payment-btn {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            border: none;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            width: 100%;
+            max-width: 400px;
+            transition: all 0.3s ease;
+        }
+        
+        .confirm-payment-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(40,167,69,0.4);
+        }
+        
+        .confirm-payment-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .plan-summary {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="payment-pending-container">
+            <!-- Countdown Header -->
+            <div class="countdown-header">
+                <h2><i class="fas fa-clock me-2"></i>Complete Your Payment</h2>
+                <div class="countdown-timer" id="countdown-timer">30:00</div>
+                <p class="mb-0">Time remaining to complete payment</p>
+            </div>
+            
+            <!-- Payment Status -->
+            <div class="payment-status">
+                <!-- Plan Summary -->
+                <div class="plan-summary">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1">{{ lead_data.plan }} Plan</h5>
+                            <small class="text-muted">{{ lead_data.name }} • {{ lead_data.firm_name }}</small>
+                        </div>
+                        <div class="text-end">
+                            <div class="fs-4 fw-bold text-primary">
+                                {% if lead_data.plan == 'founders' %}${{ "%.0f"|format(settings.founders_price or 579) }}
+                                {% elif lead_data.plan == 'starter' %}${{ "%.0f"|format(settings.starter_price) }}
+                                {% elif lead_data.plan == 'growth' %}${{ "%.0f"|format(settings.growth_price) }}
+                                {% elif lead_data.plan == 'scale' %}${{ "%.0f"|format(settings.scale_price) }}
+                                {% else %}$579{% endif %}
+                            </div>
+                            <small class="text-muted">
+                                {% if lead_data.plan == 'founders' %}per year{% else %}per month{% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Payment Instructions -->
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Payment Instructions:</strong> 
+                    Please complete your payment using the method selected during checkout, then upload your receipt or transaction hash below.
+                </div>
+                
+                <!-- Upload Receipt Section -->
+                <div class="upload-section">
+                    <h6><i class="fas fa-upload me-2"></i>Upload Bank Transfer Receipt</h6>
+                    <div class="file-upload" onclick="document.getElementById('receipt-upload').click()">
+                        <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                        <p class="mb-0">Click to upload or drag and drop your payment receipt</p>
+                        <small class="text-muted">Supports: JPG, PNG, PDF (max 5MB)</small>
+                        <input type="file" id="receipt-upload" accept=".jpg,.jpeg,.png,.pdf" style="display: none;" onchange="handleFileUpload(this)">
+                    </div>
+                    <div id="file-preview" class="mt-2" style="display: none;"></div>
+                </div>
+                
+                <!-- Crypto Hash Section -->
+                <div class="upload-section">
+                    <h6><i class="fab fa-bitcoin me-2"></i>Enter Crypto Transaction Hash</h6>
+                    <input type="text" class="form-control" id="crypto-hash" 
+                           placeholder="Enter your transaction hash/ID here..." 
+                           oninput="validatePaymentProof()">
+                    <small class="text-muted">For crypto payments, paste your transaction hash from the blockchain explorer</small>
+                </div>
+                
+                <!-- Support Section -->
+                <div class="support-section text-center">
+                    <h6><i class="fas fa-headset me-2"></i>Need Help?</h6>
+                    <p class="mb-3">Our support team is ready to assist you with your payment or account setup</p>
+                    <div>
+                        <a href="https://wa.me/2348036622568?text=Hi! I need help with my LAWCOLAB {{ lead_data.plan }} plan payment" 
+                           target="_blank" class="support-btn">
+                            <i class="fab fa-whatsapp me-2"></i>WhatsApp Support
+                        </a>
+                        <a href="mailto:payments@lawcolab.com?subject=Payment Help - {{ lead_data.plan }} Plan&body=Hi, I need assistance with my {{ lead_data.plan }} plan payment. My reference: LAWCOLAB-{{ lead_data.plan|upper }}" 
+                           class="support-btn">
+                            <i class="fas fa-envelope me-2"></i>Email Support
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Confirm Payment Button -->
+                <div class="text-center mt-4">
+                    <button type="button" class="confirm-payment-btn" id="confirmBtn" disabled onclick="confirmPayment()">
+                        <i class="fas fa-check-circle me-2"></i>I Have Made Payment
+                    </button>
+                    <div class="mt-2">
+                        <small class="text-muted">This button will be enabled once you upload a receipt or enter a transaction hash</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let countdownInterval;
+        let timeLeft = 1800; // 30 minutes in seconds
+        let hasPaymentProof = false;
+        
+        // Start countdown timer
+        function startCountdown() {
+            countdownInterval = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                
+                document.getElementById('countdown-timer').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    alert('Payment time expired! Please contact support or restart your order.');
+                    document.getElementById('confirmBtn').disabled = true;
+                }
+                
+                // Change color when less than 5 minutes
+                if (timeLeft <= 300) {
+                    document.getElementById('countdown-timer').style.color = '#ff4757';
+                }
+                
+                timeLeft--;
+            }, 1000);
+        }
+        
+        // Handle file upload
+        function handleFileUpload(input) {
+            const file = input.files[0];
+            if (file) {
+                const preview = document.getElementById('file-preview');
+                const fileSize = (file.size / 1024 / 1024).toFixed(2); // Convert to MB
+                
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File size must be less than 5MB');
+                    input.value = '';
+                    return;
+                }
+                
+                preview.innerHTML = `
+                    <div class="alert alert-success">
+                        <i class="fas fa-file-alt me-2"></i>
+                        <strong>${file.name}</strong> (${fileSize} MB) uploaded successfully
+                        <button type="button" class="btn-close float-end" onclick="clearFile()"></button>
+                    </div>
+                `;
+                preview.style.display = 'block';
+                validatePaymentProof();
+            }
+        }
+        
+        // Clear uploaded file
+        function clearFile() {
+            document.getElementById('receipt-upload').value = '';
+            document.getElementById('file-preview').style.display = 'none';
+            validatePaymentProof();
+        }
+        
+        // Validate payment proof
+        function validatePaymentProof() {
+            const hasFile = document.getElementById('receipt-upload').files.length > 0;
+            const hasHash = document.getElementById('crypto-hash').value.trim().length > 0;
+            
+            hasPaymentProof = hasFile || hasHash;
+            document.getElementById('confirmBtn').disabled = !hasPaymentProof;
+        }
+        
+        // Confirm payment and proceed
+        function confirmPayment() {
+            if (!hasPaymentProof) {
+                alert('Please upload a receipt or enter a transaction hash first.');
+                return;
+            }
+            
+            // Disable button and show loading
+            const btn = document.getElementById('confirmBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+            btn.disabled = true;
+            
+            // Simulate processing time then redirect
+            setTimeout(() => {
+                window.location.href = '/sales/preorder-thanks';
+            }, 2000);
+        }
+        
+        // Drag and drop functionality
+        const fileUpload = document.querySelector('.file-upload');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            fileUpload.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            fileUpload.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            fileUpload.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight(e) {
+            fileUpload.classList.add('dragover');
+        }
+        
+        function unhighlight(e) {
+            fileUpload.classList.remove('dragover');
+        }
+        
+        fileUpload.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                document.getElementById('receipt-upload').files = files;
+                handleFileUpload(document.getElementById('receipt-upload'));
+            }
+        }
+        
+        // Start countdown when page loads
+        startCountdown();
+    </script>
+</body>
+</html>
