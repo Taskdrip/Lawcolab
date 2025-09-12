@@ -12,11 +12,22 @@ sales_bp = Blueprint('sales', __name__)
 
 @sales_bp.route('/popup')
 def popup_page():
-    """Display the fullscreen popup sales page - STANDALONE NO INHERITANCE"""
-    from flask import Response
-    with open('templates/sales/working_popup.html', 'r') as f:
-        content = f.read()
-    return Response(content, mimetype='text/html')
+    """Display the fullscreen popup sales page"""
+    from models import PopupSettings, CustomerReview
+    from sqlalchemy import desc
+    
+    # Get popup settings
+    settings = PopupSettings.query.first()
+    if not settings:
+        # Create default settings
+        settings = PopupSettings()
+        db.session.add(settings)
+        db.session.commit()
+    
+    # Get featured reviews
+    reviews = CustomerReview.query.filter_by(is_active=True).order_by(desc(CustomerReview.is_featured), CustomerReview.id).limit(20).all()
+    
+    return render_template('sales/working_popup.html', settings=settings, reviews=reviews)
 
 @sales_bp.route('/popup-content')
 def popup_content():
