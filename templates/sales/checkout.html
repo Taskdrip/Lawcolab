@@ -498,14 +498,10 @@
                         
                         {% if lead_data.plan == 'Founders' %}
                         <div class="d-flex justify-content-between mb-2">
-                            <span>LAWCOLAB Founder Pack</span>
-                            <span class="fw-bold">$1,348</span>
+                            <span>LAWCOLAB Founder Pack (1 Year)</span>
+                            <span class="fw-bold">${{ "%.0f"|format(settings.founders_price or 579) }}</span>
                         </div>
                         
-                        <div class="d-flex justify-content-between mb-2 text-success">
-                            <span>Founder Discount</span>
-                            <span>-$2,200</span>
-                        </div>
                         
                         <hr>
                         
@@ -558,9 +554,9 @@
 
                         {% if lead_data.plan == 'Founders' %}
                         <div class="text-center">
-                            <div class="badge bg-success mb-2">62% OFF Regular Price</div>
+                            <div class="badge bg-success mb-2">77% OFF Regular Price</div>
                             <div class="small text-muted">
-                                You save $2,200 with Founder Pack
+                                You save over $2,100 with Founder Pack (Annual)
                             </div>
                         </div>
                         {% else %}
@@ -584,7 +580,7 @@
                             <li>✅ White-Label Solutions</li>
                             <li>✅ Dedicated Success Manager</li>
                             <li>✅ Priority Feature Requests</li>
-                            <li>✅ Lifetime Founder Status</li>
+                            <li>✅ Annual Founder Status</li>
                         </ul>
                         {% elif lead_data.plan == 'Starter' %}
                         <h6>What's Included:</h6>
