@@ -96,6 +96,7 @@ def submit_lead():
         # Store lead data in session for checkout
         session['lead_data'] = lead_data
         session['lead_id'] = new_lead.id
+        session['selected_plan'] = lead_data['plan']  # Fix session management
         
         flash('Thank you! Your pre-order has been submitted successfully.', 'success')
         return redirect(url_for('sales.checkout_page'))
@@ -110,7 +111,7 @@ def checkout_page():
     """Checkout page with payment options"""
     # Get plan parameter from URL
     plan = request.args.get('plan', '').lower()
-    valid_plans = ['starter', 'growth', 'scale', 'founder']
+    valid_plans = ['starter', 'growth', 'scale', 'founder', 'lifetime']
     
     # Validate plan parameter
     if plan and plan not in valid_plans:
