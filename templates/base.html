@@ -232,10 +232,17 @@
                     </li>
                     {% endif %}
                     <li class="nav-item">
+                        {% if current_user.is_super_admin() %}
+                        <a class="nav-link" href="{{ url_for('enhanced_chat.superadmin_all_chats') }}">
+                            <i class="fas fa-comments me-1"></i>All Support Chats
+                            <span class="badge bg-danger rounded-pill ms-1" id="nav-unread-count" style="display: none;">0</span>
+                        </a>
+                        {% else %}
                         <a class="nav-link" href="{{ url_for('enhanced_chat.support_chat') }}">
                             <i class="fas fa-comments me-1"></i>Chat
                             <span class="badge bg-danger rounded-pill ms-1" id="nav-unread-count" style="display: none;">0</span>
                         </a>
+                        {% endif %}
                     </li>
                     {% if not current_user.is_super_admin() %}
                     <li class="nav-item">
