@@ -320,6 +320,48 @@ def add_review():
     
     return redirect(url_for('sales.manage_reviews'))
 
+@sales_bp.route('/admin/reviews/<int:review_id>', methods=['POST'])
+@login_required
+@role_required([ROLE_SUPER_ADMIN])
+def update_review(review_id):
+    """Update an existing customer review"""
+    try:
+        review = CustomerReview.query.get_or_404(review_id)
+        
+        review.name = request.form.get('name', '').strip()
+        review.firm_name = request.form.get('firm_name', '').strip()
+        review.review_text = request.form.get('review_text', '').strip()
+        review.rating = int(request.form.get('rating', 5))
+        review.location = request.form.get('location', '').strip()
+        review.is_featured = request.form.get('is_featured') == 'on'
+        review.is_active = request.form.get('is_active') == 'on'
+        
+        db.session.commit()
+        flash('Review updated successfully!', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash('Error updating review. Please try again.', 'error')
+    
+    return redirect(url_for('sales.manage_reviews'))
+
+@sales_bp.route('/admin/reviews/<int:review_id>/delete', methods=['POST'])
+@login_required
+@role_required([ROLE_SUPER_ADMIN])
+def delete_review(review_id):
+    """Delete a customer review"""
+    try:
+        review = CustomerReview.query.get_or_404(review_id)
+        db.session.delete(review)
+        db.session.commit()
+        flash('Review deleted successfully!', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash('Error deleting review. Please try again.', 'error')
+    
+    return redirect(url_for('sales.manage_reviews'))
+
 @sales_bp.route('/api/popup-settings')
 def popup_settings_api():
     """API endpoint for popup settings"""

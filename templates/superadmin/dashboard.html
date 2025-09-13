@@ -33,13 +33,13 @@
                         <i class="fas fa-headset me-2"></i>Support Chat Rooms
                     </a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="#">
+                    <li><a class="dropdown-item" href="{{ url_for('payment_management.payment_dashboard') }}">
                         <i class="fas fa-credit-card me-2"></i>Payment Management
                     </a></li>
-                    <li><a class="dropdown-item" href="#">
+                    <li><a class="dropdown-item" href="{{ url_for('payment_management.manage_bank_accounts') }}">
                         <i class="fas fa-university me-2"></i>Bank Accounts
                     </a></li>
-                    <li><a class="dropdown-item" href="#">
+                    <li><a class="dropdown-item" href="{{ url_for('payment_management.manage_crypto_wallets') }}">
                         <i class="fas fa-wallet me-2"></i>Crypto Wallets
                     </a></li>
                     <li><hr class="dropdown-divider"></li>
@@ -69,7 +69,7 @@
                     </div>
                     <h5 class="mb-2">Payment Management</h5>
                     <p class="text-muted small mb-3">Manage bank accounts, crypto wallets, and payment gateways</p>
-                    <a href="#" class="btn btn-primary btn-sm">
+                    <a href="{{ url_for('payment_management.payment_dashboard') }}" class="btn btn-primary btn-sm">
                         <i class="fas fa-cog me-1"></i>Manage Payments
                     </a>
                 </div>
