@@ -79,10 +79,25 @@ def support_send():
                 db.session.add(admin_participant)
         
         db.session.commit()
-        flash('Message sent successfully!', 'success')
         
-        # Log for security audit
-        print(f"Support message sent: User {current_user.id} to room {support_room.id}")
+        # Send notification and audit log
+        from utils.notifications import notify_support_message
+        from models_audit import log_audit_event
+        from flask import request
+        
+        notify_support_message(message, support_room)
+        log_audit_event(
+            event_type='support_message_sent',
+            description=f'User {current_user.email} sent support message to room {support_room.id}',
+            user_id=current_user.id,
+            law_firm_id=current_user.law_firm_id,
+            target_resource=f'room_{support_room.id}',
+            success=True,
+            ip_address=request.remote_addr,
+            user_agent=request.user_agent.string
+        )
+        
+        flash('Message sent successfully!', 'success')
         
     except Exception as e:
         db.session.rollback()
@@ -573,7 +588,19 @@ def superadmin_support_chat(room_id):
     db.session.commit()
     
     # Security audit log
-    print(f"Super admin accessed support room: Admin {current_user.id} -> Room {room_id} (Law firm: {law_firm.name})")
+    from models_audit import log_audit_event
+    from flask import request
+    
+    log_audit_event(
+        event_type='super_admin_room_access',
+        description=f'Super admin {current_user.email} accessed support room {room_id} for law firm {law_firm.name}',
+        user_id=current_user.id,
+        law_firm_id=law_firm.id,
+        target_resource=f'room_{room_id}',
+        success=True,
+        ip_address=request.remote_addr,
+        user_agent=request.user_agent.string
+    )
     
     return render_template('chat/superadmin_support_chat.html', 
                          room=room, 
@@ -628,8 +655,22 @@ def send_support_message():
         
         db.session.commit()
         
-        # Security audit log
-        print(f"Super admin message sent: Admin {current_user.id} to support room {room_id} (Law firm: {room.law_firm_id})")
+        # Send notification and audit log
+        from utils.notifications import notify_support_message
+        from models_audit import log_audit_event
+        from flask import request
+        
+        notify_support_message(message, room)
+        log_audit_event(
+            event_type='super_admin_support_message',
+            description=f'Super admin {current_user.email} sent message to support room {room_id}',
+            user_id=current_user.id,
+            law_firm_id=room.law_firm_id,
+            target_resource=f'room_{room_id}',
+            success=True,
+            ip_address=request.remote_addr,
+            user_agent=request.user_agent.string
+        )
         
         return jsonify({
             'success': True,

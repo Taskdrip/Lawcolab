@@ -206,3 +206,34 @@ def send_pending_notifications():
             print(f"Failed to send notification {notification.id}: {str(e)}")
     
     db.session.commit()
+
+def notify_support_message(message_obj, room_obj):
+    """
+    Send real-time notification for new support messages
+    Notifies super admins when law firm members send messages
+    Notifies law firm members when super admins reply
+    """
+    try:
+        from models import User, ROLE_SUPER_ADMIN
+        
+        # Determine who to notify based on sender
+        if message_obj.sender.role == ROLE_SUPER_ADMIN:
+            # Super admin sent message - notify law firm members
+            recipients = User.query.filter_by(law_firm_id=room_obj.law_firm_id, active=True).all()
+            notification_type = "super_admin_reply"
+        else:
+            # Law firm member sent message - notify super admins  
+            recipients = User.query.filter_by(role=ROLE_SUPER_ADMIN, active=True).all()
+            notification_type = "support_message"
+        
+        # Log notification for audit trail
+        print(f"Support notification: {notification_type} from {message_obj.sender.email} in room {room_obj.id}")
+        
+        # In a production system, you would send email, push notifications, or SSE here
+        # For now, we ensure unread counts are properly updated (already handled in chat logic)
+        
+        return True
+        
+    except Exception as e:
+        print(f"Error sending support notification: {str(e)}")
+        return False

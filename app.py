@@ -90,5 +90,6 @@ def currency_symbol_filter(currency_code):
 with app.app_context():
     import models  # noqa: F401
     import models_chat  # noqa: F401
+    import models_audit  # noqa: F401
     db.create_all()
     logging.info("Database tables created")
