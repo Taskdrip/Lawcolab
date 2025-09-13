@@ -116,6 +116,88 @@
                 font-size: 1.5rem;
             }
         }
+    
+    /* Mobile Responsive Checkout Fixes */
+    @media (max-width: 768px) {
+        .checkout-container {
+            margin: 10px !important;
+            border-radius: 15px !important;
+        }
+        
+        .checkout-header {
+            padding: 20px 15px !important;
+        }
+        
+        .checkout-header h2 {
+            font-size: 1.4rem !important;
+            line-height: 1.3 !important;
+        }
+        
+        .payment-method {
+            margin-bottom: 15px !important;
+            padding: 15px !important;
+        }
+        
+        .payment-method h6 {
+            font-size: 0.95rem !important;
+        }
+        
+        .payment-method small {
+            font-size: 0.8rem !important;
+        }
+        
+        .payment-info-card {
+            padding: 15px !important;
+        }
+        
+        .complete-btn {
+            padding: 15px 20px !important;
+            font-size: 1rem !important;
+            width: 100% !important;
+        }
+        
+        .order-summary {
+            margin-top: 30px !important;
+            padding: 20px 15px !important;
+        }
+        
+        .crypto-address code {
+            font-size: 0.75rem !important;
+            word-break: break-all !important;
+        }
+        
+        /* Fix overlapping text issues */
+        .col-lg-8, .col-lg-4 {
+            padding: 0 10px !important;
+        }
+        
+        .payment-field {
+            margin-bottom: 12px !important;
+        }
+        
+        .fw-bold.fs-5 {
+            font-size: 1.1rem !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .checkout-container {
+            margin: 5px !important;
+        }
+        
+        .checkout-header h2 {
+            font-size: 1.2rem !important;
+        }
+        
+        .payment-method {
+            padding: 12px !important;
+        }
+        
+        .complete-btn {
+            padding: 12px 15px !important;
+            font-size: 0.9rem !important;
+        }
+    }
     </style>
 </head>
 <body>
