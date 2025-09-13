@@ -51,8 +51,13 @@
                                     
                                     {% if data.last_message %}
                                     <p class="mb-2 text-muted">
-                                        <strong>{{ data.last_message.sender.full_name }}:</strong>
-                                        {{ data.last_message.message_content[:100] }}{% if data.last_message.message_content|length > 100 %}...{% endif %}
+                                        <strong>{% if data.last_message.sender %}{{ data.last_message.sender.full_name }}{% else %}Unknown User{% endif %}:</strong>
+                                        {% if data.last_message.message_content %}
+                                        {% set msg = data.last_message.message_content %}
+                                        {{ msg[:100] }}{% if msg|length > 100 %}...{% endif %}
+                                        {% else %}
+                                        <em>No message content</em>
+                                        {% endif %}
                                     </p>
                                     {% else %}
                                     <p class="mb-2 text-muted">No messages in this support chat yet.</p>
