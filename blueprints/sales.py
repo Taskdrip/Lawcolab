@@ -256,6 +256,7 @@ def update_settings():
         settings.growth_price = float(request.form.get('growth_price', 190.00))
         settings.scale_price = float(request.form.get('scale_price', 750.00))
         settings.founders_price = float(request.form.get('founders_price', 750.00))
+        settings.lifetime_price = float(request.form.get('lifetime_price', 999.00))
         
         db.session.commit()
         flash('Settings updated successfully!', 'success')
@@ -668,6 +669,7 @@ def admin_sales_settings():
         settings.growth_price = float(request.form.get('growth_price', settings.growth_price))
         settings.scale_price = float(request.form.get('scale_price', settings.scale_price))
         settings.founders_price = float(request.form.get('founders_price', settings.founders_price))
+        settings.lifetime_price = float(request.form.get('lifetime_price', settings.lifetime_price))
         
         # Update popup behavior
         settings.popup_enabled = 'popup_enabled' in request.form
