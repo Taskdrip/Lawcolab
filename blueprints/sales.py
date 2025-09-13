@@ -96,7 +96,7 @@ def submit_lead():
         # Store lead data in session for checkout
         session['lead_data'] = lead_data
         session['lead_id'] = new_lead.id
-        session['selected_plan'] = lead_data['plan']  # Fix session management
+        session['selected_plan'] = lead_data['plan'].lower()  # Fix session management with normalization
         
         flash('Thank you! Your pre-order has been submitted successfully.', 'success')
         return redirect(url_for('sales.checkout_page'))
@@ -126,6 +126,11 @@ def checkout_page():
     selected_plan = session.get('selected_plan')
     if not selected_plan:
         flash('Please select a plan first.', 'warning')
+        return redirect(url_for('sales.popup_page'))
+    
+    # Validate session plan against valid plans
+    if selected_plan not in valid_plans:
+        flash('Invalid plan selected. Please try again.', 'error')
         return redirect(url_for('sales.popup_page'))
     
     lead_data = session.get('lead_data')
@@ -380,18 +385,7 @@ def popup_settings_api():
     })
 
 
-@sales_bp.route('/checkout')
-def checkout():
-    """Display checkout page"""
-    lead_data = session.get('lead_data')
-    if not lead_data:
-        flash('Please fill out the sales form first.', 'warning')
-        return redirect(url_for('sales.popup_page'))
-    
-    # Get active payment methods
-    payment_methods = PaymentMethod.query.filter_by(is_active=True).order_by(PaymentMethod.display_order, PaymentMethod.name).all()
-    
-    return render_template('sales/checkout.html', lead_data=lead_data, payment_methods=payment_methods)
+# Duplicate route removed - keeping the enhanced checkout_page function above
 
 
 @sales_bp.route('/payment-admin')
