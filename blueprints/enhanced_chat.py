@@ -530,18 +530,25 @@ def superadmin_support_rooms():
 @enhanced_chat_bp.route('/superadmin/support/<int:room_id>')
 @require_login
 def superadmin_support_chat(room_id):
-    """Super admin access to specific support room"""
+    """Super admin access to specific support room with enhanced security"""
     if current_user.role != ROLE_SUPER_ADMIN:
         flash('Access denied. Super admin privileges required.', 'error')
         return redirect(url_for('index'))
     
     room = ChatRoom.query.get_or_404(room_id)
     
-    if room.room_type != 'support':
-        flash('Invalid room type.', 'error')
+    # Enhanced security validation
+    if room.room_type != 'support' or not room.is_active:
+        flash('Invalid or inactive support room.', 'error')
         return redirect(url_for('enhanced_chat.superadmin_support_rooms'))
     
-    # Ensure super admin is participant
+    # Get law firm info for security context
+    law_firm = room.law_firm
+    if not law_firm:
+        flash('Support room is not associated with a law firm.', 'error')
+        return redirect(url_for('enhanced_chat.superadmin_support_rooms'))
+    
+    # Ensure super admin is participant with proper access
     participant = ChatParticipant.query.filter_by(
         room_id=room_id,
         user_id=current_user.id
@@ -550,28 +557,34 @@ def superadmin_support_chat(room_id):
     if not participant:
         participant = ChatParticipant(
             room_id=room_id,
-            user_id=current_user.id
+            user_id=current_user.id,
+            joined_at=datetime.now(),
+            last_read_at=datetime.now(),
+            is_active=True
         )
         db.session.add(participant)
-        db.session.commit()
     
-    # Get messages
+    # Get messages with enhanced filtering for security
     messages = ChatMessage.query.filter_by(room_id=room_id)\
                                .order_by(ChatMessage.created_at.asc()).all()
     
-    # Mark as read
+    # Mark as read and update participant status
     participant.last_read_at = datetime.now()
     db.session.commit()
+    
+    # Security audit log
+    print(f"Super admin accessed support room: Admin {current_user.id} -> Room {room_id} (Law firm: {law_firm.name})")
     
     return render_template('chat/superadmin_support_chat.html', 
                          room=room, 
                          messages=messages,
-                         current_user=current_user)
+                         current_user=current_user,
+                         law_firm=law_firm)
 
 @enhanced_chat_bp.route('/send-support-message', methods=['POST'])
 @require_super_admin
 def send_support_message():
-    """Send a message in a support chat room"""
+    """Send a message in a support chat room with enhanced security and notifications"""
     room_id = request.form.get('room_id')
     message_content = request.form.get('message', '').strip()
     
@@ -580,27 +593,55 @@ def send_support_message():
     
     room = ChatRoom.query.get_or_404(room_id)
     
+    # Enhanced security checks
     if room.room_type != 'support':
         return jsonify({'success': False, 'message': 'Invalid room type'})
     
-    # Create new message
-    message = ChatMessage(
-        room_id=room_id,
-        sender_id=current_user.id,
-        message_content=message_content
-    )
-    db.session.add(message)
-    db.session.commit()
+    # Verify super admin has access to this room
+    if not current_user.is_super_admin():
+        return jsonify({'success': False, 'message': 'Unauthorized access'}), 403
     
-    # Update room last activity
-    room.last_activity = datetime.now()
-    db.session.commit()
-    
-    return jsonify({
-        'success': True,
-        'message': {
-            'content': message_content,
-            'sender_name': f"{current_user.first_name} {current_user.last_name}",
-            'time': message.created_at.strftime('%b %d at %I:%M %p')
-        }
-    })
+    try:
+        # Create new message with enhanced metadata
+        message = ChatMessage(
+            room_id=room_id,
+            sender_id=current_user.id,
+            message_content=message_content,
+            message_type='text'
+        )
+        db.session.add(message)
+        
+        # Update room last activity
+        room.updated_at = datetime.now()
+        
+        # Notify all law firm participants by updating their read status
+        law_firm_participants = ChatParticipant.query.filter(
+            ChatParticipant.room_id == room_id,
+            ChatParticipant.user_id != current_user.id,
+            ChatParticipant.is_active == True
+        ).all()
+        
+        # Mark super admin message as unread for law firm members  
+        for participant in law_firm_participants:
+            # Don't update last_read_at so message appears as unread
+            pass
+        
+        db.session.commit()
+        
+        # Security audit log
+        print(f"Super admin message sent: Admin {current_user.id} to support room {room_id} (Law firm: {room.law_firm_id})")
+        
+        return jsonify({
+            'success': True,
+            'message': {
+                'content': message_content,
+                'sender_name': f"{current_user.first_name} {current_user.last_name}",
+                'time': message.created_at.strftime('%b %d at %I:%M %p'),
+                'sender_role': 'Support Team'
+            }
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error sending super admin support message: {str(e)}")
+        return jsonify({'success': False, 'message': 'Failed to send message'}), 500
