@@ -280,7 +280,7 @@
                             <li><i class="fas fa-check text-success me-2"></i> Cancel anytime, no commitments</li>
                         </ul>
                         
-                        <a href="javascript:void(0)" onclick="selectPlan('trial', 'Free Trial - {{ settings.trial_duration_days or 3 }} Days')" style="background: linear-gradient(45deg, #17a2b8, #20c997); color: white; padding: 20px 50px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 700; width: 100%; text-align: center; box-shadow: 0 6px 20px rgba(23,162,184,0.4); transition: all 0.3s ease;">
+                        <a href="{{ url_for('auth.signup') }}" style="background: linear-gradient(45deg, #17a2b8, #20c997); color: white; padding: 20px 50px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 700; width: 100%; text-align: center; box-shadow: 0 6px 20px rgba(23,162,184,0.4); transition: all 0.3s ease;">
                             🆓 Start Free Trial
                         </a>
                     </div>
