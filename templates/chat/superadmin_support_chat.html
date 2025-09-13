@@ -3,277 +3,167 @@
 {% block title %}Support Chat - {{ room.law_firm.name }}{% endblock %}
 
 {% block content %}
-<div class="container-fluid p-0">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 style="color: #000000; font-weight: 700;">
-                <i class="fas fa-comments me-2 text-primary"></i>Support Chat
-            </h2>
-            <p style="color: #1a1a1a; font-weight: 500;">{{ room.law_firm.name }}</p>
-        </div>
-        <div>
-            <a href="{{ url_for('enhanced_chat.superadmin_support_rooms') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-2"></i>Back to Support Rooms
+<div style="background: #ffffff; min-height: 100vh;">
+    <!-- WhatsApp-style Header -->
+    <div class="chat-header" style="background: #ffffff; border-bottom: 1px solid #e0e0e0; padding: 12px 16px;">
+        <div class="d-flex align-items-center">
+            <a href="{{ url_for('enhanced_chat.superadmin_support_rooms') }}" 
+               style="text-decoration: none; color: #000; margin-right: 16px;">
+                <i class="fas fa-arrow-left" style="font-size: 20px;"></i>
             </a>
-            <a href="{{ url_for('superadmin.view_law_firm', firm_id=room.law_firm.id) }}" class="btn btn-primary">
-                <i class="fas fa-building me-2"></i>View Law Firm
+            <div class="d-flex align-items-center flex-grow-1">
+                <div class="profile-pic" style="width: 40px; height: 40px; background: #e0e0e0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                    <i class="fas fa-building" style="color: #666; font-size: 16px;"></i>
+                </div>
+                <div>
+                    <h6 style="margin: 0; color: #000; font-size: 16px; font-weight: 600;">{{ room.law_firm.name }}</h6>
+                    <small style="color: #666; font-size: 13px;">Support Conversation</small>
+                </div>
+            </div>
+            <a href="{{ url_for('superadmin.view_law_firm', firm_id=room.law_firm.id) }}" 
+               style="text-decoration: none; color: #000; background: #f0f0f0; padding: 6px 12px; border-radius: 20px; font-size: 12px;">
+                View Firm
             </a>
         </div>
     </div>
 
-    <!-- Chat Container -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm" style="height: 70vh;">
-                <!-- Chat Header -->
-                <div class="card-header bg-transparent border-bottom">
-                    <div class="d-flex align-items-center">
-                        <div class="me-3">
-                            <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                <i class="fas fa-building"></i>
-                            </div>
+    <!-- WhatsApp-style Messages Container -->
+    <div class="messages-area" style="height: calc(100vh - 130px); overflow-y: auto; padding: 8px 16px; background: #ffffff;">
+        <div id="messages-container">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="message-wrapper" style="margin-bottom: 2px; display: flex; {% if message.sender_id == current_user.id %}justify-content: flex-end;{% else %}justify-content: flex-start;{% endif %}">
+                    <div class="message-bubble" 
+                         style="max-width: 65%; padding: 6px 12px; border-radius: 8px; 
+                                {% if message.sender_id == current_user.id %}
+                                background: #dcf8c6; color: #000; margin-left: auto;
+                                {% else %}
+                                background: #ffffff; color: #000; border: 1px solid #e0e0e0;
+                                {% endif %}">
+                        <div style="font-size: 14px; line-height: 1.4; word-wrap: break-word;">
+                            {{ message.message_content | replace('\n', '<br>') | e }}
                         </div>
-                        <div class="flex-grow-1">
-                            <h6 class="mb-0" style="color: #000000; font-weight: 600;">{{ room.law_firm.name }}</h6>
-                            <small style="color: #1a1a1a; font-weight: 500;">Support Conversation</small>
-                        </div>
-                        <div>
-                            <span class="badge {% if room.law_firm.admin_access_granted %}bg-success{% else %}bg-warning{% endif %}">
-                                {% if room.law_firm.admin_access_granted %}Active{% else %}Pending{% endif %}
-                            </span>
+                        <div style="font-size: 11px; color: #666; margin-top: 2px; text-align: right;">
+                            {{ message.created_at.strftime('%I:%M %p') }}
                         </div>
                     </div>
                 </div>
-
-                <!-- Messages Area -->
-                <div class="card-body p-0" style="overflow-y: auto; height: calc(100% - 140px);">
-                    <div id="messages-container" class="p-3">
-                        {% if messages %}
-                            {% for message in messages %}
-                            <div class="message mb-3 {% if message.sender_id == current_user.id %}message-sent{% else %}message-received{% endif %}">
-                                <div class="message-bubble {% if message.sender_id == current_user.id %}bg-primary text-white{% else %}bg-light{% endif %}">
-                                    <div class="message-content">
-                                        {{ message.message_content | replace('\n', '<br>') | safe }}
-                                    </div>
-                                    <small class="{% if message.sender_id == current_user.id %}text-white-50{% else %}text-muted{% endif %} d-block mt-1 message-meta">
-                                        {{ message.sender.first_name }} {{ message.sender.last_name }} • {{ message.created_at.strftime('%b %d at %I:%M %p') }}
-                                    </small>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        {% else %}
-                        <div class="text-center text-muted py-5">
-                            <i class="fas fa-comments fa-3x mb-3"></i>
-                            <h6>No messages yet</h6>
-                            <p>Start the conversation with this law firm</p>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Message Input -->
-                <div class="card-footer bg-transparent border-top">
-                    <form id="message-form" method="POST" action="{{ url_for('enhanced_chat.send_support_message') }}">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                        <input type="hidden" name="room_id" value="{{ room.id }}">
-                        <div class="input-group">
-                            <textarea class="form-control border-0" 
-                                    name="message" 
-                                    id="message-input"
-                                    placeholder="Type your message..." 
-                                    rows="2" 
-                                    style="resize: none; box-shadow: none;"
-                                    required></textarea>
-                            <button type="submit" class="btn btn-primary px-4">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                {% endfor %}
+            {% else %}
+            <div class="text-center" style="color: #666; margin-top: 50px;">
+                <i class="fas fa-comments" style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;"></i>
+                <p>No messages yet</p>
             </div>
+            {% endif %}
         </div>
+    </div>
+
+    <!-- WhatsApp-style Input -->
+    <div class="input-area" style="background: #ffffff; border-top: 1px solid #e0e0e0; padding: 8px 16px;">
+        <form id="message-form" method="POST" action="{{ url_for('enhanced_chat.send_support_message') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <input type="hidden" name="room_id" value="{{ room.id }}">
+            <div class="d-flex align-items-center">
+                <textarea class="form-control" 
+                        name="message" 
+                        id="message-input"
+                        placeholder="Type your message..." 
+                        rows="1" 
+                        style="border: 1px solid #e0e0e0; border-radius: 20px; resize: none; padding: 10px 16px; font-size: 14px; margin-right: 8px; background: #ffffff; color: #000;"
+                        required></textarea>
+                <button type="submit" 
+                        style="background: #128C7E; border: none; border-radius: 50%; width: 40px; height: 40px; color: white; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-paper-plane" style="font-size: 14px;"></i>
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
 <style>
-/* Message container and bubble styling */
-.message {
-    animation: fadeIn 0.3s ease-in;
-    width: 100%;
-    display: flex;
-    margin-bottom: 1rem !important;
+/* WhatsApp-like Clean Styling */
+* {
+    box-sizing: border-box;
 }
 
-.message-sent {
-    justify-content: flex-end;
-}
-
-.message-received {
-    justify-content: flex-start;
+body {
+    background: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
 .message-bubble {
-    width: 100%;
-    padding: 16px 20px;
-    border-radius: 12px;
     word-wrap: break-word;
-    word-break: break-word;
-    white-space: pre-wrap;
-    line-height: 1.5;
-    text-align: justify;
-    position: relative;
-    margin: 8px 0;
+    overflow-wrap: break-word;
+    max-width: 100%;
 }
 
-/* Mobile responsive adjustments */
-@media (max-width: 768px) {
-    .message-bubble {
-        padding: 14px 16px;
-        font-size: 14px;
-        border-radius: 10px;
-    }
-    
-    #messages-container {
-        padding: 12px !important;
-    }
-}
-
-/* Very small screens */
-@media (max-width: 480px) {
-    .message-bubble {
-        padding: 12px 14px;
-        font-size: 13px;
-        border-radius: 8px;
-    }
-}
-
-.message-content {
-    margin: 0;
-    font-weight: 500;
-    font-size: 15px;
-    text-align: justify;
-    hyphens: auto;
-}
-
-.message-meta {
-    font-size: 11px !important;
-    margin-top: 4px !important;
-    opacity: 0.8;
-}
-
-/* Sent message styling */
-.message-sent .message-bubble {
-    background: #007bff !important;
-    color: white !important;
-    border-left: 4px solid #0056b3;
-}
-
-.message-sent .message-meta {
-    color: rgba(255, 255, 255, 0.8) !important;
-    text-align: right;
-}
-
-/* Received message styling */
-.message-received .message-bubble {
-    background: #f8f9fa !important;
-    color: #000000 !important;
-    border: 1px solid #e9ecef;
-    border-left: 4px solid #28a745;
-}
-
-.message-received .message-meta {
-    color: #6c757d !important;
-    text-align: left;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.avatar {
-    min-width: 40px;
-    min-height: 40px;
-}
-
-.card {
-    border-radius: 12px !important;
-}
-
-.card-header, .card-footer {
-    border-radius: 12px 12px 0 0 !important;
-}
-
-.card-footer {
-    border-radius: 0 0 12px 12px !important;
+#message-input {
+    border: 1px solid #e0e0e0 !important;
+    background: #ffffff !important;
+    color: #000 !important;
 }
 
 #message-input:focus {
-    border: none !important;
-    box-shadow: none !important;
+    border-color: #128C7E !important;
+    box-shadow: 0 0 0 0.2rem rgba(18, 140, 126, 0.1) !important;
     outline: none !important;
 }
 
-/* Auto-resize textarea */
-#message-input {
-    min-height: 45px;
-    max-height: 120px;
-    padding: 12px 16px;
-    border-radius: 20px;
-    font-size: 14px;
-    line-height: 1.4;
-}
-
-/* Mobile input adjustments */
+/* Mobile optimizations */
 @media (max-width: 768px) {
+    .chat-header {
+        padding: 8px 12px !important;
+    }
+    
+    .messages-area {
+        padding: 4px 12px !important;
+        height: calc(100vh - 120px) !important;
+    }
+    
+    .input-area {
+        padding: 6px 12px !important;
+    }
+    
+    .message-bubble {
+        max-width: 80% !important;
+        font-size: 14px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .message-bubble {
+        max-width: 85% !important;
+        font-size: 13px !important;
+        padding: 6px 10px !important;
+    }
+    
     #message-input {
-        font-size: 16px; /* Prevent zoom on iOS */
-        padding: 10px 14px;
-    }
-    
-    .input-group .btn {
-        padding: 8px 12px;
+        font-size: 16px !important; /* Prevent zoom on iOS */
     }
 }
 
-/* Ensure proper text flow */
-* {
-    word-wrap: break-word;
+/* Ensure no text overflow */
+.message-bubble div {
+    word-break: break-word;
     overflow-wrap: break-word;
-}
-
-/* Container padding adjustments */
-.container-fluid {
-    padding-left: 15px !important;
-    padding-right: 15px !important;
-}
-
-@media (max-width: 576px) {
-    .container-fluid {
-        padding-left: 10px !important;
-        padding-right: 10px !important;
-    }
-    
-    .card-body {
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-    }
+    hyphens: auto;
 }
 </style>
 
 <script>
-// Auto-resize textarea like Replit
+// WhatsApp-style JavaScript
 const messageInput = document.getElementById('message-input');
+
+// Auto-resize textarea
 messageInput.addEventListener('input', function() {
     this.style.height = 'auto';
-    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    this.style.height = Math.min(this.scrollHeight, 100) + 'px';
 });
 
 // Auto-scroll to bottom
 function scrollToBottom() {
-    const container = document.getElementById('messages-container');
-    container.scrollTop = container.scrollHeight;
+    const messagesArea = document.querySelector('.messages-area');
+    messagesArea.scrollTop = messagesArea.scrollHeight;
 }
 
 // Handle form submission
@@ -292,13 +182,14 @@ document.getElementById('message-form').addEventListener('submit', function(e) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Add message to chat
-            addMessageToChat(data.message, true);
-            // Clear input
+            addMessageToChat({
+                content: data.message.content,
+                time: data.message.time
+            }, true);
             messageInput.value = '';
             messageInput.style.height = 'auto';
         } else {
-            alert('Failed to send message: ' + data.message);
+            alert('Failed to send message: ' + (data.message || 'Unknown error'));
         }
     })
     .catch(error => {
@@ -309,21 +200,26 @@ document.getElementById('message-form').addEventListener('submit', function(e) {
 
 function addMessageToChat(message, isOwn) {
     const container = document.getElementById('messages-container');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message mb-3 ${isOwn ? 'message-sent' : 'message-received'}`;
+    const messageWrapper = document.createElement('div');
+    messageWrapper.className = 'message-wrapper';
+    messageWrapper.style.marginBottom = '2px';
+    messageWrapper.style.display = 'flex';
+    messageWrapper.style.justifyContent = isOwn ? 'flex-end' : 'flex-start';
     
-    messageDiv.innerHTML = `
-        <div class="message-bubble ${isOwn ? 'bg-primary text-white' : 'bg-light'}">
-            <div class="message-content">
-                ${message.content.replace(/\n/g, '<br>')}
+    messageWrapper.innerHTML = `
+        <div class="message-bubble" 
+             style="max-width: 65%; padding: 6px 12px; border-radius: 8px; 
+                    ${isOwn ? 'background: #dcf8c6; color: #000; margin-left: auto;' : 'background: #ffffff; color: #000; border: 1px solid #e0e0e0;'}">
+            <div style="font-size: 14px; line-height: 1.4; word-wrap: break-word;">
+                ${message.content.replace(/\n/g, '<br>').replace(/</g, '&lt;').replace(/>/g, '&gt;')}
             </div>
-            <small class="${isOwn ? 'text-white-50' : 'text-muted'} d-block mt-1 message-meta">
-                ${message.sender_name} • ${message.time}
-            </small>
+            <div style="font-size: 11px; color: #666; margin-top: 2px; text-align: right;">
+                ${message.time}
+            </div>
         </div>
     `;
     
-    container.appendChild(messageDiv);
+    container.appendChild(messageWrapper);
     scrollToBottom();
 }
 
