@@ -182,6 +182,14 @@ class PaymentGateway(db.Model):
         if not self.encrypted_config:
             return {}
         
+        # For manual methods, config is stored as plain JSON
+        if self.is_manual_method():
+            try:
+                return json.loads(self.encrypted_config)
+            except:
+                return {}
+        
+        # For API-based methods, config needs decryption
         encryption_key = self.get_encryption_key()
         if not encryption_key:
             # Master key not loaded - return empty dict but don't raise error
@@ -198,6 +206,52 @@ class PaymentGateway(db.Model):
         """Calculate total cost including fees"""
         fee = (amount * self.transaction_fee_percent) + self.fixed_fee
         return amount + fee, fee
+    
+    def is_manual_method(self):
+        """Check if this is a manual payment method (doesn't need API keys)"""
+        return self.name in ['bank_transfer', 'crypto']
+    
+    def is_api_based(self):
+        """Check if this is an API-based payment method (needs configuration)"""
+        return self.name in ['stripe', 'paypal', 'paystack']
+    
+    def is_properly_configured(self):
+        """Check if payment gateway is properly configured and ready for use"""
+        if self.is_manual_method():
+            # Manual methods are always ready if active
+            return self.is_active
+            
+        if self.is_api_based():
+            # API methods need valid configuration (activation status will be managed separately)
+            config = self.get_config()
+            if not config:
+                return False
+                
+            # Check if required keys are present for each gateway type
+            if self.name == 'stripe':
+                return bool(config.get('publishable_key') and config.get('secret_key'))
+            elif self.name == 'paypal':
+                return bool(config.get('client_id') and config.get('client_secret'))
+            elif self.name == 'paystack':
+                return bool(config.get('public_key') and config.get('secret_key'))
+                
+        return False
+    
+    @classmethod
+    def available_for_checkout(cls):
+        """Get all payment gateways available for checkout"""
+        gateways = cls.query.all()
+        available = []
+        
+        for gateway in gateways:
+            if gateway.is_manual_method() and gateway.is_active:
+                # Manual methods: just need to be active
+                available.append(gateway)
+            elif gateway.is_api_based() and gateway.is_active and gateway.is_properly_configured():
+                # API methods: need to be active AND properly configured
+                available.append(gateway)
+                
+        return available
 
 class EscrowTransaction(db.Model):
     """Escrow transactions for law firm services"""

@@ -79,12 +79,15 @@ def create_gateway():
         
         # Configuration based on gateway type
         config = {}
+        needs_encryption = False
+        
         if gateway.name == 'stripe':
             config = {
                 'publishable_key': request.form.get('stripe_publishable_key', ''),
                 'secret_key': request.form.get('stripe_secret_key', ''),
                 'webhook_secret': request.form.get('stripe_webhook_secret', ''),
             }
+            needs_encryption = True
         elif gateway.name == 'paypal':
             config = {
                 'client_id': request.form.get('paypal_client_id', ''),
@@ -92,24 +95,46 @@ def create_gateway():
                 'webhook_id': request.form.get('paypal_webhook_id', ''),
                 'sandbox_mode': request.form.get('paypal_sandbox') == 'on',
             }
+            needs_encryption = True
         elif gateway.name == 'paystack':
             config = {
                 'public_key': request.form.get('paystack_public_key', ''),
                 'secret_key': request.form.get('paystack_secret_key', ''),
             }
+            needs_encryption = True
         elif gateway.name == 'crypto':
+            # Crypto is manual - no API keys needed, just preference settings
             config = {
-                'api_key': request.form.get('crypto_api_key', ''),
-                'merchant_id': request.form.get('crypto_merchant_id', ''),
-                'webhook_secret': request.form.get('crypto_webhook_secret', ''),
+                'minimum_confirmations': int(request.form.get('minimum_confirmations', 6)),
+                'display_order': int(request.form.get('display_order', 0)),
             }
+            needs_encryption = False
         elif gateway.name == 'bank_transfer':
+            # Bank transfer is manual - no API keys needed, just preference settings  
             config = {
                 'account_verification_required': request.form.get('account_verification') == 'on',
                 'manual_approval': request.form.get('manual_approval') == 'on',
             }
+            needs_encryption = False
         
-        gateway.set_config(config)
+        # Handle configuration based on gateway type
+        if needs_encryption and config:
+            # API-based gateways: encrypt configuration
+            try:
+                gateway.set_config(config)
+                # Auto-activate API gateways only when properly configured
+                if gateway.is_properly_configured():
+                    gateway.is_active = True
+                else:
+                    # Deactivate if configuration is incomplete
+                    gateway.is_active = False
+            except ValueError as e:
+                flash(f'Error saving configuration: {str(e)}. Please load the master key first.', 'error')
+                return redirect(url_for('payment_management.manage_gateways'))
+        elif not needs_encryption:
+            # Manual methods: store simple JSON configuration (no encryption needed)
+            gateway.encrypted_config = json.dumps(config) if config else None
+            # For manual methods, respect the is_active setting from the form
         gateway.updated_at = datetime.utcnow()
         
         if not gateway_id:
