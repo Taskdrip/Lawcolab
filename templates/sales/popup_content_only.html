@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LawColab Popup Content</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Video Section (if videos are configured) -->
+    {% if settings.welcome_video_url %}
+    <div class="video-section" style="margin-bottom: 30px;">
+        <h3 style="text-align: center; margin-bottom: 20px;">Welcome Video</h3>
+        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+            <iframe src="{{ settings.welcome_video_url }}" 
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
+                    allowfullscreen>
+            </iframe>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Pricing Content -->
+    <div class="container">
+        <div class="row justify-content-center">
+            <!-- Starter Plan -->
+            <div class="col-md-3 mb-4">
+                <div class="card" style="border: 2px solid #28a745;">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Starter Plan</h5>
+                        <h2 class="text-success">${{ settings.starter_price }}</h2>
+                        <p class="text-muted">per month</p>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> Up to 50 clients</li>
+                            <li><i class="fas fa-check text-success"></i> Basic case management</li>
+                            <li><i class="fas fa-check text-success"></i> Email support</li>
+                        </ul>
+                        <button class="btn btn-success" onclick="selectPlan('starter')">Choose Starter</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Growth Plan -->
+            <div class="col-md-3 mb-4">
+                <div class="card" style="border: 2px solid #0066cc;">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Growth Plan</h5>
+                        <h2 class="text-primary">${{ settings.growth_price }}</h2>
+                        <p class="text-muted">per month</p>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> Unlimited clients</li>
+                            <li><i class="fas fa-check text-success"></i> Team collaboration</li>
+                            <li><i class="fas fa-check text-success"></i> Priority support</li>
+                        </ul>
+                        <button class="btn btn-primary" onclick="selectPlan('growth')">Choose Growth</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scale Plan -->
+            <div class="col-md-3 mb-4">
+                <div class="card" style="border: 2px solid #FF8C00;">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Scale Plan</h5>
+                        <h2 style="color: #FF8C00">${{ settings.scale_price }}</h2>
+                        <p class="text-muted">per month</p>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> Everything in Growth</li>
+                            <li><i class="fas fa-check text-success"></i> Advanced analytics</li>
+                            <li><i class="fas fa-check text-success"></i> Multi-office support</li>
+                        </ul>
+                        <button class="btn" style="background: #FF8C00; color: white;" onclick="selectPlan('scale')">Choose Scale</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lifetime Plan -->
+            <div class="col-md-3 mb-4">
+                <div class="card" style="border: 2px solid #6f42c1;">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Lifetime Plan</h5>
+                        <h2 style="color: #6f42c1">${{ settings.lifetime_price }}</h2>
+                        <p class="text-muted">one-time payment</p>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-infinity text-primary"></i> Never pay again</li>
+                            <li><i class="fas fa-infinity text-primary"></i> All future updates</li>
+                            <li><i class="fas fa-infinity text-primary"></i> Lifetime support</li>
+                        </ul>
+                        <button class="btn" style="background: #6f42c1; color: white;" onclick="selectPlan('lifetime')">Get Lifetime</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Founders Pack -->
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card" style="border: 3px solid #FFD700; background: linear-gradient(135deg, #fff9e6, #ffffff);">
+                    <div class="card-body text-center">
+                        <div style="background: #FFD700; color: #1a1a1a; padding: 10px 20px; border-radius: 25px; display: inline-block; margin-bottom: 15px;">
+                            👑 FOUNDERS PACK
+                        </div>
+                        <h5 class="card-title">Exclusive Founders</h5>
+                        <h2 style="color: #FFD700">${{ settings.founders_price }}</h2>
+                        <p class="text-muted">per year • Save 77% Forever</p>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-crown text-warning"></i> Everything in Lifetime Plan</li>
+                            <li><i class="fas fa-crown text-warning"></i> AI-Powered Analytics</li>
+                            <li><i class="fas fa-crown text-warning"></i> Dedicated Success Manager</li>
+                            <li><i class="fas fa-crown text-warning"></i> Founder Badge & Status</li>
+                        </ul>
+                        <button class="btn" style="background: linear-gradient(45deg, #FFD700, #FFA500); color: #1a1a1a; font-weight: bold;" onclick="selectPlan('founder')">
+                            👑 Secure Founder Status
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thank You Video (if configured) -->
+    {% if settings.thankyou_video_url %}
+    <div class="video-section" style="margin-top: 30px;">
+        <h3 style="text-align: center; margin-bottom: 20px;">Thank You Video</h3>
+        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+            <iframe src="{{ settings.thankyou_video_url }}" 
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
+                    allowfullscreen>
+            </iframe>
+        </div>
+    </div>
+    {% endif %}
+
+    <script>
+        function selectPlan(plan) {
+            // Redirect to checkout with selected plan
+            window.location.href = `/sales/checkout?plan=${plan}`;
+        }
+    </script>
+</body>
+</html>
