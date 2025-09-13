@@ -42,7 +42,19 @@
                         <h2 class="h3 fw-bold mb-4">Send Us a Message</h2>
                         <p class="text-muted mb-4">Fill out the form below and we'll get back to you within 24 hours.</p>
                         
-                        <form action="mailto:info@lawcolab.com" method="post" enctype="text/plain" class="contact-form">
+                        <!-- Flash Messages -->
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'warning' }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                        
+                        <form action="{{ url_for('contact') }}" method="post" class="contact-form">
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label for="firstName" class="form-label">First Name *</label>
