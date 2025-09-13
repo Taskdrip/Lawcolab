@@ -83,7 +83,6 @@ def support_send():
         # Send notification and audit log
         from utils.notifications import notify_support_message
         from models_audit import log_audit_event
-        from flask import request
         
         notify_support_message(message, support_room)
         log_audit_event(
@@ -589,7 +588,6 @@ def superadmin_support_chat(room_id):
     
     # Security audit log
     from models_audit import log_audit_event
-    from flask import request
     
     log_audit_event(
         event_type='super_admin_room_access',
@@ -658,7 +656,6 @@ def send_support_message():
         # Send notification and audit log
         from utils.notifications import notify_support_message
         from models_audit import log_audit_event
-        from flask import request
         
         notify_support_message(message, room)
         log_audit_event(
