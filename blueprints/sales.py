@@ -142,8 +142,14 @@ def checkout_page():
         return redirect(url_for('sales.popup_page'))
     
     # Get active payment gateways from super admin settings
-    from models_payment import PaymentGateway
+    from models_payment import PaymentGateway, CryptoWallet
     payment_gateways = PaymentGateway.query.filter_by(is_active=True).order_by(PaymentGateway.name).all()
+    
+    # If crypto gateway is active, get specific crypto wallets
+    crypto_wallets = []
+    crypto_gateway = PaymentGateway.query.filter_by(name='crypto', is_active=True).first()
+    if crypto_gateway:
+        crypto_wallets = CryptoWallet.query.filter_by(is_active=True).order_by(CryptoWallet.currency, CryptoWallet.network).all()
     
     settings = PopupSettings.query.first()
     if not settings:
@@ -153,6 +159,7 @@ def checkout_page():
                          lead_data=lead_data, 
                          selected_plan=selected_plan,
                          payment_gateways=payment_gateways,
+                         crypto_wallets=crypto_wallets,
                          settings=settings)
 
 @sales_bp.route('/checkout/complete', methods=['POST'])
@@ -193,7 +200,7 @@ def complete_checkout():
         session['payment_amount'] = get_plan_amount(selected_plan)
         
         # For crypto payments, redirect to evidence upload
-        if payment_method != 'bank_transfer':
+        if payment_method.startswith('crypto_') or payment_method == 'crypto':
             return redirect(url_for('sales.payment_evidence'))
         else:
             # For bank transfers, redirect to congratulations
@@ -230,6 +237,13 @@ def payment_evidence():
         flash('Invalid payment method for evidence upload.', 'error')
         return redirect(url_for('sales.checkout_page'))
     
+    # Get specific crypto wallet if payment method is crypto_X format
+    crypto_wallet = None
+    if payment_method.startswith('crypto_'):
+        wallet_id = payment_method.split('_')[1]
+        from models_payment import CryptoWallet
+        crypto_wallet = CryptoWallet.query.filter_by(id=wallet_id, is_active=True).first()
+    
     # Calculate time remaining (30 minutes from start)
     payment_start_time = session.get('payment_start_time', int(time.time()))
     current_time = int(time.time())
@@ -245,10 +259,14 @@ def payment_evidence():
     payment_reference = session.get('payment_reference')
     payment_amount = session.get('payment_amount')
     
-    # Get payment gateway info
-    from models_payment import PaymentGateway
-    gateway = PaymentGateway.query.filter_by(name=payment_method, is_active=True).first()
-    payment_method_name = gateway.display_name if gateway else 'Crypto Payment'
+    # Get payment method display name
+    if crypto_wallet:
+        payment_method_name = f"{crypto_wallet.currency} ({crypto_wallet.network})"
+    else:
+        # Fallback to gateway info
+        from models_payment import PaymentGateway
+        gateway = PaymentGateway.query.filter_by(name=payment_method, is_active=True).first()
+        payment_method_name = gateway.display_name if gateway else 'Crypto Payment'
     
     minutes = time_remaining_seconds // 60
     seconds = time_remaining_seconds % 60
