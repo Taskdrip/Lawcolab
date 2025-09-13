@@ -240,7 +240,8 @@ def create_crypto_wallet():
         wallet.currency = request.form.get('currency', '').upper()
         wallet.wallet_address = request.form.get('wallet_address', '')
         wallet.network = request.form.get('network', '')
-        # minimum_confirmations field doesn't exist in CryptoWallet model
+        confirmations = request.form.get('minimum_confirmations', '6')
+        wallet.minimum_confirmations = int(confirmations) if confirmations and confirmations.isdigit() else 6
         wallet.is_active = request.form.get('is_active') == 'on'
         # created_by_id field doesn't exist in CryptoWallet model
         
@@ -307,7 +308,8 @@ def edit_crypto_wallet(wallet_id):
         wallet.currency = request.form.get('currency', '').upper()
         wallet.wallet_address = request.form.get('wallet_address', '')
         wallet.network = request.form.get('network', '')
-        # minimum_confirmations field doesn't exist in CryptoWallet model
+        confirmations = request.form.get('minimum_confirmations', '6')
+        wallet.minimum_confirmations = int(confirmations) if confirmations and confirmations.isdigit() else 6
         wallet.is_active = request.form.get('is_active') == 'on'
         
         db.session.commit()
