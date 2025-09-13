@@ -25,8 +25,11 @@ def list_invoices():
     page = request.args.get('page', 1, type=int)
     status_filter = request.args.get('status', 'all')
     
-    # Base query with law firm isolation
-    query = Invoice.query.filter_by(law_firm_id=current_user.law_firm_id)
+    # Base query with law firm isolation (super admin sees all)
+    if current_user.is_super_admin():
+        query = Invoice.query
+    else:
+        query = Invoice.query.filter_by(law_firm_id=current_user.law_firm_id)
     
     # Apply status filter
     if status_filter != 'all':
@@ -44,14 +47,23 @@ def list_invoices():
         page=page, per_page=20, error_out=False
     )
     
-    # Get summary statistics
-    stats = {
-        'total': Invoice.query.filter_by(law_firm_id=current_user.law_firm_id).count(),
-        'draft': Invoice.query.filter_by(law_firm_id=current_user.law_firm_id, status='draft').count(),
-        'sent': Invoice.query.filter_by(law_firm_id=current_user.law_firm_id, status='sent').count(),
-        'paid': Invoice.query.filter_by(law_firm_id=current_user.law_firm_id, status='paid').count(),
-        'overdue': Invoice.query.filter_by(law_firm_id=current_user.law_firm_id, status='sent').filter(Invoice.due_date < date.today()).count()
-    }
+    # Get summary statistics (super admin sees all law firms)
+    if current_user.is_super_admin():
+        stats = {
+            'total': Invoice.query.count(),
+            'draft': Invoice.query.filter_by(status='draft').count(),
+            'sent': Invoice.query.filter_by(status='sent').count(),
+            'paid': Invoice.query.filter_by(status='paid').count(),
+            'overdue': Invoice.query.filter_by(status='sent').filter(Invoice.due_date < date.today()).count()
+        }
+    else:
+        stats = {
+            'total': Invoice.query.filter_by(law_firm_id=current_user.law_firm_id).count(),
+            'draft': Invoice.query.filter_by(law_firm_id=current_user.law_firm_id, status='draft').count(),
+            'sent': Invoice.query.filter_by(law_firm_id=current_user.law_firm_id, status='sent').count(),
+            'paid': Invoice.query.filter_by(law_firm_id=current_user.law_firm_id, status='paid').count(),
+            'overdue': Invoice.query.filter_by(law_firm_id=current_user.law_firm_id, status='sent').filter(Invoice.due_date < date.today()).count()
+        }
     
     return render_template('invoices/list.html', 
                          invoices=invoices, 
@@ -69,7 +81,7 @@ def analytics_dashboard():
         Invoice.currency,
         func.count(Invoice.id).label('invoice_count'),
         func.sum(Invoice.amount).label('total_invoiced')
-    ).filter(Invoice.law_firm_id == current_user.law_firm_id)\
+    ).filter(Invoice.law_firm_id == current_user.law_firm_id if not current_user.is_super_admin() else True)\
      .group_by(Invoice.currency).all()
     
     # Get payment totals by currency
@@ -312,13 +324,17 @@ def get_client_projects(client_id):
 @login_required
 def view_invoice(id):
     """View invoice details"""
-    invoice = Invoice.query.filter_by(
-        id=id,
-        law_firm_id=current_user.law_firm_id
-    ).first_or_404()
+    # Super admin can view any invoice
+    if current_user.is_super_admin():
+        invoice = Invoice.query.get_or_404(id)
+    else:
+        invoice = Invoice.query.filter_by(
+            id=id,
+            law_firm_id=current_user.law_firm_id
+        ).first_or_404()
     
-    # Check permissions
-    if current_user.is_client() and invoice.client_id != current_user.id:
+    # Check permissions (super admin bypasses)
+    if not current_user.is_super_admin() and current_user.is_client() and invoice.client_id != current_user.id:
         flash('You do not have permission to view this invoice.', 'error')
         return redirect(url_for('invoices.list_invoices'))
     

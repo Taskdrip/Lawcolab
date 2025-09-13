@@ -26,7 +26,7 @@ def superadmin_all_chats():
     room_data = []
     for room in support_rooms:
         # Get last message and unread count
-        messages = room.get_messages()
+        messages = ChatMessage.query.filter_by(room_id=room.id).order_by(ChatMessage.created_at.asc()).all()
         last_message = messages[-1] if messages else None
         
         # Count unread messages from law firm members (not super admin messages)
