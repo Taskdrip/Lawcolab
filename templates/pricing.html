@@ -257,8 +257,8 @@
                 <li><i class="fas fa-check"></i> Document management</li>
                 <li><i class="fas fa-check"></i> Support chat</li>
             </ul>
-            <a href="{{ url_for('enhanced_chat.support_chat') }}" class="plan-button primary">
-                Start Free Trial
+            <a href="{{ url_for('auth.signup') }}" class="plan-button primary">
+                🆓 Start Free Trial
             </a>
         </div>
 
@@ -275,8 +275,8 @@
                 <li><i class="fas fa-check"></i> Basic team collaboration</li>
                 <li><i class="fas fa-check"></i> Client portal access</li>
             </ul>
-            <a href="{{ url_for('enhanced_chat.support_chat') }}" class="plan-button secondary">
-                Get Started
+            <a href="javascript:void(0)" onclick="selectPlan('starter', 'Starter Plan - ${{ settings.starter_price }}/month')" class="plan-button secondary">
+                Choose Starter
             </a>
         </div>
 
@@ -294,8 +294,8 @@
                 <li><i class="fas fa-check"></i> Advanced analytics & reporting</li>
                 <li><i class="fas fa-check"></i> All integrations + API access</li>
             </ul>
-            <a href="{{ url_for('enhanced_chat.support_chat') }}" class="plan-button secondary">
-                Get Started
+            <a href="javascript:void(0)" onclick="selectPlan('growth', 'Growth Plan - ${{ settings.growth_price }}/3mo')" class="plan-button secondary">
+                Choose Growth
             </a>
         </div>
 
@@ -314,29 +314,11 @@
                 <li><i class="fas fa-check"></i> 24/7 priority support & training</li>
                 <li><i class="fas fa-check"></i> 500GB storage + daily backups</li>
             </ul>
-            <a href="{{ url_for('enhanced_chat.support_chat') }}" class="plan-button secondary">
-                Get Started
+            <a href="javascript:void(0)" onclick="selectPlan('enterprise', 'Enterprise Plan - ${{ settings.enterprise_price }}/year')" class="plan-button secondary">
+                Choose Enterprise
             </a>
         </div>
 
-        <!-- Lifetime Plan -->
-        <div class="pricing-card featured">
-            <div class="pricing-badge best">Best Value</div>
-            <div class="plan-name">Lifetime Plan</div>
-            <div class="plan-price"><span class="currency">$</span>{{ settings.lifetime_price }}</div>
-            <div class="plan-period">one-time payment • Never pay again</div>
-            <ul class="plan-features">
-                <li><i class="fas fa-infinity text-primary"></i> Everything in Scale Plan</li>
-                <li><i class="fas fa-infinity text-primary"></i> Lifetime access to all features</li>
-                <li><i class="fas fa-infinity text-primary"></i> All future updates included</li>
-                <li><i class="fas fa-infinity text-primary"></i> Priority support forever</li>
-                <li><i class="fas fa-infinity text-primary"></i> No recurring fees ever</li>
-                <li><i class="fas fa-infinity text-primary"></i> Unlimited storage</li>
-            </ul>
-            <a href="{{ url_for('enhanced_chat.support_chat') }}" class="plan-button primary">
-                🏆 Get Lifetime Access
-            </a>
-        </div>
 
         <!-- White-Label SaaS License -->
         <div class="pricing-card featured">
