@@ -138,18 +138,18 @@ def checkout_page():
         flash('Please complete the registration form first.', 'warning')
         return redirect(url_for('sales.popup_page'))
     
-    # Get payment methods
-    from models import PaymentMethod
-    payment_methods = PaymentMethod.query.filter_by(is_active=True).order_by(PaymentMethod.display_order).all()
+    # Get active payment gateways from super admin settings
+    from models_payment import PaymentGateway
+    payment_gateways = PaymentGateway.query.filter_by(is_active=True).order_by(PaymentGateway.name).all()
     
     settings = PopupSettings.query.first()
     if not settings:
         settings = PopupSettings()
     
-    return render_template('sales/checkout.html', 
+    return render_template('sales/checkout_dynamic.html', 
                          lead_data=lead_data, 
                          selected_plan=selected_plan,
-                         payment_methods=payment_methods,
+                         payment_gateways=payment_gateways,
                          settings=settings)
 
 @sales_bp.route('/checkout/complete', methods=['POST'])

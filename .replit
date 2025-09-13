@@ -41,9 +41,5 @@ externalPort = 3001
 localPort = 44065
 externalPort = 3000
 
-[[ports]]
-localPort = 45459
-externalPort = 3002
-
 [agent]
 integrations = ["python_database==1.0.0", "flask_stripe==1.0.0"]
