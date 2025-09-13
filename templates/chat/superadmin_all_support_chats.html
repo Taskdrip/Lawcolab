@@ -80,14 +80,12 @@
                                 
                                 <!-- Actions -->
                                 <div class="d-flex flex-column gap-2">
-                                    <a href="{{ url_for('enhanced_chat.superadmin_support_chat', room_id=data.room.id) }}" 
-                                       class="btn btn-primary btn-sm">
-                                        <i class="fas fa-comments me-1"></i>Open Chat
-                                    </a>
-                                    <a href="{{ url_for('superadmin.view_law_firm', firm_id=data.law_firm.id) }}" 
-                                       class="btn btn-outline-secondary btn-sm">
-                                        <i class="fas fa-eye me-1"></i>View Firm
-                                    </a>
+                                    <button class="btn btn-primary btn-sm" disabled>
+                                        <i class="fas fa-comments me-1"></i>Chat Room #{{ data.room.id }}
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm" disabled>
+                                        <i class="fas fa-eye me-1"></i>{{ data.law_firm.name }}
+                                    </button>
                                 </div>
                             </div>
                         </div>
