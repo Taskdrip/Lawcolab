@@ -136,11 +136,17 @@ def signup():
     
     form = SignupForm()
     if form.validate_on_submit():
-        # Create new law firm first
+        # Create new law firm first with 3-day free trial
         new_firm = LawFirm()
         new_firm.name = form.law_firm_name.data
         new_firm.description = form.law_firm_description.data or f"Legal practice managed by {form.first_name.data} {form.last_name.data}"
         new_firm.email = form.email.data.lower() if form.email.data else None
+        
+        # Set up 3-day free trial
+        from datetime import datetime, timedelta
+        new_firm.admin_access_granted = True
+        new_firm.admin_access_expires = datetime.now() + timedelta(days=3)
+        new_firm.subscription_period = '3days'
         
         # Create user as law firm admin
         user = User()
@@ -166,7 +172,7 @@ def signup():
             
             # Login the user immediately after successful registration
             login_user(user)
-            flash('Registration successful! Welcome to LawColab.', 'success')
+            flash('Registration successful! Welcome to your 3-day free trial of LawColab.', 'success')
             return redirect(url_for('registration_success'))
         except Exception as e:
             db.session.rollback()

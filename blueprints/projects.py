@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import current_user
 from replit_auth import require_login
 from utils.decorators import require_team_member_or_admin
+from utils.trial_access import require_active_subscription, trial_warning_context, get_trial_notification
 from utils.forms import ProjectForm
 from app import db
 from models import Project, ProjectAssignment, User, ProjectFile, ProjectMessage
@@ -29,6 +30,7 @@ def list_projects():
 
 @projects_bp.route('/create', methods=['GET', 'POST'])
 @require_team_member_or_admin
+@require_active_subscription
 def create_project():
     """Create a new project"""
     form = ProjectForm()

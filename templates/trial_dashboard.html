@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Free Trial Dashboard - LawColab{% endblock %}
+
+{% block additional_css %}
+<style>
+    .trial-banner {
+        background: linear-gradient(135deg, #17a2b8, #20c997);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(23, 162, 184, 0.3);
+    }
+    
+    .countdown-timer {
+        background: white;
+        color: #17a2b8;
+        padding: 15px 30px;
+        border-radius: 25px;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 15px 0;
+        display: inline-block;
+    }
+    
+    .trial-progress {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .progress-bar-custom {
+        height: 8px;
+        background: #e9ecef;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 10px 0;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(45deg, #17a2b8, #20c997);
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+    
+    .feature-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border-left: 4px solid #17a2b8;
+    }
+    
+    .upgrade-cta {
+        background: linear-gradient(135deg, #0066cc, #004499);
+        color: white;
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        margin-top: 30px;
+        box-shadow: 0 5px 20px rgba(0,102,204,0.3);
+    }
+    
+    .upgrade-btn {
+        background: white;
+        color: #0066cc;
+        padding: 15px 30px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-block;
+        margin-top: 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .upgrade-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        color: #0066cc;
+    }
+    
+    .restriction-notice {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        color: #856404;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 10px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Trial Banner with Countdown -->
+            <div class="trial-banner">
+                <h2><i class="fas fa-gift me-2"></i>Free Trial Active</h2>
+                <p class="mb-2">Experience the full power of LawColab for free!</p>
+                
+                {% if hours_remaining is defined and hours_remaining <= 24 %}
+                    <div class="countdown-timer" id="countdownTimer">
+                        <i class="fas fa-clock me-2"></i>
+                        <span id="timeRemaining">{{ hours_remaining }}h {{ minutes_remaining }}m remaining</span>
+                    </div>
+                {% else %}
+                    <div class="countdown-timer">
+                        <i class="fas fa-calendar me-2"></i>
+                        {{ days_until_expiry }} day{{ 's' if days_until_expiry != 1 else '' }} remaining
+                    </div>
+                {% endif %}
+                
+                <p class="mb-0">
+                    <small>Your trial expires on {{ current_user.law_firm.admin_access_expires.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                </p>
+            </div>
+            
+            <!-- Trial Progress -->
+            <div class="trial-progress">
+                <h5><i class="fas fa-chart-line me-2"></i>Trial Progress</h5>
+                <div class="row">
+                    <div class="col-md-8">
+                        {% set days_total = 3 %}
+                        {% set days_used = days_total - (days_until_expiry or 0) %}
+                        {% set progress_percent = (days_used / days_total * 100) | round %}
+                        
+                        <div class="progress-bar-custom">
+                            <div class="progress-fill" style="width: {{ progress_percent }}%"></div>
+                        </div>
+                        <small class="text-muted">
+                            Day {{ days_used }} of {{ days_total }} • {{ progress_percent }}% complete
+                        </small>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <a href="{{ url_for('sales.popup_page') }}" class="btn btn-primary">
+                            <i class="fas fa-arrow-up me-2"></i>Upgrade Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Feature Access Overview -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h6><i class="fas fa-check-circle text-success me-2"></i>What You Can Do</h6>
+                        <ul class="list-unstyled mb-0">
+                            <li><i class="fas fa-users text-success me-2"></i>Manage up to 3 team members</li>
+                            <li><i class="fas fa-folder text-success me-2"></i>Create up to 5 active projects</li>
+                            <li><i class="fas fa-comments text-success me-2"></i>Team and client messaging</li>
+                            <li><i class="fas fa-cloud text-success me-2"></i>500MB secure file storage</li>
+                            <li><i class="fas fa-file-invoice text-success me-2"></i>Basic invoicing</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h6><i class="fas fa-lock text-warning me-2"></i>Premium Features</h6>
+                        <div class="restriction-notice">
+                            <strong>Upgrade to unlock:</strong>
+                        </div>
+                        <ul class="list-unstyled mb-0">
+                            <li><i class="fas fa-chart-bar text-warning me-2"></i>Advanced analytics & reports</li>
+                            <li><i class="fas fa-cogs text-warning me-2"></i>Bulk operations</li>
+                            <li><i class="fas fa-code text-warning me-2"></i>API access</li>
+                            <li><i class="fas fa-paint-brush text-warning me-2"></i>White-label customization</li>
+                            <li><i class="fas fa-infinity text-warning me-2"></i>Unlimited storage</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Upgrade CTA -->
+            <div class="upgrade-cta">
+                <h4><i class="fas fa-rocket me-2"></i>Ready to Unlock Full Power?</h4>
+                <p class="mb-0">
+                    Don't lose your data and settings! Upgrade before your trial expires to continue 
+                    managing your legal practice seamlessly.
+                </p>
+                <a href="{{ url_for('sales.popup_page') }}" class="upgrade-btn">
+                    <i class="fas fa-crown me-2"></i>View Pricing Plans
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+{% if hours_remaining is defined and hours_remaining <= 24 %}
+// Real-time countdown for last 24 hours
+let timeRemaining = {{ (hours_remaining * 3600 + minutes_remaining * 60) | int }};
+
+function updateCountdown() {
+    const hours = Math.floor(timeRemaining / 3600);
+    const minutes = Math.floor((timeRemaining % 3600) / 60);
+    
+    document.getElementById('timeRemaining').textContent = `${hours}h ${minutes}m remaining`;
+    
+    if (timeRemaining <= 0) {
+        alert('Your free trial has expired! Redirecting to upgrade page.');
+        window.location.href = '{{ url_for("sales.popup_page") }}';
+        return;
+    }
+    
+    if (timeRemaining <= 3600) { // Last hour
+        document.getElementById('countdownTimer').style.background = '#dc3545';
+        document.getElementById('countdownTimer').style.color = 'white';
+    }
+    
+    timeRemaining--;
+}
+
+// Update every minute
+setInterval(updateCountdown, 60000);
+{% endif %}
+</script>
+{% endblock %}

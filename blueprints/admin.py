@@ -3,6 +3,7 @@ from flask_login import current_user
 from app import db
 from models import User, Project, LawFirm, ROLE_ADMIN, ROLE_TEAM_MEMBER, ROLE_CLIENT
 from utils.decorators import require_admin
+from utils.trial_access import require_active_subscription, trial_warning_context, get_trial_notification
 from forms import ClientForm, TeamMemberForm
 import uuid
 
@@ -10,6 +11,7 @@ admin_bp = Blueprint('admin', __name__)
 
 @admin_bp.route('/dashboard')
 @require_admin
+@require_active_subscription
 def admin_dashboard():
     """Admin dashboard showing law firm statistics"""
     # Ensure admin has a law firm
@@ -25,12 +27,18 @@ def admin_dashboard():
     recent_clients = User.query.filter_by(law_firm_id=current_user.law_firm_id, role=ROLE_CLIENT).order_by(User.created_at.desc()).limit(5).all()
     recent_projects = Project.query.filter_by(law_firm_id=current_user.law_firm_id).order_by(Project.created_at.desc()).limit(5).all()
     
+    # Add trial context and notifications
+    context = trial_warning_context()
+    trial_notification = get_trial_notification()
+    
     return render_template('admin/dashboard.html',
                          total_clients=total_clients,
                          total_team_members=total_team_members,
                          total_projects=total_projects,
                          recent_clients=recent_clients,
-                         recent_projects=recent_projects)
+                         recent_projects=recent_projects,
+                         trial_notification=trial_notification,
+                         **context)
 
 @admin_bp.route('/add-client', methods=['GET', 'POST'])
 @require_admin

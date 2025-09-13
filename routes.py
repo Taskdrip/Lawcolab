@@ -103,6 +103,45 @@ def index():
     
     return render_template('index.html', settings=settings, reviews=reviews, featured_showcases=featured_showcases)
 
+@app.route('/subscription-expired')
+def subscription_expired():
+    """Subscription expired page with upgrade options"""
+    return render_template('subscription_expired.html')
+
+@app.route('/trial-dashboard')
+def trial_dashboard():
+    """Trial dashboard with countdown and feature overview"""
+    from flask_login import login_required, current_user
+    from utils.trial_access import trial_warning_context, get_trial_notification
+    
+    if not current_user.is_authenticated:
+        return redirect(url_for('auth.login'))
+    
+    if not current_user.law_firm or current_user.law_firm.subscription_period != '3days':
+        return redirect(url_for('index'))
+    
+    context = trial_warning_context()
+    trial_notification = get_trial_notification()
+    
+    return render_template('trial_dashboard.html', 
+                         trial_notification=trial_notification,
+                         **context)
+
+# Global context processor for trial notifications
+@app.context_processor
+def inject_trial_context():
+    """Inject trial context and notifications into all templates"""
+    from utils.trial_access import trial_warning_context, get_trial_notification
+    
+    if current_user.is_authenticated:
+        context = trial_warning_context()
+        trial_notification = get_trial_notification()
+        return {
+            'trial_context': context,
+            'trial_notification': trial_notification
+        }
+    return {}
+
 @app.route('/landing')
 def landing():
     """Comprehensive landing page"""

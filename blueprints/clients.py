@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import current_user
 from replit_auth import require_login
 from utils.decorators import require_team_member_or_admin
+from utils.trial_access import require_active_subscription
 from utils.forms import ClientNoteForm
 from app import db
 from models import User, ClientNote, Project, ProjectAssignment
@@ -11,6 +12,7 @@ clients_bp = Blueprint('clients', __name__)
 
 @clients_bp.route('/')
 @require_login
+@require_active_subscription
 def list_clients():
     """List clients from the same law firm with search functionality"""
     
