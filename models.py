@@ -726,17 +726,18 @@ class PopupSettings(db.Model):
     welcome_video_url = db.Column(db.String(500), nullable=True)
     thankyou_video_url = db.Column(db.String(500), nullable=True)
     
-    # Plan pricing - Corrected to separate plans
-    starter_price = db.Column(db.Numeric(10, 2), default=39.00)  # Starter Plan
-    growth_price = db.Column(db.Numeric(10, 2), default=90.00)  # Growth Plan
-    scale_price = db.Column(db.Numeric(10, 2), default=350.00)  # Scale Plan
-    founders_price = db.Column(db.Numeric(10, 2), default=579.00)  # Founders Pack with enhanced features
-    lifetime_price = db.Column(db.Numeric(10, 2), default=999.00)  # Lifetime Plan
+    # 5-Plan Pricing Structure
+    trial_duration_days = db.Column(db.Integer, default=3)  # Free trial duration
+    starter_price = db.Column(db.Numeric(10, 2), default=39.00)  # 1-month Starter Plan
+    growth_price = db.Column(db.Numeric(10, 2), default=90.00)  # 3-month Growth Plan
+    enterprise_price = db.Column(db.Numeric(10, 2), default=350.00)  # 1-year Enterprise Plan
+    founders_price = db.Column(db.Numeric(10, 2), default=750.00)  # Founders Pack - $750 for 6-month setup & support
+    lifetime_price = db.Column(db.Numeric(10, 2), default=999.00)  # Legacy Lifetime Plan (kept for compatibility)
     
     # Regular pricing (what they would pay later)
     starter_regular_price = db.Column(db.Numeric(10, 2), default=70.00)
     growth_regular_price = db.Column(db.Numeric(10, 2), default=210.00)
-    scale_regular_price = db.Column(db.Numeric(10, 2), default=840.00)
+    enterprise_regular_price = db.Column(db.Numeric(10, 2), default=840.00)
     founders_regular_price = db.Column(db.Numeric(10, 2), default=840.00)
     
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
