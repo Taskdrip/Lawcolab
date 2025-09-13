@@ -241,8 +241,16 @@
                     <div class="online-badge mb-2">
                         <span class="online-indicator"></span>Online
                     </div>
-                    <div class="response-time">
+                    <div class="response-time mb-2">
                         <i class="fas fa-clock me-1"></i>Response time: 2-4 hours
+                    </div>
+                    <!-- WhatsApp Alternative Support -->
+                    <div class="whatsapp-option">
+                        <a href="https://wa.me/{{ whatsapp_number.replace('+', '') }}?text=Hi! I need support with my LAWCOLAB account" 
+                           target="_blank" 
+                           class="btn btn-success btn-sm">
+                            <i class="fab fa-whatsapp me-2"></i>WhatsApp Support
+                        </a>
                     </div>
                 </div>
             </div>
@@ -290,6 +298,28 @@
 
         <!-- Message Input -->
         <div class="message-input-container">
+            <!-- Contact Options -->
+            <div class="contact-options mb-3">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <strong>💬 Live Chat</strong>
+                        <p class="small text-muted mb-0">Chat directly with our team</p>
+                    </div>
+                    <div class="col-6">
+                        <strong>📱 WhatsApp</strong>
+                        <p class="small text-muted mb-0">Get instant support on WhatsApp</p>
+                        <a href="https://wa.me/{{ whatsapp_number.replace('+', '') }}?text=Hi! I need support with my LAWCOLAB account. My email: {{ current_user.email }}" 
+                           target="_blank" 
+                           class="btn btn-success btn-sm mt-1">
+                            <i class="fab fa-whatsapp me-1"></i>Open WhatsApp
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-top pt-3"></div>
+            
+            <!-- Chat Form -->
             <form method="POST" action="{{ url_for('enhanced_chat.support_send') }}" class="message-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <textarea 
@@ -302,6 +332,14 @@
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </form>
+            
+            <!-- Security Notice -->
+            <div class="mt-2">
+                <small class="text-muted">
+                    <i class="fas fa-shield-alt me-1"></i>
+                    Your messages are secure and only visible to you and our support team.
+                </small>
+            </div>
         </div>
     </div>
 </div>

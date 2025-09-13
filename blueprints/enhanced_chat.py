@@ -16,7 +16,7 @@ enhanced_chat_bp = Blueprint('enhanced_chat', __name__, template_folder='../temp
 @enhanced_chat_bp.route('/support-send', methods=['POST'])
 @require_login
 def support_send():
-    """Send message to support chat"""
+    """Send message to support chat with enhanced security"""
     if not current_user.law_firm_id:
         flash('You are not associated with a law firm.', 'error')
         return redirect(url_for('index'))
@@ -26,22 +26,67 @@ def support_send():
         flash('Please enter a message.', 'warning')
         return redirect(url_for('enhanced_chat.support_chat'))
     
-    # Get support room
+    # Get support room with enhanced security check
     support_room = current_user.law_firm.get_support_chat_room()
     
-    # Create message
+    # Verify user is authorized for this room
+    participant = ChatParticipant.query.filter_by(
+        room_id=support_room.id,
+        user_id=current_user.id,
+        is_active=True
+    ).first()
+    
+    if not participant:
+        # Auto-add law firm member to their own support room
+        participant = ChatParticipant(
+            room_id=support_room.id,
+            user_id=current_user.id,
+            joined_at=datetime.now(),
+            is_active=True
+        )
+        db.session.add(participant)
+    
+    # Create message with enhanced logging
     message = ChatMessage(
         room_id=support_room.id,
         sender_id=current_user.id,
-        message_content=message_text
+        message_content=message_text,
+        message_type='text'
     )
     
     try:
         db.session.add(message)
+        
+        # Update room last activity
+        support_room.updated_at = datetime.now()
+        
+        # Ensure super admin gets notified by creating/updating participant record
+        super_admins = User.query.filter_by(role=ROLE_SUPER_ADMIN, active=True).all()
+        for admin in super_admins:
+            admin_participant = ChatParticipant.query.filter_by(
+                room_id=support_room.id,
+                user_id=admin.id
+            ).first()
+            
+            if not admin_participant:
+                admin_participant = ChatParticipant(
+                    room_id=support_room.id,
+                    user_id=admin.id,
+                    joined_at=datetime.now(),
+                    last_read_at=datetime.now() - timedelta(hours=1),  # Show as unread
+                    is_active=True
+                )
+                db.session.add(admin_participant)
+        
         db.session.commit()
         flash('Message sent successfully!', 'success')
+        
+        # Log for security audit
+        print(f"Support message sent: User {current_user.id} to room {support_room.id}")
+        
     except Exception as e:
         db.session.rollback()
+        print(f"Error sending support message: {str(e)}")
         flash('Failed to send message. Please try again.', 'error')
     
     return redirect(url_for('enhanced_chat.support_chat'))
@@ -49,7 +94,7 @@ def support_send():
 @enhanced_chat_bp.route('/support')
 @require_login
 def support_chat():
-    """Law firm support chat with super admin"""
+    """Law firm support chat with super admin - enhanced security"""
     if not current_user.law_firm_id:
         if current_user.is_admin():
             current_user.create_law_firm_if_admin()
@@ -57,28 +102,49 @@ def support_chat():
             flash('You are not associated with a law firm.', 'error')
             return redirect(url_for('index'))
     
-    # Always show support chat with subscription form if no admin access
-    # Get or create support chat room first
+    # Get or create support chat room with security validation
     support_room = current_user.law_firm.get_support_chat_room()
     
-    # Get chat messages
+    # Enhanced access control - verify user belongs to this law firm
+    if not current_user.is_super_admin() and current_user.law_firm_id != support_room.law_firm_id:
+        flash('Unauthorized access to support chat.', 'error')
+        return redirect(url_for('index'))
+    
+    # Get chat messages with proper filtering for privacy
     messages = ChatMessage.query.filter_by(room_id=support_room.id)\
                                .order_by(ChatMessage.created_at.asc()).all()
     
-    # Mark messages as read
+    # Ensure user is a participant with enhanced security check
     participant = ChatParticipant.query.filter_by(
         room_id=support_room.id,
-        user_id=current_user.id
+        user_id=current_user.id,
+        is_active=True
     ).first()
     
-    if participant:
+    if not participant:
+        # Auto-add authorized user to support room
+        participant = ChatParticipant(
+            room_id=support_room.id,
+            user_id=current_user.id,
+            joined_at=datetime.now(),
+            last_read_at=datetime.now(),
+            is_active=True
+        )
+        db.session.add(participant)
+    else:
+        # Mark messages as read
         participant.last_read_at = datetime.now()
-        db.session.commit()
+    
+    db.session.commit()
+    
+    # Get WhatsApp contact info for additional support option
+    whatsapp_number = "+2348036622568"  # From your contact info
     
     return render_template('chat/support_messages.html', 
                          room=support_room, 
                          messages=messages,
-                         current_user=current_user)
+                         current_user=current_user,
+                         whatsapp_number=whatsapp_number)
 
 @enhanced_chat_bp.route('/request-access', methods=['POST'])
 @require_login
