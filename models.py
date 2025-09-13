@@ -5,6 +5,9 @@ from flask_login import UserMixin
 from sqlalchemy import UniqueConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
 
+# Import payment models to ensure tables are created - use primary payment system only
+from models_payment import PaymentGateway, EscrowTransaction, EscrowMilestone, EscrowTransactionLog, CryptoWallet, BankAccount
+
 # User roles
 ROLE_SUPER_ADMIN = 'super_admin'  # Platform-wide admin
 ROLE_ADMIN = 'admin'              # Law firm admin

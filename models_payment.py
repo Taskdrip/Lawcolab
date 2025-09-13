@@ -131,7 +131,7 @@ class EscrowTransaction(db.Model):
     def can_release_escrow(self, user):
         """Check if user can release escrow funds"""
         return (user.is_super_admin() or 
-                users.id == self.client_id or 
+                user.id == self.client_id or 
                 (user.law_firm_id == self.law_firm_id and user.is_admin()))
     
     def release_escrow(self, released_by_user, notes=None):
@@ -147,16 +147,15 @@ class EscrowTransaction(db.Model):
         
         self.escrow_released = True
         self.escrow_released_at = datetime.utcnow()
-        self.escrow_released_by_id = released_by_users.id
+        self.escrow_released_by_id = released_by_user.id
         self.status = 'completed'
         
         # Log the release
-        log = EscrowTransactionLog(
-            transaction_id=self.id,
-            action='escrow_released',
-            performed_by_id=released_by_users.id,
-            notes=notes or f"Escrow released by {released_by_user.full_name}"
-        )
+        log = EscrowTransactionLog()
+        log.transaction_id = self.id
+        log.action = 'escrow_released'
+        log.performed_by_id = released_by_user.id
+        log.notes = notes or f"Escrow released by {released_by_user.full_name}"
         db.session.add(log)
         
         return True, "Escrow funds released successfully"
@@ -222,7 +221,7 @@ class CryptoWallet(db.Model):
     encrypted_private_key = db.Column(db.Text)  # Only if automated processing needed
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    created_by_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    created_by_id = db.Column(db.String, db.ForeignKey('users.id'))
 
 class BankAccount(db.Model):
     """Bank account configuration for wire transfers"""
@@ -247,4 +246,4 @@ class BankAccount(db.Model):
     verification_notes = db.Column(db.Text)
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    created_by_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    created_by_id = db.Column(db.String, db.ForeignKey('users.id'))
