@@ -3,6 +3,7 @@ from flask_login import current_user
 from utils.decorators import require_super_admin
 from app import db
 from models import User, LawFirm, Project, SupportRequest, ROLE_ADMIN, ROLE_SUPER_ADMIN, ROLE_CLIENT, ROLE_TEAM_MEMBER
+from sqlalchemy import or_
 # from utils.forms import LawFirmForm  # Not needed for super admin functions
 import uuid
 from datetime import datetime
@@ -39,7 +40,7 @@ def dashboard():
         'total_projects': total_projects
     }
     
-    return render_template('superadmin/simple_dashboard.html', 
+    return render_template('superadmin/dashboard.html', 
                          stats=stats,
                          recent_law_firms=recent_law_firms,
                          recent_admins=recent_admins,
@@ -156,7 +157,7 @@ def manage_law_firms():
     query = LawFirm.query
     if search:
         query = query.filter(
-            db.or_(
+            or_(
                 LawFirm.name.contains(search),
                 LawFirm.email.contains(search),
                 LawFirm.description.contains(search)
@@ -478,7 +479,7 @@ def platform_users():
     
     if search:
         query = query.filter(
-            db.or_(
+            or_(
                 User.first_name.contains(search),
                 User.last_name.contains(search),
                 User.email.contains(search)

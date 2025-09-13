@@ -13,6 +13,48 @@ import uuid
 
 enhanced_chat_bp = Blueprint('enhanced_chat', __name__, template_folder='../templates')
 
+@enhanced_chat_bp.route('/superadmin/all-chats')
+@require_super_admin
+def superadmin_all_chats():
+    """Super admin view of all support chats from law firms"""
+    from models_chat import ChatRoom
+    
+    # Get all support chat rooms
+    support_rooms = ChatRoom.query.filter_by(room_type='support').order_by(ChatRoom.updated_at.desc()).all()
+    
+    # Get unread counts for each room
+    room_data = []
+    for room in support_rooms:
+        # Get last message and unread count
+        messages = room.get_messages()
+        last_message = messages[-1] if messages else None
+        
+        # Count unread messages from law firm members (not super admin messages)
+        unread_count = 0
+        super_admin_participant = ChatParticipant.query.filter_by(
+            room_id=room.id,
+            user_id=current_user.id
+        ).first()
+        
+        if super_admin_participant and super_admin_participant.last_read_at:
+            for msg in messages:
+                if (msg.created_at > super_admin_participant.last_read_at and 
+                    msg.sender_id != current_user.id):
+                    unread_count += 1
+        else:
+            # If never read, count all non-super-admin messages
+            unread_count = len([msg for msg in messages if msg.sender_id != current_user.id])
+        
+        room_data.append({
+            'room': room,
+            'last_message': last_message,
+            'unread_count': unread_count,
+            'law_firm': room.law_firm
+        })
+    
+    return render_template('chat/superadmin_all_support_chats.html', 
+                         room_data=room_data)
+
 @enhanced_chat_bp.route('/support-send', methods=['POST'])
 @require_login
 def support_send():
