@@ -111,7 +111,14 @@ def landing():
 @app.route('/pricing')
 def pricing():
     """Pricing plans page"""
-    return render_template('pricing.html')
+    from models import PopupSettings
+    
+    # Get pricing settings
+    settings = PopupSettings.query.first()
+    if not settings:
+        settings = PopupSettings()
+    
+    return render_template('pricing.html', settings=settings)
 
 @app.route('/about')
 def about():
