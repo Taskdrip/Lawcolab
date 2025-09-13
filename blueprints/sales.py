@@ -111,7 +111,7 @@ def checkout_page():
     """Checkout page with payment options"""
     # Get plan parameter from URL
     plan = request.args.get('plan', '').lower()
-    valid_plans = ['starter', 'growth', 'scale', 'founder', 'lifetime']
+    valid_plans = ['trial', 'starter', 'growth', 'enterprise', 'founder', 'lifetime']
     
     # Validate plan parameter
     if plan and plan not in valid_plans:
@@ -257,10 +257,11 @@ def update_settings():
         settings.welcome_video_url = request.form.get('welcome_video_url', '').strip()
         settings.thankyou_video_url = request.form.get('thankyou_video_url', '').strip()
         
-        # Update pricing
-        settings.starter_price = float(request.form.get('starter_price', 70.00))
-        settings.growth_price = float(request.form.get('growth_price', 190.00))
-        settings.scale_price = float(request.form.get('scale_price', 750.00))
+        # Update 5-plan pricing structure
+        settings.trial_duration_days = int(request.form.get('trial_duration_days', 3))
+        settings.starter_price = float(request.form.get('starter_price', 39.00))
+        settings.growth_price = float(request.form.get('growth_price', 90.00))
+        settings.enterprise_price = float(request.form.get('enterprise_price', 350.00))
         settings.founders_price = float(request.form.get('founders_price', 750.00))
         settings.lifetime_price = float(request.form.get('lifetime_price', 999.00))
         
@@ -607,7 +608,7 @@ def update_popup_settings():
         settings.founders_price = float(request.form.get('founders_price', 579))
         settings.starter_price = float(request.form.get('starter_price', 39))
         settings.growth_price = float(request.form.get('growth_price', 190))
-        settings.scale_price = float(request.form.get('scale_price', 750))
+        settings.enterprise_price = float(request.form.get('enterprise_price', 350))
         settings.lifetime_price = float(request.form.get('lifetime_price', 999))
         
         db.session.commit()
@@ -665,7 +666,7 @@ def admin_sales_settings():
         # Update pricing
         settings.starter_price = float(request.form.get('starter_price', settings.starter_price))
         settings.growth_price = float(request.form.get('growth_price', settings.growth_price))
-        settings.scale_price = float(request.form.get('scale_price', settings.scale_price))
+        settings.enterprise_price = float(request.form.get('enterprise_price', settings.enterprise_price or 350.00))
         settings.founders_price = float(request.form.get('founders_price', settings.founders_price))
         settings.lifetime_price = float(request.form.get('lifetime_price', settings.lifetime_price))
         

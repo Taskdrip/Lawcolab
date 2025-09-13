@@ -131,23 +131,30 @@
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="mb-3">
-                                    <label class="form-label">💼 Starter Price ($)</label>
+                                    <label class="form-label">🆓 Free Trial Duration (days)</label>
+                                    <input type="number" class="form-control" name="trial_duration_days" 
+                                           value="{{ settings.trial_duration_days or 3 }}" step="1" min="1" max="30">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">💼 Starter Price ($) - 1 Month</label>
                                     <input type="number" class="form-control" name="starter_price" 
                                            value="{{ settings.starter_price }}" step="1" min="0">
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="mb-3">
-                                    <label class="form-label">🚀 Growth Price ($)</label>
+                                    <label class="form-label">🚀 Growth Price ($) - 3 Months</label>
                                     <input type="number" class="form-control" name="growth_price" 
                                            value="{{ settings.growth_price }}" step="1" min="0">
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="mb-3">
-                                    <label class="form-label">⚡ Scale Price ($)</label>
-                                    <input type="number" class="form-control" name="scale_price" 
-                                           value="{{ settings.scale_price }}" step="1" min="0">
+                                    <label class="form-label">⚡ Enterprise Price ($) - 1 Year</label>
+                                    <input type="number" class="form-control" name="enterprise_price" 
+                                           value="{{ settings.enterprise_price or settings.scale_price }}" step="1" min="0">
                                 </div>
                             </div>
                         </div>
@@ -155,16 +162,18 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">🌟 Founders Pack Price ($)</label>
+                                    <label class="form-label">👑 Founders Pack ($750) - 6-Month Setup & Support</label>
                                     <input type="number" class="form-control" name="founders_price" 
                                            value="{{ settings.founders_price }}" step="1" min="0">
+                                    <small class="form-text text-muted">License to use SaaS + 6-month setup and support + access to new features</small>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">🏆 Lifetime Price ($)</label>
+                                    <label class="form-label">🏆 Lifetime Price ($) - Legacy Plan</label>
                                     <input type="number" class="form-control" name="lifetime_price" 
                                            value="{{ settings.lifetime_price }}" step="1" min="0">
+                                    <small class="form-text text-muted">Keep for existing customers only</small>
                                 </div>
                             </div>
                         </div>
