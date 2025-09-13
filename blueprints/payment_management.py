@@ -292,20 +292,6 @@ def toggle_bank_account(account_id):
     
     return jsonify({'success': True, 'status': 'active' if account.is_active else 'inactive'})
 
-@payment_mgmt_bp.route('/bank-accounts/<int:account_id>/set-primary', methods=['POST'])
-@require_super_admin
-def set_primary_bank_account(account_id):
-    """Set bank account as primary"""
-    # First, unset all primary accounts
-    BankAccount.query.update({'is_primary': False})
-    
-    # Set this account as primary
-    account = BankAccount.query.get_or_404(account_id)
-    account.is_primary = True
-    db.session.commit()
-    
-    return jsonify({'success': True})
-
 @payment_mgmt_bp.route('/bank-accounts/edit/<int:account_id>', methods=['GET', 'POST'])
 @require_super_admin
 def edit_bank_account(account_id):
@@ -323,21 +309,33 @@ def edit_bank_account(account_id):
         account.country = request.form.get('country', '')
         account.is_active = request.form.get('is_active') == 'on'
         
-        # Handle primary account setting
+        # Handle primary account logic
         is_primary = request.form.get('is_primary') == 'on'
         if is_primary and not account.is_primary:
-            # Unset all other primary accounts
             BankAccount.query.update({'is_primary': False})
             account.is_primary = True
-        elif not is_primary and account.is_primary:
+        elif not is_primary:
             account.is_primary = False
         
         db.session.commit()
-        
         flash(f'Bank account for {account.bank_name} updated successfully!', 'success')
         return redirect(url_for('payment_management.manage_bank_accounts'))
     
-    return render_template('payment_management/bank_account_form.html', account=account, is_edit=True)
+    return render_template('payment_management/bank_account_form.html', account=account, edit_mode=True)
+
+@payment_mgmt_bp.route('/bank-accounts/<int:account_id>/set-primary', methods=['POST'])
+@require_super_admin
+def set_primary_bank_account(account_id):
+    """Set bank account as primary"""
+    # First, unset all primary accounts
+    BankAccount.query.update({'is_primary': False})
+    
+    # Set this account as primary
+    account = BankAccount.query.get_or_404(account_id)
+    account.is_primary = True
+    db.session.commit()
+    
+    return jsonify({'success': True})
 
 @payment_mgmt_bp.route('/analytics')
 @require_super_admin
