@@ -35,9 +35,9 @@
                         <h2 class="text-info">$0</h2>
                         <p class="text-muted">{{ settings.trial_duration_days or 3 }} days • No credit card required</p>
                         <ul class="list-unstyled">
-                            <li><i class="fas fa-check text-success"></i> Test all features</li>
-                            <li><i class="fas fa-check text-success"></i> No limitations</li>
-                            <li><i class="fas fa-check text-success"></i> Cancel anytime</li>
+                            <li><i class="fas fa-check text-success"></i> Up to 3 users (test with your team)</li>
+                            <li><i class="fas fa-check text-success"></i> 5 active cases maximum</li>
+                            <li><i class="fas fa-check text-success"></i> Cancel anytime, no commitments</li>
                         </ul>
                         <button class="btn btn-info" onclick="selectPlan('trial')">Start Free Trial</button>
                     </div>
@@ -55,9 +55,9 @@
                         <h2 class="text-success">${{ settings.starter_price }}</h2>
                         <p class="text-muted">1 month</p>
                         <ul class="list-unstyled">
-                            <li><i class="fas fa-check text-success"></i> Up to 50 clients</li>
-                            <li><i class="fas fa-check text-success"></i> Basic case management</li>
-                            <li><i class="fas fa-check text-success"></i> Email support</li>
+                            <li><i class="fas fa-check text-success"></i> Up to 5 users + unlimited clients</li>
+                            <li><i class="fas fa-check text-success"></i> Complete case & project management</li>
+                            <li><i class="fas fa-check text-success"></i> Email & chat support</li>
                         </ul>
                         <button class="btn btn-success" onclick="selectPlan('starter')">Choose Starter</button>
                     </div>
@@ -72,9 +72,9 @@
                         <h2 class="text-primary">${{ settings.growth_price }}</h2>
                         <p class="text-muted">3 months</p>
                         <ul class="list-unstyled">
-                            <li><i class="fas fa-check text-success"></i> Unlimited clients</li>
-                            <li><i class="fas fa-check text-success"></i> Team collaboration</li>
-                            <li><i class="fas fa-check text-success"></i> Priority support</li>
+                            <li><i class="fas fa-check text-success"></i> Up to 20 users + unlimited clients</li>
+                            <li><i class="fas fa-check text-success"></i> Advanced team collaboration</li>
+                            <li><i class="fas fa-check text-success"></i> Priority support & training</li>
                         </ul>
                         <button class="btn btn-primary" onclick="selectPlan('growth')">Choose Growth</button>
                     </div>
@@ -89,9 +89,9 @@
                         <h2 style="color: #FF8C00">${{ settings.enterprise_price or settings.scale_price }}</h2>
                         <p class="text-muted">1 year</p>
                         <ul class="list-unstyled">
-                            <li><i class="fas fa-check text-success"></i> Everything in Growth</li>
-                            <li><i class="fas fa-check text-success"></i> Advanced analytics</li>
-                            <li><i class="fas fa-check text-success"></i> Multi-office support</li>
+                            <li><i class="fas fa-check text-success"></i> Everything in Growth + unlimited users</li>
+                            <li><i class="fas fa-check text-success"></i> White-label client portal</li>
+                            <li><i class="fas fa-check text-success"></i> Multi-office & branch management</li>
                         </ul>
                         <button class="btn" style="background: #FF8C00; color: white;" onclick="selectPlan('enterprise')">Choose Enterprise</button>
                     </div>
@@ -111,10 +111,10 @@
                         <h2 style="color: #FFD700">${{ settings.founders_price }}</h2>
                         <p class="text-muted">One-time • 6-Month Setup & Support</p>
                         <ul class="list-unstyled">
-                            <li><i class="fas fa-crown text-warning"></i> License to use our SaaS web app</li>
-                            <li><i class="fas fa-crown text-warning"></i> 6-month setup and support included</li>
-                            <li><i class="fas fa-crown text-warning"></i> Access to enjoy new features we rollout</li>
-                            <li><i class="fas fa-crown text-warning"></i> Founder Badge & Status</li>
+                            <li><i class="fas fa-rocket text-warning"></i> <strong>💎 OWN the entire SaaS web app FOREVER</strong></li>
+                            <li><i class="fas fa-rocket text-warning"></i> <strong>🏠 Self-host on YOUR servers (you control everything)</strong></li>
+                            <li><i class="fas fa-rocket text-warning"></i> <strong>🚀 6-month white-glove setup & support included</strong></li>
+                            <li><i class="fas fa-rocket text-warning"></i> <strong>🔥 Never pay subscription fees again</strong></li>
                         </ul>
                         <button class="btn" style="background: linear-gradient(45deg, #FFD700, #FFA500); color: #1a1a1a; font-weight: bold;" onclick="selectPlan('founder')">
                             👑 Secure Founder Status - $750
