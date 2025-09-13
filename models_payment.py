@@ -2,8 +2,135 @@ from app import db
 from datetime import datetime
 from decimal import Decimal
 import json
+import hashlib
+import base64
+import secrets
 from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.backends import default_backend
 import os
+
+class SecurityConfig(db.Model):
+    """Security configuration for payment system"""
+    __tablename__ = 'security_config'
+    
+    id = db.Column(db.Integer, primary_key=True, default=1)
+    kdf_salt = db.Column(db.String(255))  # Base64 encoded salt
+    key_fingerprint = db.Column(db.String(64))  # SHA256 hash for verification
+    failed_attempts = db.Column(db.Integer, default=0)
+    last_failed_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class KeyManager:
+    """Secure key management for payment gateways"""
+    _master_key = None
+    _security_config = None
+    
+    @classmethod
+    def _get_security_config(cls):
+        """Get or create security configuration"""
+        if cls._security_config is None:
+            cls._security_config = SecurityConfig.query.first()
+            if not cls._security_config:
+                cls._security_config = SecurityConfig()
+                cls._security_config.kdf_salt = base64.b64encode(os.urandom(32)).decode()
+                db.session.add(cls._security_config)
+                db.session.commit()
+        return cls._security_config
+    
+    @classmethod
+    def load_master_key(cls, master_key):
+        """Load and verify master key"""
+        try:
+            config = cls._get_security_config()
+            
+            # Derive test key for verification
+            kdf = PBKDF2HMAC(
+                algorithm=hashes.SHA256(),
+                length=32,
+                salt=base64.b64decode(config.kdf_salt.encode()),
+                iterations=100000,
+                backend=default_backend()
+            )
+            derived_key = base64.urlsafe_b64encode(kdf.derive(master_key.encode()))
+            
+            # Generate fingerprint for verification
+            fingerprint = hashlib.sha256(derived_key).hexdigest()
+            
+            # If we have a stored fingerprint, verify it matches
+            if config.key_fingerprint and config.key_fingerprint != fingerprint:
+                config.failed_attempts += 1
+                config.last_failed_at = datetime.utcnow()
+                db.session.commit()
+                return False, "Invalid master key"
+            
+            # Store fingerprint if this is the first load
+            if not config.key_fingerprint:
+                config.key_fingerprint = fingerprint
+                db.session.commit()
+            
+            # Store in memory for this session
+            cls._master_key = master_key
+            config.failed_attempts = 0
+            db.session.commit()
+            
+            return True, "Master key loaded successfully"
+            
+        except Exception as e:
+            return False, f"Error loading master key: {str(e)}"
+    
+    @classmethod
+    def unload_master_key(cls):
+        """Unload master key from memory"""
+        cls._master_key = None
+        return True, "Master key unloaded"
+    
+    @classmethod
+    def is_key_loaded(cls):
+        """Check if master key is loaded"""
+        # Check environment variable first
+        env_key = os.environ.get('PAYMENT_CONFIG_MASTER_KEY')
+        if env_key:
+            return True
+        
+        # Check in-memory key
+        return cls._master_key is not None
+    
+    @classmethod
+    def get_gateway_key(cls, gateway_name):
+        """Get derived key for specific gateway"""
+        # Try environment variable first
+        env_key = os.environ.get('PAYMENT_CONFIG_MASTER_KEY')
+        master_key = env_key or cls._master_key
+        
+        if not master_key:
+            raise ValueError("Master key not loaded. Please load from admin dashboard or set PAYMENT_CONFIG_MASTER_KEY environment variable.")
+        
+        config = cls._get_security_config()
+        
+        # Derive gateway-specific key
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=base64.b64decode(config.kdf_salt.encode()) + gateway_name.encode(),
+            iterations=100000,
+            backend=default_backend()
+        )
+        
+        return base64.urlsafe_b64encode(kdf.derive(master_key.encode()))
+    
+    @classmethod
+    def get_key_status(cls):
+        """Get current key status for UI"""
+        env_key = os.environ.get('PAYMENT_CONFIG_MASTER_KEY')
+        if env_key:
+            return "loaded_via_env"
+        elif cls._master_key:
+            return "loaded_in_memory"
+        else:
+            return "not_loaded"
 
 class PaymentGateway(db.Model):
     """Payment gateway configuration for super admin management"""
@@ -33,16 +160,20 @@ class PaymentGateway(db.Model):
     escrow_transactions = db.relationship('EscrowTransaction', backref='payment_gateway', lazy='dynamic')
     
     def get_encryption_key(self):
-        """Get or create encryption key for this gateway"""
-        key = os.environ.get(f'PAYMENT_KEY_{self.name.upper()}')
-        if not key:
-            key = Fernet.generate_key().decode()
-            # In production, store this securely
-        return key.encode() if isinstance(key, str) else key
+        """Get derived encryption key for this gateway using KeyManager"""
+        try:
+            return KeyManager.get_gateway_key(self.name)
+        except ValueError as e:
+            # Return None if master key not loaded - UI should handle this
+            return None
     
     def set_config(self, config_dict):
         """Encrypt and store configuration"""
-        fernet = Fernet(self.get_encryption_key())
+        encryption_key = self.get_encryption_key()
+        if not encryption_key:
+            raise ValueError("Master key not loaded. Cannot encrypt configuration.")
+        
+        fernet = Fernet(encryption_key)
         config_json = json.dumps(config_dict)
         self.encrypted_config = fernet.encrypt(config_json.encode()).decode()
     
@@ -50,8 +181,14 @@ class PaymentGateway(db.Model):
         """Decrypt and return configuration"""
         if not self.encrypted_config:
             return {}
-        fernet = Fernet(self.get_encryption_key())
+        
+        encryption_key = self.get_encryption_key()
+        if not encryption_key:
+            # Master key not loaded - return empty dict but don't raise error
+            return {}
+        
         try:
+            fernet = Fernet(encryption_key)
             decrypted = fernet.decrypt(self.encrypted_config.encode())
             return json.loads(decrypted.decode())
         except:

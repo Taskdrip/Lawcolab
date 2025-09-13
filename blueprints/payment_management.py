@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import current_user
 from utils.decorators import require_super_admin
 from app import db
-from models_payment import PaymentGateway, EscrowTransaction, CryptoWallet, BankAccount
+from models_payment import PaymentGateway, EscrowTransaction, CryptoWallet, BankAccount, KeyManager
 from datetime import datetime
 import json
 
@@ -37,10 +37,13 @@ def payment_dashboard():
         'total_revenue': float(total_revenue),
     }
     
+    key_status = KeyManager.get_key_status()
+    
     return render_template('payment_management/dashboard.html',
                          stats=stats,
                          gateways=gateways,
-                         recent_transactions=recent_transactions)
+                         recent_transactions=recent_transactions,
+                         key_status=key_status)
 
 @payment_mgmt_bp.route('/gateways')
 @require_super_admin
@@ -343,6 +346,32 @@ def set_primary_bank_account(account_id):
     db.session.commit()
     
     return jsonify({'success': True})
+
+@payment_mgmt_bp.route('/load-master-key', methods=['POST'])
+@require_super_admin
+def load_master_key():
+    """Load master encryption key"""
+    try:
+        master_key = request.form.get('master_key')
+        if not master_key:
+            return jsonify({'success': False, 'error': 'Master key is required'})
+        
+        success, message = KeyManager.load_master_key(master_key)
+        return jsonify({'success': success, 'message': message, 'error': message if not success else None})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@payment_mgmt_bp.route('/unload-master-key', methods=['POST'])
+@require_super_admin
+def unload_master_key():
+    """Unload master encryption key"""
+    try:
+        success, message = KeyManager.unload_master_key()
+        return jsonify({'success': success, 'message': message})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
 
 @payment_mgmt_bp.route('/analytics')
 @require_super_admin
