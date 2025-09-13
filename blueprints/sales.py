@@ -186,7 +186,7 @@ def complete_checkout():
         
         # Generate payment reference and store details
         import time
-        payment_reference = f"LAWCOLAB-{selected_plan.upper()}-{int(time.time())}"
+        payment_reference = f"LAWCOLAB-{selected_plan.upper() if selected_plan else 'PLAN'}-{int(time.time())}"
         session['payment_method'] = payment_method
         session['payment_reference'] = payment_reference
         session['payment_start_time'] = int(time.time())
