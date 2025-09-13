@@ -8,11 +8,18 @@
     <div class="mb-4">
         <div class="d-flex align-items-center mb-2">
             <i class="fas fa-headset text-primary me-2"></i>
-            <h1 class="h4 mb-0">Support Chats</h1>
+            <h1 class="h4 mb-0">Support Chat Rooms</h1>
         </div>
-        <div class="d-flex justify-content-between align-items-center">
-            <small class="text-muted">Manage conversations from law firms</small>
-            <span class="badge bg-primary">{{ room_data|length }} Active</span>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <small class="text-muted">Manage support conversations with law firms</small>
+            <div class="d-flex gap-2 align-items-center">
+                <span class="badge bg-primary">{{ room_data|length }} Active</span>
+                <a href="{{ url_for('enhanced_chat.superadmin_broadcast') }}" 
+                   class="btn btn-warning btn-sm text-white"
+                   style="font-weight: 600;">
+                    <i class="fas fa-bullhorn me-1"></i>Send Broadcast
+                </a>
+            </div>
         </div>
     </div>
 

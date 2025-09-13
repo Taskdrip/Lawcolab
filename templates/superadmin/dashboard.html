@@ -25,10 +25,105 @@
                     <li><a class="dropdown-item" href="{{ url_for('superadmin.platform_users') }}">
                         <i class="fas fa-users me-2"></i>View All Users
                     </a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{{ url_for('enhanced_chat.superadmin_broadcast') }}">
+                        <i class="fas fa-bullhorn me-2"></i>Send Broadcast
+                    </a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('enhanced_chat.superadmin_support_rooms') }}">
+                        <i class="fas fa-headset me-2"></i>Support Chat Rooms
+                    </a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{{ url_for('payment_mgmt.payment_dashboard') }}">
+                        <i class="fas fa-credit-card me-2"></i>Payment Management
+                    </a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('payment_mgmt.manage_bank_accounts') }}">
+                        <i class="fas fa-university me-2"></i>Bank Accounts
+                    </a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('payment_mgmt.manage_crypto_wallets') }}">
+                        <i class="fas fa-wallet me-2"></i>Crypto Wallets
+                    </a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{{ url_for('sales.manage_reviews') }}">
+                        <i class="fas fa-star me-2"></i>Manage Reviews
+                    </a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('sales.admin_dashboard') }}">
+                        <i class="fas fa-chart-line me-2"></i>Sales & Content
+                    </a></li>
                     <li><a class="dropdown-item" href="{{ url_for('showcase.admin_manage') }}">
-                        <i class="fas fa-star me-2"></i>Manage Showcases
+                        <i class="fas fa-trophy me-2"></i>Manage Showcases
                     </a></li>
                 </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Access Management Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <div class="rounded-circle p-3 mx-auto" style="background: linear-gradient(135deg, #667eea, #764ba2); width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-credit-card text-white fa-2x"></i>
+                        </div>
+                    </div>
+                    <h5 class="mb-2">Payment Management</h5>
+                    <p class="text-muted small mb-3">Manage bank accounts, crypto wallets, and payment gateways</p>
+                    <a href="{{ url_for('payment_mgmt.payment_dashboard') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-cog me-1"></i>Manage Payments
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <div class="rounded-circle p-3 mx-auto" style="background: linear-gradient(135deg, #ff9a9e, #fecfef); width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-bullhorn text-white fa-2x"></i>
+                        </div>
+                    </div>
+                    <h5 class="mb-2">Broadcast Center</h5>
+                    <p class="text-muted small mb-3">Send announcements and manage support chats</p>
+                    <a href="{{ url_for('enhanced_chat.superadmin_broadcast') }}" class="btn btn-warning btn-sm text-white">
+                        <i class="fas fa-paper-plane me-1"></i>Send Broadcast
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <div class="rounded-circle p-3 mx-auto" style="background: linear-gradient(135deg, #4facfe, #00f2fe); width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-star text-white fa-2x"></i>
+                        </div>
+                    </div>
+                    <h5 class="mb-2">Content Management</h5>
+                    <p class="text-muted small mb-3">Edit reviews, ratings, and sales page content</p>
+                    <a href="{{ url_for('sales.manage_reviews') }}" class="btn btn-info btn-sm text-white">
+                        <i class="fas fa-edit me-1"></i>Edit Content
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <div class="rounded-circle p-3 mx-auto" style="background: linear-gradient(135deg, #a8edea, #fed6e3); width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-headset text-white fa-2x"></i>
+                        </div>
+                    </div>
+                    <h5 class="mb-2">Support Hub</h5>
+                    <p class="text-muted small mb-3">Monitor and manage law firm support conversations</p>
+                    <a href="{{ url_for('enhanced_chat.superadmin_support_rooms') }}" class="btn btn-success btn-sm">
+                        <i class="fas fa-comments me-1"></i>View Chats
+                    </a>
+                </div>
             </div>
         </div>
     </div>
