@@ -82,6 +82,13 @@ def create_gateway():
                 'secret_key': request.form.get('stripe_secret_key', ''),
                 'webhook_secret': request.form.get('stripe_webhook_secret', ''),
             }
+        elif gateway.name == 'paypal':
+            config = {
+                'client_id': request.form.get('paypal_client_id', ''),
+                'client_secret': request.form.get('paypal_client_secret', ''),
+                'webhook_id': request.form.get('paypal_webhook_id', ''),
+                'sandbox_mode': request.form.get('paypal_sandbox') == 'on',
+            }
         elif gateway.name == 'paystack':
             config = {
                 'public_key': request.form.get('paystack_public_key', ''),

@@ -63,6 +63,7 @@
                                     <select class="form-select" name="name" id="name" required onchange="updateGatewayConfig()">
                                         <option value="">Select Gateway Type</option>
                                         <option value="stripe" {{ 'selected' if gateway and gateway.name == 'stripe' }}>Stripe</option>
+                                        <option value="paypal" {{ 'selected' if gateway and gateway.name == 'paypal' }}>PayPal</option>
                                         <option value="paystack" {{ 'selected' if gateway and gateway.name == 'paystack' }}>Paystack</option>
                                         <option value="crypto" {{ 'selected' if gateway and gateway.name == 'crypto' }}>Cryptocurrency</option>
                                         <option value="bank_transfer" {{ 'selected' if gateway and gateway.name == 'bank_transfer' }}>Bank Transfer</option>
@@ -165,6 +166,41 @@
                                     <input type="password" class="form-control" name="stripe_webhook_secret" 
                                            placeholder="whsec_...">
                                     <div class="help-text">Webhook endpoint secret for verification</div>
+                                </div>
+                            </div>
+
+                            <!-- PayPal Configuration -->
+                            <div id="paypal-config" class="config-section" style="display: none;">
+                                <h5><i class="fab fa-paypal text-primary me-2"></i>PayPal Configuration</h5>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="paypal_client_id" class="form-label">Client ID</label>
+                                        <input type="text" class="form-control" name="paypal_client_id" 
+                                               placeholder="Client ID from PayPal Developer">
+                                        <div class="help-text">PayPal application client ID</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="paypal_client_secret" class="form-label">Client Secret</label>
+                                        <input type="password" class="form-control" name="paypal_client_secret" 
+                                               placeholder="Client secret (encrypted storage)">
+                                        <div class="help-text">PayPal application client secret</div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="paypal_webhook_id" class="form-label">Webhook ID</label>
+                                        <input type="text" class="form-control" name="paypal_webhook_id" 
+                                               placeholder="Webhook ID">
+                                        <div class="help-text">PayPal webhook identifier</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-check form-switch mt-4">
+                                            <input class="form-check-input" type="checkbox" name="paypal_sandbox" id="paypal_sandbox" checked>
+                                            <label class="form-check-label" for="paypal_sandbox">
+                                                Use Sandbox Environment
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -290,7 +326,7 @@
         function updateGatewayConfig() {
             const gatewayType = document.getElementById('name').value;
             const configSection = document.getElementById('gateway-config');
-            const configs = ['stripe-config', 'paystack-config', 'crypto-config', 'bank-config'];
+            const configs = ['stripe-config', 'paypal-config', 'paystack-config', 'crypto-config', 'bank-config'];
             
             // Hide all config sections
             configs.forEach(id => {
@@ -306,6 +342,7 @@
                 if (!displayNameField.value) {
                     const names = {
                         'stripe': 'Stripe',
+                        'paypal': 'PayPal',
                         'paystack': 'Paystack',
                         'crypto': 'Cryptocurrency',
                         'bank_transfer': 'Bank Transfer'
