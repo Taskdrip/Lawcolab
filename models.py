@@ -731,6 +731,7 @@ class PopupSettings(db.Model):
     growth_price = db.Column(db.Numeric(10, 2), default=90.00)  # Growth Plan
     scale_price = db.Column(db.Numeric(10, 2), default=350.00)  # Scale Plan
     founders_price = db.Column(db.Numeric(10, 2), default=579.00)  # Founders Pack with enhanced features
+    lifetime_price = db.Column(db.Numeric(10, 2), default=999.00)  # Lifetime Plan
     
     # Regular pricing (what they would pay later)
     starter_regular_price = db.Column(db.Numeric(10, 2), default=70.00)
