@@ -287,92 +287,109 @@
                 </div>
             </div>
             
-            <div class="row justify-content-center" style="gap: 15px;">
+            <!-- Clean Mobile-Optimized Pricing Cards -->
+            <div class="row justify-content-center" style="gap: 20px;">
                 <!-- Starter Plan -->
-                <div class="col-lg-3 mb-4">
-                    <div class="pricing-card" style="border: 2px solid #28a745; background: linear-gradient(135deg, #e8f5e8 0%, #ffffff 100%);">
-                        <div style="background: #28a745; color: white; padding: 8px 15px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; display: inline-block; margin-bottom: 15px;">
-                            💼 1 Month
+                <div class="col-lg-3 col-md-6 mb-4" style="max-width: 300px;">
+                    <div style="background: white; border: 2px solid #2563eb; border-radius: 20px; padding: 30px; text-align: center; height: 350px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <div style="background: #2563eb; color: white; padding: 8px 20px; border-radius: 25px; display: inline-block; margin-bottom: 20px; font-weight: 600;">
+                                Starter
+                            </div>
+                            <h3 style="font-size: 3rem; font-weight: 700; color: #1a1a1a; margin: 20px 0 10px 0;">${{ settings.starter_price }}</h3>
+                            <p style="color: #64748b; font-size: 1.1rem; margin-bottom: 20px;">per month</p>
+                            <ul style="list-style: none; padding: 0; margin: 0; text-align: left; font-size: 0.9rem;">
+                                <li style="margin-bottom: 8px;"><i class="fas fa-check" style="color: #16a34a; margin-right: 8px;"></i>Up to 5 users</li>
+                                <li style="margin-bottom: 8px;"><i class="fas fa-check" style="color: #16a34a; margin-right: 8px;"></i>Basic case management</li>
+                                <li style="margin-bottom: 8px;"><i class="fas fa-check" style="color: #16a34a; margin-right: 8px;"></i>Email support</li>
+                            </ul>
                         </div>
-                        <h4 style="color: #1a1a1a; margin-bottom: 20px;">Starter Plan</h4>
-                        <div class="price" style="font-size: 2.5rem; color: #28a745;">
-                            ${{ settings.starter_price }}
-                        </div>
-                        <p class="price-note">1 month • Essential features</p>
-                        
-                        <ul class="feature-list list-unstyled" style="text-align: left;">
-                            <li><i class="fas fa-check text-success me-2"></i> Up to 5 users + unlimited clients</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Complete case & project management</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Email & chat support</li>
-                            <li><i class="fas fa-check text-success me-2"></i> 20GB secure storage</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Basic team collaboration</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Client portal access</li>
-                        </ul>
-                        
-                        <a href="javascript:void(0)" onclick="selectPlan('starter', 'Starter Plan - ${{ settings.starter_price }}/month')" style="background: linear-gradient(45deg, #28a745, #20c997); color: white; padding: 15px 40px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 600; width: 100%; text-align: center; box-shadow: 0 4px 15px rgba(40,167,69,0.3); transition: all 0.3s ease;">
-                            Choose Starter
+                        <a href="javascript:void(0)" onclick="selectPlan('starter', 'Starter Plan - ${{ settings.starter_price }}/month')" style="background: #2563eb; color: white; padding: 15px 30px; border-radius: 15px; text-decoration: none; font-weight: 600; display: block; transition: all 0.3s; box-shadow: 0 4px 15px rgba(37,99,235,0.3);">
+                            Get started
                         </a>
                     </div>
                 </div>
                 
-                <!-- Professional Plan -->
-                <div class="col-lg-3 mb-4">
-                    <div class="pricing-card" style="border: 2px solid #28a745; background: linear-gradient(135deg, #e8f5e8 0%, #ffffff 100%);">
-                        <div style="background: #28a745; color: white; padding: 8px 15px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; display: inline-block; margin-bottom: 15px;">
-                            🚀 3 Months
+                <!-- Growth Plan (Best Value) -->
+                <div class="col-lg-3 col-md-6 mb-4" style="max-width: 300px;">
+                    <div style="background: white; border: 2px solid #16a34a; border-radius: 20px; padding: 30px; text-align: center; height: 350px; display: flex; flex-direction: column; justify-content: space-between; position: relative;">
+                        <div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #16a34a; color: white; padding: 5px 15px; border-radius: 15px; font-size: 0.8rem; font-weight: 700;">
+                            💎 Best Value
                         </div>
-                        <h4 style="color: #1a1a1a; margin-bottom: 20px;">Growth Plan</h4>
-                        <div class="price" style="font-size: 2.5rem; color: #28a745;">
-                            ${{ settings.growth_price }}
+                        <div>
+                            <div style="background: #16a34a; color: white; padding: 8px 20px; border-radius: 25px; display: inline-block; margin-bottom: 20px; font-weight: 600; margin-top: 10px;">
+                                Growth
+                            </div>
+                            <h3 style="font-size: 3rem; font-weight: 700; color: #1a1a1a; margin: 20px 0 10px 0;">${{ settings.growth_price }}</h3>
+                            <p style="color: #64748b; font-size: 1.1rem; margin-bottom: 20px;">per 3 months</p>
+                            <ul style="list-style: none; padding: 0; margin: 0; text-align: left; font-size: 0.9rem;">
+                                <li style="margin-bottom: 8px;"><i class="fas fa-check" style="color: #16a34a; margin-right: 8px;"></i>Up to 20 users</li>
+                                <li style="margin-bottom: 8px;"><i class="fas fa-check" style="color: #16a34a; margin-right: 8px;"></i>Advanced collaboration</li>
+                                <li style="margin-bottom: 8px;"><i class="fas fa-check" style="color: #16a34a; margin-right: 8px;"></i>Priority support</li>
+                            </ul>
                         </div>
-                        <p class="price-note">3 months • Advanced features</p>
-                        
-                        <ul class="feature-list list-unstyled" style="text-align: left;">
-                            <li><i class="fas fa-check text-success me-2"></i> Up to 20 users + unlimited clients</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Advanced team collaboration</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Priority support & training</li>
-                            <li><i class="fas fa-check text-success me-2"></i> 100GB secure storage</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Advanced analytics & reporting</li>
-                            <li><i class="fas fa-check text-success me-2"></i> All integrations + API access</li>
-                        </ul>
-                        
-                        <a href="javascript:void(0)" onclick="selectPlan('growth', 'Growth Plan - ${{ settings.growth_price }}/3mo')" style="background: linear-gradient(45deg, #28a745, #20c997); color: white; padding: 18px 45px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 700; width: 100%; text-align: center; box-shadow: 0 6px 20px rgba(40,167,69,0.4); transition: all 0.3s ease; transform: translateY(-2px);">
-                            Choose Growth Plan
-                        </a>
+                        <div>
+                            <div style="background: #16a34a; color: white; padding: 10px 20px; border-radius: 15px; margin-bottom: 15px; font-weight: 600;">
+                                Save 10%
+                            </div>
+                            <a href="javascript:void(0)" onclick="selectPlan('growth', 'Growth Plan - ${{ settings.growth_price }}/3mo')" style="background: #16a34a; color: white; padding: 15px 30px; border-radius: 15px; text-decoration: none; font-weight: 600; display: block; transition: all 0.3s; box-shadow: 0 4px 15px rgba(22,163,74,0.3);">
+                                Get started
+                            </a>
+                        </div>
                     </div>
                 </div>
                 
                 <!-- Enterprise Plan -->
-                <div class="col-lg-3 mb-4">
-                    <div class="pricing-card" style="border: 3px solid #FF8C00; position: relative; background: linear-gradient(135deg, #fff3e0 0%, #ffffff 100%);">
-                        <div style="background: #FF8C00; color: white; padding: 8px 15px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; display: inline-block; margin-bottom: 15px;">
-                            ⚡ 1 Year
+                <div class="col-lg-3 col-md-6 mb-4" style="max-width: 300px;">
+                    <div style="background: white; border: 2px solid #dc2626; border-radius: 20px; padding: 30px; text-align: center; height: 350px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <div style="background: #dc2626; color: white; padding: 8px 20px; border-radius: 25px; display: inline-block; margin-bottom: 20px; font-weight: 600;">
+                                Enterprise
+                            </div>
+                            <h3 style="font-size: 3rem; font-weight: 700; color: #1a1a1a; margin: 20px 0 10px 0;">${{ settings.enterprise_price }}</h3>
+                            <p style="color: #64748b; font-size: 1.1rem; margin-bottom: 20px;">per year</p>
+                            <ul style="list-style: none; padding: 0; margin: 0; text-align: left; font-size: 0.9rem;">
+                                <li style="margin-bottom: 8px;"><i class="fas fa-check" style="color: #16a34a; margin-right: 8px;"></i>Unlimited users</li>
+                                <li style="margin-bottom: 8px;"><i class="fas fa-check" style="color: #16a34a; margin-right: 8px;"></i>White-label portal</li>
+                                <li style="margin-bottom: 8px;"><i class="fas fa-check" style="color: #16a34a; margin-right: 8px;"></i>24/7 priority support</li>
+                            </ul>
                         </div>
-                        
-                        <h4 style="color: #1a1a1a; margin-bottom: 20px;">Enterprise Plan</h4>
-                        <div class="price" style="font-size: 2.5rem; color: #FF8C00;">
-                            ${{ settings.enterprise_price or settings.scale_price }}
-                        </div>
-                        <p class="price-note">1 year • Premium features</p>
-                        
-                        <ul class="feature-list list-unstyled" style="text-align: left;">
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Everything in Growth + unlimited users</strong></li>
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Multi-office & branch management</strong></li>
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>White-label client portal</strong></li>
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Custom integrations & SSO</strong></li>
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>24/7 priority support & training</strong></li>
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>500GB storage + daily backups</strong></li>
-                        </ul>
-                        
-                        <a href="javascript:void(0)" onclick="selectPlan('enterprise', 'Enterprise Plan - ${{ settings.enterprise_price or settings.scale_price }}/year')" style="background: linear-gradient(45deg, #FF8C00, #FF6B35); color: white; padding: 18px 45px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 700; width: 100%; text-align: center; box-shadow: 0 6px 20px rgba(255,140,0,0.4); transition: all 0.3s ease; transform: translateY(-2px);">
-                            Choose Enterprise
+                        <a href="javascript:void(0)" onclick="selectPlan('enterprise', 'Enterprise Plan - ${{ settings.enterprise_price }}/year')" style="background: #dc2626; color: white; padding: 15px 30px; border-radius: 15px; text-decoration: none; font-weight: 600; display: block; transition: all 0.3s; box-shadow: 0 4px 15px rgba(220,38,38,0.3);">
+                            Get started
                         </a>
-                        
-                        <p style="margin-top: 15px; font-size: 0.85rem; color: #d4af37; font-weight: 600;">
-                            ⚡ Best for growing firms
-                        </p>
                     </div>
                 </div>
+            </div>
+            
+            <!-- Mobile Responsive CSS for Popup -->
+            <style>
+            @media (max-width: 768px) {
+                .pricing-card {
+                    margin: 0 10px 20px 10px !important;
+                    max-width: 280px !important;
+                    height: 320px !important;
+                }
+                .pricing-card h3 {
+                    font-size: 2.2rem !important;
+                }
+                .container .row {
+                    gap: 10px !important;
+                }
+                .col-lg-3, .col-md-6 {
+                    flex: 0 0 auto !important;
+                    width: 100% !important;
+                    max-width: 320px !important;
+                    margin: 0 auto !important;
+                }
+                .pricing-card ul {
+                    font-size: 0.8rem !important;
+                }
+                .pricing-card a {
+                    padding: 12px 20px !important;
+                    font-size: 0.9rem !important;
+                }
+            }
+            </style>
                 
                 <!-- Founders Pack -->
                 <div class="col-lg-3 mb-4">
