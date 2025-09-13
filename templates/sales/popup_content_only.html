@@ -21,16 +21,39 @@
     </div>
     {% endif %}
 
-    <!-- Pricing Content -->
+    <!-- 5-Plan Pricing Structure -->
     <div class="container">
+        <!-- Free Trial Plan -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-8">
+                <div class="card" style="border: 3px solid #17a2b8; background: linear-gradient(135deg, #e7f9fd, #ffffff);">
+                    <div class="card-body text-center">
+                        <div style="background: #17a2b8; color: white; padding: 8px 16px; border-radius: 20px; display: inline-block; margin-bottom: 15px;">
+                            🆓 FREE TRIAL
+                        </div>
+                        <h5 class="card-title">{{ settings.trial_duration_days or 3 }}-Day Free Trial</h5>
+                        <h2 class="text-info">$0</h2>
+                        <p class="text-muted">{{ settings.trial_duration_days or 3 }} days • No credit card required</p>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> Test all features</li>
+                            <li><i class="fas fa-check text-success"></i> No limitations</li>
+                            <li><i class="fas fa-check text-success"></i> Cancel anytime</li>
+                        </ul>
+                        <button class="btn btn-info" onclick="selectPlan('trial')">Start Free Trial</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paid Plans Row -->
         <div class="row justify-content-center">
             <!-- Starter Plan -->
             <div class="col-md-3 mb-4">
                 <div class="card" style="border: 2px solid #28a745;">
                     <div class="card-body text-center">
-                        <h5 class="card-title">Starter Plan</h5>
+                        <h5 class="card-title">Starter</h5>
                         <h2 class="text-success">${{ settings.starter_price }}</h2>
-                        <p class="text-muted">per month</p>
+                        <p class="text-muted">1 month</p>
                         <ul class="list-unstyled">
                             <li><i class="fas fa-check text-success"></i> Up to 50 clients</li>
                             <li><i class="fas fa-check text-success"></i> Basic case management</li>
@@ -45,9 +68,9 @@
             <div class="col-md-3 mb-4">
                 <div class="card" style="border: 2px solid #0066cc;">
                     <div class="card-body text-center">
-                        <h5 class="card-title">Growth Plan</h5>
+                        <h5 class="card-title">Growth</h5>
                         <h2 class="text-primary">${{ settings.growth_price }}</h2>
-                        <p class="text-muted">per month</p>
+                        <p class="text-muted">3 months</p>
                         <ul class="list-unstyled">
                             <li><i class="fas fa-check text-success"></i> Unlimited clients</li>
                             <li><i class="fas fa-check text-success"></i> Team collaboration</li>
@@ -58,36 +81,19 @@
                 </div>
             </div>
 
-            <!-- Scale Plan -->
+            <!-- Enterprise Plan -->
             <div class="col-md-3 mb-4">
                 <div class="card" style="border: 2px solid #FF8C00;">
                     <div class="card-body text-center">
-                        <h5 class="card-title">Scale Plan</h5>
-                        <h2 style="color: #FF8C00">${{ settings.scale_price }}</h2>
-                        <p class="text-muted">per month</p>
+                        <h5 class="card-title">Enterprise</h5>
+                        <h2 style="color: #FF8C00">${{ settings.enterprise_price or settings.scale_price }}</h2>
+                        <p class="text-muted">1 year</p>
                         <ul class="list-unstyled">
                             <li><i class="fas fa-check text-success"></i> Everything in Growth</li>
                             <li><i class="fas fa-check text-success"></i> Advanced analytics</li>
                             <li><i class="fas fa-check text-success"></i> Multi-office support</li>
                         </ul>
-                        <button class="btn" style="background: #FF8C00; color: white;" onclick="selectPlan('scale')">Choose Scale</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Lifetime Plan -->
-            <div class="col-md-3 mb-4">
-                <div class="card" style="border: 2px solid #6f42c1;">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Lifetime Plan</h5>
-                        <h2 style="color: #6f42c1">${{ settings.lifetime_price }}</h2>
-                        <p class="text-muted">one-time payment</p>
-                        <ul class="list-unstyled">
-                            <li><i class="fas fa-infinity text-primary"></i> Never pay again</li>
-                            <li><i class="fas fa-infinity text-primary"></i> All future updates</li>
-                            <li><i class="fas fa-infinity text-primary"></i> Lifetime support</li>
-                        </ul>
-                        <button class="btn" style="background: #6f42c1; color: white;" onclick="selectPlan('lifetime')">Get Lifetime</button>
+                        <button class="btn" style="background: #FF8C00; color: white;" onclick="selectPlan('enterprise')">Choose Enterprise</button>
                     </div>
                 </div>
             </div>
@@ -95,23 +101,23 @@
 
         <!-- Founders Pack -->
         <div class="row justify-content-center">
-            <div class="col-md-6">
+            <div class="col-md-8">
                 <div class="card" style="border: 3px solid #FFD700; background: linear-gradient(135deg, #fff9e6, #ffffff);">
                     <div class="card-body text-center">
                         <div style="background: #FFD700; color: #1a1a1a; padding: 10px 20px; border-radius: 25px; display: inline-block; margin-bottom: 15px;">
                             👑 FOUNDERS PACK
                         </div>
-                        <h5 class="card-title">Exclusive Founders</h5>
+                        <h5 class="card-title">Exclusive Founders Pack</h5>
                         <h2 style="color: #FFD700">${{ settings.founders_price }}</h2>
-                        <p class="text-muted">per year • Save 77% Forever</p>
+                        <p class="text-muted">One-time • 6-Month Setup & Support</p>
                         <ul class="list-unstyled">
-                            <li><i class="fas fa-crown text-warning"></i> Everything in Lifetime Plan</li>
-                            <li><i class="fas fa-crown text-warning"></i> AI-Powered Analytics</li>
-                            <li><i class="fas fa-crown text-warning"></i> Dedicated Success Manager</li>
+                            <li><i class="fas fa-crown text-warning"></i> License to use our SaaS web app</li>
+                            <li><i class="fas fa-crown text-warning"></i> 6-month setup and support included</li>
+                            <li><i class="fas fa-crown text-warning"></i> Access to enjoy new features we rollout</li>
                             <li><i class="fas fa-crown text-warning"></i> Founder Badge & Status</li>
                         </ul>
                         <button class="btn" style="background: linear-gradient(45deg, #FFD700, #FFA500); color: #1a1a1a; font-weight: bold;" onclick="selectPlan('founder')">
-                            👑 Secure Founder Status
+                            👑 Secure Founder Status - $750
                         </button>
                     </div>
                 </div>

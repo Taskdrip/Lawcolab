@@ -260,18 +260,45 @@
         <div class="container">
             <h3 class="text-center mb-5" style="font-size: 2.5rem; font-weight: 700;">Choose Your Plan</h3>
             
+            <!-- Free Trial Section -->
+            <div class="row justify-content-center mb-5">
+                <div class="col-lg-8">
+                    <div class="pricing-card" style="border: 3px solid #17a2b8; background: linear-gradient(135deg, #e7f9fd 0%, #ffffff 100%);">
+                        <div style="background: #17a2b8; color: white; padding: 10px 20px; border-radius: 25px; font-weight: 600; font-size: 1rem; display: inline-block; margin-bottom: 15px;">
+                            🆓 FREE TRIAL
+                        </div>
+                        <h4 style="color: #1a1a1a; margin-bottom: 20px;">{{ settings.trial_duration_days or 3 }}-Day Free Trial</h4>
+                        <div class="price" style="font-size: 3rem; color: #17a2b8;">
+                            $0
+                        </div>
+                        <p class="price-note">{{ settings.trial_duration_days or 3 }} days • No credit card required</p>
+                        
+                        <ul class="feature-list list-unstyled" style="text-align: left;">
+                            <li><i class="fas fa-check text-success me-2"></i> Test all features</li>
+                            <li><i class="fas fa-check text-success me-2"></i> No limitations</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Cancel anytime</li>
+                            <li><i class="fas fa-check text-success me-2"></i> No commitments</li>
+                        </ul>
+                        
+                        <a href="javascript:void(0)" onclick="selectPlan('trial', 'Free Trial - {{ settings.trial_duration_days or 3 }} Days')" style="background: linear-gradient(45deg, #17a2b8, #20c997); color: white; padding: 20px 50px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 700; width: 100%; text-align: center; box-shadow: 0 6px 20px rgba(23,162,184,0.4); transition: all 0.3s ease;">
+                            🆓 Start Free Trial
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
             <div class="row justify-content-center" style="gap: 15px;">
                 <!-- Starter Plan -->
                 <div class="col-lg-3 mb-4">
                     <div class="pricing-card" style="border: 2px solid #28a745; background: linear-gradient(135deg, #e8f5e8 0%, #ffffff 100%);">
                         <div style="background: #28a745; color: white; padding: 8px 15px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; display: inline-block; margin-bottom: 15px;">
-                            🚀 New Pricing
+                            💼 1 Month
                         </div>
                         <h4 style="color: #1a1a1a; margin-bottom: 20px;">Starter Plan</h4>
                         <div class="price" style="font-size: 2.5rem; color: #28a745;">
                             ${{ settings.starter_price }}
                         </div>
-                        <p class="price-note">per month • Essential features</p>
+                        <p class="price-note">1 month • Essential features</p>
                         
                         <ul class="feature-list list-unstyled" style="text-align: left;">
                             <li><i class="fas fa-check text-success me-2"></i> Up to 50 clients</li>
@@ -282,7 +309,7 @@
                             <li><i class="fas fa-times text-danger me-2"></i> No advanced analytics</li>
                         </ul>
                         
-                        <a href="javascript:void(0)" onclick="selectPlan('starter', 'Starter Plan - $39/month')" style="background: linear-gradient(45deg, #28a745, #20c997); color: white; padding: 15px 40px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 600; width: 100%; text-align: center; box-shadow: 0 4px 15px rgba(40,167,69,0.3); transition: all 0.3s ease;">
+                        <a href="javascript:void(0)" onclick="selectPlan('starter', 'Starter Plan - ${{ settings.starter_price }}/month')" style="background: linear-gradient(45deg, #28a745, #20c997); color: white; padding: 15px 40px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 600; width: 100%; text-align: center; box-shadow: 0 4px 15px rgba(40,167,69,0.3); transition: all 0.3s ease;">
                             Choose Starter
                         </a>
                     </div>
@@ -292,13 +319,13 @@
                 <div class="col-lg-3 mb-4">
                     <div class="pricing-card" style="border: 2px solid #28a745; background: linear-gradient(135deg, #e8f5e8 0%, #ffffff 100%);">
                         <div style="background: #28a745; color: white; padding: 8px 15px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; display: inline-block; margin-bottom: 15px;">
-                            💎 Best Value
+                            🚀 3 Months
                         </div>
                         <h4 style="color: #1a1a1a; margin-bottom: 20px;">Growth Plan</h4>
                         <div class="price" style="font-size: 2.5rem; color: #28a745;">
                             ${{ settings.growth_price }}
                         </div>
-                        <p class="price-note">per month • Advanced features</p>
+                        <p class="price-note">3 months • Advanced features</p>
                         
                         <ul class="feature-list list-unstyled" style="text-align: left;">
                             <li><i class="fas fa-check text-success me-2"></i> Unlimited clients & cases</li>
@@ -309,7 +336,7 @@
                             <li><i class="fas fa-check text-success me-2"></i> All integrations</li>
                         </ul>
                         
-                        <a href="javascript:void(0)" onclick="selectPlan('growth', 'Growth Plan - $90/month')" style="background: linear-gradient(45deg, #28a745, #20c997); color: white; padding: 18px 45px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 700; width: 100%; text-align: center; box-shadow: 0 6px 20px rgba(40,167,69,0.4); transition: all 0.3s ease; transform: translateY(-2px);">
+                        <a href="javascript:void(0)" onclick="selectPlan('growth', 'Growth Plan - ${{ settings.growth_price }}/3mo')" style="background: linear-gradient(45deg, #28a745, #20c997); color: white; padding: 18px 45px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 700; width: 100%; text-align: center; box-shadow: 0 6px 20px rgba(40,167,69,0.4); transition: all 0.3s ease; transform: translateY(-2px);">
                             Choose Growth Plan
                         </a>
                     </div>
@@ -319,14 +346,14 @@
                 <div class="col-lg-3 mb-4">
                     <div class="pricing-card" style="border: 3px solid #FF8C00; position: relative; background: linear-gradient(135deg, #fff3e0 0%, #ffffff 100%);">
                         <div style="background: #FF8C00; color: white; padding: 8px 15px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; display: inline-block; margin-bottom: 15px;">
-                            🚀 Enterprise
+                            ⚡ 1 Year
                         </div>
                         
-                        <h4 style="color: #1a1a1a; margin-bottom: 20px;">Scale Plan</h4>
+                        <h4 style="color: #1a1a1a; margin-bottom: 20px;">Enterprise Plan</h4>
                         <div class="price" style="font-size: 2.5rem; color: #FF8C00;">
-                            ${{ settings.scale_price }}
+                            ${{ settings.enterprise_price or settings.scale_price }}
                         </div>
-                        <p class="price-note">per month • Premium features</p>
+                        <p class="price-note">1 year • Premium features</p>
                         
                         <ul class="feature-list list-unstyled" style="text-align: left;">
                             <li><i class="fas fa-crown text-warning me-2"></i> <strong>Everything in Growth Plan</strong></li>
@@ -337,12 +364,12 @@
                             <li><i class="fas fa-crown text-warning me-2"></i> <strong>Multi-office management</strong></li>
                         </ul>
                         
-                        <a href="javascript:void(0)" onclick="selectPlan('scale', 'Scale Plan - $350/month')" style="background: linear-gradient(45deg, #FF8C00, #FF6B35); color: white; padding: 18px 45px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 700; width: 100%; text-align: center; box-shadow: 0 6px 20px rgba(255,140,0,0.4); transition: all 0.3s ease; transform: translateY(-2px);">
-                            Choose Scale Plan
+                        <a href="javascript:void(0)" onclick="selectPlan('enterprise', 'Enterprise Plan - ${{ settings.enterprise_price or settings.scale_price }}/year')" style="background: linear-gradient(45deg, #FF8C00, #FF6B35); color: white; padding: 18px 45px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 700; width: 100%; text-align: center; box-shadow: 0 6px 20px rgba(255,140,0,0.4); transition: all 0.3s ease; transform: translateY(-2px);">
+                            Choose Enterprise
                         </a>
                         
                         <p style="margin-top: 15px; font-size: 0.85rem; color: #d4af37; font-weight: 600;">
-                            ⚡ Only 47 spots remaining
+                            ⚡ Best for growing firms
                         </p>
                     </div>
                 </div>
@@ -354,30 +381,30 @@
                             👑 FOUNDERS PACK
                         </div>
                         
-                        <h4 style="color: #1a1a1a; margin-bottom: 20px; margin-top: 30px;">Exclusive Founders</h4>
+                        <h4 style="color: #1a1a1a; margin-bottom: 20px; margin-top: 30px;">Exclusive Founders Pack</h4>
                         <div class="price" style="font-size: 2.5rem; color: #FFD700;">
                             ${{ settings.founders_price }}
                         </div>
                         <p style="color: #999; text-decoration: line-through; margin: 0; font-size: 1rem;">Regular: $2,500</p>
-                        <p class="price-note">per year • Save 77% Forever</p>
+                        <p class="price-note">one-time • 6-Month Setup & Support</p>
                         
                         <ul class="feature-list list-unstyled" style="text-align: left;">
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Everything in Scale Plan</strong></li>
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>AI-Powered Legal Analytics</strong></li>
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Custom Workflow Builder</strong></li>
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Advanced API Access</strong></li>
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>White-Label Solutions</strong></li>
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Dedicated Success Manager</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>License to use our SaaS web app</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>6-month setup and support included</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Access to enjoy new features we rollout</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Founder Badge & Status</strong></li>
                             <li><i class="fas fa-crown text-warning me-2"></i> <strong>Priority Feature Requests</strong></li>
-                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Annual Founder Status</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Dedicated Success Manager</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>VIP Support Channel</strong></li>
+                            <li><i class="fas fa-crown text-warning me-2"></i> <strong>Permanent Founder Status</strong></li>
                         </ul>
                         
-                        <a href="javascript:void(0)" onclick="selectPlan('founders', 'Founder Pack - $579/year')" style="background: linear-gradient(45deg, #FFD700, #FFA500); color: #1a1a1a; padding: 20px 45px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 800; width: 100%; text-align: center; box-shadow: 0 8px 25px rgba(255,215,0,0.5); transition: all 0.3s ease; transform: translateY(-3px);">
-                            👑 Secure Founder Status
+                        <a href="javascript:void(0)" onclick="selectPlan('founder', 'Founder Pack - ${{ settings.founders_price }} one-time')" style="background: linear-gradient(45deg, #FFD700, #FFA500); color: #1a1a1a; padding: 20px 45px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 800; width: 100%; text-align: center; box-shadow: 0 8px 25px rgba(255,215,0,0.5); transition: all 0.3s ease; transform: translateY(-3px);">
+                            👑 Secure Founder Status - $750
                         </a>
                         
                         <p style="margin-top: 15px; font-size: 0.85rem; color: #d4af37; font-weight: 600;">
-                            ⚡ Limited: Only 53 spots left
+                            ⚡ Limited: Exclusive Founders Only
                         </p>
                     </div>
                 </div>
