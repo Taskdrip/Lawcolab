@@ -2,7 +2,9 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import current_user
 from utils.decorators import require_super_admin
 from app import db
-from models_payment import PaymentGateway, EscrowTransaction, CryptoWallet, BankAccount, KeyManager
+from models_payment import PaymentGateway, EscrowTransaction, SecurityConfig, KeyManager, CryptoWallet
+from models_payment_custom import PaymentOrder, PaymentTransaction, PaymentBankAccount
+# Note: CryptoWallet is imported from models_payment to avoid duplicate table definition
 from datetime import datetime
 import json
 
@@ -254,7 +256,7 @@ def create_crypto_wallet():
 @require_super_admin
 def manage_bank_accounts():
     """Manage bank accounts for wire transfers"""
-    accounts = BankAccount.query.order_by(BankAccount.bank_name).all()
+    accounts = PaymentBankAccount.query.order_by(PaymentBankAccount.bank_name).all()
     return render_template('payment_management/bank_accounts.html', accounts=accounts)
 
 @payment_mgmt_bp.route('/bank-accounts/create', methods=['GET', 'POST'])

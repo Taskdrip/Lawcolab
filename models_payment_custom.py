@@ -136,34 +136,7 @@ class PaymentBankAccount(db.Model):
     def __repr__(self):
         return f'<BankAccount {self.bank_name} - {self.account_number}>'
 
-class CryptoWallet(db.Model):
-    """Crypto wallet addresses for receiving payments"""
-    __tablename__ = 'crypto_wallets'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    currency = db.Column(db.String(10), nullable=False)  # BTC, ETH, USDT, etc.
-    network = db.Column(db.String(50), nullable=True)  # Ethereum, Bitcoin, Tron, etc.
-    wallet_address = db.Column(db.String(255), nullable=False)
-    
-    # Display settings
-    display_name = db.Column(db.String(100), nullable=False)  # "Bitcoin (BTC)"
-    is_active = db.Column(db.Boolean, default=True, nullable=False)
-    display_order = db.Column(db.Integer, default=0, nullable=False)
-    
-    # Rate settings
-    current_rate_usd = db.Column(db.Numeric(15, 8), nullable=True)  # Current exchange rate
-    rate_updated_at = db.Column(db.DateTime, nullable=True)
-    
-    # QR code for easy payments
-    qr_code_url = db.Column(db.Text, nullable=True)
-    
-    # Instructions
-    payment_instructions = db.Column(db.Text, nullable=True)
-    
-    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
-    
-    def __repr__(self):
-        return f'<CryptoWallet {self.currency} - {self.wallet_address[:10]}...>'
+# CryptoWallet model moved to models_payment.py to avoid duplicate table definition
 
 class PaymentSettings(db.Model):
     """Global payment system settings"""
