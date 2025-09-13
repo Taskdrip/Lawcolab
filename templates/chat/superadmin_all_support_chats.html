@@ -52,7 +52,7 @@
                                     {% if data.last_message %}
                                     <p class="mb-2 text-muted">
                                         <strong>{{ data.last_message.sender.full_name }}:</strong>
-                                        {{ data.last_message.message[:100] }}{% if data.last_message.message|length > 100 %}...{% endif %}
+                                        {{ data.last_message.message_content[:100] }}{% if data.last_message.message_content|length > 100 %}...{% endif %}
                                     </p>
                                     {% else %}
                                     <p class="mb-2 text-muted">No messages in this support chat yet.</p>
