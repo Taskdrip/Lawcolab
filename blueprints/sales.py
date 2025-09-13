@@ -7,6 +7,9 @@ from utils.decorators import role_required
 from datetime import datetime
 from sqlalchemy import desc
 import re
+import time
+import os
+from werkzeug.utils import secure_filename
 
 sales_bp = Blueprint('sales', __name__)
 
@@ -154,8 +157,11 @@ def checkout_page():
 
 @sales_bp.route('/checkout/complete', methods=['POST'])
 def complete_checkout():
-    """Complete the checkout process - redirect to payment pending instead of congratulations"""
+    """Complete the checkout process - redirect to payment evidence upload or congratulations"""
     try:
+        # Validate CSRF token
+        validate_csrf(request.form.get('csrf_token'))
+        
         lead_data = session.get('lead_data')
         if not lead_data:
             flash('Session expired. Please start over.', 'error')
@@ -178,16 +184,185 @@ def complete_checkout():
                 lead.status = 'payment_pending'
                 db.session.commit()
         
-        # Store payment method in session
+        # Generate payment reference and store details
+        import time
+        payment_reference = f"LAWCOLAB-{selected_plan.upper()}-{int(time.time())}"
         session['payment_method'] = payment_method
+        session['payment_reference'] = payment_reference
+        session['payment_start_time'] = int(time.time())
+        session['payment_amount'] = get_plan_amount(selected_plan)
         
-        # Redirect to payment pending instead of preorder thanks
-        return redirect(url_for('sales.payment_pending'))
+        # For crypto payments, redirect to evidence upload
+        if payment_method != 'bank_transfer':
+            return redirect(url_for('sales.payment_evidence'))
+        else:
+            # For bank transfers, redirect to congratulations
+            flash('Payment instructions sent! Please complete your bank transfer and await verification.', 'success')
+            return redirect(url_for('sales.congratulations'))
         
     except Exception as e:
         db.session.rollback()
         flash('An error occurred processing your request. Please try again.', 'error')
         return redirect(url_for('sales.checkout_page'))
+
+def get_plan_amount(plan):
+    """Get the amount for a given plan"""
+    settings = PopupSettings.query.first()
+    if not settings:
+        settings = PopupSettings()
+    
+    if plan == 'starter':
+        return settings.starter_price
+    elif plan == 'growth':
+        return settings.growth_price
+    elif plan == 'enterprise':
+        return settings.enterprise_price
+    elif plan == 'founders' or plan == 'founder':
+        return settings.founders_price or 1745
+    else:
+        return 0
+
+@sales_bp.route('/payment-evidence')
+def payment_evidence():
+    """Show payment evidence upload page with countdown timer"""
+    payment_method = session.get('payment_method')
+    if not payment_method or payment_method == 'bank_transfer':
+        flash('Invalid payment method for evidence upload.', 'error')
+        return redirect(url_for('sales.checkout_page'))
+    
+    # Calculate time remaining (30 minutes from start)
+    payment_start_time = session.get('payment_start_time', int(time.time()))
+    current_time = int(time.time())
+    elapsed_seconds = current_time - payment_start_time
+    time_remaining_seconds = max(0, 1800 - elapsed_seconds)  # 30 minutes = 1800 seconds
+    
+    if time_remaining_seconds <= 0:
+        flash('Payment window has expired. Please start a new payment process.', 'error')
+        return redirect(url_for('sales.popup_page'))
+    
+    lead_data = session.get('lead_data')
+    selected_plan = session.get('selected_plan')
+    payment_reference = session.get('payment_reference')
+    payment_amount = session.get('payment_amount')
+    
+    # Get payment gateway info
+    from models_payment import PaymentGateway
+    gateway = PaymentGateway.query.filter_by(name=payment_method, is_active=True).first()
+    payment_method_name = gateway.display_name if gateway else 'Crypto Payment'
+    
+    minutes = time_remaining_seconds // 60
+    seconds = time_remaining_seconds % 60
+    time_remaining_display = f"{minutes:02d}:{seconds:02d}"
+    
+    return render_template('sales/payment_evidence.html',
+                         lead_data=lead_data,
+                         plan_name=selected_plan.title() if selected_plan else 'Plan',
+                         payment_method_name=payment_method_name,
+                         payment_reference=payment_reference,
+                         amount=payment_amount,
+                         time_remaining=time_remaining_display,
+                         time_remaining_seconds=time_remaining_seconds)
+
+@sales_bp.route('/submit-payment-evidence', methods=['POST'])
+def submit_payment_evidence():
+    """Handle payment evidence submission"""
+    try:
+        # Validate CSRF token
+        validate_csrf(request.form.get('csrf_token'))
+        
+        # Check if payment window is still valid
+        payment_start_time = session.get('payment_start_time')
+        if not payment_start_time:
+            flash('Payment session expired. Please start a new payment process.', 'error')
+            return redirect(url_for('sales.popup_page'))
+        
+        elapsed_seconds = int(time.time()) - payment_start_time
+        if elapsed_seconds > 1800:  # 30 minutes
+            flash('Payment window has expired. Please start a new payment process.', 'error')
+            return redirect(url_for('sales.popup_page'))
+        
+        # Get form data
+        transaction_hash = request.form.get('transaction_hash', '').strip()
+        additional_notes = request.form.get('additional_notes', '').strip()
+        payment_reference = request.form.get('payment_reference')
+        
+        if not transaction_hash:
+            flash('Transaction hash is required.', 'error')
+            return redirect(url_for('sales.payment_evidence'))
+        
+        # Handle file upload
+        receipt_file = request.files.get('receipt_file')
+        if not receipt_file or not receipt_file.filename:
+            flash('Payment receipt file is required.', 'error')
+            return redirect(url_for('sales.payment_evidence'))
+        
+        # Validate file
+        allowed_extensions = {'png', 'jpg', 'jpeg', 'pdf'}
+        file_extension = receipt_file.filename.rsplit('.', 1)[1].lower() if '.' in receipt_file.filename else ''
+        
+        if file_extension not in allowed_extensions:
+            flash('Invalid file type. Please upload PNG, JPG, or PDF files only.', 'error')
+            return redirect(url_for('sales.payment_evidence'))
+        
+        # Check file size (10MB limit)
+        receipt_file.seek(0, 2)  # Seek to end
+        file_size = receipt_file.tell()
+        receipt_file.seek(0)  # Reset to beginning
+        
+        if file_size > 10 * 1024 * 1024:  # 10MB
+            flash('File size too large. Please upload files smaller than 10MB.', 'error')
+            return redirect(url_for('sales.payment_evidence'))
+        
+        # Save file
+        upload_folder = 'uploads/payment_evidence'
+        os.makedirs(upload_folder, exist_ok=True)
+        
+        filename = secure_filename(f"{payment_reference}_{receipt_file.filename}")
+        file_path = os.path.join(upload_folder, filename)
+        receipt_file.save(file_path)
+        
+        # Update lead record with evidence
+        lead_id = session.get('lead_id')
+        if lead_id:
+            lead = SalesLead.query.get(lead_id)
+            if lead:
+                lead.status = 'payment_evidence_submitted'
+                # Store evidence details in a note or separate field
+                evidence_note = f"Transaction Hash: {transaction_hash}\nFile: {filename}"
+                if additional_notes:
+                    evidence_note += f"\nNotes: {additional_notes}"
+                lead.notes = evidence_note
+                db.session.commit()
+        
+        # Clear payment session data
+        session.pop('payment_start_time', None)
+        
+        flash('Payment evidence submitted successfully! We will verify your payment within 1-24 hours.', 'success')
+        return redirect(url_for('sales.congratulations'))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash('An error occurred submitting your payment evidence. Please try again.', 'error')
+        return redirect(url_for('sales.payment_evidence'))
+
+@sales_bp.route('/congratulations')
+def congratulations():
+    """Show congratulations page after successful payment submission"""
+    lead_data = session.get('lead_data')
+    if not lead_data:
+        flash('Session expired. Please start over.', 'error')
+        return redirect(url_for('sales.popup_page'))
+    
+    selected_plan = session.get('selected_plan')
+    payment_amount = session.get('payment_amount')
+    payment_reference = session.get('payment_reference')
+    
+    return render_template('sales/congratulations.html',
+                         customer_name=lead_data.get('name'),
+                         customer_email=lead_data.get('email'),
+                         plan_name=selected_plan.title() if selected_plan else 'Plan',
+                         amount=payment_amount,
+                         payment_reference=payment_reference)
 
 @sales_bp.route('/thankyou')
 def thankyou():
