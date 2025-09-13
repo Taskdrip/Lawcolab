@@ -375,11 +375,17 @@ def congratulations():
     payment_amount = session.get('payment_amount')
     payment_reference = session.get('payment_reference')
     
+    # Convert amount to float for proper formatting
+    try:
+        amount_numeric = float(payment_amount) if payment_amount else None
+    except (ValueError, TypeError):
+        amount_numeric = None
+    
     return render_template('sales/congratulations.html',
                          customer_name=lead_data.get('name'),
                          customer_email=lead_data.get('email'),
                          plan_name=selected_plan.title() if selected_plan else 'Plan',
-                         amount=payment_amount,
+                         amount=amount_numeric,
                          payment_reference=payment_reference)
 
 @sales_bp.route('/thankyou')
