@@ -265,7 +265,7 @@
         <!-- Starter Plan -->
         <div class="pricing-card">
             <div class="plan-name">Starter Plan</div>
-            <div class="plan-price"><span class="currency">$</span>39</div>
+            <div class="plan-price"><span class="currency">$</span>{{ settings.starter_price }}</div>
             <div class="plan-period">per month • Essential features</div>
             <ul class="plan-features">
                 <li><i class="fas fa-check"></i> Up to 50 clients</li>
@@ -284,7 +284,7 @@
         <div class="pricing-card">
             <div class="pricing-badge save">Most Popular</div>
             <div class="plan-name">Growth Plan</div>
-            <div class="plan-price"><span class="currency">$</span>90</div>
+            <div class="plan-price"><span class="currency">$</span>{{ settings.growth_price }}</div>
             <div class="plan-period">per month • Advanced features</div>
             <ul class="plan-features">
                 <li><i class="fas fa-check"></i> Unlimited clients & cases</li>
@@ -304,7 +304,7 @@
         <div class="pricing-card">
             <div class="pricing-badge">Premium</div>
             <div class="plan-name">Scale Plan</div>
-            <div class="plan-price"><span class="currency">$</span>350</div>
+            <div class="plan-price"><span class="currency">$</span>{{ settings.scale_price }}</div>
             <div class="plan-period">per month • Premium features</div>
             <ul class="plan-features">
                 <li><i class="fas fa-check"></i> Everything in Growth Plan</li>
@@ -319,19 +319,39 @@
             </a>
         </div>
 
+        <!-- Lifetime Plan -->
+        <div class="pricing-card featured">
+            <div class="pricing-badge best">Best Value</div>
+            <div class="plan-name">Lifetime Plan</div>
+            <div class="plan-price"><span class="currency">$</span>{{ settings.lifetime_price }}</div>
+            <div class="plan-period">one-time payment • Never pay again</div>
+            <ul class="plan-features">
+                <li><i class="fas fa-infinity text-primary"></i> Everything in Scale Plan</li>
+                <li><i class="fas fa-infinity text-primary"></i> Lifetime access to all features</li>
+                <li><i class="fas fa-infinity text-primary"></i> All future updates included</li>
+                <li><i class="fas fa-infinity text-primary"></i> Priority support forever</li>
+                <li><i class="fas fa-infinity text-primary"></i> No recurring fees ever</li>
+                <li><i class="fas fa-infinity text-primary"></i> Unlimited storage</li>
+            </ul>
+            <a href="{{ url_for('enhanced_chat.support_chat') }}" class="plan-button primary">
+                🏆 Get Lifetime Access
+            </a>
+        </div>
+
         <!-- Founders Pack -->
         <div class="pricing-card featured">
             <div class="pricing-badge best">Founders Pack</div>
             <div class="plan-name">Exclusive Founders</div>
-            <div class="plan-price"><span class="currency">$</span>579</div>
+            <div class="plan-price"><span class="currency">$</span>{{ settings.founders_price }}</div>
             <div class="plan-period">per year • Save 77% Forever</div>
             <ul class="plan-features">
-                <li><i class="fas fa-crown text-warning"></i> Everything in Scale Plan</li>
+                <li><i class="fas fa-crown text-warning"></i> Everything in Lifetime Plan</li>
                 <li><i class="fas fa-crown text-warning"></i> AI-Powered Legal Analytics</li>
                 <li><i class="fas fa-crown text-warning"></i> Custom Workflow Builder</li>
                 <li><i class="fas fa-crown text-warning"></i> Advanced API Access</li>
                 <li><i class="fas fa-crown text-warning"></i> White-Label Solutions</li>
                 <li><i class="fas fa-crown text-warning"></i> Dedicated Success Manager</li>
+                <li><i class="fas fa-crown text-warning"></i> Founder Badge & Status</li>
             </ul>
             <a href="/sales/popup" class="plan-button primary">
                 🏆 Secure Founder Status

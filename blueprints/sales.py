@@ -611,6 +611,9 @@ def update_popup_settings():
         settings.popup_delay_seconds = int(request.form.get('popup_delay_seconds', 7))
         settings.founders_price = float(request.form.get('founders_price', 579))
         settings.starter_price = float(request.form.get('starter_price', 39))
+        settings.growth_price = float(request.form.get('growth_price', 190))
+        settings.scale_price = float(request.form.get('scale_price', 750))
+        settings.lifetime_price = float(request.form.get('lifetime_price', 999))
         
         db.session.commit()
         flash('Popup settings updated successfully!', 'success')
