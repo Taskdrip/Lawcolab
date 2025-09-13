@@ -101,6 +101,7 @@
                     <!-- Message Input -->
                     <div class="border-top bg-light p-4">
                         <form method="POST" id="message-form" class="d-flex gap-3 align-items-end">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <div class="flex-grow-1">
                                 <textarea name="message" 
                                          id="message-input"

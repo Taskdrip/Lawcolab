@@ -125,6 +125,7 @@
                 <!-- Message Input -->
                 <div class="card-footer bg-transparent">
                     <form method="POST" action="{{ url_for('projects.send_message', project_id=project.id) }}" class="d-flex">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <div class="flex-grow-1 me-2">
                             <textarea name="message" class="form-control" rows="2" placeholder="Type your message here..." required></textarea>
                         </div>

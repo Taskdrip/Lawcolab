@@ -75,6 +75,7 @@
                 <!-- Message Input -->
                 <div class="card-footer bg-transparent border-top">
                     <form id="message-form" method="POST" action="{{ url_for('enhanced_chat.send_support_message') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <input type="hidden" name="room_id" value="{{ room.id }}">
                         <div class="input-group">
                             <textarea class="form-control border-0" 

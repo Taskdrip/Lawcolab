@@ -291,6 +291,7 @@
         <!-- Message Input -->
         <div class="message-input-container">
             <form method="POST" action="{{ url_for('enhanced_chat.support_send') }}" class="message-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <textarea 
                     name="message" 
                     class="message-textarea" 
