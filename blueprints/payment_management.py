@@ -240,9 +240,9 @@ def create_crypto_wallet():
         wallet.currency = request.form.get('currency', '').upper()
         wallet.wallet_address = request.form.get('wallet_address', '')
         wallet.network = request.form.get('network', '')
-        wallet.minimum_confirmations = int(request.form.get('minimum_confirmations', 6))
+        # minimum_confirmations field doesn't exist in CryptoWallet model
         wallet.is_active = request.form.get('is_active') == 'on'
-        wallet.created_by_id = current_user.id
+        # created_by_id field doesn't exist in CryptoWallet model
         
         db.session.add(wallet)
         db.session.commit()
@@ -264,22 +264,20 @@ def manage_bank_accounts():
 def create_bank_account():
     """Create bank account"""
     if request.method == 'POST':
-        account = BankAccount()
+        account = PaymentBankAccount()
         account.account_name = request.form.get('account_name', '')
         account.bank_name = request.form.get('bank_name', '')
         account.account_number = request.form.get('account_number', '')
-        account.routing_number = request.form.get('routing_number', '')
-        account.iban = request.form.get('iban', '')
-        account.swift_code = request.form.get('swift_code', '')
-        account.currency = request.form.get('currency', 'USD')
-        account.country = request.form.get('country', '')
+        account.bank_code = request.form.get('bank_code', '')
+        account.account_type = request.form.get('account_type', 'current')
+        account.currency = request.form.get('currency', 'NGN')
+        account.instructions = request.form.get('instructions', '')
         account.is_active = request.form.get('is_active') == 'on'
         account.is_primary = request.form.get('is_primary') == 'on'
-        account.created_by_id = current_user.id
         
         # If this is set as primary, unset others
         if account.is_primary:
-            BankAccount.query.update({'is_primary': False})
+            PaymentBankAccount.query.update({'is_primary': False})
         
         db.session.add(account)
         db.session.commit()
@@ -309,7 +307,7 @@ def edit_crypto_wallet(wallet_id):
         wallet.currency = request.form.get('currency', '').upper()
         wallet.wallet_address = request.form.get('wallet_address', '')
         wallet.network = request.form.get('network', '')
-        wallet.minimum_confirmations = int(request.form.get('minimum_confirmations', 6))
+        # minimum_confirmations field doesn't exist in CryptoWallet model
         wallet.is_active = request.form.get('is_active') == 'on'
         
         db.session.commit()
@@ -323,7 +321,7 @@ def edit_crypto_wallet(wallet_id):
 @require_super_admin
 def toggle_bank_account(account_id):
     """Toggle bank account active status"""
-    account = BankAccount.query.get_or_404(account_id)
+    account = PaymentBankAccount.query.get_or_404(account_id)
     account.is_active = not account.is_active
     db.session.commit()
     
@@ -333,23 +331,22 @@ def toggle_bank_account(account_id):
 @require_super_admin
 def edit_bank_account(account_id):
     """Edit bank account"""
-    account = BankAccount.query.get_or_404(account_id)
+    account = PaymentBankAccount.query.get_or_404(account_id)
     
     if request.method == 'POST':
         account.account_name = request.form.get('account_name', '')
         account.bank_name = request.form.get('bank_name', '')
         account.account_number = request.form.get('account_number', '')
-        account.routing_number = request.form.get('routing_number', '')
-        account.iban = request.form.get('iban', '')
-        account.swift_code = request.form.get('swift_code', '')
-        account.currency = request.form.get('currency', 'USD')
-        account.country = request.form.get('country', '')
+        account.bank_code = request.form.get('bank_code', '')
+        account.account_type = request.form.get('account_type', 'current')
+        account.currency = request.form.get('currency', 'NGN')
+        account.instructions = request.form.get('instructions', '')
         account.is_active = request.form.get('is_active') == 'on'
         
         # Handle primary account logic
         is_primary = request.form.get('is_primary') == 'on'
         if is_primary and not account.is_primary:
-            BankAccount.query.update({'is_primary': False})
+            PaymentBankAccount.query.update({'is_primary': False})
             account.is_primary = True
         elif not is_primary:
             account.is_primary = False
@@ -365,10 +362,10 @@ def edit_bank_account(account_id):
 def set_primary_bank_account(account_id):
     """Set bank account as primary"""
     # First, unset all primary accounts
-    BankAccount.query.update({'is_primary': False})
+    PaymentBankAccount.query.update({'is_primary': False})
     
     # Set this account as primary
-    account = BankAccount.query.get_or_404(account_id)
+    account = PaymentBankAccount.query.get_or_404(account_id)
     account.is_primary = True
     db.session.commit()
     
