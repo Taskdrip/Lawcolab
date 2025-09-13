@@ -61,7 +61,21 @@ def create_payment_order():
             flash('Customer email and name are required', 'error')
             return redirect(url_for('payment_checkout.checkout'))
         
-        if payment_method not in [PAYMENT_METHOD_BANK_TRANSFER, PAYMENT_METHOD_CRYPTO]:
+        # Handle new crypto wallet format: crypto_{{wallet_id}}
+        selected_wallet_id = None
+        if payment_method.startswith('crypto_'):
+            try:
+                selected_wallet_id = int(payment_method.split('_')[1])
+                # Verify wallet exists and is active
+                wallet = CryptoWallet.query.filter_by(id=selected_wallet_id, is_active=True).first()
+                if not wallet:
+                    flash('Selected crypto wallet is not available', 'error')
+                    return redirect(url_for('payment_checkout.checkout'))
+                payment_method = PAYMENT_METHOD_CRYPTO
+            except (ValueError, IndexError):
+                flash('Invalid crypto wallet selected', 'error')
+                return redirect(url_for('payment_checkout.checkout'))
+        elif payment_method not in [PAYMENT_METHOD_BANK_TRANSFER, PAYMENT_METHOD_CRYPTO]:
             flash('Invalid payment method selected', 'error')
             return redirect(url_for('payment_checkout.checkout'))
         
@@ -77,6 +91,7 @@ def create_payment_order():
             amount=amount,
             description=description,
             payment_method=payment_method,
+            selected_wallet_id=selected_wallet_id,  # Store selected crypto wallet ID
             expires_at=datetime.now() + timedelta(hours=24),  # 24 hour expiry
             success_url=request.form.get('success_url'),
             cancel_url=request.form.get('cancel_url')

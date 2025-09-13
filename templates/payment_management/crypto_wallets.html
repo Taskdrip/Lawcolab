@@ -56,24 +56,29 @@
             <h3><i class="fas fa-rocket text-primary me-2"></i>Quick Add Popular Networks</h3>
             <p class="text-muted">Add wallets for the most popular cryptocurrency networks</p>
             <div class="row">
-                <div class="col-md-3 mb-2">
+                <div class="col-md-2 mb-2">
                     <a href="{{ url_for('payment_management.create_crypto_wallet') }}?currency=USDT&network=Tron" class="btn btn-outline-danger w-100">
                         <i class="fab fa-bitcoin me-1"></i>USDT (Tron)
                     </a>
                 </div>
-                <div class="col-md-3 mb-2">
-                    <a href="{{ url_for('payment_management.create_crypto_wallet') }}?currency=TON&network=TON" class="btn btn-outline-info w-100">
-                        <i class="fas fa-coins me-1"></i>TON Network
+                <div class="col-md-2 mb-2">
+                    <a href="{{ url_for('payment_management.create_crypto_wallet') }}?currency=USDT&network=TON" class="btn btn-outline-info w-100">
+                        <i class="fas fa-coins me-1"></i>USDT (TON)
                     </a>
                 </div>
-                <div class="col-md-3 mb-2">
-                    <a href="{{ url_for('payment_management.create_crypto_wallet') }}?currency=AVAX&network=Avalanche" class="btn btn-outline-success w-100">
-                        <i class="fas fa-mountain me-1"></i>AVAX (Avalanche)
+                <div class="col-md-2 mb-2">
+                    <a href="{{ url_for('payment_management.create_crypto_wallet') }}?currency=USDT&network=BSC" class="btn btn-outline-warning w-100">
+                        <i class="fas fa-link me-1"></i>USDT (BSC)
                     </a>
                 </div>
-                <div class="col-md-3 mb-2">
-                    <a href="{{ url_for('payment_management.create_crypto_wallet') }}?currency=SOL&network=Solana" class="btn btn-outline-warning w-100">
-                        <i class="fas fa-sun me-1"></i>SOL (Solana)
+                <div class="col-md-2 mb-2">
+                    <a href="{{ url_for('payment_management.create_crypto_wallet') }}?currency=USDT&network=Solana" class="btn btn-outline-success w-100">
+                        <i class="fas fa-sun me-1"></i>USDT (Solana)
+                    </a>
+                </div>
+                <div class="col-md-2 mb-2">
+                    <a href="{{ url_for('payment_management.create_crypto_wallet') }}?currency=USDT&network=Avalanche" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-mountain me-1"></i>USDT (Avalanche)
                     </a>
                 </div>
             </div>
@@ -105,7 +110,7 @@
                                         {% else %}
                                             <i class="fab fa-bitcoin me-1"></i>
                                         {% endif %}
-                                        {{ wallet.currency }}
+                                        {{ wallet.currency }} ({{ wallet.network }})
                                     </h5>
                                     <span class="network-badge {{ 'status-active' if wallet.is_active else 'status-inactive' }}">
                                         {{ 'Active' if wallet.is_active else 'Inactive' }}

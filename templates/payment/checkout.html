@@ -34,6 +34,7 @@
                     
                     <!-- Payment Form -->
                     <form method="POST" action="{{ url_for('payment_checkout.create_payment_order') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <!-- Customer Information -->
                         <div class="mb-4">
                             <h5 class="mb-3"><i class="fas fa-user me-2"></i>Customer Information</h5>
@@ -83,19 +84,23 @@
                             </div>
                             {% endif %}
                             
-                            <!-- Crypto Payment Option -->
+                            <!-- Crypto Payment Options -->
                             {% if crypto_wallets %}
+                            {% for wallet in crypto_wallets %}
                             <div class="payment-method mb-3">
                                 <div class="card border-warning">
                                     <div class="card-body">
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" name="payment_method" 
-                                                   id="crypto" value="crypto" {% if not bank_accounts %}checked{% endif %}>
-                                            <label class="form-check-label w-100" for="crypto">
+                                                   id="crypto_{{ wallet.id }}" value="crypto_{{ wallet.id }}" 
+                                                   {% if not bank_accounts and loop.first %}checked{% endif %}>
+                                            <label class="form-check-label w-100" for="crypto_{{ wallet.id }}">
                                                 <div class="d-flex justify-content-between align-items-center">
                                                     <div>
-                                                        <h6 class="mb-1"><i class="fab fa-bitcoin me-2 text-warning"></i>Cryptocurrency</h6>
-                                                        <small class="text-muted">Pay with Bitcoin, Ethereum, USDT, etc.</small>
+                                                        <h6 class="mb-1">
+                                                            <i class="fab fa-bitcoin me-2 text-warning"></i>{{ wallet.currency }} ({{ wallet.network }})
+                                                        </h6>
+                                                        <small class="text-muted">{{ wallet.network }} Network • {{ wallet.minimum_confirmations }} confirmations</small>
                                                     </div>
                                                     <span class="badge bg-info">Fast</span>
                                                 </div>
@@ -104,6 +109,7 @@
                                     </div>
                                 </div>
                             </div>
+                            {% endfor %}
                             {% endif %}
                         </div>
                         

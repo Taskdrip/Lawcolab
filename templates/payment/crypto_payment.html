@@ -42,7 +42,7 @@
                             <div class="card-body">
                                 <div class="row align-items-center">
                                     <div class="col-md-8">
-                                        <h6 class="mb-1">{{ wallet.display_name }}</h6>
+                                        <h6 class="mb-1">{{ wallet.currency }} ({{ wallet.network }})</h6>
                                         <p class="mb-2 text-muted">{{ wallet.network }} Network</p>
                                         <div class="wallet-address">
                                             <strong>Wallet Address:</strong><br>
@@ -61,7 +61,7 @@
                                         <br>
                                         {% endif %}
                                         <button type="button" class="btn btn-warning select-wallet" data-wallet-id="{{ wallet.id }}">
-                                            Select {{ wallet.currency }}
+                                            Select {{ wallet.currency }} ({{ wallet.network }})
                                         </button>
                                     </div>
                                 </div>
