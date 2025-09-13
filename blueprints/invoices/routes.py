@@ -184,7 +184,7 @@ def analytics_dashboard():
 
 @invoices_bp.route('/create', methods=['GET', 'POST'])
 @login_required
-@role_required(['admin', 'team_member'])
+@role_required(['admin', 'team_member', 'super_admin'])
 def create_invoice():
     """Create a new invoice"""
     if request.method == 'POST':
@@ -205,12 +205,15 @@ def create_invoice():
                 flash('Please fill in all required fields.', 'error')
                 return redirect(url_for('invoices.create_invoice'))
             
-            # Validate client belongs to law firm
-            client = User.query.filter_by(
-                id=client_id, 
-                law_firm_id=current_user.law_firm_id,
-                role='client'
-            ).first()
+            # Validate client belongs to law firm (super admin can create for any client)
+            if current_user.is_super_admin():
+                client = User.query.filter_by(id=client_id, role='client').first()
+            else:
+                client = User.query.filter_by(
+                    id=client_id, 
+                    law_firm_id=current_user.law_firm_id,
+                    role='client'
+                ).first()
             
             if not client:
                 flash('Invalid client selected.', 'error')
@@ -218,7 +221,11 @@ def create_invoice():
             
             # Create invoice
             invoice = Invoice()
-            invoice.law_firm_id = current_user.law_firm_id
+            # Super admin assigns to client's law firm, others use their own
+            if current_user.is_super_admin():
+                invoice.law_firm_id = client.law_firm_id
+            else:
+                invoice.law_firm_id = current_user.law_firm_id
             invoice.client_id = client_id
             invoice.project_id = project_id
             invoice.created_by_id = current_user.id
@@ -775,7 +782,10 @@ def update_bank_details():
 def mark_paid(id):
     """Mark invoice as paid - available to law firm staff and clients"""
     # Get invoice with proper access control
-    if current_user.is_client():
+    if current_user.is_super_admin():
+        # Super admin can mark any invoice as paid
+        invoice = Invoice.query.get_or_404(id)
+    elif current_user.is_client():
         # Clients can only mark their own invoices as paid
         invoice = Invoice.query.filter_by(
             id=id,
