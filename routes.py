@@ -266,6 +266,11 @@ Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
                 
                 db.session.commit()
                 
+                # Check if user is authenticated to redirect to chat
+                if current_user.is_authenticated:
+                    flash(f'Thank you {first_name}! Your message has been sent. You can also continue the conversation here.', 'success')
+                    return redirect(url_for('enhanced_chat.support_chat'))
+                
                 flash(f'Thank you {first_name}! Your message has been sent to our team. We\'ll get back to you within 24 hours.', 'success')
             else:
                 flash('Message received, but there was an issue forwarding it to our team. Please try WhatsApp contact below.', 'warning')
