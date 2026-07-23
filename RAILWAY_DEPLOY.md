@@ -24,49 +24,66 @@ In your Railway project:
 2. Railway automatically sets `DATABASE_URL` in your environment
 
 ### 4. Set Environment Variables
-In Railway project → **Variables**, add:
+In Railway project → **Variables**, add every variable below:
 
-| Variable | Value |
-|---|---|
-| `SESSION_SECRET` | A random 40+ character string (e.g. generate with `python3 -c "import secrets; print(secrets.token_hex(32))"`) |
-| `FLASK_ENV` | `production` |
+| Variable | Required | Description |
+|---|---|---|
+| `SESSION_SECRET` | ✅ Yes | Random 64+ character secret (generate below) |
+| `FLASK_ENV` | ✅ Yes | Set to `production` |
+| `SUPER_ADMIN_EMAIL` | ✅ Yes | Email address for the platform super admin |
+| `SUPER_ADMIN_PASSWORD` | ✅ Yes | Strong password for the super admin (16+ chars) |
+| `SUPER_ADMIN_FIRST_NAME` | ⬜ Optional | Super admin first name (default: "Super") |
+| `SUPER_ADMIN_LAST_NAME` | ⬜ Optional | Super admin last name (default: "Admin") |
+| `DATABASE_URL` | Auto | Set automatically by Railway PostgreSQL plugin |
 
-`DATABASE_URL` is set automatically by the PostgreSQL plugin.
-
-### 5. Deploy
-Railway detects `railway.toml` and `Procfile` automatically. Your app will deploy with:
-```
-gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 main:app
-```
-
-### 6. Create Super Admin (First Deploy Only)
-After successful deployment, open the Railway shell and run:
+**Generate a secure SESSION_SECRET:**
 ```bash
-python3 init_super_admin.py
+python3 -c "import secrets; print(secrets.token_hex(32))"
 ```
-This creates: `superadmin@lawcolab.com` / `superadmin123`
 
-Or use the admin account already seeded in Replit:
-- Email: `admin@lawcolab.com`
-- Password: `LawColab2025!`
+### 5. Security Notes
+- `SESSION_COOKIE_SECURE` is automatically enabled when `FLASK_ENV=production`
+- The super admin is created automatically on first deploy if `SUPER_ADMIN_EMAIL` + `SUPER_ADMIN_PASSWORD` are set
+- Login endpoint is rate-limited (10 req/min per IP) and accounts lock after 10 failed attempts
+- Security headers (X-Frame-Options, HSTS, CSP, etc.) are applied to every response
+- The `/auth/superadmin-direct-login` bypass route has been **permanently removed**
 
-### 7. Verify
-Visit your Railway deployment URL. The landing page should load and you should be able to log in at `/auth/login`.
+### 6. Deploy
+Railway detects `railway.toml` and `Procfile` automatically. The app deploys with:
+```
+gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 --forwarded-allow-ips='*' --preload main:app
+```
 
-## Key Files
-| File | Purpose |
-|---|---|
-| `railway.toml` | Railway build & deploy config |
-| `Procfile` | Web process command |
-| `requirements.txt` | Python dependencies |
-| `main.py` | App entry point |
-| `wsgi.py` | WSGI entry point |
+### 7. First Login
+After deploy, navigate to `https://your-app.railway.app/auth/superadmin-access`  
+Login with the `SUPER_ADMIN_EMAIL` and `SUPER_ADMIN_PASSWORD` you set above.
 
 ## Troubleshooting
-- **Database errors**: Confirm `DATABASE_URL` is set and PostgreSQL plugin is connected
-- **500 errors**: Check Railway logs; most likely a missing env variable
-- **Static files not loading**: Ensure `static/` folder is committed to git (check `.gitignore`)
-- **App won't start**: Verify `gunicorn` is in `requirements.txt` ✓
 
-## Health Check
-Railway pings `GET /` — the landing page must return 200. It does by default.
+### Database connection errors
+- Confirm PostgreSQL plugin is added and `DATABASE_URL` is set
+- Railway uses `postgres://` prefix — the app auto-converts it to `postgresql://`
+
+### 500 errors on startup
+- Check that `SESSION_SECRET` is set (non-empty)
+- Check Railway logs: `railway logs`
+
+### Super admin can't log in
+- Verify `SUPER_ADMIN_EMAIL` and `SUPER_ADMIN_PASSWORD` are set **before first deploy**
+- If already deployed without them, set the vars and redeploy — the seed runs again
+  and will create the account if it doesn't exist
+
+### Rate limit errors (429)
+- Login is limited to 10 attempts per minute per IP
+- Accounts lock for 30 minutes after 10 consecutive bad passwords
+- Wait for the lockout period or reset `failed_login_attempts = 0` directly in the DB
+
+## Environment Variables Quick Reference
+```
+SESSION_SECRET=<64-char random hex>
+FLASK_ENV=production
+SUPER_ADMIN_EMAIL=admin@yourdomain.com
+SUPER_ADMIN_PASSWORD=<strong-password>
+SUPER_ADMIN_FIRST_NAME=John
+SUPER_ADMIN_LAST_NAME=Doe
+```

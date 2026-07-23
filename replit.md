@@ -1,41 +1,57 @@
-# LawColab (LawFirmOS)
+# LawColab / LawFirmOS
 
-A full-stack law firm management platform built with Python Flask, SQLite/PostgreSQL, and Jinja2 templates.
+A full-stack law firm management platform built with Python Flask + PostgreSQL.
+
+## Features
+- Multi-tenant law firm management (clients, cases, invoices, team)
+- Role-based access: Super Admin, Admin, Team Member, Client
+- Real-time team chat and support chat
+- Escrow and payment management
+- Billing / invoice generation (PDF via WeasyPrint)
+- Trial subscription system (3-day free trial on signup)
+- Dashboard with sliders and legal news (managed by Super Admin)
 
 ## Stack
+- **Backend**: Python 3.11, Flask 3.x
+- **Database**: PostgreSQL (via Flask-SQLAlchemy)
+- **Auth**: Flask-Login + email/password
+- **Security**: Flask-Limiter (rate limiting), brute-force lockout, security headers
+- **PDF**: WeasyPrint / ReportLab
+- **Frontend**: Jinja2 templates, Bootstrap 5, vanilla JS
 
-- **Backend**: Python 3.11 / Flask
-- **Database**: PostgreSQL (Replit-managed, via `DATABASE_URL`)
-- **Auth**: Flask-Login + Flask-Dance (OAuth)
-- **Templates**: Jinja2 (server-side rendered)
-- **PDF generation**: WeasyPrint + ReportLab
-- **WSGI server**: Gunicorn
+## Running on Replit
 
-## How to run
+The app is configured to run via gunicorn on port 5000.
 
-The app starts automatically via the **Start application** workflow:
+### Required secrets (set in Replit Secrets panel)
+| Secret | Purpose |
+|---|---|
+| `SESSION_SECRET` | Flask session signing key |
+| `SUPER_ADMIN_EMAIL` | Email for the platform super admin |
+| `SUPER_ADMIN_PASSWORD` | Password for the platform super admin |
 
-```
-gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app
-```
+### Optional secrets
+| Secret | Default |
+|---|---|
+| `SUPER_ADMIN_FIRST_NAME` | "Super" |
+| `SUPER_ADMIN_LAST_NAME` | "Admin" |
 
-Entry point: `main.py` → imports `app` from `app.py` and all routes from `routes.py`.
+### First-time setup
+1. Set the secrets above in the Replit Secrets panel
+2. Click **Run** — the app creates all DB tables and seeds the super admin automatically
+3. Visit `/auth/superadmin-access` to log in as super admin
 
-## Key files
+## Deploying to Railway
+See [RAILWAY_DEPLOY.md](RAILWAY_DEPLOY.md) for the full Railway deployment guide.
 
-- `app.py` — Flask app factory, DB config, login manager, CSRF setup
-- `models.py` — Core SQLAlchemy models (User, Client, Case, Invoice, etc.)
-- `models_payment.py` / `models_payment_custom.py` — Payment models
-- `models_chat.py` — Chat/messaging models
-- `models_audit.py` — Audit log models
-- `routes.py` — Route registrations (imports blueprints)
-- `templates/` — Jinja2 HTML templates
-- `utils/` — Decorators, forms, notifications, trial access helpers
-- `uploads/` — User-uploaded files (profiles, payment evidence)
+## Security Architecture
+- **Rate limiting**: 10 login attempts/min per IP (Flask-Limiter, in-memory)
+- **Brute-force lockout**: DB-backed — accounts lock for 30 min after 10 failed logins
+- **Security headers**: X-Frame-Options, HSTS, X-Content-Type-Options, CSP, Referrer-Policy
+- **Secure cookies**: HttpOnly=True, SameSite=Lax, Secure=True in production
+- **CSRF**: Flask-WTF CSRF protection enabled globally
+- **ProxyFix**: Correctly handles Railway's TLS-terminating reverse proxy
 
-## Environment variables / secrets
-
-- `SESSION_SECRET` — Flask session secret key (already set)
-- `DATABASE_URL` — PostgreSQL connection string (auto-provided by Replit)
-
-## User preferences
+## User Preferences
+- Keep existing project structure — do not restructure blueprints or rename routes
+- Use proper `logging` (not `print`) for all server-side output

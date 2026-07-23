@@ -1,104 +1,129 @@
+import os
+import logging
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from flask_wtf.csrf import CSRFProtect
-import os
 from werkzeug.middleware.proxy_fix import ProxyFix
-import logging
 
-# Configure logging for production performance
-logging.basicConfig(level=logging.INFO)
+# ── Logging ───────────────────────────────────────────────────────────────────
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
+
 
 class Base(DeclarativeBase):
     pass
 
-# Initialize Flask app
+
+# ── Flask app ─────────────────────────────────────────────────────────────────
 app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET") or "fallback-secret-key-for-development"
-app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
-# CSRF Configuration
-app.config['WTF_CSRF_ENABLED'] = True
-app.config['WTF_CSRF_TIME_LIMIT'] = None  # No time limit for CSRF tokens
-app.config['WTF_CSRF_SSL_STRICT'] = False  # Allow HTTP for development
+# Session secret — must be set via SESSION_SECRET env var in production
+_secret = os.environ.get("SESSION_SECRET", "")
+if not _secret:
+    logger.warning(
+        "SESSION_SECRET is not set. Using an insecure default. "
+        "Set SESSION_SECRET in your environment before deploying."
+    )
+    _secret = "change-me-before-deploying-this-app"
+app.secret_key = _secret
 
-# Database configuration — fix Railway's legacy postgres:// scheme
+# Trust Railway's reverse-proxy headers (X-Forwarded-For / X-Forwarded-Proto)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1, x_for=1)
+
+# ── Session security ──────────────────────────────────────────────────────────
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+# Use Secure cookies when running under HTTPS (Railway terminates TLS at proxy)
+_is_production = os.environ.get("FLASK_ENV", "development") == "production"
+app.config["SESSION_COOKIE_SECURE"] = _is_production
+app.config["PERMANENT_SESSION_LIFETIME"] = 86400 * 7  # 7 days
+
+# ── CSRF ──────────────────────────────────────────────────────────────────────
+app.config["WTF_CSRF_ENABLED"] = True
+app.config["WTF_CSRF_TIME_LIMIT"] = None
+app.config["WTF_CSRF_SSL_STRICT"] = False
+
+# ── Database ──────────────────────────────────────────────────────────────────
 _db_url = os.environ.get("DATABASE_URL", "")
 if _db_url.startswith("postgres://"):
     _db_url = _db_url.replace("postgres://", "postgresql://", 1)
 app.config["SQLALCHEMY_DATABASE_URI"] = _db_url or None
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    'pool_pre_ping': True,
-    'pool_recycle': 300,
-    'pool_size': 5,
-    'max_overflow': 10,
-    'connect_args': {'connect_timeout': 10},
-    'echo': False,
+    "pool_pre_ping": True,
+    "pool_recycle": 300,
+    "pool_size": 5,
+    "max_overflow": 10,
+    "connect_args": {"connect_timeout": 10},
+    "echo": False,
 }
 
-# Upload configuration
-app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+# ── Uploads ───────────────────────────────────────────────────────────────────
+app.config["UPLOAD_FOLDER"] = "uploads"
+app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16 MB
 
-# Initialize database
+# ── Extensions ────────────────────────────────────────────────────────────────
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
-# Initialize CSRF protection
 csrf = CSRFProtect(app)
 
-# Exempt login route from CSRF protection
-@csrf.exempt
-def csrf_exempt_login():
-    pass
+os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
-# Create uploads directory
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+# ── Flask-Login ───────────────────────────────────────────────────────────────
+from flask_login import LoginManager  # noqa: E402
 
-# Set up Flask-Login
-from flask_login import LoginManager
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'auth.login'  # type: ignore
-login_manager.login_message = 'Please log in to access this page.'
-login_manager.login_message_category = 'info'
+login_manager.login_view = "auth.login"  # type: ignore
+login_manager.login_message = "Please log in to access this page."
+login_manager.login_message_category = "info"
+
 
 @login_manager.user_loader
 def load_user(user_id):
     from models import User
     return User.query.get(user_id)
 
-# Custom template filter for line breaks
-@app.template_filter('nl2br')
+
+# ── Rate limiter ──────────────────────────────────────────────────────────────
+from utils.security import limiter, apply_security_headers  # noqa: E402
+
+limiter.init_app(app)
+
+
+# ── Security headers on every response ───────────────────────────────────────
+@app.after_request
+def set_security_headers(response):
+    return apply_security_headers(response)
+
+
+# ── Template filters ──────────────────────────────────────────────────────────
+@app.template_filter("nl2br")
 def nl2br_filter(text):
-    """Convert newlines to <br> tags"""
     if text is None:
-        return ''
-    return text.replace('\n', '<br>')
+        return ""
+    return text.replace("\n", "<br>")
 
-# Custom template filter for currency symbols
-@app.template_filter('currency_symbol')
+
+@app.template_filter("currency_symbol")
 def currency_symbol_filter(currency_code):
-    """Convert currency code to symbol"""
-    symbols = {
-        'USD': '$',
-        'EUR': '€',
-        'GBP': '£',
-        'CAD': '$',
-        'NGN': '₦'
-    }
-    return symbols.get(currency_code, '$')
+    symbols = {"USD": "$", "EUR": "€", "GBP": "£", "CAD": "$", "NGN": "₦"}
+    return symbols.get(currency_code, "$")
 
-# Create tables and seed super admin from environment variables
+
+# ── DB setup + super admin seed ───────────────────────────────────────────────
 with app.app_context():
-    import models  # noqa: F401
-    import models_chat  # noqa: F401
+    import models        # noqa: F401
+    import models_chat   # noqa: F401
     import models_audit  # noqa: F401
     db.create_all()
-    logging.info("Database tables created")
+    logger.info("Database tables created / verified")
 
-    # Auto-seed super admin on first deploy if env vars are set
     _sa_email = os.environ.get("SUPER_ADMIN_EMAIL", "").strip().lower()
     _sa_password = os.environ.get("SUPER_ADMIN_PASSWORD", "").strip()
     _sa_first = os.environ.get("SUPER_ADMIN_FIRST_NAME", "Super").strip()
@@ -107,6 +132,7 @@ with app.app_context():
     if _sa_email and _sa_password:
         from models import User, ROLE_SUPER_ADMIN
         import uuid as _uuid
+
         existing = User.query.filter_by(email=_sa_email).first()
         if not existing:
             sa = User()
@@ -120,6 +146,11 @@ with app.app_context():
             sa.set_password(_sa_password)
             db.session.add(sa)
             db.session.commit()
-            logging.info(f"Super admin created: {_sa_email}")
+            logger.info("Super admin created: %s", _sa_email)
         else:
-            logging.info(f"Super admin already exists: {_sa_email}")
+            logger.info("Super admin already exists: %s", _sa_email)
+    else:
+        logger.warning(
+            "SUPER_ADMIN_EMAIL / SUPER_ADMIN_PASSWORD not set — "
+            "super admin will not be auto-created on first deploy."
+        )

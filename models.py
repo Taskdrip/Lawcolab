@@ -51,7 +51,13 @@ class User(UserMixin, db.Model):
     state_province = db.Column(db.String(100))
     postal_code = db.Column(db.String(20))
     country = db.Column(db.String(100))
-    
+
+    # Security / brute-force protection
+    failed_login_attempts = db.Column(db.Integer, default=0, nullable=False)
+    locked_until = db.Column(db.DateTime, nullable=True)
+    last_login_at = db.Column(db.DateTime, nullable=True)
+    last_login_ip = db.Column(db.String(45), nullable=True)
+
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
