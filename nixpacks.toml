@@ -1,0 +1,19 @@
+[phases.setup]
+nixPkgs = [
+  "python311",
+  "gcc",
+  "pkg-config",
+  "fontconfig",
+  "freetype",
+  "pango",
+  "harfbuzz",
+  "glib",
+  "libxcrypt",
+  "ghostscript",
+]
+
+[phases.install]
+cmds = ["pip install -r requirements.txt"]
+
+[start]
+cmd = "gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 --preload main:app"

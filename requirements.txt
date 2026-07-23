@@ -42,14 +42,3 @@ webencodings==0.5.1
 Werkzeug==3.1.8
 WTForms==3.2.2
 zopfli==0.4.3
-email-validator
-flask
-flask-dance
-flask-login
-flask-sqlalchemy
-flask-wtf
-gunicorn
-pillow
-psycopg2-binary
-reportlab
-weasyprint

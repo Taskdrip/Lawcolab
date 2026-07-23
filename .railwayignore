@@ -1,0 +1,29 @@
+# Dev / test artefacts
+.cache/
+.local/
+.agents/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pythonlibs/
+.pythonpath
+uv.lock
+
+# Replit-specific
+.replit
+replit.md
+.breakpoints
+
+# Runtime upload dirs (ephemeral on Railway — use object storage for persistence)
+uploads/
+static/uploads/
+
+# Misc
+.git/
+*.log
+test_*.py
+test_*.html
+*_broken.py
+*_old.py
+attached_assets/

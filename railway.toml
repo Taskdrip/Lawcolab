@@ -2,11 +2,12 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 main:app"
-healthcheckPath = "/"
+startCommand = "gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 --preload main:app"
+healthcheckPath = "/auth/login"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
-restartPolicyMaxRetries = 3
+restartPolicyMaxRetries = 5
 
 [environments.production.variables]
 FLASK_ENV = "production"
+PYTHONUNBUFFERED = "1"

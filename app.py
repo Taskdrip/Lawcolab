@@ -22,15 +22,19 @@ app.config['WTF_CSRF_ENABLED'] = True
 app.config['WTF_CSRF_TIME_LIMIT'] = None  # No time limit for CSRF tokens
 app.config['WTF_CSRF_SSL_STRICT'] = False  # Allow HTTP for development
 
-# Database configuration optimized for performance
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+# Database configuration — fix Railway's legacy postgres:// scheme
+_db_url = os.environ.get("DATABASE_URL", "")
+if _db_url.startswith("postgres://"):
+    _db_url = _db_url.replace("postgres://", "postgresql://", 1)
+app.config["SQLALCHEMY_DATABASE_URI"] = _db_url or None
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     'pool_pre_ping': True,
     'pool_recycle': 300,
-    'pool_size': 10,
-    'max_overflow': 20,
-    'echo': False  # Disable SQL logging for performance
+    'pool_size': 5,
+    'max_overflow': 10,
+    'connect_args': {'connect_timeout': 10},
+    'echo': False,
 }
 
 # Upload configuration
@@ -86,10 +90,36 @@ def currency_symbol_filter(currency_code):
     }
     return symbols.get(currency_code, '$')
 
-# Create tables
+# Create tables and seed super admin from environment variables
 with app.app_context():
     import models  # noqa: F401
     import models_chat  # noqa: F401
     import models_audit  # noqa: F401
     db.create_all()
     logging.info("Database tables created")
+
+    # Auto-seed super admin on first deploy if env vars are set
+    _sa_email = os.environ.get("SUPER_ADMIN_EMAIL", "").strip().lower()
+    _sa_password = os.environ.get("SUPER_ADMIN_PASSWORD", "").strip()
+    _sa_first = os.environ.get("SUPER_ADMIN_FIRST_NAME", "Super").strip()
+    _sa_last = os.environ.get("SUPER_ADMIN_LAST_NAME", "Admin").strip()
+
+    if _sa_email and _sa_password:
+        from models import User, ROLE_SUPER_ADMIN
+        import uuid as _uuid
+        existing = User.query.filter_by(email=_sa_email).first()
+        if not existing:
+            sa = User()
+            sa.id = str(_uuid.uuid4())
+            sa.email = _sa_email
+            sa.first_name = _sa_first
+            sa.last_name = _sa_last
+            sa.role = ROLE_SUPER_ADMIN
+            sa.active = True
+            sa.law_firm_id = None
+            sa.set_password(_sa_password)
+            db.session.add(sa)
+            db.session.commit()
+            logging.info(f"Super admin created: {_sa_email}")
+        else:
+            logging.info(f"Super admin already exists: {_sa_email}")
