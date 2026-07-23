@@ -2,866 +2,931 @@
 
 {% block additional_css %}
 <style>
-.nav-item {
-    margin-right: 10px;
+/* ─── GLOBAL RESETS ─────────────────────────────────────────── */
+html { overflow-y: scroll !important; scroll-behavior: smooth; }
+body { overflow-y: auto !important; height: auto !important; min-height: 100vh; background: #fff; }
+section { position: relative; }
+
+/* ─── HERO SLIDER ───────────────────────────────────────────── */
+#heroSlider { position: relative; overflow: hidden; background: #071224; }
+.hs-track {
+    position: relative; width: 100%;
+    height: 90vh; min-height: 580px; max-height: 860px;
+}
+.hs-slide {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+    opacity: 0; transition: opacity 1s ease; pointer-events: none;
+}
+.hs-slide.hs-active { opacity: 1; pointer-events: auto; }
+.hs-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(155deg,rgba(5,12,30,.82) 0%,rgba(5,12,30,.72) 55%,rgba(5,12,30,.50) 100%);
+}
+.hs-content {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 2rem 1.5rem; z-index: 2;
+}
+.hs-inner { max-width: 760px; }
+.hs-tag {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.28);
+    color: #fff !important; border-radius: 50px; padding: 6px 18px;
+    font-size: .75rem; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; margin-bottom: 1.2rem; backdrop-filter: blur(10px);
+}
+.hs-title {
+    font-size: clamp(2rem,5.5vw,3.6rem); font-weight: 800;
+    color: #ffffff !important; line-height: 1.08; margin-bottom: 1.1rem;
+    text-shadow: 0 2px 20px rgba(0,0,0,.45);
+}
+.hs-desc {
+    font-size: clamp(.9rem,1.9vw,1.15rem); color: rgba(255,255,255,.9) !important;
+    line-height: 1.75; margin-bottom: 2rem; max-width: 620px; margin-left: auto; margin-right: auto;
+}
+#heroSlider .hs-title,#heroSlider .hs-title *,
+#heroSlider .hs-desc,#heroSlider .hs-desc *,
+#heroSlider .hs-tag,#heroSlider .hs-tag *,
+#heroSlider .hs-content * { color: #fff !important; }
+.hs-cta { display: flex; gap: .9rem; justify-content: center; flex-wrap: wrap; }
+.hs-btn-primary {
+    background: #1d6eea; color: #fff !important; padding: 14px 30px;
+    border-radius: 10px; text-decoration: none; font-weight: 700; font-size: .95rem;
+    display: inline-flex; align-items: center; gap: .5rem;
+    box-shadow: 0 6px 22px rgba(29,110,234,.5); transition: background .2s, transform .2s;
+}
+.hs-btn-primary:hover { background: #1558c7; transform: translateY(-2px); }
+.hs-btn-ghost {
+    background: rgba(255,255,255,.1); color: #fff !important; padding: 14px 30px;
+    border-radius: 10px; text-decoration: none; font-weight: 700; font-size: .95rem;
+    display: inline-flex; align-items: center; gap: .5rem;
+    border: 1.5px solid rgba(255,255,255,.4); backdrop-filter: blur(6px);
+    transition: background .2s, transform .2s;
+}
+.hs-btn-ghost:hover { background: rgba(255,255,255,.2); transform: translateY(-2px); }
+.hs-btn-gold {
+    background: linear-gradient(45deg,#f5c518,#e8980a);
+    color: #1a1a1a !important; padding: 14px 30px; border-radius: 10px;
+    text-decoration: none; font-weight: 700; font-size: .95rem;
+    display: inline-flex; align-items: center; gap: .5rem;
+    box-shadow: 0 6px 18px rgba(245,197,24,.4); transition: filter .2s, transform .2s;
+}
+.hs-btn-gold:hover { filter: brightness(1.07); transform: translateY(-2px); }
+.hs-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%); z-index: 10;
+    background: rgba(255,255,255,.12); border: none; border-radius: 50%;
+    width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;
+    color: #fff; cursor: pointer; backdrop-filter: blur(6px); transition: background .2s;
+}
+.hs-arrow:hover { background: rgba(255,255,255,.28); }
+.hs-prev { left: 20px; } .hs-next { right: 20px; }
+.hs-dots {
+    position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 8px; z-index: 10;
+}
+.hs-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,.4); border: none; cursor: pointer; padding: 0;
+    transition: background .3s, transform .3s;
+}
+.hs-dot.hs-dot-active { background: #fff; transform: scale(1.35); }
+.hs-progress {
+    position: absolute; bottom: 0; left: 0; height: 3px;
+    background: rgba(255,255,255,.6); z-index: 10; width: 0;
+    transition: width 5.5s linear;
+}
+.hs-progress.hs-running { width: 100%; }
+.hs-pill-bar { background: #fff; border-bottom: 1px solid #e8edf3; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+.hs-pills { display: flex; overflow-x: auto; scrollbar-width: none; }
+.hs-pills::-webkit-scrollbar { display: none; }
+.hs-pill {
+    flex-shrink: 0; background: none; border: none;
+    border-bottom: 3px solid transparent; padding: 15px 18px;
+    font-size: .8rem; font-weight: 600; color: #6b7280; cursor: pointer;
+    white-space: nowrap; transition: color .2s, border-color .2s;
+    display: flex; align-items: center; gap: .4rem;
+}
+.hs-pill:hover { color: #1d6eea; border-bottom-color: #bdd4f9; }
+.hs-pill.hs-pill-active { color: #1d6eea; border-bottom-color: #1d6eea; }
+
+/* ─── TRUST BAR ─────────────────────────────────────────────── */
+.trust-bar { background: #f8fafd; border-bottom: 1px solid #e8edf3; padding: 22px 0; }
+.trust-item { display: flex; align-items: center; gap: .55rem; color: #475569; font-size: .88rem; font-weight: 600; }
+.trust-item i { color: #1d6eea; font-size: 1rem; }
+
+/* ─── SECTION UTILITIES ─────────────────────────────────────── */
+.section-label {
+    display: inline-block; background: #eff6ff; color: #1d6eea;
+    border-radius: 50px; padding: 6px 18px; font-size: .78rem;
+    font-weight: 700; letter-spacing: .07em; text-transform: uppercase; margin-bottom: 1rem;
+}
+.section-title { font-size: clamp(1.8rem,4vw,2.8rem); font-weight: 800; color: #0f172a; line-height: 1.15; }
+.section-sub { font-size: 1.1rem; color: #64748b; max-width: 580px; margin: 0 auto; line-height: 1.7; }
+
+/* ─── FEATURE CARDS ─────────────────────────────────────────── */
+.feat-card {
+    background: #fff; border-radius: 16px; padding: 2rem 1.75rem;
+    border: 1px solid #e8edf3; height: 100%;
+    transition: transform .25s, box-shadow .25s, border-color .25s;
+}
+.feat-card:hover { transform: translateY(-5px); box-shadow: 0 12px 32px rgba(0,0,0,.09); border-color: #c7d9f8; }
+.feat-icon {
+    width: 52px; height: 52px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 1.25rem; font-size: 1.3rem;
+}
+.feat-card h3 { font-size: 1.15rem; font-weight: 700; color: #0f172a; margin-bottom: .65rem; }
+.feat-card p { color: #64748b; line-height: 1.65; font-size: .95rem; margin: 0; }
+
+/* ─── BG-IMAGE SECTION (parallax-style) ────────────────────── */
+.bg-section {
+    position: relative; overflow: hidden;
+    background-size: cover; background-position: center;
+    background-attachment: fixed;
+}
+.bg-section-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg,rgba(5,18,50,.88) 0%,rgba(5,18,50,.72) 100%);
+}
+.bg-section .bg-content { position: relative; z-index: 2; }
+
+/* ─── STAT CARDS ────────────────────────────────────────────── */
+.stat-card { text-align: center; color: #fff; }
+.stat-card .stat-num { font-size: clamp(2.2rem,5vw,3.5rem); font-weight: 800; line-height: 1; color: #f5c518; }
+.stat-card .stat-label { font-size: .95rem; color: rgba(255,255,255,.8); margin-top: .35rem; font-weight: 500; }
+
+/* ─── HOW IT WORKS ──────────────────────────────────────────── */
+.step-circle {
+    width: 56px; height: 56px; border-radius: 50%; background: #1d6eea;
+    color: #fff; font-size: 1.25rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; box-shadow: 0 4px 18px rgba(29,110,234,.35);
+}
+.step-connector { width: 2px; background: #e2e8f0; flex: 1; min-height: 32px; margin: 0 auto; }
+
+/* ─── TESTIMONIALS ──────────────────────────────────────────── */
+.testi-card {
+    background: #fff; border-radius: 20px; padding: 2rem;
+    border: 1px solid #e8edf3; box-shadow: 0 4px 20px rgba(0,0,0,.06);
+    height: 100%;
+}
+.testi-stars { color: #f5c518; font-size: .9rem; margin-bottom: .8rem; }
+.testi-body { font-size: .97rem; color: #374151; line-height: 1.7; font-style: italic; margin-bottom: 1.25rem; }
+.testi-author { font-weight: 700; color: #0f172a; font-size: .9rem; }
+.testi-role { color: #6b7280; font-size: .82rem; }
+
+/* ─── PRICING ───────────────────────────────────────────────── */
+.price-card {
+    background: #fff; border: 2px solid #e2e8f0; border-radius: 20px;
+    padding: 2.25rem 2rem; text-align: center;
+    transition: transform .25s, box-shadow .25s;
+    display: flex; flex-direction: column;
+}
+.price-card:hover { transform: translateY(-6px); box-shadow: 0 14px 36px rgba(0,0,0,.1); }
+.price-card.featured { border-color: #1d6eea; position: relative; }
+.price-card.featured::before {
+    content: 'Most Popular'; position: absolute; top: -14px; left: 50%;
+    transform: translateX(-50%); background: #1d6eea; color: #fff;
+    padding: 5px 18px; border-radius: 20px; font-size: .75rem; font-weight: 700;
+}
+.price-num { font-size: 2.8rem; font-weight: 800; color: #0f172a; line-height: 1; }
+.price-period { font-size: .9rem; color: #94a3b8; }
+.price-feat li { font-size: .9rem; color: #475569; padding: .3rem 0; display: flex; align-items: center; gap: .5rem; }
+.price-feat li i { color: #16a34a; flex-shrink: 0; }
+
+/* ─── CTA BAND ──────────────────────────────────────────────── */
+.cta-band {
+    background: linear-gradient(135deg,#0f172a 0%,#1d2d50 100%);
+    position: relative; overflow: hidden;
+}
+.cta-band::before {
+    content: ''; position: absolute; top: -60px; right: -60px;
+    width: 350px; height: 350px; border-radius: 50%;
+    background: rgba(29,110,234,.12); pointer-events: none;
+}
+.cta-band::after {
+    content: ''; position: absolute; bottom: -80px; left: -40px;
+    width: 300px; height: 300px; border-radius: 50%;
+    background: rgba(245,197,24,.07); pointer-events: none;
 }
 
-.navbar-nav .nav-link {
-    padding: 0.5rem 1rem !important;
-    margin-right: 5px;
-    border-radius: 5px;
-    transition: all 0.3s ease;
-}
-
-.navbar-nav .nav-link:hover {
-    background-color: #f8f9fa;
-}
-
-/* Ensure scrolling works properly */
-html {
-    overflow-y: scroll !important;
-    scroll-behavior: smooth;
-}
-
-body {
-    overflow-y: auto !important;
-    height: auto !important;
-    min-height: 100vh;
-    position: relative !important;
-}
-
-/* Fix any fixed positioning issues */
-.container, .container-fluid {
-    position: relative;
-    z-index: 1;
-}
-
-/* Ensure sections don't prevent scrolling */
-section {
-    position: relative;
-    overflow: visible;
+/* ─── MOBILE ─────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .hs-track { height: 75vh; min-height: 500px; }
+    .hs-pill { padding: 13px 12px; font-size: .73rem; }
+    .hs-arrow { width: 40px; height: 40px; }
+    .hs-prev { left: 8px; } .hs-next { right: 8px; }
+    .hs-cta { flex-direction: column; align-items: center; }
+    .bg-section { background-attachment: scroll; }
+    .step-connector { min-height: 20px; }
+    .price-card.featured { transform: none; }
+    .price-card.featured:hover { transform: translateY(-6px); }
 }
 </style>
 {% endblock %}
 
-{% block title %}LAWCOLAB - Professional Legal Practice Management{% endblock %}
+{% block title %}LAWCOLAB — The Legal Practice Management Platform for Law Firms Worldwide{% endblock %}
 
 {% block content %}
-<!-- Removed duplicate popup - using comprehensive popup only -->
-<!-- Public landing page only - authenticated users are redirected server-side -->
-    <!-- Clean, Replit-inspired Landing Page -->
-    <div style="background: #ffffff; min-height: 100vh; overflow-y: auto; position: relative;">
-        
-        <!-- ═══ HERO FEATURE SLIDER ═══ -->
-        <style>
-        /* Custom hero slider — CSS-first, no Bootstrap carousel dependency */
-        #heroSlider { position: relative; overflow: hidden; background: #0a1428; }
+<div style="background:#fff; min-height:100vh;">
 
-        .hs-track {
-            position: relative;
-            width: 100%;
-            height: 88vh;
-            min-height: 560px;
-            max-height: 820px;
-        }
+<!-- ══════════════════════════════════════════════════════════════
+     HERO SLIDER
+══════════════════════════════════════════════════════════════ -->
+<section id="heroSlider">
+    <div class="hs-track" id="hsTrack">
 
-        .hs-slide {
-            position: absolute;
-            inset: 0;
-            background-size: cover;
-            background-position: center;
-            opacity: 0;
-            transition: opacity .9s ease;
-            pointer-events: none;
-        }
-        .hs-slide.hs-active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .hs-overlay {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(
-                160deg,
-                rgba(8,16,36,0.72) 0%,
-                rgba(8,16,36,0.80) 50%,
-                rgba(8,16,36,0.60) 100%
-            );
-        }
-
-        .hs-content {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 2rem 1.5rem;
-            z-index: 2;
-        }
-        .hs-inner { max-width: 700px; }
-
-        .hs-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: .4rem;
-            background: rgba(255,255,255,.15);
-            border: 1px solid rgba(255,255,255,.3);
-            color: #fff;
-            border-radius: 50px;
-            padding: 5px 16px;
-            font-size: .78rem;
-            font-weight: 700;
-            letter-spacing: .06em;
-            text-transform: uppercase;
-            margin-bottom: 1.1rem;
-            backdrop-filter: blur(8px);
-        }
-
-        .hs-title {
-            font-size: clamp(1.9rem, 5vw, 3.3rem);
-            font-weight: 800;
-            color: #ffffff !important;
-            line-height: 1.1;
-            margin-bottom: 1rem;
-            text-shadow: 0 2px 14px rgba(0,0,0,.4);
-        }
-
-        .hs-desc {
-            font-size: clamp(.9rem, 1.8vw, 1.1rem);
-            color: rgba(255,255,255,.88) !important;
-            line-height: 1.7;
-            margin-bottom: 1.8rem;
-        }
-
-        /* Beat global !important black-text overrides */
-        #heroSlider .hs-title,
-        #heroSlider .hs-title * { color: #ffffff !important; }
-        #heroSlider .hs-desc,
-        #heroSlider .hs-desc * { color: rgba(255,255,255,.88) !important; }
-        #heroSlider .hs-tag,
-        #heroSlider .hs-tag * { color: #ffffff !important; }
-        #heroSlider .hs-content h1,
-        #heroSlider .hs-content h2,
-        #heroSlider .hs-content h3,
-        #heroSlider .hs-content p,
-        #heroSlider .hs-content span,
-        #heroSlider .hs-content div { color: #ffffff !important; }
-
-        .hs-cta {
-            display: flex;
-            gap: .9rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .hs-btn-blue {
-            background: #0066cc;
-            color: #fff !important;
-            padding: 13px 28px;
-            border-radius: 9px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: .9rem;
-            display: inline-flex;
-            align-items: center;
-            gap: .5rem;
-            box-shadow: 0 4px 18px rgba(0,102,204,.45);
-            transition: background .2s, transform .2s;
-        }
-        .hs-btn-blue:hover { background:#0052a3; transform:translateY(-2px); }
-
-        .hs-btn-ghost {
-            background: rgba(255,255,255,.12);
-            color: #fff !important;
-            padding: 13px 28px;
-            border-radius: 9px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: .9rem;
-            display: inline-flex;
-            align-items: center;
-            gap: .5rem;
-            border: 1.5px solid rgba(255,255,255,.45);
-            backdrop-filter: blur(4px);
-            transition: background .2s, transform .2s;
-        }
-        .hs-btn-ghost:hover { background:rgba(255,255,255,.22); transform:translateY(-2px); }
-
-        .hs-btn-gold {
-            background: linear-gradient(45deg,#FFD700,#FFA500);
-            color: #1a1a1a !important;
-            padding: 13px 28px;
-            border-radius: 9px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: .9rem;
-            display: inline-flex;
-            align-items: center;
-            gap: .5rem;
-            box-shadow: 0 4px 16px rgba(255,165,0,.35);
-            transition: filter .2s, transform .2s;
-        }
-        .hs-btn-gold:hover { filter:brightness(1.08); transform:translateY(-2px); }
-
-        /* Prev / Next arrows */
-        .hs-arrow {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 10;
-            background: rgba(255,255,255,.14);
-            border: none;
-            border-radius: 50%;
-            width: 46px;
-            height: 46px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            cursor: pointer;
-            backdrop-filter: blur(4px);
-            transition: background .2s;
-        }
-        .hs-arrow:hover { background: rgba(255,255,255,.3); }
-        .hs-prev { left: 18px; }
-        .hs-next { right: 18px; }
-
-        /* Dot indicators */
-        .hs-dots {
-            position: absolute;
-            bottom: 18px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 7px;
-            z-index: 10;
-        }
-        .hs-dot {
-            width: 9px; height: 9px;
-            border-radius: 50%;
-            background: rgba(255,255,255,.45);
-            border: none;
-            cursor: pointer;
-            padding: 0;
-            transition: background .3s, transform .3s;
-        }
-        .hs-dot.hs-dot-active {
-            background: #fff;
-            transform: scale(1.25);
-        }
-
-        /* Progress bar */
-        .hs-progress {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 3px;
-            background: rgba(255,255,255,.5);
-            z-index: 10;
-            width: 0;
-            transition: width 5.5s linear;
-        }
-        .hs-progress.hs-running { width: 100%; }
-
-        /* Feature pill bar */
-        .hs-pill-bar {
-            background: #fff;
-            border-bottom: 1px solid #e2e8f0;
-            box-shadow: 0 2px 10px rgba(0,0,0,.07);
-        }
-        .hs-pills {
-            display: flex;
-            overflow-x: auto;
-            scrollbar-width: none;
-        }
-        .hs-pills::-webkit-scrollbar { display: none; }
-        .hs-pill {
-            flex-shrink: 0;
-            background: none;
-            border: none;
-            border-bottom: 3px solid transparent;
-            padding: 14px 16px;
-            font-size: .8rem;
-            font-weight: 600;
-            color: #555;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: color .2s, border-color .2s;
-            display: flex;
-            align-items: center;
-            gap: .35rem;
-        }
-        .hs-pill:hover { color: #0066cc; border-bottom-color: #bdd4f5; }
-        .hs-pill.hs-pill-active { color: #0066cc; border-bottom-color: #0066cc; }
-
-        @media (max-width: 768px) {
-            .hs-track { height: 72vh; min-height: 480px; }
-            .hs-pill { padding: 12px 11px; font-size: .73rem; }
-            .hs-arrow { width: 38px; height: 38px; }
-            .hs-prev { left: 8px; }
-            .hs-next { right: 8px; }
-            .hs-cta { flex-direction: column; align-items: center; }
-        }
-        </style>
-
-        <section id="heroSlider">
-            <div class="hs-track" id="hsTrack">
-
-                <!-- SLIDE 0 — Client Management -->
-                <div class="hs-slide hs-active" style="background-image:url('{{ url_for('static', filename='images/Diverse_lawyer_client_consultation_29299ab7.png') }}');">
-                    <div class="hs-overlay"></div>
-                    <div class="hs-content"><div class="hs-inner">
-                        <div class="hs-tag" style="color:#ffffff!important;"><i class="fas fa-users"></i>Client Management</div>
-                        <h1 class="hs-title" style="color:#ffffff!important;">Know Every Client,<br>Inside &amp; Out</h1>
-                        <p class="hs-desc" style="color:rgba(255,255,255,.88)!important;">Secure client profiles, case histories, communication logs, and notes — all in one place. Complete data isolation between law firms.</p>
-                        <div class="hs-cta">
-                            <a href="{{ url_for('auth.signup') }}" class="hs-btn-blue"><i class="fas fa-rocket"></i>Start Free Trial</a>
-                            <a href="{{ url_for('pricing') }}" class="hs-btn-ghost"><i class="fas fa-tag"></i>View Pricing</a>
-                        </div>
-                    </div></div>
+        <!-- Slide 0 — Welcome / Overview -->
+        <div class="hs-slide hs-active" style="background-image:url('{{ url_for('static', filename='images/sections/hero_lobby.jpg') }}');">
+            <div class="hs-overlay"></div>
+            <div class="hs-content"><div class="hs-inner">
+                <div class="hs-tag"><i class="fas fa-balance-scale"></i> Legal Practice Management</div>
+                <h1 class="hs-title">Run Your Law Firm<br>Like a World-Class Business</h1>
+                <p class="hs-desc">LAWCOLAB gives your firm everything it needs — client management, case tracking, billing, team collaboration, and analytics — all in one beautifully simple platform built for legal professionals globally.</p>
+                <div class="hs-cta">
+                    <a href="{{ url_for('auth.signup') }}" class="hs-btn-primary"><i class="fas fa-rocket"></i>Start Free Trial</a>
+                    <a href="{{ url_for('features') }}" class="hs-btn-ghost"><i class="fas fa-play-circle"></i>See All Features</a>
                 </div>
+            </div></div>
+        </div>
 
-                <!-- SLIDE 1 — Case & Project Tracking -->
-                <div class="hs-slide" style="background-image:url('{{ url_for('static', filename='images/Modern_law_office_interior_98a5776a.png') }}');">
-                    <div class="hs-overlay"></div>
-                    <div class="hs-content"><div class="hs-inner">
-                        <div class="hs-tag" style="color:#ffffff!important;"><i class="fas fa-briefcase"></i>Case &amp; Project Tracking</div>
-                        <h1 class="hs-title" style="color:#ffffff!important;">Every Case,<br>Always on Track</h1>
-                        <p class="hs-desc" style="color:rgba(255,255,255,.88)!important;">Comprehensive project management with task assignments, deadline tracking, file organisation, and live progress monitoring for your entire caseload.</p>
-                        <div class="hs-cta">
-                            <a href="{{ url_for('auth.signup') }}" class="hs-btn-blue"><i class="fas fa-rocket"></i>Start Free Trial</a>
-                            <a href="{{ url_for('pricing') }}" class="hs-btn-ghost"><i class="fas fa-tag"></i>View Pricing</a>
-                        </div>
-                    </div></div>
+        <!-- Slide 1 — Client Management -->
+        <div class="hs-slide" style="background-image:url('{{ url_for('static', filename='images/Diverse_lawyer_client_consultation_29299ab7.png') }}');">
+            <div class="hs-overlay"></div>
+            <div class="hs-content"><div class="hs-inner">
+                <div class="hs-tag"><i class="fas fa-users"></i> Client Management</div>
+                <h1 class="hs-title">Know Every Client,<br>Deeply & Instantly</h1>
+                <p class="hs-desc">Centralise client profiles, communication histories, case notes, and documents. Complete data isolation between firms ensures absolute confidentiality — no matter how many clients you serve.</p>
+                <div class="hs-cta">
+                    <a href="{{ url_for('auth.signup') }}" class="hs-btn-primary"><i class="fas fa-rocket"></i>Start Free Trial</a>
+                    <a href="{{ url_for('pricing') }}" class="hs-btn-ghost"><i class="fas fa-tag"></i>View Pricing</a>
                 </div>
+            </div></div>
+        </div>
 
-                <!-- SLIDE 2 — Team Collaboration -->
-                <div class="hs-slide" style="background-image:url('{{ url_for('static', filename='images/Diverse_legal_team_collaboration_1cc4eb26.png') }}');">
-                    <div class="hs-overlay"></div>
-                    <div class="hs-content"><div class="hs-inner">
-                        <div class="hs-tag" style="color:#ffffff!important;"><i class="fas fa-users-cog"></i>Team Collaboration</div>
-                        <h1 class="hs-title" style="color:#ffffff!important;">Your Whole Team,<br>One Platform</h1>
-                        <p class="hs-desc" style="color:rgba(255,255,255,.88)!important;">Role-based access for admins, lawyers, and clients. Assign tasks, share files, and collaborate securely — no email threads, no confusion.</p>
-                        <div class="hs-cta">
-                            <a href="{{ url_for('auth.signup') }}" class="hs-btn-blue"><i class="fas fa-rocket"></i>Start Free Trial</a>
-                            <a href="{{ url_for('pricing') }}" class="hs-btn-ghost"><i class="fas fa-tag"></i>View Pricing</a>
-                        </div>
-                    </div></div>
+        <!-- Slide 2 — Case & Project Tracking -->
+        <div class="hs-slide" style="background-image:url('{{ url_for('static', filename='images/Modern_law_office_interior_98a5776a.png') }}');">
+            <div class="hs-overlay"></div>
+            <div class="hs-content"><div class="hs-inner">
+                <div class="hs-tag"><i class="fas fa-briefcase"></i> Case & Project Tracking</div>
+                <h1 class="hs-title">Every Case on Track.<br>Every Deadline Met.</h1>
+                <p class="hs-desc">Powerful project management with task assignments, milestone tracking, file organisation, and real-time progress dashboards — designed specifically for the pace of legal work.</p>
+                <div class="hs-cta">
+                    <a href="{{ url_for('auth.signup') }}" class="hs-btn-primary"><i class="fas fa-rocket"></i>Start Free Trial</a>
+                    <a href="{{ url_for('pricing') }}" class="hs-btn-ghost"><i class="fas fa-tag"></i>View Pricing</a>
                 </div>
+            </div></div>
+        </div>
 
-                <!-- SLIDE 3 — Calendar & Scheduling -->
-                <div class="hs-slide" style="background-image:url('{{ url_for('static', filename='images/Legal_team_meeting_867b2fc9.png') }}');">
-                    <div class="hs-overlay"></div>
-                    <div class="hs-content"><div class="hs-inner">
-                        <div class="hs-tag" style="color:#ffffff!important;"><i class="fas fa-calendar-alt"></i>Calendar &amp; Scheduling</div>
-                        <h1 class="hs-title" style="color:#ffffff!important;">Never Miss a<br>Court Date Again</h1>
-                        <p class="hs-desc" style="color:rgba(255,255,255,.88)!important;">Schedule court dates, meetings, and appointments with smart reminders. Visual monthly calendar with colour-coded event types for your entire firm.</p>
-                        <div class="hs-cta">
-                            <a href="{{ url_for('auth.signup') }}" class="hs-btn-blue"><i class="fas fa-rocket"></i>Start Free Trial</a>
-                            <a href="{{ url_for('pricing') }}" class="hs-btn-ghost"><i class="fas fa-tag"></i>View Pricing</a>
-                        </div>
-                    </div></div>
+        <!-- Slide 3 — Team Collaboration -->
+        <div class="hs-slide" style="background-image:url('{{ url_for('static', filename='images/sections/team_collab.jpg') }}');">
+            <div class="hs-overlay"></div>
+            <div class="hs-content"><div class="hs-inner">
+                <div class="hs-tag"><i class="fas fa-users-cog"></i> Team Collaboration</div>
+                <h1 class="hs-title">Your Entire Firm,<br>One Unified Platform</h1>
+                <p class="hs-desc">Role-based access for partners, associates, paralegals, and clients. Assign tasks, share files, and collaborate securely — with complete audit trails and no broken email chains.</p>
+                <div class="hs-cta">
+                    <a href="{{ url_for('auth.signup') }}" class="hs-btn-primary"><i class="fas fa-rocket"></i>Start Free Trial</a>
+                    <a href="{{ url_for('pricing') }}" class="hs-btn-ghost"><i class="fas fa-tag"></i>View Pricing</a>
                 </div>
+            </div></div>
+        </div>
 
-                <!-- SLIDE 4 — Billing & Invoices -->
-                <div class="hs-slide" style="background-image:url('{{ url_for('static', filename='images/legal_tech_innovation.jpg') }}');">
-                    <div class="hs-overlay"></div>
-                    <div class="hs-content"><div class="hs-inner">
-                        <div class="hs-tag" style="color:#ffffff!important;"><i class="fas fa-file-invoice-dollar"></i>Billing &amp; Invoices</div>
-                        <h1 class="hs-title" style="color:#ffffff!important;">Get Paid Faster,<br>Stress Less</h1>
-                        <p class="hs-desc" style="color:rgba(255,255,255,.88)!important;">Generate professional invoices, track payments, manage expenses, and accept multiple payment methods — all built into your workflow.</p>
-                        <div class="hs-cta">
-                            <a href="{{ url_for('auth.signup') }}" class="hs-btn-blue"><i class="fas fa-rocket"></i>Start Free Trial</a>
-                            <a href="{{ url_for('pricing') }}" class="hs-btn-ghost"><i class="fas fa-tag"></i>View Pricing</a>
-                        </div>
-                    </div></div>
+        <!-- Slide 4 — Calendar & Scheduling -->
+        <div class="hs-slide" style="background-image:url('{{ url_for('static', filename='images/Legal_team_meeting_867b2fc9.png') }}');">
+            <div class="hs-overlay"></div>
+            <div class="hs-content"><div class="hs-inner">
+                <div class="hs-tag"><i class="fas fa-calendar-alt"></i> Calendar & Scheduling</div>
+                <h1 class="hs-title">Never Miss a Court Date.<br>Never Lose a Hearing.</h1>
+                <p class="hs-desc">Visual firm-wide calendar with court dates, client meetings, and internal deadlines. Smart reminders and colour-coded event types keep every member of your team aligned.</p>
+                <div class="hs-cta">
+                    <a href="{{ url_for('auth.signup') }}" class="hs-btn-primary"><i class="fas fa-rocket"></i>Start Free Trial</a>
+                    <a href="{{ url_for('pricing') }}" class="hs-btn-ghost"><i class="fas fa-tag"></i>View Pricing</a>
                 </div>
+            </div></div>
+        </div>
 
-                <!-- SLIDE 5 — Document Management -->
-                <div class="hs-slide" style="background-image:url('{{ url_for('static', filename='images/Modern_diverse_law_office_43d2990c.png') }}');">
-                    <div class="hs-overlay"></div>
-                    <div class="hs-content"><div class="hs-inner">
-                        <div class="hs-tag" style="color:#ffffff!important;"><i class="fas fa-file-contract"></i>Document Management</div>
-                        <h1 class="hs-title" style="color:#ffffff!important;">All Your Documents,<br>Instantly Accessible</h1>
-                        <p class="hs-desc" style="color:rgba(255,255,255,.88)!important;">Secure file uploads, organised per-project document libraries, and easy sharing with clients and team members. No more lost files.</p>
-                        <div class="hs-cta">
-                            <a href="{{ url_for('auth.signup') }}" class="hs-btn-blue"><i class="fas fa-rocket"></i>Start Free Trial</a>
-                            <a href="{{ url_for('pricing') }}" class="hs-btn-ghost"><i class="fas fa-tag"></i>View Pricing</a>
-                        </div>
-                    </div></div>
+        <!-- Slide 5 — Billing -->
+        <div class="hs-slide" style="background-image:url('{{ url_for('static', filename='images/legal_tech_innovation.jpg') }}');">
+            <div class="hs-overlay"></div>
+            <div class="hs-content"><div class="hs-inner">
+                <div class="hs-tag"><i class="fas fa-file-invoice-dollar"></i> Billing & Invoicing</div>
+                <h1 class="hs-title">Invoice in Minutes.<br>Get Paid Faster.</h1>
+                <p class="hs-desc">Generate professional branded invoices, track outstanding payments, manage multiple currencies, and accept bank transfers — all built into your existing workflow so nothing slips through the cracks.</p>
+                <div class="hs-cta">
+                    <a href="{{ url_for('auth.signup') }}" class="hs-btn-primary"><i class="fas fa-rocket"></i>Start Free Trial</a>
+                    <a href="{{ url_for('pricing') }}" class="hs-btn-ghost"><i class="fas fa-tag"></i>View Pricing</a>
                 </div>
+            </div></div>
+        </div>
 
-                <!-- SLIDE 6 — Communication -->
-                <div class="hs-slide" style="background-image:url('{{ url_for('static', filename='images/contact_support.jpg') }}');">
-                    <div class="hs-overlay"></div>
-                    <div class="hs-content"><div class="hs-inner">
-                        <div class="hs-tag" style="color:#ffffff!important;"><i class="fas fa-comments"></i>Real-Time Communication</div>
-                        <h1 class="hs-title" style="color:#ffffff!important;">Chat Securely with<br>Clients &amp; Your Team</h1>
-                        <p class="hs-desc" style="color:rgba(255,255,255,.88)!important;">Project-based chat rooms, direct messaging, client portals, and support channels — all encrypted and organised by matter.</p>
-                        <div class="hs-cta">
-                            <a href="{{ url_for('auth.signup') }}" class="hs-btn-blue"><i class="fas fa-rocket"></i>Start Free Trial</a>
-                            <a href="{{ url_for('pricing') }}" class="hs-btn-ghost"><i class="fas fa-tag"></i>View Pricing</a>
-                        </div>
-                    </div></div>
+        <!-- Slide 6 — Communication -->
+        <div class="hs-slide" style="background-image:url('{{ url_for('static', filename='images/contact_support.jpg') }}');">
+            <div class="hs-overlay"></div>
+            <div class="hs-content"><div class="hs-inner">
+                <div class="hs-tag"><i class="fas fa-comments"></i> Secure Communication</div>
+                <h1 class="hs-title">Talk to Clients.<br>Brief Your Team. Stay Secure.</h1>
+                <p class="hs-desc">Matter-specific chat rooms, client messaging portals, and support channels — all encrypted, all organised, and all searchable. Replace scattered emails with structured, contextual communication.</p>
+                <div class="hs-cta">
+                    <a href="{{ url_for('auth.signup') }}" class="hs-btn-primary"><i class="fas fa-rocket"></i>Start Free Trial</a>
+                    <a href="{{ url_for('pricing') }}" class="hs-btn-ghost"><i class="fas fa-tag"></i>View Pricing</a>
                 </div>
+            </div></div>
+        </div>
 
-                <!-- SLIDE 7 — Analytics -->
-                <div class="hs-slide" style="background-image:url('{{ url_for('static', filename='images/Professional_legal_consultation_scene_0650a100.png') }}');">
-                    <div class="hs-overlay"></div>
-                    <div class="hs-content"><div class="hs-inner">
-                        <div class="hs-tag" style="color:#ffffff!important;"><i class="fas fa-chart-bar"></i>Practice Analytics</div>
-                        <h1 class="hs-title" style="color:#ffffff!important;">Grow Your Firm<br>with Data Insights</h1>
-                        <p class="hs-desc" style="color:rgba(255,255,255,.88)!important;">Revenue trends, invoice analytics, case performance, and team productivity — all visualised so you can make smarter decisions.</p>
-                        <div class="hs-cta">
-                            <a href="{{ url_for('auth.signup') }}" class="hs-btn-blue"><i class="fas fa-rocket"></i>Start Free Trial</a>
-                            <a href="/sales/popup" class="hs-btn-gold"><i class="fas fa-crown"></i>White-Label $1,745</a>
-                        </div>
-                    </div></div>
+        <!-- Slide 7 — Analytics -->
+        <div class="hs-slide" style="background-image:url('{{ url_for('static', filename='images/sections/analytics_dash.jpg') }}');">
+            <div class="hs-overlay"></div>
+            <div class="hs-content"><div class="hs-inner">
+                <div class="hs-tag"><i class="fas fa-chart-bar"></i> Practice Analytics</div>
+                <h1 class="hs-title">Make Smarter Decisions<br>with Real Data</h1>
+                <p class="hs-desc">Revenue trends, invoice analytics, case performance, and team productivity dashboards — visualised in real time so firm leadership can act on insight, not guesswork.</p>
+                <div class="hs-cta">
+                    <a href="{{ url_for('auth.signup') }}" class="hs-btn-primary"><i class="fas fa-rocket"></i>Start Free Trial</a>
+                    <a href="{{ url_for('pricing') }}" class="hs-btn-ghost"><i class="fas fa-tag"></i>View Pricing</a>
                 </div>
+            </div></div>
+        </div>
 
-                <!-- Arrows -->
-                <button class="hs-arrow hs-prev" id="hsPrev" aria-label="Previous">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <button class="hs-arrow hs-next" id="hsNext" aria-label="Next">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-
-                <!-- Dots -->
-                <div class="hs-dots" id="hsDots"></div>
-
-                <!-- Progress bar -->
-                <div class="hs-progress" id="hsProgress"></div>
-
-            </div><!-- /.hs-track -->
-
-            <!-- Feature pill bar -->
-            <div class="hs-pill-bar">
-                <div class="container-fluid px-0">
-                    <div class="hs-pills" id="hsPills">
-                        <button class="hs-pill hs-pill-active" data-idx="0"><i class="fas fa-users"></i>Clients</button>
-                        <button class="hs-pill" data-idx="1"><i class="fas fa-briefcase"></i>Cases</button>
-                        <button class="hs-pill" data-idx="2"><i class="fas fa-users-cog"></i>Team</button>
-                        <button class="hs-pill" data-idx="3"><i class="fas fa-calendar-alt"></i>Calendar</button>
-                        <button class="hs-pill" data-idx="4"><i class="fas fa-file-invoice-dollar"></i>Invoices</button>
-                        <button class="hs-pill" data-idx="5"><i class="fas fa-file-contract"></i>Documents</button>
-                        <button class="hs-pill" data-idx="6"><i class="fas fa-comments"></i>Chat</button>
-                        <button class="hs-pill" data-idx="7"><i class="fas fa-chart-bar"></i>Analytics</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <script>
-        (function(){
-            var slides  = document.querySelectorAll('#hsTrack .hs-slide');
-            var pills   = document.querySelectorAll('#hsPills .hs-pill');
-            var dotsEl  = document.getElementById('hsDots');
-            var prog    = document.getElementById('hsProgress');
-            var total   = slides.length;
-            var current = 0;
-            var timer   = null;
-            var INTERVAL= 5500;
-
-            // Build dots
-            for(var i=0;i<total;i++){
-                var d=document.createElement('button');
-                d.className='hs-dot'+(i===0?' hs-dot-active':'');
-                d.setAttribute('data-idx',i);
-                d.addEventListener('click',function(){ goTo(+this.getAttribute('data-idx')); });
-                dotsEl.appendChild(d);
-            }
-
-            function goTo(n){
-                slides[current].classList.remove('hs-active');
-                pills[current] && pills[current].classList.remove('hs-pill-active');
-                dotsEl.children[current] && dotsEl.children[current].classList.remove('hs-dot-active');
-                current = (n + total) % total;
-                slides[current].classList.add('hs-active');
-                pills[current] && pills[current].classList.add('hs-pill-active');
-                dotsEl.children[current] && dotsEl.children[current].classList.add('hs-dot-active');
-                resetProgress();
-                clearInterval(timer);
-                timer = setInterval(function(){ goTo(current+1); }, INTERVAL);
-            }
-
-            function resetProgress(){
-                prog.classList.remove('hs-running');
-                prog.style.transition='none';
-                prog.style.width='0';
-                requestAnimationFrame(function(){
-                    requestAnimationFrame(function(){
-                        prog.style.transition='width '+INTERVAL+'ms linear';
-                        prog.classList.add('hs-running');
-                    });
-                });
-            }
-
-            document.getElementById('hsPrev').addEventListener('click',function(){ goTo(current-1); });
-            document.getElementById('hsNext').addEventListener('click',function(){ goTo(current+1); });
-
-            pills.forEach(function(p){
-                p.addEventListener('click',function(){ goTo(+this.getAttribute('data-idx')); });
-            });
-
-            // Start auto-play
-            resetProgress();
-            timer = setInterval(function(){ goTo(current+1); }, INTERVAL);
-        })();
-        </script>
-
-        <!-- Features Section -->
-        <section style="padding: 80px 0; background: #fafbfc;">
-            <div class="container">
-                <div class="text-center mb-5">
-                    <h2 style="font-size: 2.5rem; font-weight: 700; color: #1a1a1a; margin-bottom: 1rem;">
-                        Complete Legal Practice Management Solution
-                    </h2>
-                    <p style="font-size: 1.125rem; color: #64748b; max-width: 600px; margin: 0 auto;">
-                        Built by Taskdrip for lawyers globally. Streamline every aspect of your legal practice with our all-in-one platform.
-                    </p>
-                </div>
-                
-                <!-- Main Features Grid -->
-                <div class="row g-4 mb-5">
-                    <div class="col-lg-4 col-md-6">
-                        <div style="background: white; border-radius: 12px; padding: 2rem; height: 100%; border: 1px solid #e2e8f0; transition: all 0.2s;">
-                            <div style="background: #eff6ff; border-radius: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
-                                <i class="fas fa-users" style="color: #0066cc; font-size: 1.25rem;"></i>
-                            </div>
-                            <h3 style="font-size: 1.25rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Client Management</h3>
-                            <p style="color: #64748b; line-height: 1.6;">Secure client profiles, notes, communication history, and case assignments with complete data isolation between law firms.</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <div style="background: white; border-radius: 12px; padding: 2rem; height: 100%; border: 1px solid #e2e8f0; transition: all 0.2s;">
-                            <div style="background: #f0fdf4; border-radius: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
-                                <i class="fas fa-briefcase" style="color: #16a34a; font-size: 1.25rem;"></i>
-                            </div>
-                            <h3 style="font-size: 1.25rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Case & Project Tracking</h3>
-                            <p style="color: #64748b; line-height: 1.6;">Comprehensive project management with task assignments, deadline tracking, file organization, and progress monitoring.</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <div style="background: white; border-radius: 12px; padding: 2rem; height: 100%; border: 1px solid #e2e8f0; transition: all 0.2s;">
-                            <div style="background: #fef3c7; border-radius: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
-                                <i class="fas fa-users-cog" style="color: #d97706; font-size: 1.25rem;"></i>
-                            </div>
-                            <h3 style="font-size: 1.25rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Team Collaboration</h3>
-                            <p style="color: #64748b; line-height: 1.6;">Role-based access for admins, lawyers, team members, and clients with secure collaboration tools and task management.</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <div style="background: white; border-radius: 12px; padding: 2rem; height: 100%; border: 1px solid #e2e8f0; transition: all 0.2s;">
-                            <div style="background: #f3e8ff; border-radius: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
-                                <i class="fas fa-comments" style="color: #8b5cf6; font-size: 1.25rem;"></i>
-                            </div>
-                            <h3 style="font-size: 1.25rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Multi-Tiered Communication</h3>
-                            <p style="color: #64748b; line-height: 1.6;">Project-based chat rooms, client communication portals, support channels, and real-time messaging with message history.</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <div style="background: white; border-radius: 12px; padding: 2rem; height: 100%; border: 1px solid #e2e8f0; transition: all 0.2s;">
-                            <div style="background: #fee2e2; border-radius: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
-                                <i class="fas fa-file-contract" style="color: #dc2626; font-size: 1.25rem;"></i>
-                            </div>
-                            <h3 style="font-size: 1.25rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Document Management</h3>
-                            <p style="color: #64748b; line-height: 1.6;">Secure file uploads, document organization, version control, and easy sharing with clients and team members.</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <div style="background: white; border-radius: 12px; padding: 2rem; height: 100%; border: 1px solid #e2e8f0; transition: all 0.2s;">
-                            <div style="background: #ecfdf5; border-radius: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
-                                <i class="fas fa-receipt" style="color: #059669; font-size: 1.25rem;"></i>
-                            </div>
-                            <h3 style="font-size: 1.25rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Billing & Invoices</h3>
-                            <p style="color: #64748b; line-height: 1.6;">Integrated billing system with time tracking, expense management, invoice generation, and payment processing capabilities.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Call to Action -->
-                <div class="text-center">
-                    <div style="background: white; border-radius: 16px; padding: 3rem; border: 1px solid #e2e8f0; max-width: 600px; margin: 0 auto;">
-                        <h3 style="font-size: 1.75rem; font-weight: 600; color: #1a1a1a; margin-bottom: 1rem;">Ready to Transform Your Practice?</h3>
-                        <p style="color: #64748b; font-size: 1.125rem; margin-bottom: 2rem;">Join law firms globally who trust LAWCOLAB for their practice management needs.</p>
-                        <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;">
-                            <a href="{{ url_for('auth.signup') }}" 
-                               style="background: #0066cc; color: white; padding: 18px 36px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1.1rem; display: inline-flex; align-items: center; box-shadow: 0 4px 15px rgba(0,102,204,0.3); transition: all 0.3s;">
-                                <i class="fas fa-rocket me-2"></i>Start Free Trial
-                            </a>
-                            <a href="/sales/popup" 
-                               style="background: transparent; color: #0066cc; padding: 18px 36px; border: 2px solid #0066cc; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1.1rem; display: inline-flex; align-items: center; transition: all 0.3s;">
-                                <i class="fas fa-tag me-2"></i>View Pricing & Pre-Order
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Pricing Section -->
-        <section style="padding: 80px 0; background: white;">
-            <div class="container">
-                <div class="text-center mb-5">
-                    <h2 style="font-size: 2.5rem; font-weight: 700; color: #1a1a1a; margin-bottom: 1rem;">
-                        Simple, transparent pricing
-                    </h2>
-                    <p style="font-size: 1.125rem; color: #64748b; max-width: 500px; margin: 0 auto;">
-                        Start with a free trial. Scale as your practice grows. Cancel anytime.
-                    </p>
-                </div>
-                
-                <!-- Pricing Cards - Mobile Optimized -->
-                <div class="row justify-content-center">
-                    <!-- Starter Plan -->
-                    <div class="col-lg-4 col-md-6 col-sm-8 mb-4">
-                        <div class="pricing-card starter-card" style="background: white; border: 2px solid #2563eb; border-radius: 20px; padding: 25px 20px; text-align: center; min-height: 400px; display: flex; flex-direction: column; justify-content: space-between; margin: 0 auto; max-width: 320px;">
-                            <div>
-                                <div style="background: #2563eb; color: white; padding: 8px 20px; border-radius: 25px; display: inline-block; margin-bottom: 20px; font-weight: 600; font-size: 0.9rem;">
-                                    🚀 Starter
-                                </div>
-                                <h3 class="price-display" style="font-size: 2.8rem; font-weight: 700; color: #1a1a1a; margin: 15px 0 8px 0; line-height: 1;">${{ settings.starter_price }}</h3>
-                                <p style="color: #64748b; font-size: 1rem; margin-bottom: 20px;">per month</p>
-                                
-                                <!-- Strategic Features -->
-                                <div style="text-align: left; margin-bottom: 25px;">
-                                    <div style="margin-bottom: 12px; font-size: 0.9rem; color: #374151;">
-                                        <i class="fas fa-check" style="color: #16a34a; margin-right: 8px; width: 16px;"></i>
-                                        <span>Perfect for solo lawyers & small practices</span>
-                                    </div>
-                                    <div style="margin-bottom: 12px; font-size: 0.9rem; color: #374151;">
-                                        <i class="fas fa-check" style="color: #16a34a; margin-right: 8px; width: 16px;"></i>
-                                        <span>Up to 5 team members</span>
-                                    </div>
-                                    <div style="margin-bottom: 12px; font-size: 0.9rem; color: #374151;">
-                                        <i class="fas fa-check" style="color: #16a34a; margin-right: 8px; width: 16px;"></i>
-                                        <span>Essential case management</span>
-                                    </div>
-                                    <div style="margin-bottom: 12px; font-size: 0.9rem; color: #374151;">
-                                        <i class="fas fa-check" style="color: #16a34a; margin-right: 8px; width: 16px;"></i>
-                                        <span>Client portal & secure messaging</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <a href="javascript:void(0)" onclick="selectPlan('starter', 'Starter Plan - ${{ settings.starter_price }}/month')" class="btn-get-started" style="background: #2563eb; color: white; padding: 14px 20px; border-radius: 12px; text-decoration: none; font-weight: 600; display: block; transition: all 0.3s; box-shadow: 0 4px 15px rgba(37,99,235,0.3); font-size: 0.95rem;">
-                                Choose Starter
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Growth Plan (Best Value) -->
-                    <div class="col-lg-4 col-md-6 col-sm-8 mb-4">
-                        <div class="pricing-card growth-card" style="background: white; border: 2px solid #16a34a; border-radius: 20px; padding: 25px 20px; text-align: center; min-height: 400px; display: flex; flex-direction: column; justify-content: space-between; position: relative; margin: 0 auto; max-width: 320px; transform: scale(1.02);">
-                            <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #16a34a; color: white; padding: 6px 16px; border-radius: 15px; font-size: 0.8rem; font-weight: 700;">
-                                💎 Best Value
-                            </div>
-                            <div>
-                                <div style="background: #16a34a; color: white; padding: 8px 20px; border-radius: 25px; display: inline-block; margin-bottom: 20px; font-weight: 600; margin-top: 15px; font-size: 0.9rem;">
-                                    📈 Growth
-                                </div>
-                                <h3 class="price-display" style="font-size: 2.8rem; font-weight: 700; color: #1a1a1a; margin: 15px 0 8px 0; line-height: 1;">${{ settings.growth_price }}</h3>
-                                <p style="color: #64748b; font-size: 1rem; margin-bottom: 20px;">per 3 months</p>
-                                
-                                <!-- Strategic Features -->
-                                <div style="text-align: left; margin-bottom: 20px;">
-                                    <div style="margin-bottom: 12px; font-size: 0.9rem; color: #374151;">
-                                        <i class="fas fa-check" style="color: #16a34a; margin-right: 8px; width: 16px;"></i>
-                                        <span>Ideal for growing law firms</span>
-                                    </div>
-                                    <div style="margin-bottom: 12px; font-size: 0.9rem; color: #374151;">
-                                        <i class="fas fa-check" style="color: #16a34a; margin-right: 8px; width: 16px;"></i>
-                                        <span>Up to 20 team members</span>
-                                    </div>
-                                    <div style="margin-bottom: 12px; font-size: 0.9rem; color: #374151;">
-                                        <i class="fas fa-check" style="color: #16a34a; margin-right: 8px; width: 16px;"></i>
-                                        <span>Advanced analytics & reporting</span>
-                                    </div>
-                                    <div style="margin-bottom: 12px; font-size: 0.9rem; color: #374151;">
-                                        <i class="fas fa-check" style="color: #16a34a; margin-right: 8px; width: 16px;"></i>
-                                        <span>Priority support & training</span>
-                                    </div>
-                                </div>
-                                
-                                <div style="background: linear-gradient(45deg, #16a34a, #15803d); color: white; padding: 8px 16px; border-radius: 12px; margin-bottom: 15px; font-weight: 600; font-size: 0.85rem;">
-                                    💰 Save $17/month vs monthly billing
-                                </div>
-                            </div>
-                            <a href="javascript:void(0)" onclick="selectPlan('growth', 'Growth Plan - ${{ settings.growth_price }}/3mo')" class="btn-get-started" style="background: #16a34a; color: white; padding: 14px 20px; border-radius: 12px; text-decoration: none; font-weight: 600; display: block; transition: all 0.3s; box-shadow: 0 4px 15px rgba(22,163,74,0.3); font-size: 0.95rem;">
-                                Choose Growth
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Enterprise Plan -->
-                    <div class="col-lg-4 col-md-6 col-sm-8 mb-4">
-                        <div class="pricing-card enterprise-card" style="background: white; border: 2px solid #dc2626; border-radius: 20px; padding: 25px 20px; text-align: center; min-height: 400px; display: flex; flex-direction: column; justify-content: space-between; margin: 0 auto; max-width: 320px;">
-                            <div>
-                                <div style="background: #dc2626; color: white; padding: 8px 20px; border-radius: 25px; display: inline-block; margin-bottom: 20px; font-weight: 600; font-size: 0.9rem;">
-                                    👑 Enterprise
-                                </div>
-                                <h3 class="price-display" style="font-size: 2.8rem; font-weight: 700; color: #1a1a1a; margin: 15px 0 8px 0; line-height: 1;">${{ settings.enterprise_price }}</h3>
-                                <p style="color: #64748b; font-size: 1rem; margin-bottom: 20px;">per year</p>
-                                
-                                <!-- Strategic Features -->
-                                <div style="text-align: left; margin-bottom: 25px;">
-                                    <div style="margin-bottom: 12px; font-size: 0.9rem; color: #374151;">
-                                        <i class="fas fa-check" style="color: #16a34a; margin-right: 8px; width: 16px;"></i>
-                                        <span>Unlimited team members</span>
-                                    </div>
-                                    <div style="margin-bottom: 12px; font-size: 0.9rem; color: #374151;">
-                                        <i class="fas fa-check" style="color: #16a34a; margin-right: 8px; width: 16px;"></i>
-                                        <span>White-label client portal</span>
-                                    </div>
-                                    <div style="margin-bottom: 12px; font-size: 0.9rem; color: #374151;">
-                                        <i class="fas fa-check" style="color: #16a34a; margin-right: 8px; width: 16px;"></i>
-                                        <span>24/7 premium support</span>
-                                    </div>
-                                    <div style="margin-bottom: 12px; font-size: 0.9rem; color: #374151;">
-                                        <i class="fas fa-check" style="color: #16a34a; margin-right: 8px; width: 16px;"></i>
-                                        <span>Custom integrations & API</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <a href="{{ url_for('contact') }}" class="btn-get-started" style="background: #dc2626; color: white; padding: 14px 20px; border-radius: 12px; text-decoration: none; font-weight: 600; display: block; transition: all 0.3s; box-shadow: 0 4px 15px rgba(220,38,38,0.3); font-size: 0.95rem;">
-                                Contact Sales
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- White-Label License Banner -->
-                <div class="row justify-content-center mt-5">
-                    <div class="col-lg-8">
-                        <div style="background: linear-gradient(45deg, #FFD700, #FFA500); border-radius: 20px; padding: 30px; text-align: center; position: relative; box-shadow: 0 8px 25px rgba(255,215,0,0.3);">
-                            <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #dc2626; color: white; padding: 8px 20px; border-radius: 20px; font-size: 0.9rem; font-weight: 700;">
-                                🏷️ WHITE-LABEL LICENSE
-                            </div>
-                            <h2 style="color: #1a1a1a; font-size: 3rem; font-weight: 800; margin: 20px 0 10px 0;">${{ settings.founders_price }}</h2>
-                            <p style="color: #1a1a1a; font-size: 1.1rem; margin: 0;"><strike style="color: #666;">$5,000+</strike> - Own Your SaaS Business Forever</p>
-                            <p style="color: #1a1a1a; font-weight: 600; margin: 15px 0;">💰 Sell as YOUR OWN SaaS • 6-Month Setup & Support</p>
-                            <a href="/sales/popup" style="background: #1a1a1a; color: #FFD700; padding: 18px 40px; border-radius: 25px; text-decoration: none; font-weight: 700; display: inline-block; margin-top: 15px; font-size: 1.2rem; transition: all 0.3s;">
-                                👑 Secure White-Label License
-                            </a>
-                            <p style="font-size: 0.9rem; color: #1a1a1a; margin-top: 15px; font-weight: 600;">⚡ Limited: Exclusive Founders Only</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Enhanced Mobile Responsive CSS -->
-                <style>
-                /* Desktop and Tablet */
-                .pricing-card {
-                    transition: all 0.3s ease;
-                }
-                
-                .pricing-card:hover {
-                    transform: translateY(-5px);
-                    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
-                }
-                
-                .growth-card:hover {
-                    transform: scale(1.02) translateY(-5px) !important;
-                }
-                
-                /* Mobile Optimization */
-                @media (max-width: 768px) {
-                    .pricing-card {
-                        margin: 0 auto 25px auto !important;
-                        max-width: 300px !important;
-                        min-height: 380px !important;
-                        padding: 20px 15px !important;
-                    }
-                    
-                    .price-display {
-                        font-size: 2.2rem !important;
-                        margin: 10px 0 5px 0 !important;
-                    }
-                    
-                    .btn-get-started {
-                        padding: 12px 16px !important;
-                        font-size: 0.9rem !important;
-                        margin-top: auto !important;
-                    }
-                    
-                    .col-lg-4, .col-md-6, .col-sm-8 {
-                        flex: 0 0 100% !important;
-                        width: 100% !important;
-                        max-width: 100% !important;
-                        padding: 0 15px !important;
-                    }
-                    
-                    /* Fix text overflow issues */
-                    .pricing-card div {
-                        word-wrap: break-word !important;
-                        overflow-wrap: break-word !important;
-                    }
-                    
-                    /* Prevent buttons from overlapping */
-                    .pricing-card > div:last-child {
-                        margin-top: auto !important;
-                        padding-top: 15px !important;
-                    }
-                    
-                    .growth-card {
-                        transform: none !important;
-                        margin: 0 auto 25px auto !important;
-                    }
-                }
-                
-                /* Extra small screens */
-                @media (max-width: 480px) {
-                    .pricing-card {
-                        max-width: 280px !important;
-                        padding: 18px 12px !important;
-                    }
-                    
-                    .price-display {
-                        font-size: 2rem !important;
-                    }
-                    
-                    .pricing-card div[style*="font-size: 0.9rem"] {
-                        font-size: 0.85rem !important;
-                    }
-                }
-                </style>
-            </div>
-        </section>
-            </div>
-        </section>
-
-        <!-- Featured Law Firms -->
-        {% if featured_showcases %}
-        {% include 'showcase/featured_firms.html' %}
-        {% endif %}
-
-        <!-- Footer CTA -->
-        <section style="padding: 80px 0; background: #f8fafc;">
-            <div class="container text-center">
-                <h2 style="font-size: 2.5rem; font-weight: 700; color: #1a1a1a; margin-bottom: 1rem;">
-                    Ready to transform your practice?
-                </h2>
-                <p style="font-size: 1.125rem; color: #64748b; margin-bottom: 2rem; max-width: 500px; margin-left: auto; margin-right: auto;">
-                    Join thousands of legal professionals who trust LAWCOLAB to manage their practice efficiently.
-                </p>
-                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                    <a href="{{ url_for('auth.signup') }}" 
-                       style="background: #0066cc; color: white; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1.125rem; display: inline-flex; align-items: center;">
-                        Start your free trial
-                    </a>
-                    <a href="{{ url_for('contact') }}" 
-                       style="background: transparent; color: #0066cc; padding: 16px 32px; border: 2px solid #e2e8f0; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1.125rem; display: inline-flex; align-items: center;">
-                        Contact sales
-                    </a>
-                </div>
-                <p style="margin-top: 1.5rem; color: #64748b; font-size: 0.875rem;">
-                    Built by <strong>Taskdrip</strong> for legal professionals worldwide
-                </p>
-            </div>
-        </section>
-
+        <!-- Arrows -->
+        <button class="hs-arrow hs-prev" id="hsPrev" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
+        <button class="hs-arrow hs-next" id="hsNext" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
+        <div class="hs-dots" id="hsDots"></div>
+        <div class="hs-progress" id="hsProgress"></div>
     </div>
 
+    <!-- Feature pill bar -->
+    <div class="hs-pill-bar">
+        <div class="container-fluid px-0">
+            <div class="hs-pills" id="hsPills">
+                <button class="hs-pill hs-pill-active" data-idx="0"><i class="fas fa-balance-scale"></i>Overview</button>
+                <button class="hs-pill" data-idx="1"><i class="fas fa-users"></i>Clients</button>
+                <button class="hs-pill" data-idx="2"><i class="fas fa-briefcase"></i>Cases</button>
+                <button class="hs-pill" data-idx="3"><i class="fas fa-users-cog"></i>Team</button>
+                <button class="hs-pill" data-idx="4"><i class="fas fa-calendar-alt"></i>Calendar</button>
+                <button class="hs-pill" data-idx="5"><i class="fas fa-file-invoice-dollar"></i>Billing</button>
+                <button class="hs-pill" data-idx="6"><i class="fas fa-comments"></i>Chat</button>
+                <button class="hs-pill" data-idx="7"><i class="fas fa-chart-bar"></i>Analytics</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+(function(){
+    var slides=document.querySelectorAll('#hsTrack .hs-slide');
+    var pills=document.querySelectorAll('#hsPills .hs-pill');
+    var dotsEl=document.getElementById('hsDots');
+    var prog=document.getElementById('hsProgress');
+    var total=slides.length,current=0,timer=null,INTERVAL=5800;
+    for(var i=0;i<total;i++){var d=document.createElement('button');d.className='hs-dot'+(i===0?' hs-dot-active':'');d.setAttribute('data-idx',i);d.addEventListener('click',function(){goTo(+this.getAttribute('data-idx'));});dotsEl.appendChild(d);}
+    function goTo(n){slides[current].classList.remove('hs-active');pills[current]&&pills[current].classList.remove('hs-pill-active');dotsEl.children[current]&&dotsEl.children[current].classList.remove('hs-dot-active');current=(n+total)%total;slides[current].classList.add('hs-active');pills[current]&&pills[current].classList.add('hs-pill-active');dotsEl.children[current]&&dotsEl.children[current].classList.add('hs-dot-active');resetProgress();clearInterval(timer);timer=setInterval(function(){goTo(current+1);},INTERVAL);}
+    function resetProgress(){prog.classList.remove('hs-running');prog.style.transition='none';prog.style.width='0';requestAnimationFrame(function(){requestAnimationFrame(function(){prog.style.transition='width '+INTERVAL+'ms linear';prog.classList.add('hs-running');});});}
+    document.getElementById('hsPrev').addEventListener('click',function(){goTo(current-1);});
+    document.getElementById('hsNext').addEventListener('click',function(){goTo(current+1);});
+    pills.forEach(function(p){p.addEventListener('click',function(){goTo(+this.getAttribute('data-idx'));});});
+    resetProgress();timer=setInterval(function(){goTo(current+1);},INTERVAL);
+})();
+</script>
+
+<!-- ══════════════════════════════════════════════════════════════
+     TRUST BAR
+══════════════════════════════════════════════════════════════ -->
+<div class="trust-bar">
+    <div class="container">
+        <div class="row justify-content-center g-3 text-center">
+            <div class="col-6 col-md-3 col-lg-2">
+                <div class="trust-item justify-content-center"><i class="fas fa-shield-alt"></i><span>Bank-Grade Security</span></div>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <div class="trust-item justify-content-center"><i class="fas fa-globe"></i><span>Used in 30+ Countries</span></div>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <div class="trust-item justify-content-center"><i class="fas fa-clock"></i><span>99.9% Uptime SLA</span></div>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <div class="trust-item justify-content-center"><i class="fas fa-lock"></i><span>GDPR Compliant</span></div>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <div class="trust-item justify-content-center"><i class="fas fa-headset"></i><span>Dedicated Support</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     FEATURES SECTION — white bg + cards
+══════════════════════════════════════════════════════════════ -->
+<section style="padding:90px 0 80px; background:#fff;">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="section-label">Everything You Need</span>
+            <h2 class="section-title mb-3">The Complete Legal Operating System</h2>
+            <p class="section-sub">Every tool your firm needs — thoughtfully integrated, beautifully designed, and ready to use from day one.</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="feat-card">
+                    <div class="feat-icon" style="background:#eff6ff;"><i class="fas fa-users" style="color:#1d6eea;"></i></div>
+                    <h3>Client Relationship Management</h3>
+                    <p>Centralised client profiles with contact details, case history, documents, and communication logs. Complete data isolation guarantees confidentiality between every firm on the platform.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feat-card">
+                    <div class="feat-icon" style="background:#f0fdf4;"><i class="fas fa-briefcase" style="color:#16a34a;"></i></div>
+                    <h3>Case & Matter Management</h3>
+                    <p>Track every case from intake to resolution. Assign tasks, set milestones, attach files, and monitor progress in a clean kanban and list view designed for how legal teams actually work.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feat-card">
+                    <div class="feat-icon" style="background:#fef9ec;"><i class="fas fa-users-cog" style="color:#d97706;"></i></div>
+                    <h3>Role-Based Team Access</h3>
+                    <p>Granular permissions for partners, associates, paralegals, and clients. Everyone sees exactly what they need — nothing more, nothing less. Audit logs track every action.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feat-card">
+                    <div class="feat-icon" style="background:#f3e8ff;"><i class="fas fa-calendar-check" style="color:#7c3aed;"></i></div>
+                    <h3>Calendar & Court Scheduling</h3>
+                    <p>Firm-wide calendar with court dates, hearings, client appointments, and internal meetings. Colour-coded by type, synced across your team, with automated smart reminders.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feat-card">
+                    <div class="feat-icon" style="background:#fff0f0;"><i class="fas fa-file-invoice-dollar" style="color:#dc2626;"></i></div>
+                    <h3>Billing, Invoicing & Payments</h3>
+                    <p>Generate professional invoices in minutes, accept multiple payment methods and currencies, track outstanding balances, and manage expenses — with full payment history per matter.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feat-card">
+                    <div class="feat-icon" style="background:#ecfdf5;"><i class="fas fa-comments" style="color:#059669;"></i></div>
+                    <h3>Secure Client Communication</h3>
+                    <p>Matter-specific chat rooms, a private client portal, and direct messaging — all encrypted and organised by case. Replace scattered emails with structured, searchable conversations.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feat-card">
+                    <div class="feat-icon" style="background:#fff7ed;"><i class="fas fa-file-contract" style="color:#ea580c;"></i></div>
+                    <h3>Document Management</h3>
+                    <p>Secure file storage organised by matter and client. Upload, share, and access documents with version control — so nothing is ever lost and everything is exactly where it should be.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feat-card">
+                    <div class="feat-icon" style="background:#f0f9ff;"><i class="fas fa-chart-line" style="color:#0284c7;"></i></div>
+                    <h3>Practice Analytics & Reporting</h3>
+                    <p>Revenue trends, invoice analytics, case performance metrics, and team productivity reports — visualised in real time so leadership can make data-driven decisions with confidence.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feat-card">
+                    <div class="feat-icon" style="background:#fdf2f8;"><i class="fas fa-store" style="color:#9333ea;"></i></div>
+                    <h3>Public Firm Showcase</h3>
+                    <p>Publish your firm's profile on the LAWCOLAB directory. Attract new clients with your verified profile, case specialisms, team bios, and client reviews — built-in marketing included.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     STATS SECTION — dark bg with image overlay
+══════════════════════════════════════════════════════════════ -->
+<section class="bg-section" style="background-image:url('{{ url_for('static', filename='images/sections/global_reach.jpg') }}'); padding:90px 0;">
+    <div class="bg-section-overlay"></div>
+    <div class="bg-content container">
+        <div class="text-center mb-5">
+            <span class="section-label" style="background:rgba(255,255,255,.15); color:#f5c518; border:1px solid rgba(245,197,24,.3);">By The Numbers</span>
+            <h2 class="section-title mb-2" style="color:#fff;">Trusted by Legal Professionals<br>Around the World</h2>
+            <p class="section-sub" style="color:rgba(255,255,255,.75); margin:0 auto;">LAWCOLAB helps law firms in over 30 countries work smarter, serve clients better, and grow faster.</p>
+        </div>
+        <div class="row g-4 justify-content-center text-center">
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-num">500+</div>
+                    <div class="stat-label">Law Firms Onboarded</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-num">30+</div>
+                    <div class="stat-label">Countries Represented</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-num">12K+</div>
+                    <div class="stat-label">Cases Managed</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-num">99.9%</div>
+                    <div class="stat-label">Platform Uptime</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     HOW IT WORKS — light bg
+══════════════════════════════════════════════════════════════ -->
+<section style="padding:90px 0; background:#f8fafd;">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="section-label">Simple Onboarding</span>
+            <h2 class="section-title mb-3">Up and Running in Under 10 Minutes</h2>
+            <p class="section-sub">No IT team required. No complex setup. Just a streamlined onboarding that gets your firm productive from the very first day.</p>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="d-flex flex-column gap-0">
+                    <!-- Step 1 -->
+                    <div class="d-flex gap-4 align-items-start">
+                        <div class="d-flex flex-column align-items-center">
+                            <div class="step-circle">1</div>
+                            <div class="step-connector" style="min-height:40px;"></div>
+                        </div>
+                        <div style="padding-bottom:2rem;">
+                            <h4 style="font-weight:700;color:#0f172a;margin-bottom:.5rem;">Create Your Firm Account</h4>
+                            <p style="color:#64748b;line-height:1.7;margin:0;">Sign up with your work email in 60 seconds. Your firm gets its own isolated workspace with your branding — no credit card required for the free trial.</p>
+                        </div>
+                    </div>
+                    <!-- Step 2 -->
+                    <div class="d-flex gap-4 align-items-start">
+                        <div class="d-flex flex-column align-items-center">
+                            <div class="step-circle">2</div>
+                            <div class="step-connector" style="min-height:40px;"></div>
+                        </div>
+                        <div style="padding-bottom:2rem;">
+                            <h4 style="font-weight:700;color:#0f172a;margin-bottom:.5rem;">Invite Your Team & Add Clients</h4>
+                            <p style="color:#64748b;line-height:1.7;margin:0;">Add partners, associates, paralegals, and support staff with the right access levels. Then invite clients to their secure portal — they'll love the transparency.</p>
+                        </div>
+                    </div>
+                    <!-- Step 3 -->
+                    <div class="d-flex gap-4 align-items-start">
+                        <div class="d-flex flex-column align-items-center">
+                            <div class="step-circle">3</div>
+                            <div class="step-connector" style="min-height:40px;"></div>
+                        </div>
+                        <div style="padding-bottom:2rem;">
+                            <h4 style="font-weight:700;color:#0f172a;margin-bottom:.5rem;">Set Up Your Cases & Calendar</h4>
+                            <p style="color:#64748b;line-height:1.7;margin:0;">Create matters, assign tasks, upload documents, and populate your calendar with court dates and hearings. Everything connected, everything visible.</p>
+                        </div>
+                    </div>
+                    <!-- Step 4 -->
+                    <div class="d-flex gap-4 align-items-start">
+                        <div class="d-flex flex-column align-items-center">
+                            <div class="step-circle">4</div>
+                        </div>
+                        <div>
+                            <h4 style="font-weight:700;color:#0f172a;margin-bottom:.5rem;">Run Your Practice — Better</h4>
+                            <p style="color:#64748b;line-height:1.7;margin:0;">Invoice clients, message your team, review analytics, and watch your practice operate with a clarity and efficiency you've never had before.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-5">
+            <a href="{{ url_for('auth.signup') }}" style="background:#1d6eea;color:#fff;padding:16px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:1.05rem;display:inline-flex;align-items:center;gap:.6rem;box-shadow:0 6px 22px rgba(29,110,234,.35);transition:all .2s;">
+                <i class="fas fa-rocket"></i> Get Started Free — No Credit Card
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     TEAM / COLLABORATION SECTION — image bg left, content right
+══════════════════════════════════════════════════════════════ -->
+<section style="padding:0; overflow:hidden;">
+    <div class="row g-0">
+        <!-- Image side -->
+        <div class="col-lg-6 d-none d-lg-block" style="min-height:520px; background-image:url('{{ url_for('static', filename='images/sections/team_collab.jpg') }}'); background-size:cover; background-position:center;"></div>
+        <!-- Content side -->
+        <div class="col-lg-6" style="background:#0f172a; padding:80px 60px; display:flex; align-items:center;">
+            <div>
+                <span class="section-label" style="background:rgba(29,110,234,.2);color:#60a5fa;">Built for Modern Law Firms</span>
+                <h2 class="section-title mb-4" style="color:#fff;">Collaborate Without<br>the Chaos</h2>
+                <div class="d-flex flex-column gap-4">
+                    <div class="d-flex gap-3">
+                        <div style="background:rgba(29,110,234,.2);border-radius:10px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fas fa-lock" style="color:#60a5fa;"></i>
+                        </div>
+                        <div>
+                            <h5 style="color:#fff;font-weight:700;margin-bottom:.3rem;">Isolated Firm Workspaces</h5>
+                            <p style="color:rgba(255,255,255,.65);margin:0;line-height:1.65;font-size:.95rem;">Your firm's data is 100% separate from every other firm on the platform. No cross-contamination, ever.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-3">
+                        <div style="background:rgba(22,163,74,.2);border-radius:10px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fas fa-user-shield" style="color:#4ade80;"></i>
+                        </div>
+                        <div>
+                            <h5 style="color:#fff;font-weight:700;margin-bottom:.3rem;">Granular Role Permissions</h5>
+                            <p style="color:rgba(255,255,255,.65);margin:0;line-height:1.65;font-size:.95rem;">Admins, lawyers, paralegals, and clients each see only what they're authorised for — with full audit logs of every action.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-3">
+                        <div style="background:rgba(245,197,24,.15);border-radius:10px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fas fa-comment-dots" style="color:#f5c518;"></i>
+                        </div>
+                        <div>
+                            <h5 style="color:#fff;font-weight:700;margin-bottom:.3rem;">Matter-Specific Messaging</h5>
+                            <p style="color:rgba(255,255,255,.65);margin:0;line-height:1.65;font-size:.95rem;">Every conversation is tied to a case, so context is always preserved. No more hunting through email threads.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-3">
+                        <div style="background:rgba(168,85,247,.2);border-radius:10px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fas fa-mobile-alt" style="color:#c084fc;"></i>
+                        </div>
+                        <div>
+                            <h5 style="color:#fff;font-weight:700;margin-bottom:.3rem;">Works on Every Device</h5>
+                            <p style="color:rgba(255,255,255,.65);margin:0;line-height:1.65;font-size:.95rem;">Fully responsive on desktop, tablet, and mobile — so your team is productive whether they're in court or in the office.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     TESTIMONIALS — light bg
+══════════════════════════════════════════════════════════════ -->
+<section style="padding:90px 0; background:#f8fafd;">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="section-label">Client Stories</span>
+            <h2 class="section-title mb-3">Loved by Legal Professionals Globally</h2>
+            <p class="section-sub">Don't take our word for it — hear what law firm leaders are saying about how LAWCOLAB has transformed the way they work.</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="testi-card">
+                    <div class="testi-stars">★★★★★</div>
+                    <p class="testi-body">"LAWCOLAB has completely changed how our firm operates. Client onboarding used to take days — now it takes minutes. The billing module alone has recovered hours of admin time every week."</p>
+                    <div class="d-flex align-items-center gap-3">
+                        <div style="width:44px;height:44px;border-radius:50%;background:#1d6eea;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex-shrink:0;">JA</div>
+                        <div>
+                            <div class="testi-author">James Adeyemi</div>
+                            <div class="testi-role">Managing Partner, Adeyemi & Co. — Lagos, Nigeria</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="testi-card">
+                    <div class="testi-stars">★★★★★</div>
+                    <p class="testi-body">"We evaluated five practice management platforms before choosing LAWCOLAB. The client portal and case tracking features are exceptional. Our clients constantly comment on how professional our communication feels now."</p>
+                    <div class="d-flex align-items-center gap-3">
+                        <div style="width:44px;height:44px;border-radius:50%;background:#16a34a;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex-shrink:0;">ST</div>
+                        <div>
+                            <div class="testi-author">Sarah Thornton</div>
+                            <div class="testi-role">Partner, Thornton Legal Group — London, UK</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="testi-card">
+                    <div class="testi-stars">★★★★★</div>
+                    <p class="testi-body">"Our practice manages complex cross-border matters. LAWCOLAB's multi-currency billing and document management have been game-changers. The analytics give us insight into firm health that we never had before."</p>
+                    <div class="d-flex align-items-center gap-3">
+                        <div style="width:44px;height:44px;border-radius:50%;background:#7c3aed;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex-shrink:0;">MC</div>
+                        <div>
+                            <div class="testi-author">Mohammed Al-Rashidi</div>
+                            <div class="testi-role">Senior Partner, Al-Rashidi Law — Dubai, UAE</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if reviews %}
+        <div class="row g-4 mt-2">
+            {% for review in reviews[:3] %}
+            <div class="col-lg-4 col-md-6">
+                <div class="testi-card">
+                    <div class="testi-stars">{% for i in range(review.rating) %}★{% endfor %}</div>
+                    <p class="testi-body">"{{ review.review_text[:200] }}{% if review.review_text|length > 200 %}...{% endif %}"</p>
+                    <div class="d-flex align-items-center gap-3">
+                        <div style="width:44px;height:44px;border-radius:50%;background:#0284c7;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex-shrink:0;">
+                            {{ review.reviewer_name[0] | upper }}
+                        </div>
+                        <div>
+                            <div class="testi-author">{{ review.reviewer_name }}</div>
+                            <div class="testi-role">{{ review.reviewer_title or 'Legal Professional' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PRICING SECTION — white bg
+══════════════════════════════════════════════════════════════ -->
+<section style="padding:90px 0; background:#fff;">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="section-label">Transparent Pricing</span>
+            <h2 class="section-title mb-3">Simple Plans. Serious Value.</h2>
+            <p class="section-sub">Start free, scale as you grow. No hidden fees, no long-term lock-in, no per-seat surprises.</p>
+        </div>
+        <div class="row g-4 justify-content-center align-items-stretch">
+            <!-- Starter -->
+            <div class="col-lg-4 col-md-6">
+                <div class="price-card h-100">
+                    <div style="background:#eff6ff;border-radius:10px;padding:8px 20px;display:inline-block;margin-bottom:1.5rem;font-weight:700;font-size:.85rem;color:#1d6eea;">🚀 Starter</div>
+                    <div class="price-num">${{ settings.starter_price }}<span style="font-size:1rem;font-weight:500;color:#94a3b8;">/mo</span></div>
+                    <p style="color:#94a3b8;font-size:.9rem;margin:.4rem 0 1.5rem;">Perfect for solo lawyers & boutique practices</p>
+                    <ul class="price-feat list-unstyled text-start mb-auto">
+                        <li><i class="fas fa-check"></i> Up to 5 team members</li>
+                        <li><i class="fas fa-check"></i> Full client management</li>
+                        <li><i class="fas fa-check"></i> Case & project tracking</li>
+                        <li><i class="fas fa-check"></i> Secure client portal</li>
+                        <li><i class="fas fa-check"></i> Invoicing & billing</li>
+                        <li><i class="fas fa-check"></i> Email support</li>
+                    </ul>
+                    <a href="javascript:void(0)" onclick="selectPlan('starter','Starter Plan - ${{ settings.starter_price }}/month')"
+                       style="display:block;margin-top:1.75rem;background:#1d6eea;color:#fff;padding:14px;border-radius:10px;text-decoration:none;font-weight:700;text-align:center;transition:background .2s;">
+                        Get Started Free
+                    </a>
+                </div>
+            </div>
+            <!-- Growth (featured) -->
+            <div class="col-lg-4 col-md-6">
+                <div class="price-card featured h-100">
+                    <div style="background:#1d6eea;border-radius:10px;padding:8px 20px;display:inline-block;margin-top:.5rem;margin-bottom:1.5rem;font-weight:700;font-size:.85rem;color:#fff;">📈 Growth</div>
+                    <div class="price-num">${{ settings.growth_price }}<span style="font-size:1rem;font-weight:500;color:#94a3b8;">/3 mo</span></div>
+                    <p style="color:#94a3b8;font-size:.9rem;margin:.4rem 0 .6rem;">Ideal for growing law firms</p>
+                    <div style="background:#eff6ff;border-radius:8px;padding:8px 14px;font-size:.82rem;font-weight:700;color:#1d6eea;margin-bottom:1rem;display:inline-block;">💰 Save ~$17/month vs monthly billing</div>
+                    <ul class="price-feat list-unstyled text-start mb-auto">
+                        <li><i class="fas fa-check"></i> Up to 20 team members</li>
+                        <li><i class="fas fa-check"></i> Everything in Starter</li>
+                        <li><i class="fas fa-check"></i> Advanced analytics & reports</li>
+                        <li><i class="fas fa-check"></i> Calendar & scheduling</li>
+                        <li><i class="fas fa-check"></i> Public firm showcase profile</li>
+                        <li><i class="fas fa-check"></i> Priority support & training</li>
+                    </ul>
+                    <a href="javascript:void(0)" onclick="selectPlan('growth','Growth Plan - ${{ settings.growth_price }}/3mo')"
+                       style="display:block;margin-top:1.75rem;background:#1d6eea;color:#fff;padding:14px;border-radius:10px;text-decoration:none;font-weight:700;text-align:center;transition:background .2s;">
+                        Choose Growth
+                    </a>
+                </div>
+            </div>
+            <!-- Enterprise -->
+            <div class="col-lg-4 col-md-6">
+                <div class="price-card h-100">
+                    <div style="background:#fef9ec;border-radius:10px;padding:8px 20px;display:inline-block;margin-bottom:1.5rem;font-weight:700;font-size:.85rem;color:#d97706;">👑 Enterprise</div>
+                    <div class="price-num">${{ settings.enterprise_price }}<span style="font-size:1rem;font-weight:500;color:#94a3b8;">/yr</span></div>
+                    <p style="color:#94a3b8;font-size:.9rem;margin:.4rem 0 1.5rem;">For large firms & multi-office practices</p>
+                    <ul class="price-feat list-unstyled text-start mb-auto">
+                        <li><i class="fas fa-check"></i> Unlimited team members</li>
+                        <li><i class="fas fa-check"></i> Everything in Growth</li>
+                        <li><i class="fas fa-check"></i> White-label client portal</li>
+                        <li><i class="fas fa-check"></i> Custom API integrations</li>
+                        <li><i class="fas fa-check"></i> Dedicated account manager</li>
+                        <li><i class="fas fa-check"></i> 24/7 premium support</li>
+                    </ul>
+                    <a href="{{ url_for('contact') }}"
+                       style="display:block;margin-top:1.75rem;background:#d97706;color:#fff;padding:14px;border-radius:10px;text-decoration:none;font-weight:700;text-align:center;transition:background .2s;">
+                        Contact Sales
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- White-Label Banner -->
+        <div class="row justify-content-center mt-5">
+            <div class="col-lg-9">
+                <div style="background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);border-radius:24px;padding:3rem 2.5rem;text-align:center;position:relative;overflow:hidden;box-shadow:0 16px 50px rgba(0,0,0,.25);">
+                    <div style="position:absolute;top:0;right:0;width:250px;height:250px;border-radius:50%;background:rgba(245,197,24,.08);transform:translate(30%,-30%);"></div>
+                    <div style="position:absolute;bottom:0;left:0;width:200px;height:200px;border-radius:50%;background:rgba(29,110,234,.1);transform:translate(-30%,30%);"></div>
+                    <div style="position:relative;z-index:2;">
+                        <div style="background:rgba(245,197,24,.15);border:1px solid rgba(245,197,24,.3);border-radius:50px;padding:6px 20px;display:inline-block;margin-bottom:1rem;font-size:.8rem;font-weight:700;color:#f5c518;letter-spacing:.06em;text-transform:uppercase;">🏷️ White-Label License — Limited Availability</div>
+                        <h2 style="color:#fff;font-size:clamp(2rem,5vw,3.2rem);font-weight:800;margin-bottom:.5rem;">${{ settings.founders_price }}</h2>
+                        <p style="color:rgba(255,255,255,.65);font-size:1rem;margin-bottom:.8rem;"><strike style="color:rgba(255,255,255,.35);">$5,000+</strike> — Own LAWCOLAB as Your Own SaaS Business. Forever.</p>
+                        <p style="color:rgba(255,255,255,.8);font-weight:600;margin-bottom:1.5rem;">Rebrand it. Price it. Sell it. Keep 100% of the revenue.<br>Includes 6 months of dedicated setup, training, and support.</p>
+                        <a href="/sales/popup" style="background:linear-gradient(45deg,#f5c518,#e8980a);color:#1a1a1a;padding:16px 40px;border-radius:50px;text-decoration:none;font-weight:800;font-size:1.1rem;display:inline-block;box-shadow:0 8px 24px rgba(245,197,24,.3);">
+                            👑 Secure My White-Label License
+                        </a>
+                        <p style="font-size:.8rem;color:rgba(255,255,255,.4);margin-top:1rem;">⚡ Exclusive founders pricing — strictly limited availability</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     TRUST & SECURITY SECTION — image bg
+══════════════════════════════════════════════════════════════ -->
+<section class="bg-section" style="background-image:url('{{ url_for('static', filename='images/sections/trust_cta.jpg') }}'); padding:90px 0;">
+    <div class="bg-section-overlay" style="background:linear-gradient(135deg,rgba(5,18,50,.90) 0%,rgba(5,18,50,.80) 100%);"></div>
+    <div class="bg-content container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <span class="section-label" style="background:rgba(255,255,255,.12);color:#f5c518;border:1px solid rgba(245,197,24,.25);">Security & Compliance</span>
+                <h2 class="section-title mb-4" style="color:#fff;">Security That Meets<br>Legal Standards</h2>
+                <p style="color:rgba(255,255,255,.75);line-height:1.75;font-size:1.05rem;margin-bottom:2rem;">Legal data demands the highest level of protection. LAWCOLAB is built with lawyer-client privilege in mind — your client data is yours, always, with no exceptions.</p>
+                <div class="d-flex flex-column gap-3">
+                    <div class="d-flex gap-3 align-items-start">
+                        <i class="fas fa-shield-alt" style="color:#4ade80;font-size:1.1rem;margin-top:.15rem;flex-shrink:0;"></i>
+                        <div>
+                            <strong style="color:#fff;">End-to-End Data Isolation</strong>
+                            <p style="color:rgba(255,255,255,.6);margin:.2rem 0 0;font-size:.9rem;">Each law firm's data is completely separated at the database level — zero cross-firm data exposure.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-3 align-items-start">
+                        <i class="fas fa-key" style="color:#60a5fa;font-size:1.1rem;margin-top:.15rem;flex-shrink:0;"></i>
+                        <div>
+                            <strong style="color:#fff;">Encrypted Sessions & Passwords</strong>
+                            <p style="color:rgba(255,255,255,.6);margin:.2rem 0 0;font-size:.9rem;">All passwords hashed with bcrypt, sessions secured with rotating secret keys, all traffic over HTTPS.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-3 align-items-start">
+                        <i class="fas fa-clipboard-list" style="color:#f5c518;font-size:1.1rem;margin-top:.15rem;flex-shrink:0;"></i>
+                        <div>
+                            <strong style="color:#fff;">Full Audit Trails</strong>
+                            <p style="color:rgba(255,255,255,.6);margin:.2rem 0 0;font-size:.9rem;">Every action logged with timestamp, user, and IP address — so you always know who did what and when.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-3 align-items-start">
+                        <i class="fas fa-gavel" style="color:#c084fc;font-size:1.1rem;margin-top:.15rem;flex-shrink:0;"></i>
+                        <div>
+                            <strong style="color:#fff;">GDPR & Privacy Compliant</strong>
+                            <p style="color:rgba(255,255,255,.6);margin:.2rem 0 0;font-size:.9rem;">Built with global privacy regulations in mind. Data processing agreements available for all plans.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:2.5rem;backdrop-filter:blur(12px);">
+                    <h3 style="color:#fff;font-weight:700;margin-bottom:1.5rem;font-size:1.4rem;">Ready to Modernise Your Practice?</h3>
+                    <p style="color:rgba(255,255,255,.7);line-height:1.7;margin-bottom:1.8rem;">Join hundreds of law firms already using LAWCOLAB to work smarter, serve clients better, and grow with confidence.</p>
+                    <div class="d-flex flex-column gap-3">
+                        <a href="{{ url_for('auth.signup') }}" style="background:#1d6eea;color:#fff;padding:15px 24px;border-radius:10px;text-decoration:none;font-weight:700;display:flex;align-items:center;gap:.6rem;justify-content:center;box-shadow:0 6px 20px rgba(29,110,234,.4);">
+                            <i class="fas fa-rocket"></i> Start Your Free Trial
+                        </a>
+                        <a href="{{ url_for('contact') }}" style="background:rgba(255,255,255,.1);color:#fff;padding:15px 24px;border-radius:10px;text-decoration:none;font-weight:600;display:flex;align-items:center;gap:.6rem;justify-content:center;border:1px solid rgba(255,255,255,.2);">
+                            <i class="fas fa-envelope"></i> Talk to Our Team
+                        </a>
+                    </div>
+                    <p style="color:rgba(255,255,255,.4);font-size:.8rem;text-align:center;margin-top:1rem;">No credit card required · 3-day free trial · Cancel anytime</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     FEATURED LAW FIRMS
+══════════════════════════════════════════════════════════════ -->
+{% if featured_showcases %}
+{% include 'showcase/featured_firms.html' %}
+{% endif %}
+
+<!-- ══════════════════════════════════════════════════════════════
+     FINAL CTA BAND
+══════════════════════════════════════════════════════════════ -->
+<section class="cta-band" style="padding:90px 0;">
+    <div class="container text-center" style="position:relative;z-index:2;">
+        <h2 style="font-size:clamp(2rem,5vw,3rem);font-weight:800;color:#fff;margin-bottom:1rem;">Transform Your Practice.<br>Starting Today.</h2>
+        <p style="font-size:1.15rem;color:rgba(255,255,255,.7);max-width:520px;margin:0 auto 2.5rem;line-height:1.7;">Thousands of legal professionals trust LAWCOLAB to run their practice efficiently, serve clients exceptionally, and grow without limits.</p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a href="{{ url_for('auth.signup') }}"
+               style="background:#1d6eea;color:#fff;padding:17px 38px;border-radius:10px;text-decoration:none;font-weight:700;font-size:1.05rem;display:inline-flex;align-items:center;gap:.6rem;box-shadow:0 6px 24px rgba(29,110,234,.5);">
+                <i class="fas fa-rocket"></i> Start Free Trial
+            </a>
+            <a href="{{ url_for('pricing') }}"
+               style="background:rgba(255,255,255,.1);color:#fff;padding:17px 38px;border-radius:10px;text-decoration:none;font-weight:700;font-size:1.05rem;display:inline-flex;align-items:center;gap:.6rem;border:1.5px solid rgba(255,255,255,.25);">
+                <i class="fas fa-tag"></i> View Pricing
+            </a>
+        </div>
+        <div class="d-flex gap-4 justify-content-center flex-wrap mt-4" style="color:rgba(255,255,255,.5);font-size:.85rem;">
+            <span><i class="fas fa-check-circle me-1" style="color:#4ade80;"></i>Free 3-day trial</span>
+            <span><i class="fas fa-check-circle me-1" style="color:#4ade80;"></i>No credit card required</span>
+            <span><i class="fas fa-check-circle me-1" style="color:#4ade80;"></i>Cancel anytime</span>
+            <span><i class="fas fa-check-circle me-1" style="color:#4ade80;"></i>Setup in minutes</span>
+        </div>
+        <p style="margin-top:2rem;color:rgba(255,255,255,.3);font-size:.85rem;">Built by <strong style="color:rgba(255,255,255,.5);">Taskdrip</strong> for legal professionals worldwide</p>
+    </div>
+</section>
+
+</div>
+
+<script>
+function selectPlan(planId, planName) {
+    window.location.href = '/sales/checkout?plan=' + planId;
+}
+</script>
 {% endblock %}

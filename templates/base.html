@@ -17,6 +17,8 @@
     <!-- Custom CSS with cache busting -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/simple.css') }}?v={{ range(1000, 9999) | random }}">
     
+    {% block additional_css %}{% endblock %}
+    
     <!-- Clean Simple Styling with Mobile Optimization -->
     <style>
         /* Simple clean design: white background, black text */

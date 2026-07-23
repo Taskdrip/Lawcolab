@@ -8,6 +8,39 @@ Preferred communication style: Simple, everyday language.
 Profile image preferences: Beautiful square profile images with clear role-based icons for visual distinction between admins, clients, and lawyers.
 UI Design preference: Clean, simple white background interfaces with black text - avoid dark themes and gradients. User strongly prefers clean white backgrounds and black fonts for all interfaces.
 
+## Admin Login Credentials
+- **URL**: `/auth/login`
+- **Email**: `admin@lawcolab.com`
+- **Password**: `LawColab2025!`
+- **Role**: Super Admin (full platform access)
+
+## Running on Replit
+- **Start command**: `gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app`
+- **Database**: PostgreSQL (already configured via environment)
+- **Session secret**: Stored in `SESSION_SECRET` environment secret
+
+## Railway Deployment
+Files ready: `railway.toml`, `Procfile`, `requirements.txt`
+
+**Required Railway environment variables:**
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string (Railway auto-provides if you add a Postgres plugin) |
+| `SESSION_SECRET` | Long random secret string (32+ chars) |
+| `FLASK_ENV` | Set to `production` |
+
+**Steps:**
+1. Push repo to GitHub
+2. Create new Railway project → Deploy from GitHub repo
+3. Add a PostgreSQL plugin in Railway (auto-sets `DATABASE_URL`)
+4. Set `SESSION_SECRET` in Railway environment variables
+5. Railway auto-detects `railway.toml` and deploys
+
+After first deploy, create the super admin:
+```
+railway run python3 init_super_admin.py
+```
+
 ## Recent Changes
 - **August 31, 2025**: COMPREHENSIVE SUPER ADMIN SYSTEM - Implemented robust super admin platform with complete management capabilities: user management (activate/deactivate/delete), platform analytics with growth metrics and role distribution, law firm oversight, verified badge system, and inheritance of all admin privileges for full law firm access
 - **August 13, 2025**: COMPLETE REBRANDING TO LAWCOLAB - Successfully rebranded entire application from "LawFirmOS" to "LawColab" including headers, footers, navigation, page titles, templates, and all user-facing content. Application now deployment-ready with consistent branding throughout.
