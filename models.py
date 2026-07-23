@@ -954,6 +954,30 @@ class CalendarEventAttendee(db.Model):
 
 # ─────────────────────────────────────────────────────────────────────────────
 
+class DashboardSlider(db.Model):
+    """Feature ad sliders shown on user dashboards, editable by admins."""
+    __tablename__ = 'dashboard_sliders'
+
+    id          = db.Column(db.Integer, primary_key=True)
+    law_firm_id = db.Column(db.Integer, db.ForeignKey('law_firms.id'), nullable=True)  # None = platform default
+
+    title       = db.Column(db.String(200), nullable=False)
+    subtitle    = db.Column(db.String(300), nullable=True)
+    description = db.Column(db.Text,        nullable=True)
+    cta_text    = db.Column(db.String(100), nullable=True,  default='Learn More')
+    cta_link    = db.Column(db.String(500), nullable=True,  default='#')
+    bg_image    = db.Column(db.String(500), nullable=True)   # path under static/
+    bg_color    = db.Column(db.String(20),  nullable=False,  default='#0d1b4b')
+    icon        = db.Column(db.String(80),  nullable=True,   default='fas fa-star')
+    sort_order  = db.Column(db.Integer,     nullable=False,  default=0)
+    is_active   = db.Column(db.Boolean,     nullable=False,  default=True)
+
+    created_at  = db.Column(db.DateTime, default=datetime.now)
+    updated_at  = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+
+    law_firm    = db.relationship('LawFirm', backref='sliders')
+
+
 class PublicLawFirmMessage(db.Model):
     __tablename__ = 'public_law_firm_messages'
     

@@ -1,0 +1,181 @@
+{# Dashboard feature-ad slider — include with: {% include 'components/dashboard_slider.html' %} #}
+{# Requires `sliders` list in template context. #}
+
+{% if sliders %}
+<div class="lc-slider-wrap">
+    <div class="lc-slider" id="lcSlider">
+
+        <!-- Slides -->
+        {% for slide in sliders %}
+        <div class="lc-slide{% if loop.first %} active{% endif %}"
+             style="{% if slide.bg_image %}background-image:url('{{ url_for('static', filename=slide.bg_image) }}');{% else %}background-color:{{ slide.bg_color or '#0d1b4b' }};{% endif %}"
+             data-index="{{ loop.index0 }}">
+            <div class="lc-slide-overlay"></div>
+            <div class="lc-slide-body">
+                <!-- Text content -->
+                <div class="lc-slide-content">
+                    {% if slide.icon %}
+                    <div class="lc-slide-tag">
+                        <i class="{{ slide.icon }} me-2"></i>LAWCOLAB
+                    </div>
+                    {% endif %}
+                    <h2 class="lc-slide-title">{{ slide.title }}</h2>
+                    {% if slide.subtitle %}
+                    <p class="lc-slide-subtitle">{{ slide.subtitle }}</p>
+                    {% endif %}
+                    {% if slide.description %}
+                    <p class="lc-slide-desc">{{ slide.description }}</p>
+                    {% endif %}
+                    {% if slide.cta_text %}
+                    <a href="{{ slide.cta_link or '#' }}" class="lc-slide-cta">
+                        {{ slide.cta_text }}&nbsp;<i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                    {% endif %}
+                </div>
+                <!-- Decorative icon -->
+                <div class="lc-slide-icon-wrap" aria-hidden="true">
+                    <i class="{{ slide.icon or 'fas fa-balance-scale' }} lc-slide-bigicon"></i>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Arrow controls -->
+        <button class="lc-slider-arrow prev" id="lcPrev" aria-label="Previous slide">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="lc-slider-arrow next" id="lcNext" aria-label="Next slide">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+
+        <!-- Dot indicators -->
+        <div class="lc-slider-dots" id="lcDots">
+            {% for slide in sliders %}
+            <button class="lc-dot{% if loop.first %} active{% endif %}"
+                    data-index="{{ loop.index0 }}"
+                    aria-label="Slide {{ loop.index }}"></button>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+/* ── Slider container ── */
+.lc-slider-wrap{margin:0 0 1.75rem;width:100%;overflow:hidden;}
+.lc-slider{position:relative;width:100%;height:360px;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.18);}
+
+/* ── Individual slide ── */
+.lc-slide{
+    position:absolute;inset:0;
+    background-size:cover;background-position:center;
+    opacity:0;transition:opacity .6s ease;
+    display:flex;align-items:center;
+}
+.lc-slide.active{opacity:1;z-index:1;}
+.lc-slide.prev-out{opacity:0;z-index:0;}
+
+/* ── Dark overlay ── */
+.lc-slide-overlay{
+    position:absolute;inset:0;
+    background:linear-gradient(90deg,rgba(0,0,0,.72) 0%,rgba(0,0,0,.35) 60%,rgba(0,0,0,.08) 100%);
+}
+
+/* ── Slide body ── */
+.lc-slide-body{
+    position:relative;z-index:2;
+    display:flex;align-items:center;justify-content:space-between;
+    width:100%;padding:2rem 3rem;
+}
+.lc-slide-content{flex:1;max-width:60%;color:#fff;}
+.lc-slide-tag{
+    display:inline-flex;align-items:center;
+    font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+    color:#fff;padding:.25rem .75rem;border-radius:100px;margin-bottom:1rem;
+    backdrop-filter:blur(4px);
+}
+.lc-slide-title{font-size:clamp(1.4rem,3vw,2.1rem);font-weight:800;line-height:1.2;margin-bottom:.5rem;color:#fff;}
+.lc-slide-subtitle{font-size:1rem;font-weight:600;opacity:.9;margin-bottom:.5rem;color:#e0e0e0;}
+.lc-slide-desc{font-size:.875rem;opacity:.8;line-height:1.6;margin-bottom:1.25rem;color:#d0d0d0;max-width:460px;}
+.lc-slide-cta{
+    display:inline-flex;align-items:center;
+    padding:.55rem 1.4rem;border-radius:8px;font-size:.875rem;font-weight:700;
+    background:#fff;color:#0d1b4b;text-decoration:none;
+    transition:background .2s,transform .15s;
+}
+.lc-slide-cta:hover{background:#f0f4ff;color:#0d1b4b;transform:translateX(3px);}
+
+/* ── Decorative icon ── */
+.lc-slide-icon-wrap{
+    flex-shrink:0;width:160px;height:160px;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(255,255,255,.08);border-radius:50%;
+    border:2px solid rgba(255,255,255,.15);
+    backdrop-filter:blur(6px);
+}
+.lc-slide-bigicon{font-size:5rem;color:rgba(255,255,255,.7);}
+
+/* ── Arrows ── */
+.lc-slider-arrow{
+    position:absolute;top:50%;transform:translateY(-50%);
+    z-index:5;border:none;border-radius:50%;
+    width:40px;height:40px;cursor:pointer;
+    background:rgba(255,255,255,.18);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:.875rem;transition:background .2s;
+    backdrop-filter:blur(4px);
+}
+.lc-slider-arrow:hover{background:rgba(255,255,255,.35);}
+.lc-slider-arrow.prev{left:14px;}
+.lc-slider-arrow.next{right:14px;}
+
+/* ── Dots ── */
+.lc-slider-dots{
+    position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
+    display:flex;gap:6px;z-index:5;
+}
+.lc-dot{
+    width:8px;height:8px;border-radius:50%;border:none;cursor:pointer;
+    background:rgba(255,255,255,.4);padding:0;transition:background .2s,width .25s;
+}
+.lc-dot.active{background:#fff;width:22px;border-radius:4px;}
+
+/* ── Mobile responsive ── */
+@media(max-width:768px){
+    .lc-slider{height:280px;}
+    .lc-slide-body{padding:1.25rem 1.5rem;flex-direction:column;align-items:flex-start;}
+    .lc-slide-content{max-width:100%;}
+    .lc-slide-icon-wrap{display:none;}
+    .lc-slide-title{font-size:1.25rem;}
+}
+</style>
+
+<script>
+(function(){
+    const slider  = document.getElementById('lcSlider');
+    if(!slider) return;
+    const slides  = slider.querySelectorAll('.lc-slide');
+    const dots    = slider.querySelectorAll('.lc-dot');
+    let   current = 0;
+    let   timer;
+
+    function goTo(n){
+        slides[current].classList.remove('active');
+        dots[current] && dots[current].classList.remove('active');
+        current = (n + slides.length) % slides.length;
+        slides[current].classList.add('active');
+        dots[current] && dots[current].classList.add('active');
+    }
+
+    function startAuto(){
+        clearInterval(timer);
+        timer = setInterval(()=>goTo(current+1), 6000);
+    }
+
+    document.getElementById('lcPrev').addEventListener('click',()=>{goTo(current-1);startAuto();});
+    document.getElementById('lcNext').addEventListener('click',()=>{goTo(current+1);startAuto();});
+    dots.forEach(d=>d.addEventListener('click',()=>{goTo(+d.dataset.index);startAuto();}));
+    startAuto();
+})();
+</script>
+{% endif %}

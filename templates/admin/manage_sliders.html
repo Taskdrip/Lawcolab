@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Dashboard Sliders — Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Page header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h4 fw-bold mb-0"><i class="fas fa-images me-2 text-primary"></i>Dashboard Sliders</h1>
+            <p class="text-muted small mb-0">These ad banners appear at the top of every user dashboard.</p>
+        </div>
+        <a href="{{ url_for('admin.add_slider') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Add Slide
+        </a>
+    </div>
+
+    {% if sliders %}
+    <div class="row g-3">
+        {% for slide in sliders %}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm overflow-hidden">
+                <div class="row g-0">
+
+                    <!-- Preview strip -->
+                    <div class="col-md-3 d-flex align-items-center justify-content-center p-4"
+                         style="{% if slide.bg_image %}background-image:url('{{ url_for('static', filename=slide.bg_image) }}');background-size:cover;background-position:center;{% else %}background-color:{{ slide.bg_color or '#0d1b4b' }};{% endif %}min-height:130px;position:relative;">
+                        <div style="position:absolute;inset:0;background:rgba(0,0,0,.45);"></div>
+                        <div style="position:relative;z-index:1;text-align:center;color:#fff;">
+                            <i class="{{ slide.icon or 'fas fa-star' }}" style="font-size:2.5rem;opacity:.85;"></i>
+                            <div class="mt-2 fw-bold small">Preview</div>
+                        </div>
+                    </div>
+
+                    <!-- Slide details -->
+                    <div class="col-md-7 p-3 d-flex flex-column justify-content-center">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge {% if slide.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                                {% if slide.is_active %}Active{% else %}Inactive{% endif %}
+                            </span>
+                            <span class="text-muted small">Order: {{ slide.sort_order }}</span>
+                        </div>
+                        <h5 class="mb-1 fw-bold">{{ slide.title }}</h5>
+                        {% if slide.subtitle %}<p class="mb-1 text-muted small">{{ slide.subtitle }}</p>{% endif %}
+                        {% if slide.description %}<p class="mb-1 small text-muted" style="max-width:500px;">{{ slide.description[:100] }}{% if slide.description|length > 100 %}…{% endif %}</p>{% endif %}
+                        <div class="mt-1">
+                            <span class="badge bg-light text-dark border">
+                                <i class="fas fa-mouse-pointer me-1"></i>{{ slide.cta_text or 'Learn More' }}
+                                → {{ slide.cta_link or '#' }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="col-md-2 p-3 d-flex flex-column align-items-end justify-content-center gap-2">
+                        <a href="{{ url_for('admin.edit_slider', slider_id=slide.id) }}" class="btn btn-sm btn-outline-primary w-100">
+                            <i class="fas fa-pen me-1"></i>Edit
+                        </a>
+                        <form method="post" action="{{ url_for('admin.toggle_slider', slider_id=slide.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm {% if slide.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %} w-100">
+                                <i class="fas {% if slide.is_active %}fa-eye-slash{% else %}fa-eye{% endif %} me-1"></i>
+                                {% if slide.is_active %}Hide{% else %}Show{% endif %}
+                            </button>
+                        </form>
+                        <form method="post" action="{{ url_for('admin.delete_slider', slider_id=slide.id) }}"
+                              onsubmit="return confirm('Delete this slide?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                                <i class="fas fa-trash me-1"></i>Delete
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-images fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">No slides yet</h5>
+        <p class="text-muted">Create your first feature banner to display on user dashboards.</p>
+        <a href="{{ url_for('admin.add_slider') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Add Your First Slide
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

@@ -1,11 +1,13 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import current_user
 from app import db
-from models import User, Project, LawFirm, ROLE_ADMIN, ROLE_TEAM_MEMBER, ROLE_CLIENT
+from models import User, Project, LawFirm, DashboardSlider, ROLE_ADMIN, ROLE_TEAM_MEMBER, ROLE_CLIENT
 from utils.decorators import require_admin
 from utils.trial_access import require_active_subscription, trial_warning_context, get_trial_notification
 from forms import ClientForm, TeamMemberForm
 import uuid
+import os
+from werkzeug.utils import secure_filename
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -269,3 +271,166 @@ def banking_settings():
             flash('Error updating banking details. Please try again.', 'error')
     
     return render_template('admin/banking_settings.html', firm=firm)
+
+
+# ── Dashboard Slider Management ───────────────────────────────────────────────
+
+ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+SLIDER_UPLOAD_FOLDER = 'static/uploads/sliders'
+
+def _allowed_image(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
+
+
+def _seed_default_sliders(law_firm_id):
+    """Create platform-default slider slides for a new law firm."""
+    defaults = [
+        dict(title="Manage Cases Effortlessly",
+             subtitle="All your active matters in one place",
+             description="Track deadlines, documents, and progress across every case with crystal-clear visibility.",
+             cta_text="View Projects", cta_link="/projects/",
+             bg_color="#0d1b4b", icon="fas fa-briefcase", sort_order=0),
+        dict(title="Professional Invoicing",
+             subtitle="Get paid faster with smart invoices",
+             description="Generate beautiful PDF invoices, track payments, and send automated reminders to clients.",
+             cta_text="Go to Invoices", cta_link="/invoices/",
+             bg_color="#1a3a2a", icon="fas fa-file-invoice-dollar", sort_order=1),
+        dict(title="Real-Time Team Chat",
+             subtitle="Collaborate without leaving the platform",
+             description="Message your team and clients instantly. Keep all legal communications secure and searchable.",
+             cta_text="Open Chat", cta_link="/enhanced-chat/support",
+             bg_color="#3a1a0d", icon="fas fa-comments", sort_order=2),
+        dict(title="Court Dates & Deadlines",
+             subtitle="Never miss a critical date again",
+             description="Sync court hearings, client meetings and filing deadlines in one shared calendar.",
+             cta_text="Open Calendar", cta_link="/calendar/",
+             bg_color="#1a0d3a", icon="fas fa-calendar-check", sort_order=3),
+        dict(title="Client Management Hub",
+             subtitle="Every client relationship, perfectly organised",
+             description="Store contact details, case history, notes and documents — all linked to each client profile.",
+             cta_text="View Clients", cta_link="/clients/",
+             bg_color="#3a0d1a", icon="fas fa-users", sort_order=4),
+    ]
+    for d in defaults:
+        slide = DashboardSlider(law_firm_id=law_firm_id, **d)
+        db.session.add(slide)
+    db.session.commit()
+
+
+@admin_bp.route('/sliders')
+@require_admin
+def manage_sliders():
+    """List all dashboard slider slides for this law firm."""
+    sliders = (DashboardSlider.query
+               .filter_by(law_firm_id=current_user.law_firm_id)
+               .order_by(DashboardSlider.sort_order)
+               .all())
+    if not sliders:
+        _seed_default_sliders(current_user.law_firm_id)
+        sliders = (DashboardSlider.query
+                   .filter_by(law_firm_id=current_user.law_firm_id)
+                   .order_by(DashboardSlider.sort_order)
+                   .all())
+    return render_template('admin/manage_sliders.html', sliders=sliders)
+
+
+@admin_bp.route('/sliders/add', methods=['GET', 'POST'])
+@require_admin
+def add_slider():
+    """Add a new dashboard slider slide."""
+    if request.method == 'POST':
+        slide = DashboardSlider()
+        slide.law_firm_id = current_user.law_firm_id
+        slide.title       = request.form.get('title', '').strip()
+        slide.subtitle    = request.form.get('subtitle', '').strip()
+        slide.description = request.form.get('description', '').strip()
+        slide.cta_text    = request.form.get('cta_text', 'Learn More').strip()
+        slide.cta_link    = request.form.get('cta_link', '#').strip()
+        slide.bg_color    = request.form.get('bg_color', '#0d1b4b').strip()
+        slide.icon        = request.form.get('icon', 'fas fa-star').strip()
+        slide.sort_order  = int(request.form.get('sort_order', 0) or 0)
+        slide.is_active   = 'is_active' in request.form
+
+        # Handle background image upload
+        file = request.files.get('bg_image')
+        if file and file.filename and _allowed_image(file.filename):
+            os.makedirs(SLIDER_UPLOAD_FOLDER, exist_ok=True)
+            fname = secure_filename(f"{uuid.uuid4()}_{file.filename}")
+            file.save(os.path.join(SLIDER_UPLOAD_FOLDER, fname))
+            slide.bg_image = f"uploads/sliders/{fname}"
+
+        if not slide.title:
+            flash('Title is required.', 'error')
+            return render_template('admin/slider_form.html', slide=None, action='add')
+
+        db.session.add(slide)
+        db.session.commit()
+        flash('Slide added successfully!', 'success')
+        return redirect(url_for('admin.manage_sliders'))
+
+    return render_template('admin/slider_form.html', slide=None, action='add')
+
+
+@admin_bp.route('/sliders/<int:slider_id>/edit', methods=['GET', 'POST'])
+@require_admin
+def edit_slider(slider_id):
+    """Edit an existing dashboard slider slide."""
+    slide = DashboardSlider.query.get_or_404(slider_id)
+    if slide.law_firm_id != current_user.law_firm_id:
+        flash('Access denied.', 'error')
+        return redirect(url_for('admin.manage_sliders'))
+
+    if request.method == 'POST':
+        slide.title       = request.form.get('title', '').strip()
+        slide.subtitle    = request.form.get('subtitle', '').strip()
+        slide.description = request.form.get('description', '').strip()
+        slide.cta_text    = request.form.get('cta_text', 'Learn More').strip()
+        slide.cta_link    = request.form.get('cta_link', '#').strip()
+        slide.bg_color    = request.form.get('bg_color', '#0d1b4b').strip()
+        slide.icon        = request.form.get('icon', 'fas fa-star').strip()
+        slide.sort_order  = int(request.form.get('sort_order', 0) or 0)
+        slide.is_active   = 'is_active' in request.form
+
+        file = request.files.get('bg_image')
+        if file and file.filename and _allowed_image(file.filename):
+            os.makedirs(SLIDER_UPLOAD_FOLDER, exist_ok=True)
+            fname = secure_filename(f"{uuid.uuid4()}_{file.filename}")
+            file.save(os.path.join(SLIDER_UPLOAD_FOLDER, fname))
+            slide.bg_image = f"uploads/sliders/{fname}"
+
+        if not slide.title:
+            flash('Title is required.', 'error')
+            return render_template('admin/slider_form.html', slide=slide, action='edit')
+
+        db.session.commit()
+        flash('Slide updated successfully!', 'success')
+        return redirect(url_for('admin.manage_sliders'))
+
+    return render_template('admin/slider_form.html', slide=slide, action='edit')
+
+
+@admin_bp.route('/sliders/<int:slider_id>/delete', methods=['POST'])
+@require_admin
+def delete_slider(slider_id):
+    """Delete a dashboard slider slide."""
+    slide = DashboardSlider.query.get_or_404(slider_id)
+    if slide.law_firm_id != current_user.law_firm_id:
+        flash('Access denied.', 'error')
+        return redirect(url_for('admin.manage_sliders'))
+    db.session.delete(slide)
+    db.session.commit()
+    flash('Slide deleted.', 'success')
+    return redirect(url_for('admin.manage_sliders'))
+
+
+@admin_bp.route('/sliders/<int:slider_id>/toggle', methods=['POST'])
+@require_admin
+def toggle_slider(slider_id):
+    """Toggle a slide's active/inactive status."""
+    slide = DashboardSlider.query.get_or_404(slider_id)
+    if slide.law_firm_id != current_user.law_firm_id:
+        flash('Access denied.', 'error')
+        return redirect(url_for('admin.manage_sliders'))
+    slide.is_active = not slide.is_active
+    db.session.commit()
+    return redirect(url_for('admin.manage_sliders'))

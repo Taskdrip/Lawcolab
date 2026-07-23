@@ -3,11 +3,15 @@
 {% block title %}Client Dashboard - LAWCOLAB{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+
+{# ── Feature-ad slider ── #}
+{% include 'components/dashboard_slider.html' %}
+
+<div class="container-fluid py-3">
     <div class="row">
         <div class="col-12">
-            <h1 class="h2 text-gradient mb-4">
-                <i class="fas fa-user me-2"></i>Welcome, {{ current_user.full_name }}
+            <h1 class="h4 fw-bold mb-4">
+                <i class="fas fa-user me-2 text-primary"></i>Welcome, {{ current_user.full_name }}
             </h1>
         </div>
     </div>
@@ -127,5 +131,6 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 {% endblock %}
