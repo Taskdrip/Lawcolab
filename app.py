@@ -124,6 +124,10 @@ with app.app_context():
     db.create_all()
     logger.info("Database tables created / verified")
 
+    # Apply column-level migrations for existing databases
+    from utils.migrations import run_migrations
+    run_migrations(db)
+
     _sa_email = os.environ.get("SUPER_ADMIN_EMAIL", "").strip().lower()
     _sa_password = os.environ.get("SUPER_ADMIN_PASSWORD", "").strip()
     _sa_first = os.environ.get("SUPER_ADMIN_FIRST_NAME", "Super").strip()
