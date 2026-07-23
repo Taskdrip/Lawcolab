@@ -1,8 +1,8 @@
-modules = ["web", "python-3.11", "nodejs-20", "bash"]
+modules = ["web", "python-3.11", "nodejs-20", "bash", "postgresql-16"]
 
 [nix]
 channel = "stable-25_05"
-packages = ["cargo", "fontconfig", "freetype", "ghostscript", "glib", "glibcLocales", "harfbuzz", "libiconv", "libxcrypt", "openssl", "pango", "pkg-config", "postgresql", "rustc"]
+packages = ["cacert", "cargo", "fontconfig", "freetype", "ghostscript", "glib", "glibcLocales", "harfbuzz", "lcms2", "libffi", "libiconv", "libimagequant", "libjpeg", "libtiff", "libwebp", "libxcrypt", "openjpeg", "openssl", "pango", "pkg-config", "postgresql", "rustc", "tcl", "tk", "zlib"]
 
 [deployment]
 deploymentTarget = "autoscale"

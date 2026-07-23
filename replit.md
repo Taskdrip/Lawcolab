@@ -1,42 +1,41 @@
-# LawFirmOS (LAWCOLAB)
+# LawColab (LawFirmOS)
 
-A full-stack law firm management platform built with Python Flask, SQLAlchemy, and PostgreSQL.
-
-## Features
-- Client & case management
-- Team collaboration
-- Invoicing & billing
-- Escrow and payment processing
-- Calendar & scheduling
-- Chat & support
-- Admin and super-admin dashboards
-- Sales & showcase pages
+A full-stack law firm management platform built with Python Flask, SQLite/PostgreSQL, and Jinja2 templates.
 
 ## Stack
-- **Backend**: Python 3.11, Flask, Flask-Login, Flask-WTF
-- **Database**: PostgreSQL (Replit built-in), SQLAlchemy ORM
-- **Auth**: Flask-Login with session management
-- **PDF generation**: WeasyPrint, ReportLab
-- **Frontend**: Jinja2 templates, static CSS/JS
+
+- **Backend**: Python 3.11 / Flask
+- **Database**: PostgreSQL (Replit-managed, via `DATABASE_URL`)
+- **Auth**: Flask-Login + Flask-Dance (OAuth)
+- **Templates**: Jinja2 (server-side rendered)
+- **PDF generation**: WeasyPrint + ReportLab
+- **WSGI server**: Gunicorn
 
 ## How to run
-The app starts automatically via the "Start application" workflow:
+
+The app starts automatically via the **Start application** workflow:
+
 ```
 gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app
 ```
 
-## Environment variables
-- `SESSION_SECRET` — Flask session secret key (set in Replit Secrets)
-- `DATABASE_URL` — PostgreSQL connection string (auto-provided by Replit)
+Entry point: `main.py` → imports `app` from `app.py` and all routes from `routes.py`.
 
-## Project structure
-- `app.py` — Flask app factory, DB and auth initialization
-- `main.py` — Entry point, imports routes
-- `routes.py` — Blueprint registration
-- `models.py` — Core SQLAlchemy models
-- `models_payment.py`, `models_chat.py`, etc. — Additional models
-- `auth.py` — Authentication blueprint
+## Key files
+
+- `app.py` — Flask app factory, DB config, login manager, CSRF setup
+- `models.py` — Core SQLAlchemy models (User, Client, Case, Invoice, etc.)
+- `models_payment.py` / `models_payment_custom.py` — Payment models
+- `models_chat.py` — Chat/messaging models
+- `models_audit.py` — Audit log models
+- `routes.py` — Route registrations (imports blueprints)
 - `templates/` — Jinja2 HTML templates
-- `static/` — CSS, JS, images
+- `utils/` — Decorators, forms, notifications, trial access helpers
+- `uploads/` — User-uploaded files (profiles, payment evidence)
+
+## Environment variables / secrets
+
+- `SESSION_SECRET` — Flask session secret key (already set)
+- `DATABASE_URL` — PostgreSQL connection string (auto-provided by Replit)
 
 ## User preferences
