@@ -2,7 +2,9 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import current_user
 from utils.decorators import require_super_admin
 from app import db
-from models import User, LawFirm, Project, SupportRequest, ROLE_ADMIN, ROLE_SUPER_ADMIN, ROLE_CLIENT, ROLE_TEAM_MEMBER
+from models import User, LawFirm, Project, SupportRequest, DashboardSlider, LegalNews, ROLE_ADMIN, ROLE_SUPER_ADMIN, ROLE_CLIENT, ROLE_TEAM_MEMBER
+import os
+from werkzeug.utils import secure_filename
 from sqlalchemy import or_
 # from utils.forms import LawFirmForm  # Not needed for super admin functions
 import uuid
@@ -496,3 +498,237 @@ def platform_users():
                          users=users,
                          search=search,
                          role_filter=role_filter)
+
+# ── Legal News Management (Super Admin Only) ──────────────────────────────────
+
+NEWS_UPLOAD_FOLDER = 'static/uploads/news'
+ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+def _allowed_img(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
+
+
+@superadmin_bp.route('/news')
+@require_super_admin
+def manage_news():
+    news_items = (LegalNews.query
+                  .order_by(LegalNews.sort_order, LegalNews.created_at.desc())
+                  .all())
+    return render_template('superadmin/manage_news.html', news_items=news_items)
+
+
+@superadmin_bp.route('/news/add', methods=['GET', 'POST'])
+@require_super_admin
+def add_news():
+    if request.method == 'POST':
+        item = LegalNews()
+        item.title       = request.form.get('title', '').strip()
+        item.subtitle    = request.form.get('subtitle', '').strip()
+        item.content     = request.form.get('content', '').strip()
+        item.category    = request.form.get('category', 'Legal Update').strip()
+        item.icon        = request.form.get('icon', 'fas fa-newspaper').strip()
+        item.bg_color    = request.form.get('bg_color', '#0d1b4b').strip()
+        item.link_url    = request.form.get('link_url', '').strip()
+        item.link_text   = request.form.get('link_text', 'Read More').strip()
+        item.sort_order  = int(request.form.get('sort_order', 0) or 0)
+        item.is_active   = 'is_active' in request.form
+        item.created_by_id = current_user.id
+
+        file = request.files.get('bg_image')
+        if file and file.filename and _allowed_img(file.filename):
+            os.makedirs(NEWS_UPLOAD_FOLDER, exist_ok=True)
+            fname = secure_filename(f"{uuid.uuid4()}_{file.filename}")
+            file.save(os.path.join(NEWS_UPLOAD_FOLDER, fname))
+            item.bg_image = f"uploads/news/{fname}"
+
+        if not item.title:
+            flash('Title is required.', 'error')
+            return render_template('superadmin/news_form.html', item=None, action='add')
+
+        db.session.add(item)
+        db.session.commit()
+        flash('News post added successfully!', 'success')
+        return redirect(url_for('superadmin.manage_news'))
+
+    return render_template('superadmin/news_form.html', item=None, action='add')
+
+
+@superadmin_bp.route('/news/<int:news_id>/edit', methods=['GET', 'POST'])
+@require_super_admin
+def edit_news(news_id):
+    item = LegalNews.query.get_or_404(news_id)
+    if request.method == 'POST':
+        item.title      = request.form.get('title', '').strip()
+        item.subtitle   = request.form.get('subtitle', '').strip()
+        item.content    = request.form.get('content', '').strip()
+        item.category   = request.form.get('category', 'Legal Update').strip()
+        item.icon       = request.form.get('icon', 'fas fa-newspaper').strip()
+        item.bg_color   = request.form.get('bg_color', '#0d1b4b').strip()
+        item.link_url   = request.form.get('link_url', '').strip()
+        item.link_text  = request.form.get('link_text', 'Read More').strip()
+        item.sort_order = int(request.form.get('sort_order', 0) or 0)
+        item.is_active  = 'is_active' in request.form
+
+        file = request.files.get('bg_image')
+        if file and file.filename and _allowed_img(file.filename):
+            os.makedirs(NEWS_UPLOAD_FOLDER, exist_ok=True)
+            fname = secure_filename(f"{uuid.uuid4()}_{file.filename}")
+            file.save(os.path.join(NEWS_UPLOAD_FOLDER, fname))
+            item.bg_image = f"uploads/news/{fname}"
+
+        if not item.title:
+            flash('Title is required.', 'error')
+            return render_template('superadmin/news_form.html', item=item, action='edit')
+
+        db.session.commit()
+        flash('News post updated!', 'success')
+        return redirect(url_for('superadmin.manage_news'))
+
+    return render_template('superadmin/news_form.html', item=item, action='edit')
+
+
+@superadmin_bp.route('/news/<int:news_id>/delete', methods=['POST'])
+@require_super_admin
+def delete_news(news_id):
+    item = LegalNews.query.get_or_404(news_id)
+    db.session.delete(item)
+    db.session.commit()
+    flash('News post deleted.', 'success')
+    return redirect(url_for('superadmin.manage_news'))
+
+
+@superadmin_bp.route('/news/<int:news_id>/toggle', methods=['POST'])
+@require_super_admin
+def toggle_news(news_id):
+    item = LegalNews.query.get_or_404(news_id)
+    item.is_active = not item.is_active
+    db.session.commit()
+    return redirect(url_for('superadmin.manage_news'))
+
+
+# ── Dashboard Slider Management (Super Admin Only) ────────────────────────────
+
+SLIDER_UPLOAD_FOLDER = 'static/uploads/sliders'
+
+def _seed_platform_sliders():
+    """Create platform-default slider slides if none exist."""
+    defaults = [
+        dict(title="Manage Cases Effortlessly", subtitle="All your active matters in one place",
+             description="Track deadlines, documents and progress across every case.",
+             cta_text="View Projects", cta_link="/projects/",
+             bg_color="#0d1b4b", icon="fas fa-briefcase", sort_order=0),
+        dict(title="Professional Invoicing", subtitle="Get paid faster with smart invoices",
+             description="Generate beautiful PDF invoices and track payments.",
+             cta_text="Go to Invoices", cta_link="/invoices/",
+             bg_color="#1a3a2a", icon="fas fa-file-invoice-dollar", sort_order=1),
+        dict(title="Real-Time Team Chat", subtitle="Collaborate without leaving the platform",
+             description="Message your team and clients instantly.",
+             cta_text="Open Chat", cta_link="/enhanced-chat/support",
+             bg_color="#3a1a0d", icon="fas fa-comments", sort_order=2),
+    ]
+    for d in defaults:
+        db.session.add(DashboardSlider(law_firm_id=None, **d))
+    db.session.commit()
+
+
+@superadmin_bp.route('/sliders')
+@require_super_admin
+def manage_sliders():
+    sliders = (DashboardSlider.query
+               .filter_by(law_firm_id=None)
+               .order_by(DashboardSlider.sort_order)
+               .all())
+    if not sliders:
+        _seed_platform_sliders()
+        sliders = (DashboardSlider.query
+                   .filter_by(law_firm_id=None)
+                   .order_by(DashboardSlider.sort_order)
+                   .all())
+    return render_template('superadmin/manage_sliders.html', sliders=sliders)
+
+
+@superadmin_bp.route('/sliders/add', methods=['GET', 'POST'])
+@require_super_admin
+def add_slider():
+    if request.method == 'POST':
+        slide = DashboardSlider()
+        slide.law_firm_id = None  # Platform-wide
+        slide.title       = request.form.get('title', '').strip()
+        slide.subtitle    = request.form.get('subtitle', '').strip()
+        slide.description = request.form.get('description', '').strip()
+        slide.cta_text    = request.form.get('cta_text', 'Learn More').strip()
+        slide.cta_link    = request.form.get('cta_link', '#').strip()
+        slide.bg_color    = request.form.get('bg_color', '#0d1b4b').strip()
+        slide.icon        = request.form.get('icon', 'fas fa-star').strip()
+        slide.sort_order  = int(request.form.get('sort_order', 0) or 0)
+        slide.is_active   = 'is_active' in request.form
+
+        file = request.files.get('bg_image')
+        if file and file.filename and _allowed_img(file.filename):
+            os.makedirs(SLIDER_UPLOAD_FOLDER, exist_ok=True)
+            fname = secure_filename(f"{uuid.uuid4()}_{file.filename}")
+            file.save(os.path.join(SLIDER_UPLOAD_FOLDER, fname))
+            slide.bg_image = f"uploads/sliders/{fname}"
+
+        if not slide.title:
+            flash('Title is required.', 'error')
+            return render_template('superadmin/slider_form.html', slide=None, action='add')
+
+        db.session.add(slide)
+        db.session.commit()
+        flash('Slide added!', 'success')
+        return redirect(url_for('superadmin.manage_sliders'))
+
+    return render_template('superadmin/slider_form.html', slide=None, action='add')
+
+
+@superadmin_bp.route('/sliders/<int:slider_id>/edit', methods=['GET', 'POST'])
+@require_super_admin
+def edit_slider(slider_id):
+    slide = DashboardSlider.query.get_or_404(slider_id)
+    if request.method == 'POST':
+        slide.title       = request.form.get('title', '').strip()
+        slide.subtitle    = request.form.get('subtitle', '').strip()
+        slide.description = request.form.get('description', '').strip()
+        slide.cta_text    = request.form.get('cta_text', 'Learn More').strip()
+        slide.cta_link    = request.form.get('cta_link', '#').strip()
+        slide.bg_color    = request.form.get('bg_color', '#0d1b4b').strip()
+        slide.icon        = request.form.get('icon', 'fas fa-star').strip()
+        slide.sort_order  = int(request.form.get('sort_order', 0) or 0)
+        slide.is_active   = 'is_active' in request.form
+
+        file = request.files.get('bg_image')
+        if file and file.filename and _allowed_img(file.filename):
+            os.makedirs(SLIDER_UPLOAD_FOLDER, exist_ok=True)
+            fname = secure_filename(f"{uuid.uuid4()}_{file.filename}")
+            file.save(os.path.join(SLIDER_UPLOAD_FOLDER, fname))
+            slide.bg_image = f"uploads/sliders/{fname}"
+
+        if not slide.title:
+            flash('Title is required.', 'error')
+            return render_template('superadmin/slider_form.html', slide=slide, action='edit')
+
+        db.session.commit()
+        flash('Slide updated!', 'success')
+        return redirect(url_for('superadmin.manage_sliders'))
+
+    return render_template('superadmin/slider_form.html', slide=slide, action='edit')
+
+
+@superadmin_bp.route('/sliders/<int:slider_id>/delete', methods=['POST'])
+@require_super_admin
+def delete_slider(slider_id):
+    slide = DashboardSlider.query.get_or_404(slider_id)
+    db.session.delete(slide)
+    db.session.commit()
+    flash('Slide deleted.', 'success')
+    return redirect(url_for('superadmin.manage_sliders'))
+
+
+@superadmin_bp.route('/sliders/<int:slider_id>/toggle', methods=['POST'])
+@require_super_admin
+def toggle_slider(slider_id):
+    slide = DashboardSlider.query.get_or_404(slider_id)
+    slide.is_active = not slide.is_active
+    db.session.commit()
+    return redirect(url_for('superadmin.manage_sliders'))

@@ -3,7 +3,7 @@ from flask_login import current_user
 from replit_auth import require_login
 from utils.decorators import require_admin, require_team_member_or_admin
 from app import db
-from models import User, Project, LawFirm, ClientNote, ProjectFile, DashboardSlider
+from models import User, Project, LawFirm, ClientNote, ProjectFile, DashboardSlider, LegalNews
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -15,12 +15,20 @@ def _get_sliders(law_firm_id):
               .order_by(DashboardSlider.sort_order)
               .all())
     if not slides:
-        # Fall back to global (law_firm_id=None) defaults
         slides = (DashboardSlider.query
                   .filter_by(law_firm_id=None, is_active=True)
                   .order_by(DashboardSlider.sort_order)
                   .all())
     return slides
+
+
+def _get_legal_news():
+    """Return active legal news posts for the news banner."""
+    return (LegalNews.query
+            .filter_by(is_active=True)
+            .order_by(LegalNews.sort_order, LegalNews.created_at.desc())
+            .limit(8)
+            .all())
 
 
 @dashboard_bp.route('/admin')
@@ -39,7 +47,8 @@ def admin_dashboard():
     recent_notes = ClientNote.query.order_by(ClientNote.created_at.desc()).limit(5).all()
 
     sliders = _get_sliders(current_user.law_firm_id)
-    
+    legal_news = _get_legal_news()
+
     return render_template('dashboard/admin.html',
                          total_projects=total_projects,
                          active_projects=active_projects,
@@ -48,7 +57,8 @@ def admin_dashboard():
                          recent_projects=recent_projects,
                          recent_files=recent_files,
                          recent_notes=recent_notes,
-                         sliders=sliders)
+                         sliders=sliders,
+                         legal_news=legal_news)
 
 @dashboard_bp.route('/team-member')
 @require_team_member_or_admin
@@ -64,11 +74,13 @@ def team_member_dashboard():
 
     clients = User.query.filter(User.id.in_(client_ids)).all() if client_ids else []
     sliders = _get_sliders(current_user.law_firm_id)
+    legal_news = _get_legal_news()
 
     return render_template('dashboard/team_member.html',
                          assigned_projects=assigned_projects,
                          clients=clients,
-                         sliders=sliders)
+                         sliders=sliders,
+                         legal_news=legal_news)
 
 
 @dashboard_bp.route('/client')
@@ -89,8 +101,10 @@ def client_dashboard():
 
     team_members = User.query.filter(User.id.in_(team_member_ids)).all() if team_member_ids else []
     sliders = _get_sliders(current_user.law_firm_id)
+    legal_news = _get_legal_news()
 
     return render_template('dashboard/client.html',
                          assigned_projects=assigned_projects,
                          team_members=team_members,
-                         sliders=sliders)
+                         sliders=sliders,
+                         legal_news=legal_news)

@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import current_user
 from app import db
 from models import User, Project, LawFirm, DashboardSlider, ROLE_ADMIN, ROLE_TEAM_MEMBER, ROLE_CLIENT
+from utils.decorators import require_super_admin
 from utils.decorators import require_admin
 from utils.trial_access import require_active_subscription, trial_warning_context, get_trial_notification
 from forms import ClientForm, TeamMemberForm
@@ -318,7 +319,7 @@ def _seed_default_sliders(law_firm_id):
 
 
 @admin_bp.route('/sliders')
-@require_admin
+@require_super_admin
 def manage_sliders():
     """List all dashboard slider slides for this law firm."""
     sliders = (DashboardSlider.query
@@ -335,7 +336,7 @@ def manage_sliders():
 
 
 @admin_bp.route('/sliders/add', methods=['GET', 'POST'])
-@require_admin
+@require_super_admin
 def add_slider():
     """Add a new dashboard slider slide."""
     if request.method == 'POST':
@@ -372,7 +373,7 @@ def add_slider():
 
 
 @admin_bp.route('/sliders/<int:slider_id>/edit', methods=['GET', 'POST'])
-@require_admin
+@require_super_admin
 def edit_slider(slider_id):
     """Edit an existing dashboard slider slide."""
     slide = DashboardSlider.query.get_or_404(slider_id)
@@ -410,7 +411,7 @@ def edit_slider(slider_id):
 
 
 @admin_bp.route('/sliders/<int:slider_id>/delete', methods=['POST'])
-@require_admin
+@require_super_admin
 def delete_slider(slider_id):
     """Delete a dashboard slider slide."""
     slide = DashboardSlider.query.get_or_404(slider_id)
@@ -424,7 +425,7 @@ def delete_slider(slider_id):
 
 
 @admin_bp.route('/sliders/<int:slider_id>/toggle', methods=['POST'])
-@require_admin
+@require_super_admin
 def toggle_slider(slider_id):
     """Toggle a slide's active/inactive status."""
     slide = DashboardSlider.query.get_or_404(slider_id)

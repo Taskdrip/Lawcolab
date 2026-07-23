@@ -978,6 +978,29 @@ class DashboardSlider(db.Model):
     law_firm    = db.relationship('LawFirm', backref='sliders')
 
 
+class LegalNews(db.Model):
+    """Platform-wide legal news and industry updates, managed by super admin only."""
+    __tablename__ = 'legal_news'
+
+    id            = db.Column(db.Integer, primary_key=True)
+    title         = db.Column(db.String(300), nullable=False)
+    subtitle      = db.Column(db.String(300), nullable=True)
+    content       = db.Column(db.Text,        nullable=True)
+    category      = db.Column(db.String(100), nullable=True,  default='Legal Update')
+    bg_image      = db.Column(db.String(500), nullable=True)
+    bg_color      = db.Column(db.String(20),  nullable=False,  default='#0d1b4b')
+    icon          = db.Column(db.String(80),  nullable=True,   default='fas fa-newspaper')
+    link_url      = db.Column(db.String(500), nullable=True)
+    link_text     = db.Column(db.String(100), nullable=True,   default='Read More')
+    sort_order    = db.Column(db.Integer,     nullable=False,  default=0)
+    is_active     = db.Column(db.Boolean,     nullable=False,  default=True)
+    created_by_id = db.Column(db.String,      db.ForeignKey('users.id'), nullable=True)
+    created_at    = db.Column(db.DateTime, default=datetime.now)
+    updated_at    = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+
+    created_by = db.relationship('User', foreign_keys=[created_by_id])
+
+
 class PublicLawFirmMessage(db.Model):
     __tablename__ = 'public_law_firm_messages'
     

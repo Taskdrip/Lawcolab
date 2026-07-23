@@ -1,0 +1,228 @@
+{# Legal News & Industry Updates banner — include with {% include 'components/legal_news_banner.html' %} #}
+{# Requires `legal_news` list in template context. #}
+
+{% if legal_news %}
+<div class="lc-news-wrap">
+    <div class="lc-news-header-label">
+        <i class="fas fa-newspaper me-2"></i>Legal News &amp; Industry Updates
+        <span class="lc-news-live-dot"></span>
+    </div>
+
+    <div class="lc-news-slider" id="lcNewsSlider">
+        {% for item in legal_news %}
+        <div class="lc-news-slide{% if loop.first %} active{% endif %}"
+             style="{% if item.bg_image %}background-image:url('{{ url_for('static', filename=item.bg_image) }}');{% else %}background-color:{{ item.bg_color or '#0a1635' }};{% endif %}"
+             data-index="{{ loop.index0 }}">
+            <div class="lc-news-overlay"></div>
+            <div class="lc-news-body">
+                <div class="lc-news-icon-wrap" aria-hidden="true">
+                    <i class="{{ item.icon or 'fas fa-newspaper' }}"></i>
+                </div>
+                <div class="lc-news-content">
+                    {% if item.category %}
+                    <span class="lc-news-cat">{{ item.category }}</span>
+                    {% endif %}
+                    <h3 class="lc-news-title">{{ item.title }}</h3>
+                    {% if item.subtitle %}
+                    <p class="lc-news-sub">{{ item.subtitle }}</p>
+                    {% endif %}
+                    {% if item.content %}
+                    <p class="lc-news-text">{{ item.content[:160] }}{% if item.content|length > 160 %}…{% endif %}</p>
+                    {% endif %}
+                    {% if item.link_url %}
+                    <a href="{{ item.link_url }}" class="lc-news-cta" target="_blank" rel="noopener">
+                        {{ item.link_text or 'Read More' }}&nbsp;<i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="lc-news-meta">
+                    <small><i class="fas fa-clock me-1"></i>{{ item.created_at.strftime('%b %d, %Y') }}</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        {% if legal_news|length > 1 %}
+        <button class="lc-news-arrow prev" id="lcNewsPrev" aria-label="Previous">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="lc-news-arrow next" id="lcNewsNext" aria-label="Next">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        <div class="lc-news-dots" id="lcNewsDots">
+            {% for item in legal_news %}
+            <button class="lc-news-dot{% if loop.first %} active{% endif %}"
+                    data-index="{{ loop.index0 }}"
+                    aria-label="News {{ loop.index }}"></button>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+/* ── News Banner Wrap ── */
+.lc-news-wrap{
+    margin:0 0 1.5rem;
+    border-radius:14px;overflow:hidden;
+    box-shadow:0 4px 24px rgba(0,0,0,.14);
+}
+
+/* ── Header label bar ── */
+.lc-news-header-label{
+    background:#0a1635;
+    color:rgba(255,255,255,.9);
+    font-size:.75rem;font-weight:700;
+    letter-spacing:.1em;text-transform:uppercase;
+    padding:.55rem 1.25rem;
+    display:flex;align-items:center;
+    border-bottom:1px solid rgba(255,255,255,.08);
+}
+.lc-news-live-dot{
+    width:7px;height:7px;border-radius:50%;
+    background:#22c55e;margin-left:.6rem;
+    animation:pulse-dot 2s infinite;
+}
+@keyframes pulse-dot{
+    0%,100%{opacity:1;transform:scale(1);}
+    50%{opacity:.5;transform:scale(.8);}
+}
+
+/* ── Slider container ── */
+.lc-news-slider{
+    position:relative;height:220px;
+    background:#0a1635;
+}
+@media(max-width:768px){
+    .lc-news-slider{height:auto;min-height:200px;}
+}
+
+/* ── Slides ── */
+.lc-news-slide{
+    position:absolute;inset:0;
+    background-size:cover;background-position:center;
+    opacity:0;transition:opacity .55s ease;
+    display:flex;
+}
+.lc-news-slide.active{opacity:1;z-index:1;}
+
+/* ── Overlay ── */
+.lc-news-overlay{
+    position:absolute;inset:0;
+    background:linear-gradient(
+        100deg,
+        rgba(10,22,53,.96) 0%,
+        rgba(10,22,53,.82) 55%,
+        rgba(10,22,53,.55) 100%
+    );
+}
+
+/* ── Body layout ── */
+.lc-news-body{
+    position:relative;z-index:2;
+    display:flex;align-items:center;gap:1.5rem;
+    padding:1.5rem 3rem 1.5rem 1.75rem;
+    width:100%;
+}
+.lc-news-icon-wrap{
+    flex-shrink:0;width:52px;height:52px;border-radius:13px;
+    background:rgba(255,215,0,.12);
+    border:1px solid rgba(255,215,0,.25);
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.35rem;color:#FFD700;
+}
+.lc-news-content{flex:1;min-width:0;}
+.lc-news-cat{
+    display:inline-block;
+    font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    background:rgba(255,215,0,.15);border:1px solid rgba(255,215,0,.3);
+    color:#FFD700;padding:.2rem .65rem;border-radius:100px;margin-bottom:.55rem;
+}
+.lc-news-title{
+    font-size:1.15rem;font-weight:800;color:#fff;
+    line-height:1.25;margin-bottom:.35rem;
+}
+.lc-news-sub{
+    font-size:.85rem;font-weight:500;color:rgba(255,255,255,.75);margin-bottom:.4rem;
+}
+.lc-news-text{
+    font-size:.8rem;color:rgba(255,255,255,.6);line-height:1.5;
+    margin-bottom:.65rem;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.lc-news-cta{
+    display:inline-flex;align-items:center;
+    font-size:.78rem;font-weight:700;
+    background:#FFD700;color:#0a1635;
+    padding:.35rem .85rem;border-radius:7px;
+    text-decoration:none;transition:background .2s,transform .15s;
+}
+.lc-news-cta:hover{background:#f5c800;transform:translateX(2px);color:#0a1635;}
+.lc-news-meta{
+    position:absolute;bottom:.6rem;right:4rem;
+    color:rgba(255,255,255,.4);font-size:.7rem;
+}
+
+/* ── Arrows ── */
+.lc-news-arrow{
+    position:absolute;top:50%;transform:translateY(-50%);
+    z-index:5;border:none;border-radius:50%;
+    width:34px;height:34px;
+    background:rgba(255,255,255,.15);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:.8rem;cursor:pointer;transition:background .2s;
+    backdrop-filter:blur(4px);
+}
+.lc-news-arrow:hover{background:rgba(255,255,255,.3);}
+.lc-news-arrow.prev{right:42px;}
+.lc-news-arrow.next{right:6px;}
+
+/* ── Dots ── */
+.lc-news-dots{
+    position:absolute;bottom:8px;right:50%;transform:translateX(50%);
+    display:flex;gap:5px;z-index:5;
+}
+.lc-news-dot{
+    width:7px;height:7px;border-radius:50%;border:none;cursor:pointer;
+    background:rgba(255,255,255,.35);padding:0;transition:background .2s,width .25s;
+}
+.lc-news-dot.active{background:#FFD700;width:18px;border-radius:3px;}
+
+/* ── Mobile ── */
+@media(max-width:768px){
+    .lc-news-slide{position:relative;opacity:1 !important;display:none;}
+    .lc-news-slide.active{display:flex;}
+    .lc-news-body{padding:1.1rem 1rem;gap:1rem;flex-wrap:wrap;}
+    .lc-news-icon-wrap{width:40px;height:40px;font-size:1rem;}
+    .lc-news-title{font-size:1rem;}
+    .lc-news-arrow.prev{right:38px;}
+    .lc-news-meta{display:none;}
+}
+</style>
+
+<script>
+(function(){
+    const slider = document.getElementById('lcNewsSlider');
+    if(!slider) return;
+    const slides = slider.querySelectorAll('.lc-news-slide');
+    if(slides.length <= 1) return;
+    const dots   = slider.querySelectorAll('.lc-news-dot');
+    let   cur    = 0;
+    let   timer;
+
+    function goTo(n){
+        slides[cur].classList.remove('active');
+        dots[cur]  && dots[cur].classList.remove('active');
+        cur = (n + slides.length) % slides.length;
+        slides[cur].classList.add('active');
+        dots[cur]  && dots[cur].classList.add('active');
+    }
+    function startAuto(){ clearInterval(timer); timer = setInterval(()=>goTo(cur+1), 7000); }
+
+    document.getElementById('lcNewsPrev').addEventListener('click',()=>{goTo(cur-1);startAuto();});
+    document.getElementById('lcNewsNext').addEventListener('click',()=>{goTo(cur+1);startAuto();});
+    dots.forEach(d=>d.addEventListener('click',()=>{goTo(+d.dataset.index);startAuto();}));
+    startAuto();
+})();
+</script>
+{% endif %}

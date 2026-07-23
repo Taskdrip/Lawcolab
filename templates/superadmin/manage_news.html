@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Legal News — Super Admin{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="lc-page-header" style="background:#0a1635;">
+    <div class="container-fluid px-3 px-lg-4">
+        <div class="lc-ph-inner d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="lc-ph-icon"><i class="fas fa-newspaper"></i></div>
+                <div>
+                    <h1>Legal News &amp; Industry Updates</h1>
+                    <p class="lc-ph-sub mb-0">Posts appear in the news banner on every user dashboard</p>
+                </div>
+            </div>
+            <div class="lc-ph-actions">
+                <a href="{{ url_for('superadmin.add_news') }}" class="btn btn-warning btn-sm fw-semibold">
+                    <i class="fas fa-plus me-1"></i>Add News Post
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid py-4">
+
+{% if news_items %}
+<div class="row g-3">
+    {% for item in news_items %}
+    <div class="col-12">
+        <div class="card border-0 shadow-sm overflow-hidden">
+            <div class="row g-0">
+
+                <!-- Preview strip -->
+                <div class="col-md-2 d-flex align-items-center justify-content-center p-4"
+                     style="{% if item.bg_image %}background-image:url('{{ url_for('static', filename=item.bg_image) }}');background-size:cover;background-position:center;{% else %}background-color:{{ item.bg_color or '#0a1635' }};{% endif %}min-height:120px;position:relative;">
+                    <div style="position:absolute;inset:0;background:rgba(0,0,0,.5);"></div>
+                    <div style="position:relative;z-index:1;text-align:center;color:#fff;">
+                        <i class="{{ item.icon or 'fas fa-newspaper' }}" style="font-size:2rem;opacity:.9;"></i>
+                    </div>
+                </div>
+
+                <!-- Details -->
+                <div class="col-md-8 p-3 d-flex flex-column justify-content-center">
+                    <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                        <span class="badge {% if item.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                            {% if item.is_active %}Published{% else %}Hidden{% endif %}
+                        </span>
+                        {% if item.category %}
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25">{{ item.category }}</span>
+                        {% endif %}
+                        <span class="text-muted small">Order: {{ item.sort_order }}</span>
+                        <span class="text-muted small"><i class="fas fa-clock me-1"></i>{{ item.created_at.strftime('%b %d, %Y') }}</span>
+                    </div>
+                    <h5 class="mb-1 fw-bold">{{ item.title }}</h5>
+                    {% if item.subtitle %}<p class="mb-1 text-muted small">{{ item.subtitle }}</p>{% endif %}
+                    {% if item.content %}<p class="mb-0 small text-muted">{{ item.content[:120] }}{% if item.content|length > 120 %}…{% endif %}</p>{% endif %}
+                </div>
+
+                <!-- Actions -->
+                <div class="col-md-2 p-3 d-flex flex-column align-items-end justify-content-center gap-2">
+                    <a href="{{ url_for('superadmin.edit_news', news_id=item.id) }}" class="btn btn-sm btn-outline-primary w-100">
+                        <i class="fas fa-pen me-1"></i>Edit
+                    </a>
+                    <form method="post" action="{{ url_for('superadmin.toggle_news', news_id=item.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm {% if item.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %} w-100">
+                            <i class="fas {% if item.is_active %}fa-eye-slash{% else %}fa-eye{% endif %} me-1"></i>
+                            {% if item.is_active %}Hide{% else %}Publish{% endif %}
+                        </button>
+                    </form>
+                    <form method="post" action="{{ url_for('superadmin.delete_news', news_id=item.id) }}"
+                          onsubmit="return confirm('Delete this news post?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                            <i class="fas fa-trash me-1"></i>Delete
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-newspaper fa-3x text-muted mb-3 d-block"></i>
+    <h5 class="text-muted">No news posts yet</h5>
+    <p class="text-muted">Create your first legal news post — it will appear on every user's dashboard.</p>
+    <a href="{{ url_for('superadmin.add_news') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Add First News Post
+    </a>
+</div>
+{% endif %}
+
+</div>
+{% endblock %}

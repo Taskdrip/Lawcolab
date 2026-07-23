@@ -435,6 +435,13 @@
                             <li><a class="dropdown-item" href="{{ url_for('sales.admin_dashboard') }}">
                                 <i class="fas fa-chart-line me-2"></i>Sales Dashboard
                             </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('superadmin.manage_news') }}">
+                                <i class="fas fa-newspaper me-2"></i>Legal News
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('superadmin.manage_sliders') }}">
+                                <i class="fas fa-images me-2"></i>Dashboard Sliders
+                            </a></li>
                         </ul>
                     </li>
                     {% endif %}
@@ -460,9 +467,6 @@
                                 <i class="fas fa-user-tie me-2"></i>Add Team Member
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('admin.manage_sliders') }}">
-                                <i class="fas fa-images me-2"></i>Dashboard Sliders
-                            </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('admin.firm_profile') }}">
                                 <i class="fas fa-building me-2"></i>Firm Profile
                             </a></li>

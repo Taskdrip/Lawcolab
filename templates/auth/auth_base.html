@@ -334,7 +334,9 @@
     .auth-hero { display: none; }
     .auth-form-inner { padding: 2rem 1rem 2rem; }
     .auth-mobile-brand { display: flex; }
-    .auth-topbar { padding: .6rem 1rem; }
+    /* Hide topbar brand on mobile — the in-card mobile brand takes over */
+    .auth-topbar .auth-brand { display: none; }
+    .auth-topbar { padding: .6rem 1rem; justify-content: flex-end; }
     .auth-card { padding: 1.75rem 1.25rem 1.5rem; }
     .auth-card-title { font-size: 1.35rem; }
   }

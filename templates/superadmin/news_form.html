@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}{% if action == 'add' %}Add News Post{% else %}Edit News Post{% endif %} — Super Admin{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width:780px;">
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a href="{{ url_for('superadmin.manage_news') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back
+        </a>
+        <h1 class="h4 fw-bold mb-0">
+            {% if action == 'add' %}<i class="fas fa-plus-circle me-2 text-primary"></i>Add News Post
+            {% else %}<i class="fas fa-pen me-2 text-primary"></i>Edit News Post{% endif %}
+        </h1>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <form method="post" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="row g-3">
+                    <!-- Title -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Title <span class="text-danger">*</span></label>
+                        <input type="text" name="title" class="form-control"
+                               value="{{ item.title if item else '' }}"
+                               placeholder="e.g. Supreme Court Issues Landmark Ruling on Data Privacy" required>
+                    </div>
+
+                    <!-- Subtitle -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Subtitle / Tagline</label>
+                        <input type="text" name="subtitle" class="form-control"
+                               value="{{ item.subtitle if item else '' }}"
+                               placeholder="e.g. What it means for your practice">
+                    </div>
+
+                    <!-- Content -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Summary / Content</label>
+                        <textarea name="content" class="form-control" rows="4"
+                                  placeholder="Brief summary shown on the news banner (first 160 characters visible).">{{ item.content if item else '' }}</textarea>
+                    </div>
+
+                    <!-- Category & Icon -->
+                    <div class="col-md-5">
+                        <label class="form-label fw-semibold">Category</label>
+                        <select name="category" class="form-select">
+                            {% set cats = ['Legal Update', 'Industry News', 'Platform Update', 'Regulatory', 'Technology', 'Business'] %}
+                            {% for cat in cats %}
+                            <option value="{{ cat }}" {% if item and item.category == cat %}selected{% endif %}>{{ cat }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">FontAwesome Icon</label>
+                        <input type="text" name="icon" class="form-control"
+                               value="{{ item.icon if item else 'fas fa-newspaper' }}"
+                               placeholder="fas fa-newspaper">
+                        <div class="form-text">e.g. <code>fas fa-gavel</code>, <code>fas fa-balance-scale</code></div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Sort Order</label>
+                        <input type="number" name="sort_order" class="form-control"
+                               value="{{ item.sort_order if item else 0 }}" min="0">
+                        <div class="form-text">Lower = shown first.</div>
+                    </div>
+
+                    <!-- Link -->
+                    <div class="col-md-8">
+                        <label class="form-label fw-semibold">Link URL</label>
+                        <input type="text" name="link_url" class="form-control"
+                               value="{{ item.link_url if item else '' }}"
+                               placeholder="https://example.com/article or /invoices/">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Link Button Label</label>
+                        <input type="text" name="link_text" class="form-control"
+                               value="{{ item.link_text if item else 'Read More' }}"
+                               placeholder="Read More">
+                    </div>
+
+                    <!-- Background colour -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Background Colour</label>
+                        <div class="input-group">
+                            <input type="color" name="bg_color" class="form-control form-control-color"
+                                   value="{{ item.bg_color if item else '#0a1635' }}">
+                            <input type="text" class="form-control form-control-sm"
+                                   value="{{ item.bg_color if item else '#0a1635' }}"
+                                   oninput="this.previousElementSibling.value=this.value"
+                                   style="max-width:90px;">
+                        </div>
+                        <div class="form-text">Used when no background image is uploaded.</div>
+                    </div>
+
+                    <!-- Background image -->
+                    <div class="col-md-8">
+                        <label class="form-label fw-semibold">Background Image</label>
+                        {% if item and item.bg_image %}
+                        <div class="mb-2">
+                            <img src="{{ url_for('static', filename=item.bg_image) }}"
+                                 alt="Current" style="height:72px;border-radius:8px;object-fit:cover;">
+                            <span class="text-muted small ms-2">Upload a new one to replace.</span>
+                        </div>
+                        {% endif %}
+                        <input type="file" name="bg_image" class="form-control" accept="image/*">
+                        <div class="form-text">PNG, JPG, WebP or GIF. Recommended: 1200 × 300 px.</div>
+                    </div>
+
+                    <!-- Active toggle -->
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="is_active" id="isActive"
+                                   {% if not item or item.is_active %}checked{% endif %}>
+                            <label class="form-check-label fw-semibold" for="isActive">
+                                Published — visible on all user dashboards
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-save me-2"></i>{% if action == 'add' %}Publish Post{% else %}Save Changes{% endif %}
+                    </button>
+                    <a href="{{ url_for('superadmin.manage_news') }}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

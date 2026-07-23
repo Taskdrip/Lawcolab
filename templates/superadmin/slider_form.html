@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}{% if action == 'add' %}Add Slide{% else %}Edit Slide{% endif %} — Super Admin{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width:760px;">
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a href="{{ url_for('superadmin.manage_sliders') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back
+        </a>
+        <h1 class="h4 fw-bold mb-0">
+            {% if action == 'add' %}<i class="fas fa-plus-circle me-2 text-primary"></i>Add New Slide
+            {% else %}<i class="fas fa-pen me-2 text-primary"></i>Edit Slide{% endif %}
+        </h1>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <form method="post" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Title <span class="text-danger">*</span></label>
+                    <input type="text" name="title" class="form-control"
+                           value="{{ slide.title if slide else '' }}"
+                           placeholder="e.g. Manage Cases Effortlessly" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Subtitle</label>
+                    <input type="text" name="subtitle" class="form-control"
+                           value="{{ slide.subtitle if slide else '' }}"
+                           placeholder="e.g. All your matters in one place">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Description</label>
+                    <textarea name="description" class="form-control" rows="3"
+                              placeholder="A short sentence shown under the subtitle.">{{ slide.description if slide else '' }}</textarea>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Button Label</label>
+                        <input type="text" name="cta_text" class="form-control"
+                               value="{{ slide.cta_text if slide else 'Learn More' }}"
+                               placeholder="Learn More">
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label fw-semibold">Button Link</label>
+                        <input type="text" name="cta_link" class="form-control"
+                               value="{{ slide.cta_link if slide else '#' }}"
+                               placeholder="/projects/ or https://…">
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">FontAwesome Icon Class</label>
+                        <input type="text" name="icon" class="form-control"
+                               value="{{ slide.icon if slide else 'fas fa-star' }}"
+                               placeholder="fas fa-briefcase">
+                        <div class="form-text">e.g. <code>fas fa-briefcase</code></div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Background Colour</label>
+                        <div class="input-group">
+                            <input type="color" name="bg_color" class="form-control form-control-color"
+                                   value="{{ slide.bg_color if slide else '#0d1b4b' }}">
+                            <input type="text" class="form-control form-control-sm"
+                                   value="{{ slide.bg_color if slide else '#0d1b4b' }}"
+                                   oninput="this.previousElementSibling.value=this.value"
+                                   style="max-width:90px;">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Sort Order</label>
+                        <input type="number" name="sort_order" class="form-control"
+                               value="{{ slide.sort_order if slide else 0 }}" min="0">
+                        <div class="form-text">Lower = shown first.</div>
+                    </div>
+                </div>
+
+                <div class="mb-3 mt-3">
+                    <label class="form-label fw-semibold">Background Image</label>
+                    {% if slide and slide.bg_image %}
+                    <div class="mb-2">
+                        <img src="{{ url_for('static', filename=slide.bg_image) }}"
+                             alt="Current" style="height:80px;border-radius:8px;object-fit:cover;">
+                        <span class="text-muted small ms-2">Upload a new one to replace.</span>
+                    </div>
+                    {% endif %}
+                    <input type="file" name="bg_image" class="form-control" accept="image/*">
+                    <div class="form-text">PNG, JPG, WebP or GIF. Recommended: 1400 × 400 px. Max 16 MB.</div>
+                </div>
+
+                <div class="form-check form-switch mb-4">
+                    <input class="form-check-input" type="checkbox" name="is_active" id="isActive"
+                           {% if not slide or slide.is_active %}checked{% endif %}>
+                    <label class="form-check-label fw-semibold" for="isActive">Visible on all dashboards</label>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-save me-2"></i>{% if action == 'add' %}Add Slide{% else %}Save Changes{% endif %}
+                    </button>
+                    <a href="{{ url_for('superadmin.manage_sliders') }}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
