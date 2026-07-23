@@ -92,10 +92,17 @@ def index():
     from models import PopupSettings, CustomerReview, LawFirmShowcase
     from sqlalchemy import desc
     
-    # Get popup settings for comprehensive popup
+    # Get popup settings for comprehensive popup — always persisted
     settings = PopupSettings.query.first()
     if not settings:
-        settings = PopupSettings()
+        from app import db
+        settings = PopupSettings(
+            starter_price=39.00, growth_price=90.00,
+            enterprise_price=350.00, founders_price=1745.00,
+            lifetime_price=999.00,
+        )
+        db.session.add(settings)
+        db.session.commit()
     
     # Get featured reviews
     reviews = CustomerReview.query.filter_by(is_active=True).order_by(desc(CustomerReview.is_featured), CustomerReview.id).limit(20).all()
@@ -157,10 +164,17 @@ def pricing():
     """Pricing plans page"""
     from models import PopupSettings
     
-    # Get pricing settings
+    # Get pricing settings — always persisted so defaults are never None
     settings = PopupSettings.query.first()
     if not settings:
-        settings = PopupSettings()
+        from app import db
+        settings = PopupSettings(
+            starter_price=39.00, growth_price=90.00,
+            enterprise_price=350.00, founders_price=1745.00,
+            lifetime_price=999.00,
+        )
+        db.session.add(settings)
+        db.session.commit()
     
     return render_template('pricing.html', settings=settings)
 

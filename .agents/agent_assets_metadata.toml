@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "qIwO_dKq_LsLlTlULAdCh"
+uri = "file://LawColab_Documentation.pdf"
+type = "pdf"
+title = "LawColab — Complete Developer Documentation (PDF)"

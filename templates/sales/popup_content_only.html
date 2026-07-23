@@ -52,7 +52,7 @@
                 <div class="card" style="border: 2px solid #28a745;">
                     <div class="card-body text-center">
                         <h5 class="card-title">Starter</h5>
-                        <h2 class="text-success">${{ settings.starter_price }}</h2>
+                        <h2 class="text-success">${{ settings.starter_price or 39 }}</h2>
                         <p class="text-muted">1 month</p>
                         <ul class="list-unstyled">
                             <li><i class="fas fa-check text-success"></i> Up to 5 users + unlimited clients</li>
@@ -69,7 +69,7 @@
                 <div class="card" style="border: 2px solid #0066cc;">
                     <div class="card-body text-center">
                         <h5 class="card-title">Growth</h5>
-                        <h2 class="text-primary">${{ settings.growth_price }}</h2>
+                        <h2 class="text-primary">${{ settings.growth_price or 90 }}</h2>
                         <p class="text-muted">3 months</p>
                         <ul class="list-unstyled">
                             <li><i class="fas fa-check text-success"></i> Up to 20 users + unlimited clients</li>
@@ -108,7 +108,7 @@
                             🏷️ WHITE-LABEL LICENSE
                         </div>
                         <h5 class="card-title">White-Label SaaS Forever License</h5>
-                        <h2 style="color: #FFD700">${{ settings.founders_price }}</h2>
+                        <h2 style="color: #FFD700">${{ settings.founders_price or 1745 }}</h2>
                         <p class="text-muted">One-time Forever • 6-Month Setup & Support</p>
                         <ul class="list-unstyled">
                             <li><i class="fas fa-rocket text-warning"></i> <strong>🏷️ COMPLETE WHITE-LABEL SaaS LICENSE</strong></li>

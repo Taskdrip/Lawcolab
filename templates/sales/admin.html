@@ -140,14 +140,14 @@
                                 <div class="mb-3">
                                     <label class="form-label">💼 Starter Price ($) - 1 Month</label>
                                     <input type="number" class="form-control" name="starter_price" 
-                                           value="{{ settings.starter_price }}" step="1" min="0">
+                                           value="{{ settings.starter_price or 39 }}" step="1" min="0">
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="mb-3">
                                     <label class="form-label">🚀 Growth Price ($) - 3 Months</label>
                                     <input type="number" class="form-control" name="growth_price" 
-                                           value="{{ settings.growth_price }}" step="1" min="0">
+                                           value="{{ settings.growth_price or 90 }}" step="1" min="0">
                                 </div>
                             </div>
                             <div class="col-md-3">
@@ -164,7 +164,7 @@
                                 <div class="mb-3">
                                     <label class="form-label">👑 Founders Pack ($750) - 6-Month Setup & Support</label>
                                     <input type="number" class="form-control" name="founders_price" 
-                                           value="{{ settings.founders_price }}" step="1" min="0">
+                                           value="{{ settings.founders_price or 1745 }}" step="1" min="0">
                                     <small class="form-text text-muted">License to use SaaS + 6-month setup and support + access to new features</small>
                                 </div>
                             </div>
@@ -172,7 +172,7 @@
                                 <div class="mb-3">
                                     <label class="form-label">🏆 Lifetime Price ($) - Legacy Plan</label>
                                     <input type="number" class="form-control" name="lifetime_price" 
-                                           value="{{ settings.lifetime_price }}" step="1" min="0">
+                                           value="{{ settings.lifetime_price or 999 }}" step="1" min="0">
                                     <small class="form-text text-muted">Keep for existing customers only</small>
                                 </div>
                             </div>
