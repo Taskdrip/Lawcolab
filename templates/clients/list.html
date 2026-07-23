@@ -3,18 +3,30 @@
 {% block title %}Clients - LAWCOLAB{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>
-            <i class="fas fa-users me-2"></i>
-            Clients
-        </h2>
-        {% if current_user.is_admin() %}
-        <a href="{{ url_for('admin.add_client') }}" class="btn btn-primary">
-            <i class="fas fa-user-plus me-1"></i>Add Client
-        </a>
-        {% endif %}
+
+<!-- Page Header -->
+<div class="lc-page-header lc-ph-bg-clients">
+    <div class="container-fluid px-3 px-lg-4">
+        <div class="lc-ph-inner d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="lc-ph-icon"><i class="fas fa-users"></i></div>
+                <div>
+                    <h1>Clients</h1>
+                    <p class="lc-ph-sub mb-0">Manage your client relationships and contacts</p>
+                </div>
+            </div>
+            {% if current_user.is_admin() %}
+            <div class="lc-ph-actions">
+                <a href="{{ url_for('admin.add_client') }}" class="btn btn-warning btn-sm fw-semibold">
+                    <i class="fas fa-user-plus me-1"></i>Add Client
+                </a>
+            </div>
+            {% endif %}
+        </div>
     </div>
+</div>
+
+<div class="container mt-4">
 
     <!-- Search Bar -->
     <div class="row mb-4">

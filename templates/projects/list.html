@@ -3,18 +3,30 @@
 {% block title %}Projects - LAWCOLAB{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>
-            <i class="fas fa-briefcase me-2"></i>
-            Projects
-        </h2>
-        {% if current_user.is_admin() or current_user.is_team_member() %}
-        <a href="{{ url_for('projects.create_project') }}" class="btn btn-primary">
-            <i class="fas fa-plus me-1"></i>New Project
-        </a>
-        {% endif %}
+
+<!-- Page Header -->
+<div class="lc-page-header lc-ph-bg-projects">
+    <div class="container-fluid px-3 px-lg-4">
+        <div class="lc-ph-inner d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="lc-ph-icon"><i class="fas fa-briefcase"></i></div>
+                <div>
+                    <h1>Projects</h1>
+                    <p class="lc-ph-sub mb-0">Track cases, deadlines and team assignments</p>
+                </div>
+            </div>
+            {% if current_user.is_admin() or current_user.is_team_member() %}
+            <div class="lc-ph-actions">
+                <a href="{{ url_for('projects.create_project') }}" class="btn btn-warning btn-sm fw-semibold">
+                    <i class="fas fa-plus me-1"></i>New Project
+                </a>
+            </div>
+            {% endif %}
+        </div>
     </div>
+</div>
+
+<div class="container mt-4">
 
     {% if projects %}
     <div class="row">

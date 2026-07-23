@@ -4,17 +4,25 @@
 
 {% block content %}
 
+<!-- Page Header -->
+<div class="lc-page-header lc-ph-bg-dashboard">
+    <div class="container-fluid px-3 px-lg-4">
+        <div class="lc-ph-inner d-flex align-items-center gap-3">
+            <div class="lc-ph-icon"><i class="fas fa-user"></i></div>
+            <div>
+                <h1>Welcome, {{ current_user.full_name }}</h1>
+                <p class="lc-ph-sub mb-0">Your cases, invoices and updates — all in one place</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 {# ── Feature-ad slider ── #}
 {% include 'components/dashboard_slider.html' %}
 
 <div class="container-fluid py-3">
     <div class="row">
         <div class="col-12">
-            <h1 class="h4 fw-bold mb-4">
-                <i class="fas fa-user me-2 text-primary"></i>Welcome, {{ current_user.full_name }}
-            </h1>
-        </div>
-    </div>
 
     <div class="row g-4">
         <!-- My Cases/Projects -->

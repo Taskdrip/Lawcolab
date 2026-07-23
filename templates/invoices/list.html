@@ -3,26 +3,35 @@
 {% block title %}Invoices - LAWCOLAB{% endblock %}
 
 {% block content %}
+
+<!-- Page Header -->
+<div class="lc-page-header lc-ph-bg-invoices">
+    <div class="container-fluid px-3 px-lg-4">
+        <div class="lc-ph-inner d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="lc-ph-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                <div>
+                    <h1>Invoices</h1>
+                    <p class="lc-ph-sub mb-0">Manage billing and payments for your law firm</p>
+                </div>
+            </div>
+            {% if not current_user.is_client() %}
+            <div class="lc-ph-actions d-flex gap-2 flex-wrap">
+                <a href="{{ url_for('invoices.dashboard') }}" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-chart-line me-1"></i>Dashboard
+                </a>
+                <a href="{{ url_for('invoices.create_invoice') }}" class="btn btn-warning btn-sm fw-semibold">
+                    <i class="fas fa-plus me-1"></i>Create Invoice
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
 <div class="container-fluid py-4">
     <div class="row">
         <div class="col-12">
-            <!-- Header -->
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
-                <div>
-                    <h1 class="h3 fw-bold text-dark mb-2">Invoices</h1>
-                    <p class="text-muted mb-0">Manage invoices and billing for your law firm</p>
-                </div>
-                {% if not current_user.is_client() %}
-                <div class="d-flex flex-column flex-sm-row gap-2">
-                    <a href="{{ url_for('invoices.dashboard') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-chart-line me-2"></i>Dashboard
-                    </a>
-                    <a href="{{ url_for('invoices.create_invoice') }}" class="btn btn-primary">
-                        <i class="fas fa-plus me-2"></i>Create Invoice
-                    </a>
-                </div>
-                {% endif %}
-            </div>
 
             <!-- Statistics Cards -->
             <div class="row g-3 mb-4">
