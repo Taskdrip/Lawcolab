@@ -1,7 +1,6 @@
 [phases.setup]
 nixPkgs = [
   "python311",
-  "python311Packages.pip",
   "gcc",
   "pkg-config",
   "fontconfig",
@@ -14,7 +13,10 @@ nixPkgs = [
 ]
 
 [phases.install]
-cmds = ["python3 -m pip install -r requirements.txt"]
+cmds = [
+  "curl -LsSf https://astral.sh/uv/install.sh | sh",
+  "~/.local/bin/uv pip install --system -r requirements.txt"
+]
 
 [start]
 cmd = "gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 --preload main:app"
