@@ -15,7 +15,7 @@
     </div>
     <div class="card-body p-4">
       <form method="POST" action="{{ url_for('calendar.edit_event', event_id=event.id) }}">
-        <input type="hidden" name="csrf_token" value="{{ session.get('_csrf_token', '') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
         <div class="row g-3 mb-3">
           <div class="col-md-8">

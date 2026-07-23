@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, jsonify
 from flask_login import current_user
 from app import db
 from models import (CalendarEvent, CalendarEventAttendee, Project, ProjectAssignment, User,
@@ -368,3 +368,94 @@ def _check_access(event):
         ids = [a.user_id for a in event.attendees]
         if current_user.id not in ids:
             abort(403)
+
+
+# ── JSON API for client-side reminder system ──────────────────────────────────
+
+@calendar_bp.route('/api/reminders')
+@simple_login_required
+def api_reminders():
+    """Return upcoming events within their reminder window as JSON.
+    The client polls this every minute to drive popup alerts."""
+    now = datetime.now()
+    # Look ahead 7 days so the client can pre-load and schedule
+    window_end = now + timedelta(days=7)
+
+    events = (get_firm_events_query()
+              .filter(CalendarEvent.start_datetime >= now,
+                      CalendarEvent.start_datetime <= window_end,
+                      CalendarEvent.status == EVENT_STATUS_UPCOMING)
+              .order_by(CalendarEvent.start_datetime)
+              .all())
+
+    result = []
+    for ev in events:
+        reminder_mins = ev.reminder_minutes if ev.reminder_minutes is not None else 60
+        # Timestamp (ms) when the reminder should fire
+        reminder_fire_ts = int(
+            (ev.start_datetime - timedelta(minutes=reminder_mins)).timestamp() * 1000
+        )
+        event_ts = int(ev.start_datetime.timestamp() * 1000)
+
+        result.append({
+            'id': ev.id,
+            'title': ev.title,
+            'event_type': ev.event_type,
+            'type_label': ev.type_label,
+            'type_color': ev.type_color,
+            'type_icon': ev.type_icon,
+            'start_ts': event_ts,
+            'start_display': ev.start_datetime.strftime('%A, %b %d, %Y at %I:%M %p'),
+            'start_date': ev.start_datetime.strftime('%Y-%m-%d'),
+            'all_day': ev.all_day,
+            'location': ev.location or '',
+            'virtual_link': ev.virtual_link or '',
+            'description': ev.description or '',
+            'notes': ev.notes or '',
+            'reminder_minutes': reminder_mins,
+            'reminder_fire_ts': reminder_fire_ts,
+            'detail_url': url_for('calendar.event_detail', event_id=ev.id),
+            'attendees': [a.user.full_name for a in ev.attendees],
+        })
+
+    return jsonify({'events': result, 'server_ts': int(now.timestamp() * 1000)})
+
+
+@calendar_bp.route('/api/events')
+@simple_login_required
+def api_events():
+    """Return all events for a given year/month as JSON (used for dynamic sync)."""
+    today = date.today()
+    year = request.args.get('year', today.year, type=int)
+    month = request.args.get('month', today.month, type=int)
+
+    first_day = datetime(year, month, 1)
+    last_day_num = cal_module.monthrange(year, month)[1]
+    last_day = datetime(year, month, last_day_num, 23, 59, 59)
+
+    events = (get_firm_events_query()
+              .filter(CalendarEvent.start_datetime >= first_day,
+                      CalendarEvent.start_datetime <= last_day)
+              .order_by(CalendarEvent.start_datetime)
+              .all())
+
+    result = []
+    for ev in events:
+        result.append({
+            'id': ev.id,
+            'title': ev.title,
+            'event_type': ev.event_type,
+            'type_label': ev.type_label,
+            'type_color': ev.type_color,
+            'type_icon': ev.type_icon,
+            'start_ts': int(ev.start_datetime.timestamp() * 1000),
+            'start_day': ev.start_datetime.day,
+            'start_display': ev.start_datetime.strftime('%b %d, %Y %I:%M %p'),
+            'all_day': ev.all_day,
+            'status': ev.status,
+            'location': ev.location or '',
+            'reminder_minutes': ev.reminder_minutes,
+            'detail_url': url_for('calendar.event_detail', event_id=ev.id),
+        })
+
+    return jsonify({'events': result})
