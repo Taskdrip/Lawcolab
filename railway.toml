@@ -2,7 +2,7 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 --forwarded-allow-ips='*' --preload main:app"
+startCommand = "/opt/venv/bin/gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 --forwarded-allow-ips='*' --preload main:app"
 healthcheckPath = "/auth/login"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"

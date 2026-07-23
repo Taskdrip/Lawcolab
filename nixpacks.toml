@@ -15,8 +15,9 @@ nixPkgs = [
 [phases.install]
 cmds = [
   "curl -LsSf https://astral.sh/uv/install.sh | sh",
-  "~/.local/bin/uv pip install --system -r requirements.txt"
+  "~/.local/bin/uv venv /opt/venv --python python3.11",
+  "~/.local/bin/uv pip install --python /opt/venv/bin/python -r requirements.txt"
 ]
 
 [start]
-cmd = "gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 --preload main:app"
+cmd = "/opt/venv/bin/gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 --preload main:app"
