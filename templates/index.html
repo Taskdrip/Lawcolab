@@ -139,22 +139,36 @@ section { position: relative; }
 .feat-card h3 { font-size: 1.15rem; font-weight: 700; color: #0f172a; margin-bottom: .65rem; }
 .feat-card p { color: #64748b; line-height: 1.65; font-size: .95rem; margin: 0; }
 
-/* ─── BG-IMAGE SECTION (parallax-style) ────────────────────── */
+/* ─── BG-IMAGE SECTION ──────────────────────────────────────── */
 .bg-section {
     position: relative; overflow: hidden;
     background-size: cover; background-position: center;
-    background-attachment: fixed;
+    background-attachment: scroll; /* fixed causes blur on mobile */
 }
+/* Near-opaque overlay — image is just a subtle dark texture */
 .bg-section-overlay {
     position: absolute; inset: 0;
-    background: linear-gradient(135deg,rgba(5,18,50,.88) 0%,rgba(5,18,50,.72) 100%);
+    background: linear-gradient(160deg,rgba(4,10,30,.96) 0%,rgba(4,10,30,.93) 100%);
 }
 .bg-section .bg-content { position: relative; z-index: 2; }
 
+/* All text inside bg-sections gets shadow for extra punch */
+.bg-section .bg-content h2,
+.bg-section .bg-content h3,
+.bg-section .bg-content p,
+.bg-section .bg-content strong {
+    text-shadow: 0 1px 8px rgba(0,0,0,.6);
+}
+
 /* ─── STAT CARDS ────────────────────────────────────────────── */
-.stat-card { text-align: center; color: #fff; }
-.stat-card .stat-num { font-size: clamp(2.2rem,5vw,3.5rem); font-weight: 800; line-height: 1; color: #f5c518; }
-.stat-card .stat-label { font-size: .95rem; color: rgba(255,255,255,.8); margin-top: .35rem; font-weight: 500; }
+.stat-card {
+    text-align: center; color: #fff;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 16px; padding: 2rem 1.5rem;
+}
+.stat-card .stat-num { font-size: clamp(2.4rem,5vw,3.8rem); font-weight: 900; line-height: 1; color: #f5c518; text-shadow: 0 2px 16px rgba(245,197,24,.35); }
+.stat-card .stat-label { font-size: 1rem; color: rgba(255,255,255,.92); margin-top: .5rem; font-weight: 600; letter-spacing: .01em; text-shadow: 0 1px 6px rgba(0,0,0,.5); }
 
 /* ─── HOW IT WORKS ──────────────────────────────────────────── */
 .step-circle {
@@ -830,60 +844,105 @@ section { position: relative; }
 <!-- ══════════════════════════════════════════════════════════════
      TRUST & SECURITY SECTION — image bg
 ══════════════════════════════════════════════════════════════ -->
-<section class="bg-section" style="background-image:url('{{ url_for('static', filename='images/sections/trust_cta.jpg') }}'); padding:90px 0;">
-    <div class="bg-section-overlay" style="background:linear-gradient(135deg,rgba(5,18,50,.90) 0%,rgba(5,18,50,.80) 100%);"></div>
-    <div class="bg-content container">
+<!-- Security section uses solid dark gradient — no image bleeding, crystal-clear legibility -->
+<section style="background: linear-gradient(160deg, #050e28 0%, #0a1a3a 50%, #071628 100%); padding: 90px 0; position: relative; overflow: hidden;">
+    <!-- Decorative background accents (pure CSS, no image) -->
+    <div style="position:absolute;top:-100px;right:-100px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(29,110,234,.12) 0%,transparent 70%);pointer-events:none;"></div>
+    <div style="position:absolute;bottom:-80px;left:-80px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(245,197,24,.07) 0%,transparent 70%);pointer-events:none;"></div>
+    <div style="position:absolute;top:50%;right:30%;width:1px;height:60%;background:linear-gradient(to bottom,transparent,rgba(255,255,255,.04),transparent);transform:translateY(-50%);pointer-events:none;"></div>
+
+    <div class="container" style="position:relative;z-index:2;">
         <div class="row align-items-center g-5">
+
+            <!-- LEFT: Security features -->
             <div class="col-lg-6">
-                <span class="section-label" style="background:rgba(255,255,255,.12);color:#f5c518;border:1px solid rgba(245,197,24,.25);">Security & Compliance</span>
-                <h2 class="section-title mb-4" style="color:#fff;">Security That Meets<br>Legal Standards</h2>
-                <p style="color:rgba(255,255,255,.75);line-height:1.75;font-size:1.05rem;margin-bottom:2rem;">Legal data demands the highest level of protection. LAWCOLAB is built with lawyer-client privilege in mind — your client data is yours, always, with no exceptions.</p>
-                <div class="d-flex flex-column gap-3">
-                    <div class="d-flex gap-3 align-items-start">
-                        <i class="fas fa-shield-alt" style="color:#4ade80;font-size:1.1rem;margin-top:.15rem;flex-shrink:0;"></i>
+                <span style="display:inline-block;background:rgba(245,197,24,.15);border:1px solid rgba(245,197,24,.35);color:#f5c518;border-radius:50px;padding:6px 18px;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.4rem;">🔒 Security & Compliance</span>
+                <h2 style="font-size:clamp(2rem,4.5vw,2.9rem);font-weight:800;color:#ffffff;line-height:1.1;margin-bottom:1.1rem;">Security That Meets<br>the Highest Legal Standards</h2>
+                <p style="color:rgba(255,255,255,.85);line-height:1.8;font-size:1.05rem;margin-bottom:2.2rem;">Legal data demands the highest protection. LAWCOLAB is architected with lawyer-client privilege at its core — your client data is yours, always, with no exceptions.</p>
+
+                <div style="display:flex;flex-direction:column;gap:1.1rem;">
+
+                    <!-- Feature row -->
+                    <div style="display:flex;gap:1rem;align-items:flex-start;">
+                        <div style="width:42px;height:42px;border-radius:10px;background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fas fa-shield-alt" style="color:#4ade80;font-size:1rem;"></i>
+                        </div>
                         <div>
-                            <strong style="color:#fff;">End-to-End Data Isolation</strong>
-                            <p style="color:rgba(255,255,255,.6);margin:.2rem 0 0;font-size:.9rem;">Each law firm's data is completely separated at the database level — zero cross-firm data exposure.</p>
+                            <div style="color:#ffffff;font-weight:700;font-size:.97rem;margin-bottom:.25rem;">End-to-End Data Isolation</div>
+                            <div style="color:rgba(255,255,255,.78);font-size:.88rem;line-height:1.65;">Each firm's data is completely separated at the database level — zero cross-firm exposure, ever.</div>
                         </div>
                     </div>
-                    <div class="d-flex gap-3 align-items-start">
-                        <i class="fas fa-key" style="color:#60a5fa;font-size:1.1rem;margin-top:.15rem;flex-shrink:0;"></i>
+
+                    <div style="display:flex;gap:1rem;align-items:flex-start;">
+                        <div style="width:42px;height:42px;border-radius:10px;background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fas fa-lock" style="color:#60a5fa;font-size:1rem;"></i>
+                        </div>
                         <div>
-                            <strong style="color:#fff;">Encrypted Sessions & Passwords</strong>
-                            <p style="color:rgba(255,255,255,.6);margin:.2rem 0 0;font-size:.9rem;">All passwords hashed with bcrypt, sessions secured with rotating secret keys, all traffic over HTTPS.</p>
+                            <div style="color:#ffffff;font-weight:700;font-size:.97rem;margin-bottom:.25rem;">Encrypted Sessions & Passwords</div>
+                            <div style="color:rgba(255,255,255,.78);font-size:.88rem;line-height:1.65;">All passwords hashed with bcrypt, sessions secured with rotating secret keys, all traffic over HTTPS.</div>
                         </div>
                     </div>
-                    <div class="d-flex gap-3 align-items-start">
-                        <i class="fas fa-clipboard-list" style="color:#f5c518;font-size:1.1rem;margin-top:.15rem;flex-shrink:0;"></i>
+
+                    <div style="display:flex;gap:1rem;align-items:flex-start;">
+                        <div style="width:42px;height:42px;border-radius:10px;background:rgba(245,197,24,.12);border:1px solid rgba(245,197,24,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fas fa-clipboard-list" style="color:#f5c518;font-size:1rem;"></i>
+                        </div>
                         <div>
-                            <strong style="color:#fff;">Full Audit Trails</strong>
-                            <p style="color:rgba(255,255,255,.6);margin:.2rem 0 0;font-size:.9rem;">Every action logged with timestamp, user, and IP address — so you always know who did what and when.</p>
+                            <div style="color:#ffffff;font-weight:700;font-size:.97rem;margin-bottom:.25rem;">Full Audit Trails</div>
+                            <div style="color:rgba(255,255,255,.78);font-size:.88rem;line-height:1.65;">Every action is logged with a timestamp, user identity, and IP address — complete accountability.</div>
                         </div>
                     </div>
-                    <div class="d-flex gap-3 align-items-start">
-                        <i class="fas fa-gavel" style="color:#c084fc;font-size:1.1rem;margin-top:.15rem;flex-shrink:0;"></i>
+
+                    <div style="display:flex;gap:1rem;align-items:flex-start;">
+                        <div style="width:42px;height:42px;border-radius:10px;background:rgba(192,132,252,.15);border:1px solid rgba(192,132,252,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fas fa-gavel" style="color:#c084fc;font-size:1rem;"></i>
+                        </div>
                         <div>
-                            <strong style="color:#fff;">GDPR & Privacy Compliant</strong>
-                            <p style="color:rgba(255,255,255,.6);margin:.2rem 0 0;font-size:.9rem;">Built with global privacy regulations in mind. Data processing agreements available for all plans.</p>
+                            <div style="color:#ffffff;font-weight:700;font-size:.97rem;margin-bottom:.25rem;">GDPR & Privacy Compliant</div>
+                            <div style="color:rgba(255,255,255,.78);font-size:.88rem;line-height:1.65;">Built with global privacy regulations in mind. Data processing agreements available on all plans.</div>
                         </div>
                     </div>
+
                 </div>
             </div>
+
+            <!-- RIGHT: Solid white CTA card — maximum contrast -->
             <div class="col-lg-6">
-                <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:2.5rem;backdrop-filter:blur(12px);">
-                    <h3 style="color:#fff;font-weight:700;margin-bottom:1.5rem;font-size:1.4rem;">Ready to Modernise Your Practice?</h3>
-                    <p style="color:rgba(255,255,255,.7);line-height:1.7;margin-bottom:1.8rem;">Join hundreds of law firms already using LAWCOLAB to work smarter, serve clients better, and grow with confidence.</p>
-                    <div class="d-flex flex-column gap-3">
-                        <a href="{{ url_for('auth.signup') }}" style="background:#1d6eea;color:#fff;padding:15px 24px;border-radius:10px;text-decoration:none;font-weight:700;display:flex;align-items:center;gap:.6rem;justify-content:center;box-shadow:0 6px 20px rgba(29,110,234,.4);">
+                <div style="background:#ffffff;border-radius:24px;padding:2.75rem 2.5rem;box-shadow:0 20px 60px rgba(0,0,0,.35);">
+
+                    <!-- Card header accent -->
+                    <div style="background:linear-gradient(135deg,#1d6eea,#0e4fb5);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1.75rem;display:flex;align-items:center;gap:.75rem;">
+                        <div style="width:40px;height:40px;background:rgba(255,255,255,.2);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fas fa-balance-scale" style="color:#fff;font-size:1.1rem;"></i>
+                        </div>
+                        <div>
+                            <div style="color:#fff;font-weight:800;font-size:1rem;line-height:1.2;">Ready to Modernise Your Practice?</div>
+                            <div style="color:rgba(255,255,255,.75);font-size:.78rem;margin-top:.15rem;">Join 500+ firms already on LAWCOLAB</div>
+                        </div>
+                    </div>
+
+                    <p style="color:#374151;line-height:1.75;margin-bottom:1.75rem;font-size:.97rem;">Hundreds of law firms across 30+ countries already use LAWCOLAB to work smarter, serve clients better, and grow with complete confidence.</p>
+
+                    <!-- Micro-trust indicators -->
+                    <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.75rem;">
+                        <div style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;color:#16a34a;font-weight:600;"><i class="fas fa-check-circle"></i> 3-day free trial</div>
+                        <div style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;color:#16a34a;font-weight:600;"><i class="fas fa-check-circle"></i> No credit card</div>
+                        <div style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;color:#16a34a;font-weight:600;"><i class="fas fa-check-circle"></i> Cancel anytime</div>
+                    </div>
+
+                    <div style="display:flex;flex-direction:column;gap:.85rem;">
+                        <a href="{{ url_for('auth.signup') }}" style="background:#1d6eea;color:#fff;padding:16px 24px;border-radius:12px;text-decoration:none;font-weight:700;display:flex;align-items:center;gap:.6rem;justify-content:center;font-size:1rem;box-shadow:0 6px 20px rgba(29,110,234,.35);transition:background .2s;">
                             <i class="fas fa-rocket"></i> Start Your Free Trial
                         </a>
-                        <a href="{{ url_for('contact') }}" style="background:rgba(255,255,255,.1);color:#fff;padding:15px 24px;border-radius:10px;text-decoration:none;font-weight:600;display:flex;align-items:center;gap:.6rem;justify-content:center;border:1px solid rgba(255,255,255,.2);">
+                        <a href="{{ url_for('contact') }}" style="background:#f8fafd;color:#1d6eea;padding:15px 24px;border-radius:12px;text-decoration:none;font-weight:700;display:flex;align-items:center;gap:.6rem;justify-content:center;font-size:.97rem;border:2px solid #e2e8f0;transition:border-color .2s;">
                             <i class="fas fa-envelope"></i> Talk to Our Team
                         </a>
                     </div>
-                    <p style="color:rgba(255,255,255,.4);font-size:.8rem;text-align:center;margin-top:1rem;">No credit card required · 3-day free trial · Cancel anytime</p>
+
+                    <p style="color:#9ca3af;font-size:.78rem;text-align:center;margin-top:1.25rem;margin-bottom:0;">Trusted by legal professionals in 30+ countries worldwide</p>
                 </div>
             </div>
+
         </div>
     </div>
 </section>
