@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Upcoming Events - Calendar - LAWCOLAB{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-0"><i class="fas fa-clock me-2 text-primary"></i>Upcoming Events</h2>
+      <p class="text-muted mb-0 small">All future events sorted by date</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('calendar.index') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-calendar me-1"></i>Calendar View
+      </a>
+      {% if not current_user.is_client() %}
+      <a href="{{ url_for('calendar.create_event') }}" class="btn btn-primary btn-sm">
+        <i class="fas fa-plus me-1"></i>New Event
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if events %}
+  {% set ns = namespace(current_date=None) %}
+  {% for event in events %}
+  {% set event_date = event.start_datetime.strftime('%A, %B %d, %Y') %}
+  {% if event_date != ns.current_date %}
+  {% set ns.current_date = event_date %}
+  <div class="fw-bold text-muted small text-uppercase mt-4 mb-2 border-bottom pb-1">
+    <i class="fas fa-calendar-day me-1"></i>{{ event_date }}
+  </div>
+  {% endif %}
+  <div class="card border-0 shadow-sm mb-2">
+    <div class="card-body py-2 px-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="rounded p-2 bg-{{ event.type_color }} bg-opacity-10 border border-{{ event.type_color }}"
+             style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fas {{ event.type_icon }} text-{{ event.type_color }}"></i>
+        </div>
+        <div class="flex-grow-1 min-w-0">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <a href="{{ url_for('calendar.event_detail', event_id=event.id) }}"
+               class="fw-semibold text-decoration-none text-dark">
+              {{ event.title }}
+            </a>
+            <span class="badge bg-{{ event.type_color }}" style="font-size:.7rem;">{{ event.type_label }}</span>
+          </div>
+          <div class="text-muted small">
+            {% if not event.all_day %}
+            <i class="fas fa-clock me-1"></i>{{ event.start_datetime.strftime('%I:%M %p') }}
+            {% if event.end_datetime %} – {{ event.end_datetime.strftime('%I:%M %p') }}{% endif %}
+            {% else %}
+            All day
+            {% endif %}
+            {% if event.location %}
+            &bull; <i class="fas fa-map-marker-alt me-1"></i>{{ event.location }}
+            {% endif %}
+            {% if event.project %}
+            &bull; <i class="fas fa-briefcase me-1"></i>{{ event.project.title }}
+            {% endif %}
+          </div>
+        </div>
+        <div class="text-end flex-shrink-0">
+          <div class="text-muted small">{{ event.attendees|length }} attendee{{ 's' if event.attendees|length != 1 else '' }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="text-center py-5">
+    <i class="fas fa-calendar-check fa-4x text-muted mb-3 opacity-50"></i>
+    <h5 class="text-muted">No upcoming events</h5>
+    {% if not current_user.is_client() %}
+    <a href="{{ url_for('calendar.create_event') }}" class="btn btn-primary mt-2">
+      <i class="fas fa-plus me-1"></i>Create First Event
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

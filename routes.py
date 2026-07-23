@@ -33,6 +33,9 @@ from blueprints.payment_management import payment_mgmt_bp
 from blueprints.escrow_public import escrow_bp
 from simple_checkout import simple_checkout_bp
 
+# Import calendar blueprint
+from blueprints.calendar import calendar_bp
+
 # Import payment models
 import models_payment  # noqa: F401
 
@@ -55,6 +58,7 @@ app.register_blueprint(showcase_bp, url_prefix="/showcase")
 app.register_blueprint(payment_mgmt_bp)  # Payment management
 app.register_blueprint(escrow_bp)  # Escrow system
 app.register_blueprint(simple_checkout_bp, url_prefix="/payment")  # Simple payment checkout
+app.register_blueprint(calendar_bp, url_prefix="/calendar")  # Calendar & scheduling
 
 # Make session permanent
 @app.before_request

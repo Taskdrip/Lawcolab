@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Edit Event - Calendar - LAWCOLAB{% endblock %}
+
+{% block content %}
+<div class="container mt-4" style="max-width:760px;">
+  <div class="mb-3">
+    <a href="{{ url_for('calendar.event_detail', event_id=event.id) }}" class="text-decoration-none text-muted">
+      <i class="fas fa-arrow-left me-1"></i>Back to Event
+    </a>
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white border-bottom py-3">
+      <h4 class="mb-0 fw-bold"><i class="fas fa-edit me-2 text-primary"></i>Edit Event</h4>
+    </div>
+    <div class="card-body p-4">
+      <form method="POST" action="{{ url_for('calendar.edit_event', event_id=event.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ session.get('_csrf_token', '') }}">
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-8">
+            <label class="form-label fw-semibold">Event Title <span class="text-danger">*</span></label>
+            <input type="text" name="title" class="form-control" value="{{ event.title }}" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Event Type</label>
+            <select name="event_type" class="form-select">
+              {% for val, label in event_types %}
+              <option value="{{ val }}" {{ 'selected' if event.event_type == val else '' }}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Start Date &amp; Time <span class="text-danger">*</span></label>
+            <input type="datetime-local" name="start_datetime" class="form-control"
+                   value="{{ event.start_datetime.strftime('%Y-%m-%dT%H:%M') }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">End Date &amp; Time</label>
+            <input type="datetime-local" name="end_datetime" class="form-control"
+                   value="{{ event.end_datetime.strftime('%Y-%m-%dT%H:%M') if event.end_datetime else '' }}">
+          </div>
+        </div>
+
+        <div class="mb-3 form-check">
+          <input type="checkbox" name="all_day" id="all_day" class="form-check-input"
+                 {{ 'checked' if event.all_day else '' }}>
+          <label for="all_day" class="form-check-label">All-day event</label>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Location</label>
+            <input type="text" name="location" class="form-control" value="{{ event.location or '' }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Virtual Meeting Link</label>
+            <input type="url" name="virtual_link" class="form-control" value="{{ event.virtual_link or '' }}">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Description</label>
+          <textarea name="description" class="form-control" rows="3">{{ event.description or '' }}</textarea>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Linked Project</label>
+            <select name="project_id" class="form-select">
+              <option value="">— None —</option>
+              {% for p in projects %}
+              <option value="{{ p.id }}" {{ 'selected' if event.project_id == p.id else '' }}>{{ p.title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Status</label>
+            <select name="status" class="form-select">
+              {% for val, label in event_statuses %}
+              <option value="{{ val }}" {{ 'selected' if event.status == val else '' }}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        {% if firm_users %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Attendees</label>
+          <div class="border rounded p-3" style="max-height:180px;overflow-y:auto;">
+            {% for u in firm_users %}
+            {% if u.id != current_user.id %}
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="attendee_ids"
+                     value="{{ u.id }}" id="att_{{ u.id }}"
+                     {{ 'checked' if u.id in current_attendee_ids else '' }}>
+              <label class="form-check-label" for="att_{{ u.id }}">
+                {{ u.full_name }}
+                <span class="text-muted small">({{ u.role.replace('_',' ').title() }})</span>
+              </label>
+            </div>
+            {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Reminder</label>
+          <select name="reminder_minutes" class="form-select">
+            {% for mins, label in reminder_options %}
+            <option value="{{ mins }}" {{ 'selected' if event.reminder_minutes == mins else '' }}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Private Notes</label>
+          <textarea name="notes" class="form-control" rows="2">{{ event.notes or '' }}</textarea>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary px-4">
+            <i class="fas fa-save me-1"></i>Save Changes
+          </button>
+          <a href="{{ url_for('calendar.event_detail', event_id=event.id) }}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -858,6 +858,102 @@ class PublicLawFirmReview(db.Model):
     showcase = db.relationship('LawFirmShowcase', back_populates='public_reviews')
 
 
+# ─── Calendar / Scheduling ───────────────────────────────────────────────────
+
+EVENT_TYPE_COURT = 'court_date'
+EVENT_TYPE_MEETING = 'meeting'
+EVENT_TYPE_APPOINTMENT = 'appointment'
+EVENT_TYPE_DEADLINE = 'deadline'
+EVENT_TYPE_OTHER = 'other'
+
+EVENT_STATUS_UPCOMING = 'upcoming'
+EVENT_STATUS_COMPLETED = 'completed'
+EVENT_STATUS_CANCELLED = 'cancelled'
+
+
+class CalendarEvent(db.Model):
+    __tablename__ = 'calendar_events'
+
+    id = db.Column(db.Integer, primary_key=True)
+    law_firm_id = db.Column(db.Integer, db.ForeignKey('law_firms.id'), nullable=False)
+    created_by_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=True)
+
+    title = db.Column(db.String(300), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    event_type = db.Column(db.String(50), default=EVENT_TYPE_MEETING, nullable=False)
+    status = db.Column(db.String(50), default=EVENT_STATUS_UPCOMING, nullable=False)
+
+    start_datetime = db.Column(db.DateTime, nullable=False)
+    end_datetime = db.Column(db.DateTime, nullable=True)
+    all_day = db.Column(db.Boolean, default=False)
+
+    location = db.Column(db.String(300), nullable=True)
+    virtual_link = db.Column(db.String(500), nullable=True)
+
+    # Reminder: minutes before the event
+    reminder_minutes = db.Column(db.Integer, default=60, nullable=True)
+    reminder_sent = db.Column(db.Boolean, default=False)
+
+    notes = db.Column(db.Text, nullable=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+
+    # Relationships
+    law_firm = db.relationship('LawFirm', backref='calendar_events')
+    created_by = db.relationship('User', foreign_keys=[created_by_id], backref='created_events')
+    project = db.relationship('Project', backref='calendar_events')
+    attendees = db.relationship('CalendarEventAttendee', back_populates='event', cascade='all, delete-orphan')
+
+    @property
+    def type_label(self):
+        labels = {
+            EVENT_TYPE_COURT: 'Court Date',
+            EVENT_TYPE_MEETING: 'Meeting',
+            EVENT_TYPE_APPOINTMENT: 'Appointment',
+            EVENT_TYPE_DEADLINE: 'Deadline',
+            EVENT_TYPE_OTHER: 'Other',
+        }
+        return labels.get(self.event_type, self.event_type.title())
+
+    @property
+    def type_color(self):
+        colors = {
+            EVENT_TYPE_COURT: 'danger',
+            EVENT_TYPE_MEETING: 'primary',
+            EVENT_TYPE_APPOINTMENT: 'success',
+            EVENT_TYPE_DEADLINE: 'warning',
+            EVENT_TYPE_OTHER: 'secondary',
+        }
+        return colors.get(self.event_type, 'secondary')
+
+    @property
+    def type_icon(self):
+        icons = {
+            EVENT_TYPE_COURT: 'fa-gavel',
+            EVENT_TYPE_MEETING: 'fa-handshake',
+            EVENT_TYPE_APPOINTMENT: 'fa-calendar-check',
+            EVENT_TYPE_DEADLINE: 'fa-clock',
+            EVENT_TYPE_OTHER: 'fa-calendar',
+        }
+        return icons.get(self.event_type, 'fa-calendar')
+
+
+class CalendarEventAttendee(db.Model):
+    __tablename__ = 'calendar_event_attendees'
+
+    id = db.Column(db.Integer, primary_key=True)
+    event_id = db.Column(db.Integer, db.ForeignKey('calendar_events.id'), nullable=False)
+    user_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    rsvp_status = db.Column(db.String(20), default='invited')  # invited, accepted, declined
+
+    event = db.relationship('CalendarEvent', back_populates='attendees')
+    user = db.relationship('User', backref='event_attendances')
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+
 class PublicLawFirmMessage(db.Model):
     __tablename__ = 'public_law_firm_messages'
     

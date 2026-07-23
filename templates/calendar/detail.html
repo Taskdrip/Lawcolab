@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block title %}{{ event.title }} - Calendar - LAWCOLAB{% endblock %}
+
+{% block content %}
+<div class="container mt-4" style="max-width:800px;">
+  <div class="mb-3">
+    <a href="{{ url_for('calendar.index', year=event.start_datetime.year, month=event.start_datetime.month) }}"
+       class="text-decoration-none text-muted">
+      <i class="fas fa-arrow-left me-1"></i>Back to Calendar
+    </a>
+  </div>
+
+  <!-- Status Banner -->
+  {% if event.status == 'cancelled' %}
+  <div class="alert alert-danger py-2"><i class="fas fa-ban me-2"></i>This event has been <strong>cancelled</strong>.</div>
+  {% elif event.status == 'completed' %}
+  <div class="alert alert-success py-2"><i class="fas fa-check-circle me-2"></i>This event is marked as <strong>completed</strong>.</div>
+  {% endif %}
+
+  <div class="card shadow-sm border-0">
+    <!-- Coloured top strip by event type -->
+    <div class="rounded-top" style="height:6px;background:{{ {'danger':'#dc3545','primary':'#0d6efd','success':'#198754','warning':'#ffc107','secondary':'#6c757d'}[event.type_color] }};"></div>
+
+    <div class="card-body p-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+          <div class="mb-2">
+            <span class="badge bg-{{ event.type_color }} me-2">
+              <i class="fas {{ event.type_icon }} me-1"></i>{{ event.type_label }}
+            </span>
+            <span class="badge bg-{{ 'success' if event.status == 'upcoming' else 'secondary' }}">
+              {{ event.status.title() }}
+            </span>
+          </div>
+          <h3 class="fw-bold mb-1">{{ event.title }}</h3>
+          <div class="text-muted small">
+            Created by {{ event.created_by.full_name }} &bull;
+            {{ event.created_at.strftime('%b %d, %Y') }}
+          </div>
+        </div>
+        {% if can_edit %}
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="{{ url_for('calendar.edit_event', event_id=event.id) }}" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-edit me-1"></i>Edit
+          </a>
+          <form method="POST" action="{{ url_for('calendar.delete_event', event_id=event.id) }}"
+                onsubmit="return confirm('Delete this event? This cannot be undone.');">
+            <button type="submit" class="btn btn-outline-danger btn-sm">
+              <i class="fas fa-trash me-1"></i>Delete
+            </button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+
+      <hr>
+
+      <div class="row g-4">
+        <!-- Left column -->
+        <div class="col-md-7">
+          <!-- Date & Time -->
+          <div class="mb-4">
+            <h6 class="fw-bold text-uppercase text-muted small mb-2">Date &amp; Time</h6>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <i class="fas fa-calendar-day text-primary"></i>
+              <span>
+                {% if event.all_day %}
+                {{ event.start_datetime.strftime('%A, %B %d, %Y') }} — All day
+                {% else %}
+                {{ event.start_datetime.strftime('%A, %B %d, %Y') }}&nbsp;
+                <strong>{{ event.start_datetime.strftime('%I:%M %p') }}</strong>
+                {% if event.end_datetime %}
+                &rarr; {{ event.end_datetime.strftime('%I:%M %p') }}
+                {% endif %}
+                {% endif %}
+              </span>
+            </div>
+            {% if event.reminder_minutes is not none %}
+            <div class="d-flex align-items-center gap-2 text-muted small">
+              <i class="fas fa-bell text-warning"></i>
+              Reminder:
+              {% if event.reminder_minutes == 0 %}At event time
+              {% elif event.reminder_minutes < 60 %}{{ event.reminder_minutes }} minutes before
+              {% elif event.reminder_minutes == 60 %}1 hour before
+              {% elif event.reminder_minutes < 1440 %}{{ (event.reminder_minutes // 60) }} hours before
+              {% elif event.reminder_minutes == 1440 %}1 day before
+              {% else %}{{ (event.reminder_minutes // 1440) }} days before
+              {% endif %}
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Location -->
+          {% if event.location or event.virtual_link %}
+          <div class="mb-4">
+            <h6 class="fw-bold text-uppercase text-muted small mb-2">Location</h6>
+            {% if event.location %}
+            <div class="d-flex align-items-center gap-2">
+              <i class="fas fa-map-marker-alt text-danger"></i>
+              <span>{{ event.location }}</span>
+            </div>
+            {% endif %}
+            {% if event.virtual_link %}
+            <div class="d-flex align-items-center gap-2 mt-1">
+              <i class="fas fa-video text-primary"></i>
+              <a href="{{ event.virtual_link }}" target="_blank" rel="noopener">
+                Join virtual meeting
+              </a>
+            </div>
+            {% endif %}
+          </div>
+          {% endif %}
+
+          <!-- Description -->
+          {% if event.description %}
+          <div class="mb-4">
+            <h6 class="fw-bold text-uppercase text-muted small mb-2">Description</h6>
+            <p class="mb-0" style="white-space:pre-line;">{{ event.description }}</p>
+          </div>
+          {% endif %}
+
+          <!-- Linked Project -->
+          {% if event.project %}
+          <div class="mb-4">
+            <h6 class="fw-bold text-uppercase text-muted small mb-2">Linked Project</h6>
+            <a href="{{ url_for('projects.project_detail', project_id=event.project.id) }}"
+               class="text-decoration-none">
+              <i class="fas fa-briefcase me-1 text-primary"></i>{{ event.project.title }}
+            </a>
+          </div>
+          {% endif %}
+
+          <!-- Notes (staff only) -->
+          {% if event.notes and not current_user.is_client() %}
+          <div class="mb-4">
+            <h6 class="fw-bold text-uppercase text-muted small mb-2">Private Notes</h6>
+            <div class="bg-light rounded p-3" style="white-space:pre-line;font-size:.9rem;">{{ event.notes }}</div>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Right column -->
+        <div class="col-md-5">
+          <!-- Attendees -->
+          <div class="mb-4">
+            <h6 class="fw-bold text-uppercase text-muted small mb-2">
+              Attendees ({{ event.attendees|length }})
+            </h6>
+            {% if event.attendees %}
+            {% for att in event.attendees %}
+            <div class="d-flex align-items-center gap-2 py-1 border-bottom">
+              <div class="rounded-circle bg-{{ 'primary' if att.user.is_admin() or att.user.is_team_member() else 'success' }} text-white d-flex align-items-center justify-content-center"
+                   style="width:30px;height:30px;font-size:.75rem;flex-shrink:0;">
+                {{ att.user.first_name[0] if att.user.first_name else '?' }}
+              </div>
+              <div>
+                <div class="fw-semibold" style="font-size:.85rem;">{{ att.user.full_name }}</div>
+                <div class="text-muted" style="font-size:.73rem;">{{ att.user.role.replace('_',' ').title() }}</div>
+              </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-muted small">No attendees listed.</p>
+            {% endif %}
+          </div>
+
+          <!-- Quick Status Update -->
+          {% if can_edit %}
+          <div>
+            <h6 class="fw-bold text-uppercase text-muted small mb-2">Update Status</h6>
+            <form method="POST" action="{{ url_for('calendar.update_status', event_id=event.id) }}">
+              <div class="d-flex gap-2 flex-wrap">
+                <button name="status" value="upcoming"
+                        class="btn btn-sm {{ 'btn-primary' if event.status == 'upcoming' else 'btn-outline-primary' }}">
+                  Upcoming
+                </button>
+                <button name="status" value="completed"
+                        class="btn btn-sm {{ 'btn-success' if event.status == 'completed' else 'btn-outline-success' }}">
+                  Completed
+                </button>
+                <button name="status" value="cancelled"
+                        class="btn btn-sm {{ 'btn-danger' if event.status == 'cancelled' else 'btn-outline-danger' }}">
+                  Cancelled
+                </button>
+              </div>
+            </form>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

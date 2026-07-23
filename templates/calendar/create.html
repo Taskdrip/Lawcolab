@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}New Event - Calendar - LAWCOLAB{% endblock %}
+
+{% block content %}
+<div class="container mt-4" style="max-width:760px;">
+  <div class="mb-3">
+    <a href="{{ url_for('calendar.index') }}" class="text-decoration-none text-muted">
+      <i class="fas fa-arrow-left me-1"></i>Back to Calendar
+    </a>
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white border-bottom py-3">
+      <h4 class="mb-0 fw-bold"><i class="fas fa-plus-circle me-2 text-primary"></i>New Calendar Event</h4>
+    </div>
+    <div class="card-body p-4">
+      <form method="POST" action="{{ url_for('calendar.create_event') }}">
+        <input type="hidden" name="csrf_token" value="{{ session.get('_csrf_token', '') }}">
+
+        <!-- Title & Type -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-8">
+            <label class="form-label fw-semibold">Event Title <span class="text-danger">*</span></label>
+            <input type="text" name="title" class="form-control" placeholder="e.g. Hearing – Smith vs. Jones" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Event Type</label>
+            <select name="event_type" class="form-select">
+              {% for val, label in event_types %}
+              <option value="{{ val }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <!-- Date & Time -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Start Date &amp; Time <span class="text-danger">*</span></label>
+            <input type="datetime-local" name="start_datetime" class="form-control"
+                   value="{{ default_dt }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">End Date &amp; Time</label>
+            <input type="datetime-local" name="end_datetime" class="form-control">
+          </div>
+        </div>
+
+        <div class="mb-3 form-check">
+          <input type="checkbox" name="all_day" id="all_day" class="form-check-input">
+          <label for="all_day" class="form-check-label">All-day event</label>
+        </div>
+
+        <!-- Location -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Location</label>
+            <input type="text" name="location" class="form-control" placeholder="Courtroom 5, 123 Main St…">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Virtual Meeting Link</label>
+            <input type="url" name="virtual_link" class="form-control" placeholder="https://zoom.us/j/...">
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Description</label>
+          <textarea name="description" class="form-control" rows="3"
+                    placeholder="Details about this event…"></textarea>
+        </div>
+
+        <!-- Related Project -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Linked Project</label>
+          <select name="project_id" class="form-select">
+            <option value="">— None —</option>
+            {% for p in projects %}
+            <option value="{{ p.id }}">{{ p.title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Attendees -->
+        {% if firm_users %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Attendees</label>
+          <div class="border rounded p-3" style="max-height:180px;overflow-y:auto;">
+            {% for u in firm_users %}
+            {% if u.id != current_user.id %}
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="attendee_ids"
+                     value="{{ u.id }}" id="att_{{ u.id }}">
+              <label class="form-check-label" for="att_{{ u.id }}">
+                {{ u.full_name }}
+                <span class="text-muted small">({{ u.role.replace('_',' ').title() }})</span>
+              </label>
+            </div>
+            {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Reminder -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Reminder</label>
+          <select name="reminder_minutes" class="form-select">
+            {% for mins, label in reminder_options %}
+            <option value="{{ mins }}" {{ 'selected' if mins == 60 else '' }}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Notes -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Private Notes</label>
+          <textarea name="notes" class="form-control" rows="2"
+                    placeholder="Internal notes (not shown to clients)…"></textarea>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary px-4">
+            <i class="fas fa-save me-1"></i>Create Event
+          </button>
+          <a href="{{ url_for('calendar.index') }}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
