@@ -52,78 +52,465 @@ section {
     <!-- Clean, Replit-inspired Landing Page -->
     <div style="background: #ffffff; min-height: 100vh; overflow-y: auto; position: relative;">
         
-        <!-- Hero Section -->
-        <section class="hero" style="padding: 80px 0; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-lg-6 mb-5 mb-lg-0">
-                        <div class="hero-content">
-                            <h1 style="font-size: 3.5rem; font-weight: 700; line-height: 1.1; color: #1a1a1a; margin-bottom: 1.5rem;">
-                                Legal practice <br>
-                                <span style="color: #0066cc;">made simple</span>
-                            </h1>
-                            <p style="font-size: 1.25rem; color: #64748b; line-height: 1.6; margin-bottom: 2rem; max-width: 480px;">
-                                All-in-one platform for legal practitioners and law firms to manage operations, clients, teams, projects, cases, invoices, communication, and collaboration.
-                            </p>
-                            <div class="hero-actions" style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 1.5rem;">
-                                <a href="{{ url_for('auth.signup') }}" 
-                                   style="background: #0066cc; color: white; padding: 16px 32px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; border: none; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,102,204,0.3);">
-                                    <i class="fas fa-rocket me-2"></i>Start Free Trial
-                                </a>
-                                <a href="/sales/popup" 
-                                   style="background: linear-gradient(45deg, #FFD700, #FFA500); color: #1a1a1a; padding: 16px 32px; border: 2px solid #FFD700; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; transition: all 0.3s; box-shadow: 0 4px 15px rgba(255,215,0,0.3);">
-                                    <i class="fas fa-crown me-2"></i>White-Label License $1,745
-                                </a>
-                                <a href="{{ url_for('pricing') }}" 
-                                   style="background: transparent; color: #666; padding: 16px 32px; border: 1px solid #ccc; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; transition: all 0.3s;">
-                                    <i class="fas fa-tag me-2"></i>View Pricing
-                                </a>
-                            </div>
+        <!-- ═══ HERO FEATURE SLIDER ═══ -->
+        <style>
+        /* Custom hero slider — CSS-first, no Bootstrap carousel dependency */
+        #heroSlider { position: relative; overflow: hidden; background: #0a1428; }
+
+        .hs-track {
+            position: relative;
+            width: 100%;
+            height: 88vh;
+            min-height: 560px;
+            max-height: 820px;
+        }
+
+        .hs-slide {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity .9s ease;
+            pointer-events: none;
+        }
+        .hs-slide.hs-active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .hs-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                160deg,
+                rgba(8,16,36,0.72) 0%,
+                rgba(8,16,36,0.80) 50%,
+                rgba(8,16,36,0.60) 100%
+            );
+        }
+
+        .hs-content {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem 1.5rem;
+            z-index: 2;
+        }
+        .hs-inner { max-width: 700px; }
+
+        .hs-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            background: rgba(255,255,255,.15);
+            border: 1px solid rgba(255,255,255,.3);
+            color: #fff;
+            border-radius: 50px;
+            padding: 5px 16px;
+            font-size: .78rem;
+            font-weight: 700;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            margin-bottom: 1.1rem;
+            backdrop-filter: blur(8px);
+        }
+
+        .hs-title {
+            font-size: clamp(1.9rem, 5vw, 3.3rem);
+            font-weight: 800;
+            color: #ffffff !important;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 14px rgba(0,0,0,.4);
+        }
+
+        .hs-desc {
+            font-size: clamp(.9rem, 1.8vw, 1.1rem);
+            color: rgba(255,255,255,.88) !important;
+            line-height: 1.7;
+            margin-bottom: 1.8rem;
+        }
+
+        /* Beat global !important black-text overrides */
+        #heroSlider .hs-title,
+        #heroSlider .hs-title * { color: #ffffff !important; }
+        #heroSlider .hs-desc,
+        #heroSlider .hs-desc * { color: rgba(255,255,255,.88) !important; }
+        #heroSlider .hs-tag,
+        #heroSlider .hs-tag * { color: #ffffff !important; }
+        #heroSlider .hs-content h1,
+        #heroSlider .hs-content h2,
+        #heroSlider .hs-content h3,
+        #heroSlider .hs-content p,
+        #heroSlider .hs-content span,
+        #heroSlider .hs-content div { color: #ffffff !important; }
+
+        .hs-cta {
+            display: flex;
+            gap: .9rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .hs-btn-blue {
+            background: #0066cc;
+            color: #fff !important;
+            padding: 13px 28px;
+            border-radius: 9px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: .9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            box-shadow: 0 4px 18px rgba(0,102,204,.45);
+            transition: background .2s, transform .2s;
+        }
+        .hs-btn-blue:hover { background:#0052a3; transform:translateY(-2px); }
+
+        .hs-btn-ghost {
+            background: rgba(255,255,255,.12);
+            color: #fff !important;
+            padding: 13px 28px;
+            border-radius: 9px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: .9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            border: 1.5px solid rgba(255,255,255,.45);
+            backdrop-filter: blur(4px);
+            transition: background .2s, transform .2s;
+        }
+        .hs-btn-ghost:hover { background:rgba(255,255,255,.22); transform:translateY(-2px); }
+
+        .hs-btn-gold {
+            background: linear-gradient(45deg,#FFD700,#FFA500);
+            color: #1a1a1a !important;
+            padding: 13px 28px;
+            border-radius: 9px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: .9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            box-shadow: 0 4px 16px rgba(255,165,0,.35);
+            transition: filter .2s, transform .2s;
+        }
+        .hs-btn-gold:hover { filter:brightness(1.08); transform:translateY(-2px); }
+
+        /* Prev / Next arrows */
+        .hs-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+            background: rgba(255,255,255,.14);
+            border: none;
+            border-radius: 50%;
+            width: 46px;
+            height: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            transition: background .2s;
+        }
+        .hs-arrow:hover { background: rgba(255,255,255,.3); }
+        .hs-prev { left: 18px; }
+        .hs-next { right: 18px; }
+
+        /* Dot indicators */
+        .hs-dots {
+            position: absolute;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 7px;
+            z-index: 10;
+        }
+        .hs-dot {
+            width: 9px; height: 9px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.45);
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            transition: background .3s, transform .3s;
+        }
+        .hs-dot.hs-dot-active {
+            background: #fff;
+            transform: scale(1.25);
+        }
+
+        /* Progress bar */
+        .hs-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: rgba(255,255,255,.5);
+            z-index: 10;
+            width: 0;
+            transition: width 5.5s linear;
+        }
+        .hs-progress.hs-running { width: 100%; }
+
+        /* Feature pill bar */
+        .hs-pill-bar {
+            background: #fff;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 2px 10px rgba(0,0,0,.07);
+        }
+        .hs-pills {
+            display: flex;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .hs-pills::-webkit-scrollbar { display: none; }
+        .hs-pill {
+            flex-shrink: 0;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 14px 16px;
+            font-size: .8rem;
+            font-weight: 600;
+            color: #555;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: color .2s, border-color .2s;
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+        }
+        .hs-pill:hover { color: #0066cc; border-bottom-color: #bdd4f5; }
+        .hs-pill.hs-pill-active { color: #0066cc; border-bottom-color: #0066cc; }
+
+        @media (max-width: 768px) {
+            .hs-track { height: 72vh; min-height: 480px; }
+            .hs-pill { padding: 12px 11px; font-size: .73rem; }
+            .hs-arrow { width: 38px; height: 38px; }
+            .hs-prev { left: 8px; }
+            .hs-next { right: 8px; }
+            .hs-cta { flex-direction: column; align-items: center; }
+        }
+        </style>
+
+        <section id="heroSlider">
+            <div class="hs-track" id="hsTrack">
+
+                <!-- SLIDE 0 — Client Management -->
+                <div class="hs-slide hs-active" style="background-image:url('{{ url_for('static', filename='images/Diverse_lawyer_client_consultation_29299ab7.png') }}');">
+                    <div class="hs-overlay"></div>
+                    <div class="hs-content"><div class="hs-inner">
+                        <div class="hs-tag" style="color:#ffffff!important;"><i class="fas fa-users"></i>Client Management</div>
+                        <h1 class="hs-title" style="color:#ffffff!important;">Know Every Client,<br>Inside &amp; Out</h1>
+                        <p class="hs-desc" style="color:rgba(255,255,255,.88)!important;">Secure client profiles, case histories, communication logs, and notes — all in one place. Complete data isolation between law firms.</p>
+                        <div class="hs-cta">
+                            <a href="{{ url_for('auth.signup') }}" class="hs-btn-blue"><i class="fas fa-rocket"></i>Start Free Trial</a>
+                            <a href="{{ url_for('pricing') }}" class="hs-btn-ghost"><i class="fas fa-tag"></i>View Pricing</a>
                         </div>
-                    </div>
-                    <div class="col-lg-6">
-                        <div class="hero-visual" style="position: relative;">
-                            <div style="background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1); padding: 2rem; max-width: 500px; margin-left: auto;">
-                                <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
-                                    <div style="background: #0066cc; border-radius: 8px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
-                                        <i class="fas fa-balance-scale" style="color: white; font-size: 1.5rem;"></i>
-                                    </div>
-                                    <div>
-                                        <h4 style="margin: 0; font-size: 1.25rem; color: #1a1a1a;">LAWCOLAB</h4>
-                                        <p style="margin: 0; color: #64748b; font-size: 0.9rem;">Professional workspace</p>
-                                    </div>
-                                </div>
-                                
-                                <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem;">
-                                    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
-                                        <div style="background: #f1f5f9; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem;">
-                                            <i class="fas fa-users" style="color: #0066cc; font-size: 0.9rem;"></i>
-                                        </div>
-                                        <span style="color: #334155; font-weight: 500;">Team Management</span>
-                                    </div>
-                                    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
-                                        <div style="background: #f1f5f9; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem;">
-                                            <i class="fas fa-comments" style="color: #0066cc; font-size: 0.9rem;"></i>
-                                        </div>
-                                        <span style="color: #334155; font-weight: 500;">Real-time Chat</span>
-                                    </div>
-                                    <div style="display: flex; align-items: center;">
-                                        <div style="background: #f1f5f9; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem;">
-                                            <i class="fas fa-folder" style="color: #0066cc; font-size: 0.9rem;"></i>
-                                        </div>
-                                        <span style="color: #334155; font-weight: 500;">Project Collaboration</span>
-                                    </div>
-                                </div>
-                                
-                                <button style="background: #0066cc; color: white; width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
-                                    Access Dashboard
-                                </button>
-                            </div>
+                    </div></div>
+                </div>
+
+                <!-- SLIDE 1 — Case & Project Tracking -->
+                <div class="hs-slide" style="background-image:url('{{ url_for('static', filename='images/Modern_law_office_interior_98a5776a.png') }}');">
+                    <div class="hs-overlay"></div>
+                    <div class="hs-content"><div class="hs-inner">
+                        <div class="hs-tag" style="color:#ffffff!important;"><i class="fas fa-briefcase"></i>Case &amp; Project Tracking</div>
+                        <h1 class="hs-title" style="color:#ffffff!important;">Every Case,<br>Always on Track</h1>
+                        <p class="hs-desc" style="color:rgba(255,255,255,.88)!important;">Comprehensive project management with task assignments, deadline tracking, file organisation, and live progress monitoring for your entire caseload.</p>
+                        <div class="hs-cta">
+                            <a href="{{ url_for('auth.signup') }}" class="hs-btn-blue"><i class="fas fa-rocket"></i>Start Free Trial</a>
+                            <a href="{{ url_for('pricing') }}" class="hs-btn-ghost"><i class="fas fa-tag"></i>View Pricing</a>
                         </div>
+                    </div></div>
+                </div>
+
+                <!-- SLIDE 2 — Team Collaboration -->
+                <div class="hs-slide" style="background-image:url('{{ url_for('static', filename='images/Diverse_legal_team_collaboration_1cc4eb26.png') }}');">
+                    <div class="hs-overlay"></div>
+                    <div class="hs-content"><div class="hs-inner">
+                        <div class="hs-tag" style="color:#ffffff!important;"><i class="fas fa-users-cog"></i>Team Collaboration</div>
+                        <h1 class="hs-title" style="color:#ffffff!important;">Your Whole Team,<br>One Platform</h1>
+                        <p class="hs-desc" style="color:rgba(255,255,255,.88)!important;">Role-based access for admins, lawyers, and clients. Assign tasks, share files, and collaborate securely — no email threads, no confusion.</p>
+                        <div class="hs-cta">
+                            <a href="{{ url_for('auth.signup') }}" class="hs-btn-blue"><i class="fas fa-rocket"></i>Start Free Trial</a>
+                            <a href="{{ url_for('pricing') }}" class="hs-btn-ghost"><i class="fas fa-tag"></i>View Pricing</a>
+                        </div>
+                    </div></div>
+                </div>
+
+                <!-- SLIDE 3 — Calendar & Scheduling -->
+                <div class="hs-slide" style="background-image:url('{{ url_for('static', filename='images/Legal_team_meeting_867b2fc9.png') }}');">
+                    <div class="hs-overlay"></div>
+                    <div class="hs-content"><div class="hs-inner">
+                        <div class="hs-tag" style="color:#ffffff!important;"><i class="fas fa-calendar-alt"></i>Calendar &amp; Scheduling</div>
+                        <h1 class="hs-title" style="color:#ffffff!important;">Never Miss a<br>Court Date Again</h1>
+                        <p class="hs-desc" style="color:rgba(255,255,255,.88)!important;">Schedule court dates, meetings, and appointments with smart reminders. Visual monthly calendar with colour-coded event types for your entire firm.</p>
+                        <div class="hs-cta">
+                            <a href="{{ url_for('auth.signup') }}" class="hs-btn-blue"><i class="fas fa-rocket"></i>Start Free Trial</a>
+                            <a href="{{ url_for('pricing') }}" class="hs-btn-ghost"><i class="fas fa-tag"></i>View Pricing</a>
+                        </div>
+                    </div></div>
+                </div>
+
+                <!-- SLIDE 4 — Billing & Invoices -->
+                <div class="hs-slide" style="background-image:url('{{ url_for('static', filename='images/legal_tech_innovation.jpg') }}');">
+                    <div class="hs-overlay"></div>
+                    <div class="hs-content"><div class="hs-inner">
+                        <div class="hs-tag" style="color:#ffffff!important;"><i class="fas fa-file-invoice-dollar"></i>Billing &amp; Invoices</div>
+                        <h1 class="hs-title" style="color:#ffffff!important;">Get Paid Faster,<br>Stress Less</h1>
+                        <p class="hs-desc" style="color:rgba(255,255,255,.88)!important;">Generate professional invoices, track payments, manage expenses, and accept multiple payment methods — all built into your workflow.</p>
+                        <div class="hs-cta">
+                            <a href="{{ url_for('auth.signup') }}" class="hs-btn-blue"><i class="fas fa-rocket"></i>Start Free Trial</a>
+                            <a href="{{ url_for('pricing') }}" class="hs-btn-ghost"><i class="fas fa-tag"></i>View Pricing</a>
+                        </div>
+                    </div></div>
+                </div>
+
+                <!-- SLIDE 5 — Document Management -->
+                <div class="hs-slide" style="background-image:url('{{ url_for('static', filename='images/Modern_diverse_law_office_43d2990c.png') }}');">
+                    <div class="hs-overlay"></div>
+                    <div class="hs-content"><div class="hs-inner">
+                        <div class="hs-tag" style="color:#ffffff!important;"><i class="fas fa-file-contract"></i>Document Management</div>
+                        <h1 class="hs-title" style="color:#ffffff!important;">All Your Documents,<br>Instantly Accessible</h1>
+                        <p class="hs-desc" style="color:rgba(255,255,255,.88)!important;">Secure file uploads, organised per-project document libraries, and easy sharing with clients and team members. No more lost files.</p>
+                        <div class="hs-cta">
+                            <a href="{{ url_for('auth.signup') }}" class="hs-btn-blue"><i class="fas fa-rocket"></i>Start Free Trial</a>
+                            <a href="{{ url_for('pricing') }}" class="hs-btn-ghost"><i class="fas fa-tag"></i>View Pricing</a>
+                        </div>
+                    </div></div>
+                </div>
+
+                <!-- SLIDE 6 — Communication -->
+                <div class="hs-slide" style="background-image:url('{{ url_for('static', filename='images/contact_support.jpg') }}');">
+                    <div class="hs-overlay"></div>
+                    <div class="hs-content"><div class="hs-inner">
+                        <div class="hs-tag" style="color:#ffffff!important;"><i class="fas fa-comments"></i>Real-Time Communication</div>
+                        <h1 class="hs-title" style="color:#ffffff!important;">Chat Securely with<br>Clients &amp; Your Team</h1>
+                        <p class="hs-desc" style="color:rgba(255,255,255,.88)!important;">Project-based chat rooms, direct messaging, client portals, and support channels — all encrypted and organised by matter.</p>
+                        <div class="hs-cta">
+                            <a href="{{ url_for('auth.signup') }}" class="hs-btn-blue"><i class="fas fa-rocket"></i>Start Free Trial</a>
+                            <a href="{{ url_for('pricing') }}" class="hs-btn-ghost"><i class="fas fa-tag"></i>View Pricing</a>
+                        </div>
+                    </div></div>
+                </div>
+
+                <!-- SLIDE 7 — Analytics -->
+                <div class="hs-slide" style="background-image:url('{{ url_for('static', filename='images/Professional_legal_consultation_scene_0650a100.png') }}');">
+                    <div class="hs-overlay"></div>
+                    <div class="hs-content"><div class="hs-inner">
+                        <div class="hs-tag" style="color:#ffffff!important;"><i class="fas fa-chart-bar"></i>Practice Analytics</div>
+                        <h1 class="hs-title" style="color:#ffffff!important;">Grow Your Firm<br>with Data Insights</h1>
+                        <p class="hs-desc" style="color:rgba(255,255,255,.88)!important;">Revenue trends, invoice analytics, case performance, and team productivity — all visualised so you can make smarter decisions.</p>
+                        <div class="hs-cta">
+                            <a href="{{ url_for('auth.signup') }}" class="hs-btn-blue"><i class="fas fa-rocket"></i>Start Free Trial</a>
+                            <a href="/sales/popup" class="hs-btn-gold"><i class="fas fa-crown"></i>White-Label $1,745</a>
+                        </div>
+                    </div></div>
+                </div>
+
+                <!-- Arrows -->
+                <button class="hs-arrow hs-prev" id="hsPrev" aria-label="Previous">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="hs-arrow hs-next" id="hsNext" aria-label="Next">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+
+                <!-- Dots -->
+                <div class="hs-dots" id="hsDots"></div>
+
+                <!-- Progress bar -->
+                <div class="hs-progress" id="hsProgress"></div>
+
+            </div><!-- /.hs-track -->
+
+            <!-- Feature pill bar -->
+            <div class="hs-pill-bar">
+                <div class="container-fluid px-0">
+                    <div class="hs-pills" id="hsPills">
+                        <button class="hs-pill hs-pill-active" data-idx="0"><i class="fas fa-users"></i>Clients</button>
+                        <button class="hs-pill" data-idx="1"><i class="fas fa-briefcase"></i>Cases</button>
+                        <button class="hs-pill" data-idx="2"><i class="fas fa-users-cog"></i>Team</button>
+                        <button class="hs-pill" data-idx="3"><i class="fas fa-calendar-alt"></i>Calendar</button>
+                        <button class="hs-pill" data-idx="4"><i class="fas fa-file-invoice-dollar"></i>Invoices</button>
+                        <button class="hs-pill" data-idx="5"><i class="fas fa-file-contract"></i>Documents</button>
+                        <button class="hs-pill" data-idx="6"><i class="fas fa-comments"></i>Chat</button>
+                        <button class="hs-pill" data-idx="7"><i class="fas fa-chart-bar"></i>Analytics</button>
                     </div>
                 </div>
             </div>
         </section>
+
+        <script>
+        (function(){
+            var slides  = document.querySelectorAll('#hsTrack .hs-slide');
+            var pills   = document.querySelectorAll('#hsPills .hs-pill');
+            var dotsEl  = document.getElementById('hsDots');
+            var prog    = document.getElementById('hsProgress');
+            var total   = slides.length;
+            var current = 0;
+            var timer   = null;
+            var INTERVAL= 5500;
+
+            // Build dots
+            for(var i=0;i<total;i++){
+                var d=document.createElement('button');
+                d.className='hs-dot'+(i===0?' hs-dot-active':'');
+                d.setAttribute('data-idx',i);
+                d.addEventListener('click',function(){ goTo(+this.getAttribute('data-idx')); });
+                dotsEl.appendChild(d);
+            }
+
+            function goTo(n){
+                slides[current].classList.remove('hs-active');
+                pills[current] && pills[current].classList.remove('hs-pill-active');
+                dotsEl.children[current] && dotsEl.children[current].classList.remove('hs-dot-active');
+                current = (n + total) % total;
+                slides[current].classList.add('hs-active');
+                pills[current] && pills[current].classList.add('hs-pill-active');
+                dotsEl.children[current] && dotsEl.children[current].classList.add('hs-dot-active');
+                resetProgress();
+                clearInterval(timer);
+                timer = setInterval(function(){ goTo(current+1); }, INTERVAL);
+            }
+
+            function resetProgress(){
+                prog.classList.remove('hs-running');
+                prog.style.transition='none';
+                prog.style.width='0';
+                requestAnimationFrame(function(){
+                    requestAnimationFrame(function(){
+                        prog.style.transition='width '+INTERVAL+'ms linear';
+                        prog.classList.add('hs-running');
+                    });
+                });
+            }
+
+            document.getElementById('hsPrev').addEventListener('click',function(){ goTo(current-1); });
+            document.getElementById('hsNext').addEventListener('click',function(){ goTo(current+1); });
+
+            pills.forEach(function(p){
+                p.addEventListener('click',function(){ goTo(+this.getAttribute('data-idx')); });
+            });
+
+            // Start auto-play
+            resetProgress();
+            timer = setInterval(function(){ goTo(current+1); }, INTERVAL);
+        })();
+        </script>
 
         <!-- Features Section -->
         <section style="padding: 80px 0; background: #fafbfc;">

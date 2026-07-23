@@ -517,3 +517,13 @@ p {
         margin-bottom: 1rem;
     }
 }
+
+/* ── Hero Slider text overrides (must come LAST to beat global h1/p rules) ── */
+#heroSlider h1,
+#heroSlider h1.hs-title { color: #ffffff !important; font-weight: 800 !important; }
+#heroSlider p,
+#heroSlider p.hs-desc { color: rgba(255,255,255,0.88) !important; }
+#heroSlider .hs-tag { color: #ffffff !important; }
+#heroSlider .hs-content h1,
+#heroSlider .hs-content p,
+#heroSlider .hs-content div { color: #ffffff !important; }
