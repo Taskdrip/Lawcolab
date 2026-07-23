@@ -35,3 +35,11 @@ externalPort = 80
 
 [agent]
 integrations = ["python_database:1.0.0", "flask_stripe:1.0.0"]
+
+[userenv]
+
+[userenv.shared]
+FLASK_ENV = "production"
+SUPER_ADMIN_EMAIL = "admin@lawcolab.com"
+SUPER_ADMIN_FIRST_NAME = "Super"
+SUPER_ADMIN_LAST_NAME = "Admin"
