@@ -1,132 +1,248 @@
 {% extends "base.html" %}
 {% block title %}New Event - Calendar - LAWCOLAB{% endblock %}
 
+{% block additional_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css">
+<style>
+.form-card { background:#fff; border-radius:16px; box-shadow:0 2px 20px rgba(0,0,0,.07); overflow:hidden; }
+.form-card-header { background:linear-gradient(135deg,#0d1b4b 0%,#1a3080 100%); padding:1.25rem 1.5rem; }
+.form-card-header h4 { color:#fff; font-weight:800; margin:0; font-size:1.15rem; }
+.form-card-header p  { color:rgba(255,255,255,.65); font-size:.8rem; margin:.2rem 0 0; }
+.form-section { border-left:3px solid #e9ecef; padding-left:.85rem; margin-bottom:1.4rem; }
+.form-section-label { font-size:.7rem; font-weight:800; text-transform:uppercase; letter-spacing:.07em; color:#9ca3af; margin-bottom:.6rem; }
+.form-label-field { font-size:.82rem; font-weight:600; color:#374151; margin-bottom:.3rem; }
+.form-control, .form-select { border-radius:9px; border:1.5px solid #e5e7eb; font-size:.88rem; }
+.form-control:focus, .form-select:focus { border-color:#0d6efd; box-shadow:0 0 0 3px rgba(13,110,253,.1); }
+
+/* Tom Select overrides */
+.ts-wrapper.form-control { padding:0; border:none; }
+.ts-control { border-radius:9px !important; border:1.5px solid #e5e7eb !important; min-height:42px; font-size:.88rem; }
+.ts-control:focus, .focus .ts-control { border-color:#0d6efd !important; box-shadow:0 0 0 3px rgba(13,110,253,.1) !important; }
+.ts-dropdown { border-radius:10px !important; box-shadow:0 8px 30px rgba(0,0,0,.12) !important; border:1px solid #e5e7eb !important; font-size:.85rem; }
+.ts-dropdown .option { padding:.45rem .85rem; }
+.ts-dropdown .option:hover, .ts-dropdown .option.active { background:#e0e7ff; color:#1e40af; }
+.attendee-option { display:flex; align-items:center; gap:.55rem; }
+.attendee-avatar { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.65rem; font-weight:700; color:#fff; flex-shrink:0; }
+.attendee-name   { font-weight:600; font-size:.84rem; color:#111827; }
+.attendee-role   { font-size:.72rem; color:#6b7280; }
+.ts-control .item { background:#e0e7ff; color:#1e40af; border-radius:6px; font-weight:600; font-size:.78rem; }
+
+/* Project select highlight */
+.project-option { display:flex; align-items:center; gap:.5rem; }
+.project-icon   { color:#0d6efd; }
+
+/* Submit bar */
+.form-submit-bar { display:flex; gap:.65rem; padding:1.25rem 1.5rem; background:#f8f9ff; border-top:1px solid #f0f2f5; }
+.btn-submit-ev { background:#0d1b4b; color:#fff; border:none; border-radius:10px; padding:.65rem 1.5rem; font-weight:700; font-size:.9rem; cursor:pointer; display:flex; align-items:center; gap:.45rem; transition:background .15s, box-shadow .15s; }
+.btn-submit-ev:hover { background:#1a3080; box-shadow:0 4px 16px rgba(13,27,75,.25); }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4" style="max-width:760px;">
+<div class="container mt-4" style="max-width:780px;">
   <div class="mb-3">
-    <a href="{{ url_for('calendar.index') }}" class="text-decoration-none text-muted">
+    <a href="{{ url_for('calendar.index') }}" class="text-decoration-none text-muted" style="font-size:.85rem;">
       <i class="fas fa-arrow-left me-1"></i>Back to Calendar
     </a>
   </div>
 
-  <div class="card shadow-sm border-0">
-    <div class="card-header bg-white border-bottom py-3">
-      <h4 class="mb-0 fw-bold"><i class="fas fa-plus-circle me-2 text-primary"></i>New Calendar Event</h4>
+  <div class="form-card">
+    <div class="form-card-header">
+      <h4><i class="fas fa-calendar-plus me-2"></i>Schedule New Event</h4>
+      <p>Court date, meeting, appointment, or deadline</p>
     </div>
-    <div class="card-body p-4">
-      <form method="POST" action="{{ url_for('calendar.create_event') }}">
+
+    <div class="p-4">
+      <form method="POST" action="{{ url_for('calendar.create_event') }}" id="eventForm">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-        <!-- Title & Type -->
-        <div class="row g-3 mb-3">
-          <div class="col-md-8">
-            <label class="form-label fw-semibold">Event Title <span class="text-danger">*</span></label>
-            <input type="text" name="title" class="form-control" placeholder="e.g. Hearing – Smith vs. Jones" required>
-          </div>
-          <div class="col-md-4">
-            <label class="form-label fw-semibold">Event Type</label>
-            <select name="event_type" class="form-select">
-              {% for val, label in event_types %}
-              <option value="{{ val }}">{{ label }}</option>
-              {% endfor %}
-            </select>
-          </div>
-        </div>
-
-        <!-- Date & Time -->
-        <div class="row g-3 mb-3">
-          <div class="col-md-6">
-            <label class="form-label fw-semibold">Start Date &amp; Time <span class="text-danger">*</span></label>
-            <input type="datetime-local" name="start_datetime" class="form-control"
-                   value="{{ default_dt }}" required>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label fw-semibold">End Date &amp; Time</label>
-            <input type="datetime-local" name="end_datetime" class="form-control">
+        <!-- ── Event identity ── -->
+        <div class="form-section">
+          <div class="form-section-label"><i class="fas fa-tag me-1"></i>Event Details</div>
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label-field">Event Title <span class="text-danger">*</span></label>
+              <input type="text" name="title" class="form-control" placeholder="e.g. Hearing — Smith vs. Jones" required autofocus>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label-field">Event Type</label>
+              <select name="event_type" class="form-select" id="eventTypeSelect">
+                {% for val, label in event_types %}
+                <option value="{{ val }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
           </div>
         </div>
 
-        <div class="mb-3 form-check">
-          <input type="checkbox" name="all_day" id="all_day" class="form-check-input">
-          <label for="all_day" class="form-check-label">All-day event</label>
-        </div>
-
-        <!-- Location -->
-        <div class="row g-3 mb-3">
-          <div class="col-md-6">
-            <label class="form-label fw-semibold">Location</label>
-            <input type="text" name="location" class="form-control" placeholder="Courtroom 5, 123 Main St…">
+        <!-- ── Date & Time ── -->
+        <div class="form-section">
+          <div class="form-section-label"><i class="fas fa-clock me-1"></i>Date &amp; Time</div>
+          <div class="row g-3">
+            <div class="col-md-5">
+              <label class="form-label-field">Start <span class="text-danger">*</span></label>
+              <input type="datetime-local" name="start_datetime" class="form-control"
+                     value="{{ default_dt }}" required>
+            </div>
+            <div class="col-md-5">
+              <label class="form-label-field">End</label>
+              <input type="datetime-local" name="end_datetime" class="form-control" id="endDateInput">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+              <div class="form-check mb-0 pb-1">
+                <input type="checkbox" name="all_day" id="all_day" class="form-check-input">
+                <label for="all_day" class="form-check-label" style="font-size:.82rem;">All day</label>
+              </div>
+            </div>
           </div>
-          <div class="col-md-6">
-            <label class="form-label fw-semibold">Virtual Meeting Link</label>
-            <input type="url" name="virtual_link" class="form-control" placeholder="https://zoom.us/j/...">
+        </div>
+
+        <!-- ── Location ── -->
+        <div class="form-section">
+          <div class="form-section-label"><i class="fas fa-map-marker-alt me-1"></i>Location</div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label-field">Physical Location</label>
+              <input type="text" name="location" class="form-control" placeholder="Courtroom 5, 123 Main St…">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-field">Virtual Meeting Link</label>
+              <input type="url" name="virtual_link" class="form-control" placeholder="https://zoom.us/j/...">
+            </div>
           </div>
         </div>
 
-        <!-- Description -->
-        <div class="mb-3">
-          <label class="form-label fw-semibold">Description</label>
-          <textarea name="description" class="form-control" rows="3"
-                    placeholder="Details about this event…"></textarea>
+        <!-- ── Description ── -->
+        <div class="form-section">
+          <div class="form-section-label"><i class="fas fa-align-left me-1"></i>Description</div>
+          <textarea name="description" class="form-control" rows="2"
+                    placeholder="Details, agenda, case reference…"></textarea>
         </div>
 
-        <!-- Related Project -->
-        <div class="mb-3">
-          <label class="form-label fw-semibold">Linked Project</label>
-          <select name="project_id" class="form-select">
-            <option value="">— None —</option>
+        <!-- ── Project link ── -->
+        <div class="form-section">
+          <div class="form-section-label"><i class="fas fa-briefcase me-1"></i>Linked Project</div>
+          <select name="project_id" class="form-select" id="projectSelect">
+            <option value="">— Not linked to a project —</option>
             {% for p in projects %}
-            <option value="{{ p.id }}">{{ p.title }}</option>
+            <option value="{{ p.id }}" data-title="{{ p.title }}">{{ p.title }}</option>
             {% endfor %}
           </select>
+          {% if not projects %}
+          <div class="text-muted mt-1" style="font-size:.75rem;">
+            <i class="fas fa-info-circle me-1"></i>No active projects found in your firm.
+          </div>
+          {% endif %}
         </div>
 
-        <!-- Attendees -->
-        {% if firm_users %}
-        <div class="mb-3">
-          <label class="form-label fw-semibold">Attendees</label>
-          <div class="border rounded p-3" style="max-height:180px;overflow-y:auto;">
+        <!-- ── Attendees ── -->
+        <div class="form-section">
+          <div class="form-section-label"><i class="fas fa-users me-1"></i>Attendees</div>
+          {% if firm_users %}
+          <label class="form-label-field">Add team members to this event</label>
+          <select id="attendeesSelect" name="attendee_ids" multiple placeholder="Search team members…" autocomplete="off">
             {% for u in firm_users %}
             {% if u.id != current_user.id %}
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" name="attendee_ids"
-                     value="{{ u.id }}" id="att_{{ u.id }}">
-              <label class="form-check-label" for="att_{{ u.id }}">
-                {{ u.full_name }}
-                <span class="text-muted small">({{ u.role.replace('_',' ').title() }})</span>
-              </label>
-            </div>
+            <option value="{{ u.id }}"
+                    data-initials="{{ u.first_name[0]|upper if u.first_name else '?' }}{{ u.last_name[0]|upper if u.last_name else '' }}"
+                    data-role="{{ u.role.replace('_',' ').title() }}"
+                    data-color="{{ ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4']|random }}">
+              {{ u.full_name }}
+            </option>
             {% endif %}
             {% endfor %}
+          </select>
+          <div class="text-muted mt-1" style="font-size:.73rem;">
+            <i class="fas fa-info-circle me-1"></i>You ({{ current_user.full_name }}) are automatically added as organiser.
+          </div>
+          {% else %}
+          <div class="p-3 rounded border text-muted" style="font-size:.82rem;background:#f9fafb;">
+            <i class="fas fa-user-plus me-2 opacity-50"></i>No other team members in your firm yet.
+            <br><small>Invite team members from Admin → Manage Users.</small>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- ── Reminder ── -->
+        <div class="form-section">
+          <div class="form-section-label"><i class="fas fa-bell me-1"></i>Reminder &amp; Notes</div>
+          <div class="row g-3">
+            <div class="col-md-5">
+              <label class="form-label-field">Pop-up Reminder</label>
+              <select name="reminder_minutes" class="form-select">
+                {% for mins, label in reminder_options %}
+                <option value="{{ mins }}" {{ 'selected' if mins == 60 else '' }}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-7">
+              <label class="form-label-field">Private Notes <span class="text-muted" style="font-weight:400;">(not shown to clients)</span></label>
+              <textarea name="notes" class="form-control" rows="1"
+                        placeholder="Internal notes, reminders…"></textarea>
+            </div>
           </div>
         </div>
-        {% endif %}
 
-        <!-- Reminder -->
-        <div class="mb-3">
-          <label class="form-label fw-semibold">Reminder</label>
-          <select name="reminder_minutes" class="form-select">
-            {% for mins, label in reminder_options %}
-            <option value="{{ mins }}" {{ 'selected' if mins == 60 else '' }}>{{ label }}</option>
-            {% endfor %}
-          </select>
-        </div>
-
-        <!-- Notes -->
-        <div class="mb-4">
-          <label class="form-label fw-semibold">Private Notes</label>
-          <textarea name="notes" class="form-control" rows="2"
-                    placeholder="Internal notes (not shown to clients)…"></textarea>
-        </div>
-
-        <div class="d-flex gap-2">
-          <button type="submit" class="btn btn-primary px-4">
-            <i class="fas fa-save me-1"></i>Create Event
-          </button>
-          <a href="{{ url_for('calendar.index') }}" class="btn btn-outline-secondary">Cancel</a>
-        </div>
       </form>
+    </div>
+
+    <div class="form-submit-bar">
+      <button type="submit" form="eventForm" class="btn-submit-ev">
+        <i class="fas fa-calendar-check"></i> Create Event
+      </button>
+      <a href="{{ url_for('calendar.index') }}" class="btn btn-outline-secondary btn-sm px-3">Cancel</a>
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block javascript %}
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+<script>
+// ── Attendees multi-select ──────────────────────────────────────────────────
+const attendeesEl = document.getElementById('attendeesSelect');
+if (attendeesEl) {
+  new TomSelect('#attendeesSelect', {
+    plugins: ['remove_button'],
+    maxItems: null,
+    placeholder: 'Search and add team members…',
+    render: {
+      option: function(data, escape) {
+        const color = data.$option ? data.$option.dataset.color : '#3b82f6';
+        const initials = data.$option ? data.$option.dataset.initials : '??';
+        const role    = data.$option ? data.$option.dataset.role : '';
+        return `<div class="attendee-option">
+          <div class="attendee-avatar" style="background:${color};">${escape(initials)}</div>
+          <div>
+            <div class="attendee-name">${escape(data.text)}</div>
+            <div class="attendee-role">${escape(role)}</div>
+          </div>
+        </div>`;
+      },
+      item: function(data, escape) {
+        return `<div class="item">${escape(data.text)}</div>`;
+      }
+    }
+  });
+}
+
+// ── Project select with Tom Select ────────────────────────────────────────
+const projEl = document.getElementById('projectSelect');
+if (projEl && projEl.options.length > 1) {
+  new TomSelect('#projectSelect', {
+    allowEmptyOption: true,
+    render: {
+      option: function(data, escape) {
+        return `<div class="project-option"><i class="fas fa-briefcase project-icon me-2"></i>${escape(data.text)}</div>`;
+      }
+    }
+  });
+}
+
+// ── All-day toggle ─────────────────────────────────────────────────────────
+document.getElementById('all_day')?.addEventListener('change', function() {
+  const endInput = document.getElementById('endDateInput');
+  if (endInput) endInput.disabled = this.checked;
+});
+</script>
 {% endblock %}

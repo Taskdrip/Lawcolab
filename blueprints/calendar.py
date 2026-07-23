@@ -118,17 +118,71 @@ def index():
 
     month_name = first_day.strftime('%B %Y')
 
+    # ── Week view data ────────────────────────────────────────────────────────
+    week_offset = request.args.get('week', 0, type=int)   # offset in weeks from this week
+    today_dt = date.today()
+    # Find Monday of the current/offset week
+    week_start = today_dt - timedelta(days=today_dt.weekday()) + timedelta(weeks=week_offset)
+    week_days  = [week_start + timedelta(days=i) for i in range(7)]
+    week_start_dt = datetime.combine(week_start, datetime.min.time())
+    week_end_dt   = datetime.combine(week_days[-1], datetime.max.time().replace(microsecond=0))
+
+    week_events_raw = (get_firm_events_query()
+                       .filter(CalendarEvent.start_datetime >= week_start_dt,
+                               CalendarEvent.start_datetime <= week_end_dt)
+                       .order_by(CalendarEvent.start_datetime)
+                       .all())
+
+    week_events_by_day = {}
+    for ev in week_events_raw:
+        d = ev.start_datetime.date()
+        week_events_by_day.setdefault(d, []).append(ev)
+
+    prev_week_offset = week_offset - 1
+    next_week_offset = week_offset + 1
+    week_label = (f"{week_days[0].strftime('%b %d')} – {week_days[-1].strftime('%b %d, %Y')}")
+
+    # ── List view data (all events this month, chronological) ────────────────
+    # events is already sorted by start_datetime for the month – reuse it
+    # Group by date for list view
+    events_by_date = {}
+    for ev in events:
+        d = ev.start_datetime.date()
+        events_by_date.setdefault(d, []).append(ev)
+    list_dates = sorted(events_by_date.keys())
+
+    # ── "Due soon" flags for glow ─────────────────────────────────────────────
+    now_dt = datetime.now()
+    due_today_ids = set()
+    overdue_ids   = set()
+    for ev in events:
+        if ev.status == EVENT_STATUS_UPCOMING:
+            if ev.start_datetime.date() == today_dt:
+                due_today_ids.add(ev.id)
+            elif ev.start_datetime < now_dt:
+                overdue_ids.add(ev.id)
+
     return render_template('calendar/index.html',
                            cal=cal,
                            events=events,
                            events_by_day=events_by_day,
+                           events_by_date=events_by_date,
+                           list_dates=list_dates,
                            upcoming=upcoming,
                            year=year, month=month,
                            month_name=month_name,
                            today=today,
                            prev_month=prev_month, prev_year=prev_year,
                            next_month=next_month, next_year=next_year,
-                           view=view)
+                           view=view,
+                           week_days=week_days,
+                           week_events_by_day=week_events_by_day,
+                           week_offset=week_offset,
+                           prev_week_offset=prev_week_offset,
+                           next_week_offset=next_week_offset,
+                           week_label=week_label,
+                           due_today_ids=due_today_ids,
+                           overdue_ids=overdue_ids)
 
 
 @calendar_bp.route('/create', methods=['GET', 'POST'])
