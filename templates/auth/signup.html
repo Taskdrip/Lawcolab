@@ -1,136 +1,196 @@
-{% extends "base.html" %}
+{% extends "auth/auth_base.html" %}
 
-{% block title %}Sign Up - LAWCOLAB{% endblock %}
+{% block title %}Create Your Law Firm — LAWCOLAB{% endblock %}
 
-{% block content %}
-<div class="auth-container">
-    <div class="container-fluid h-100">
-        <div class="row h-100">
-            <!-- Left side - Branding -->
-            <div class="col-lg-6 d-none d-lg-flex auth-brand-side">
-                <div class="auth-brand-content">
-                    <div class="text-center">
-                        <i class="fas fa-balance-scale auth-brand-icon"></i>
-                        <h1 class="auth-brand-title">Join LAWCOLAB</h1>
-                        <p class="auth-brand-subtitle">Start managing your legal practice professionally</p>
-                    </div>
-                    
-                    <div class="auth-features">
-                        <div class="feature-item">
-                            <i class="fas fa-rocket"></i>
-                            <div>
-                                <h5>Quick Setup</h5>
-                                <p>Get started in minutes with our guided setup</p>
-                            </div>
-                        </div>
-                        <div class="feature-item">
-                            <i class="fas fa-mobile-alt"></i>
-                            <div>
-                                <h5>Mobile Ready</h5>
-                                <p>Access your practice from anywhere, any device</p>
-                            </div>
-                        </div>
-                        <div class="feature-item">
-                            <i class="fas fa-headset"></i>
-                            <div>
-                                <h5>Expert Support</h5>
-                                <p>Get help from our legal technology specialists</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Right side - Signup Form -->
-            <div class="col-lg-6 auth-form-side">
-                <div class="auth-form-container">
-                    <div class="auth-form-header">
-                        <h2>Start Your Law Firm</h2>
-                        <p class="text-muted">Create your law firm account and manage your practice</p>
-                    </div>
-                    
-                    <form method="POST" class="auth-form">
-                        {{ form.hidden_tag() }}
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                {{ form.first_name.label(class="form-label") }}
-                                {{ form.first_name(class="form-control") }}
-                                {% if form.first_name.errors %}
-                                    <div class="invalid-feedback d-block">{{ form.first_name.errors[0] }}</div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                {{ form.last_name.label(class="form-label") }}
-                                {{ form.last_name(class="form-control") }}
-                                {% if form.last_name.errors %}
-                                    <div class="invalid-feedback d-block">{{ form.last_name.errors[0] }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            {{ form.email.label(class="form-label") }}
-                            {{ form.email(class="form-control") }}
-                            {% if form.email.errors %}
-                                <div class="invalid-feedback d-block">{{ form.email.errors[0] }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            {{ form.phone.label(class="form-label") }}
-                            {{ form.phone(class="form-control") }}
-                            {% if form.phone.errors %}
-                                <div class="invalid-feedback d-block">{{ form.phone.errors[0] }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            {{ form.law_firm_name.label(class="form-label") }}
-                            {{ form.law_firm_name(class="form-control") }}
-                            {% if form.law_firm_name.errors %}
-                                <div class="invalid-feedback d-block">{{ form.law_firm_name.errors[0] }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            {{ form.law_firm_description.label(class="form-label") }}
-                            {{ form.law_firm_description(class="form-control", rows="3", placeholder="Brief description of your law firm (optional)") }}
-                            {% if form.law_firm_description.errors %}
-                                <div class="invalid-feedback d-block">{{ form.law_firm_description.errors[0] }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                {{ form.password.label(class="form-label") }}
-                                {{ form.password(class="form-control") }}
-                                {% if form.password.errors %}
-                                    <div class="invalid-feedback d-block">{{ form.password.errors[0] }}</div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                {{ form.confirm_password.label(class="form-label") }}
-                                {{ form.confirm_password(class="form-control") }}
-                                {% if form.confirm_password.errors %}
-                                    <div class="invalid-feedback d-block">{{ form.confirm_password.errors[0] }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
-                            <i class="fas fa-building me-2"></i>Create Law Firm
-                        </button>
-                        
-                        <div class="text-center">
-                            <p class="mb-0">Already have an account? 
-                                <a href="{{ url_for('auth.login') }}" class="text-primary">Sign in here</a>
-                            </p>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+{% block topbar_links %}
+  <a href="{{ url_for('auth.login') }}">Sign In</a>
+{% endblock %}
+
+{% block hero_content %}
+  <div class="auth-hero-badge">
+    <i class="fas fa-balance-scale"></i> Legal Practice Platform
+  </div>
+
+  <h1 class="auth-hero-title">
+    Run Your Firm<br>Like a <em>Champion</em>
+  </h1>
+  <p class="auth-hero-sub">
+    Join hundreds of law firms using LAWCOLAB to manage cases, clients, billing, and their entire practice — from one powerful platform.
+  </p>
+
+  <div class="auth-stats">
+    <div class="auth-stat">
+      <div class="auth-stat-num">500+</div>
+      <div class="auth-stat-label">Law Firms</div>
     </div>
-</div>
+    <div class="auth-stat">
+      <div class="auth-stat-num">98%</div>
+      <div class="auth-stat-label">Satisfaction</div>
+    </div>
+    <div class="auth-stat">
+      <div class="auth-stat-num">24/7</div>
+      <div class="auth-stat-label">Support</div>
+    </div>
+  </div>
+
+  <div class="auth-features">
+    <div class="auth-feat">
+      <div class="auth-feat-icon"><i class="fas fa-rocket"></i></div>
+      <div>
+        <div class="auth-feat-title">Quick Setup</div>
+        <div class="auth-feat-sub">Get your firm live in under 5 minutes</div>
+      </div>
+    </div>
+    <div class="auth-feat">
+      <div class="auth-feat-icon"><i class="fas fa-briefcase"></i></div>
+      <div>
+        <div class="auth-feat-title">Full Case Management</div>
+        <div class="auth-feat-sub">Track every matter, deadline, and client in one place</div>
+      </div>
+    </div>
+    <div class="auth-feat">
+      <div class="auth-feat-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+      <div>
+        <div class="auth-feat-title">Integrated Billing</div>
+        <div class="auth-feat-sub">Invoices, escrow, and payment processing built in</div>
+      </div>
+    </div>
+    <div class="auth-feat">
+      <div class="auth-feat-icon"><i class="fas fa-mobile-alt"></i></div>
+      <div>
+        <div class="auth-feat-title">Mobile Ready</div>
+        <div class="auth-feat-sub">Access your practice from any device, anywhere</div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block form_content %}
+  <h2 class="auth-card-title">Start Your Law Firm</h2>
+  <p class="auth-card-sub">Create your account — free to set up, no credit card required.</p>
+
+  <form method="POST" novalidate>
+    {{ form.hidden_tag() }}
+
+    <!-- Name row -->
+    <div class="row g-3 mb-0">
+      <div class="col-6">
+        <div class="auth-field">
+          <label>First Name <span class="req">*</span></label>
+          <div class="input-wrap">
+            {{ form.first_name(class="form-control", placeholder="Jane") }}
+            <span class="field-icon"><i class="fas fa-user"></i></span>
+          </div>
+          {% if form.first_name.errors %}
+          <div class="field-error">{{ form.first_name.errors[0] }}</div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="auth-field">
+          <label>Last Name <span class="req">*</span></label>
+          <div class="input-wrap">
+            {{ form.last_name(class="form-control", placeholder="Smith") }}
+            <span class="field-icon"><i class="fas fa-user"></i></span>
+          </div>
+          {% if form.last_name.errors %}
+          <div class="field-error">{{ form.last_name.errors[0] }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Email -->
+    <div class="auth-field">
+      <label>Email Address <span class="req">*</span></label>
+      <div class="input-wrap">
+        {{ form.email(class="form-control", placeholder="jane@smithlaw.com") }}
+        <span class="field-icon"><i class="fas fa-envelope"></i></span>
+      </div>
+      {% if form.email.errors %}
+      <div class="field-error">{{ form.email.errors[0] }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Phone -->
+    <div class="auth-field">
+      <label>Phone Number</label>
+      <div class="input-wrap">
+        {{ form.phone(class="form-control", placeholder="+1 (555) 000-0000") }}
+        <span class="field-icon"><i class="fas fa-phone"></i></span>
+      </div>
+      {% if form.phone.errors %}
+      <div class="field-error">{{ form.phone.errors[0] }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Law Firm Name -->
+    <div class="auth-field">
+      <label>Law Firm Name <span class="req">*</span></label>
+      <div class="input-wrap">
+        {{ form.law_firm_name(class="form-control", placeholder="Smith & Associates LLP") }}
+        <span class="field-icon"><i class="fas fa-building"></i></span>
+      </div>
+      {% if form.law_firm_name.errors %}
+      <div class="field-error">{{ form.law_firm_name.errors[0] }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Firm Description -->
+    <div class="auth-field">
+      <label>Firm Description <span style="color:#9ca3af;font-weight:400;">(optional)</span></label>
+      <div class="input-wrap" style="align-items:flex-start;">
+        {{ form.law_firm_description(class="form-control", rows="2", placeholder="Brief description of your practice area and specialties…", style="height:auto;padding-top:.65rem;") }}
+        <span class="field-icon" style="top:1rem;transform:none;"><i class="fas fa-pen-to-square"></i></span>
+      </div>
+      {% if form.law_firm_description.errors %}
+      <div class="field-error">{{ form.law_firm_description.errors[0] }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Password row -->
+    <div class="row g-3 mb-0">
+      <div class="col-6">
+        <div class="auth-field">
+          <label>Password <span class="req">*</span></label>
+          <div class="input-wrap">
+            {{ form.password(class="form-control", placeholder="Min. 8 characters") }}
+            <span class="field-icon"><i class="fas fa-lock"></i></span>
+            <button type="button" class="pw-toggle" tabindex="-1" aria-label="Toggle password">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+          {% if form.password.errors %}
+          <div class="field-error">{{ form.password.errors[0] }}</div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="auth-field">
+          <label>Confirm Password <span class="req">*</span></label>
+          <div class="input-wrap">
+            {{ form.confirm_password(class="form-control", placeholder="Repeat password") }}
+            <span class="field-icon"><i class="fas fa-lock"></i></span>
+            <button type="button" class="pw-toggle" tabindex="-1" aria-label="Toggle password">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+          {% if form.confirm_password.errors %}
+          <div class="field-error">{{ form.confirm_password.errors[0] }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn-auth-submit">
+      <i class="fas fa-building"></i>
+      Create My Law Firm
+      <span class="btn-arrow"><i class="fas fa-arrow-right"></i></span>
+    </button>
+  </form>
+
+  <p class="auth-switch">
+    Already have an account?
+    <a href="{{ url_for('auth.login') }}">Sign in here</a>
+  </p>
 {% endblock %}
