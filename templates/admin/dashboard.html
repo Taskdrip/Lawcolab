@@ -2,11 +2,250 @@
 
 {% block title %}Admin Dashboard - LAWCOLAB{% endblock %}
 
+{% block extra_css %}
+<style>
+/* ── Smart Notification System ─────────────────────────────── */
+.lc-notif-wrapper {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.lc-notif-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
+}
+
+.lc-notif-bell {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6c47ff, #3b82f6);
+    color: #fff;
+    font-size: 1rem;
+    flex-shrink: 0;
+    animation: bellPulse 2.5s ease-in-out infinite;
+}
+
+.lc-notif-bell::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid rgba(108, 71, 255, 0.45);
+    animation: ringExpand 2.5s ease-in-out infinite;
+}
+
+@keyframes bellPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(108,71,255,0.55), 0 0 12px rgba(108,71,255,0.35); }
+    50%       { box-shadow: 0 0 0 8px rgba(108,71,255,0), 0 0 20px rgba(108,71,255,0.6); }
+}
+
+@keyframes ringExpand {
+    0%   { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(1.7); opacity: 0; }
+}
+
+.lc-notif-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.lc-notif-count {
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #6c47ff, #3b82f6);
+    color: #fff;
+    border-radius: 30px;
+    padding: 2px 8px;
+    margin-left: 4px;
+}
+
+/* Scrollable strip */
+.lc-notif-strip {
+    display: flex;
+    gap: 0.85rem;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(108,71,255,0.2) transparent;
+}
+.lc-notif-strip::-webkit-scrollbar { height: 4px; }
+.lc-notif-strip::-webkit-scrollbar-thumb { background: rgba(108,71,255,0.25); border-radius: 4px; }
+
+/* Individual notification card */
+.lc-notif-card {
+    flex: 0 0 240px;
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px 16px;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid rgba(0,0,0,0.06);
+    animation: cardSlideIn 0.4s ease both;
+}
+.lc-notif-card:nth-child(1)  { animation-delay: 0.05s; }
+.lc-notif-card:nth-child(2)  { animation-delay: 0.10s; }
+.lc-notif-card:nth-child(3)  { animation-delay: 0.15s; }
+.lc-notif-card:nth-child(4)  { animation-delay: 0.20s; }
+.lc-notif-card:nth-child(5)  { animation-delay: 0.25s; }
+.lc-notif-card:nth-child(6)  { animation-delay: 0.30s; }
+.lc-notif-card:nth-child(7)  { animation-delay: 0.35s; }
+.lc-notif-card:nth-child(8)  { animation-delay: 0.40s; }
+
+@keyframes cardSlideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.lc-notif-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    color: inherit;
+    text-decoration: none;
+}
+
+/* Glow accent bar */
+.lc-notif-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 14px 14px 0 0;
+}
+
+.lc-notif-card.glow-danger::before  { background: linear-gradient(90deg, #ef4444, #f97316); }
+.lc-notif-card.glow-warning::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.lc-notif-card.glow-info::before    { background: linear-gradient(90deg, #3b82f6, #06b6d4); }
+.lc-notif-card.glow-primary::before { background: linear-gradient(90deg, #6c47ff, #3b82f6); }
+
+/* Glow shadow */
+.lc-notif-card.glow-danger  { box-shadow: 0 4px 20px rgba(239,68,68,0.18); }
+.lc-notif-card.glow-warning { box-shadow: 0 4px 20px rgba(245,158,11,0.18); }
+.lc-notif-card.glow-info    { box-shadow: 0 4px 20px rgba(59,130,246,0.18); }
+.lc-notif-card.glow-primary { box-shadow: 0 4px 20px rgba(108,71,255,0.18); }
+
+/* Pulse dot */
+.lc-notif-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 3px;
+    animation: dotPulse 1.8s ease-in-out infinite;
+}
+.lc-notif-dot.dot-danger  { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+.lc-notif-dot.dot-warning { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
+.lc-notif-dot.dot-info    { background: #3b82f6; box-shadow: 0 0 6px #3b82f6; }
+.lc-notif-dot.dot-primary { background: #6c47ff; box-shadow: 0 0 6px #6c47ff; }
+
+@keyframes dotPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(0.75); }
+}
+
+.lc-notif-card-icon {
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+}
+.lc-notif-card-icon.icon-danger  { color: #ef4444; }
+.lc-notif-card-icon.icon-warning { color: #f59e0b; }
+.lc-notif-card-icon.icon-info    { color: #3b82f6; }
+.lc-notif-card-icon.icon-primary { color: #6c47ff; }
+
+.lc-notif-card-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.3;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lc-notif-card-detail {
+    font-size: 0.72rem;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* All-clear state */
+.lc-notif-clear {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border: 1px solid rgba(34,197,94,0.25);
+    border-radius: 14px;
+    padding: 14px 20px;
+    color: #166534;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 4px 16px rgba(34,197,94,0.12);
+    animation: cardSlideIn 0.4s ease both;
+}
+
+.lc-notif-clear i {
+    font-size: 1.2rem;
+    color: #22c55e;
+    filter: drop-shadow(0 0 6px rgba(34,197,94,0.5));
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Subscription Notification -->
 {% include 'components/subscription_notification.html' %}
 
 <div class="container-fluid mt-4">
+
+    <!-- ── Smart Notification System ───────────────────────────────────── -->
+    <div class="lc-notif-wrapper">
+        <div class="lc-notif-header">
+            <div class="lc-notif-bell"><i class="fas fa-bell"></i></div>
+            <h6 class="lc-notif-title">Smart Alerts
+                {% if smart_notifications %}
+                <span class="lc-notif-count">{{ smart_notifications|length }}</span>
+                {% endif %}
+            </h6>
+        </div>
+
+        {% if smart_notifications %}
+        <div class="lc-notif-strip">
+            {% for n in smart_notifications %}
+            <a href="{{ n.link }}" class="lc-notif-card glow-{{ n.color }}">
+                <div class="lc-notif-card-icon icon-{{ n.color }}">
+                    <i class="{{ n.icon }}"></i>
+                </div>
+                <div class="lc-notif-card-title">{{ n.title }}</div>
+                <div class="d-flex align-items-center gap-2 mt-1">
+                    <div class="lc-notif-dot dot-{{ n.color }}"></div>
+                    <div class="lc-notif-card-detail">{{ n.detail }}</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="lc-notif-clear">
+            <i class="fas fa-check-circle"></i>
+            All clear — no urgent alerts right now. Have a productive day!
+        </div>
+        {% endif %}
+    </div>
+    <!-- ──────────────────────────────────────────────────────────────────── -->
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -177,9 +416,6 @@
                         </a>
                         <a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline-danger">
                             <i class="fas fa-users-cog me-2"></i>Manage Users
-                        </a>
-                        <a href="{{ url_for('admin.manage_sliders') }}" class="btn btn-outline-dark">
-                            <i class="fas fa-images me-2"></i>Dashboard Sliders
                         </a>
                     </div>
                 </div>

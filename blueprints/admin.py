@@ -1,13 +1,14 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import current_user
 from app import db
-from models import User, Project, LawFirm, DashboardSlider, ROLE_ADMIN, ROLE_TEAM_MEMBER, ROLE_CLIENT
+from models import User, Project, LawFirm, DashboardSlider, Invoice, DirectMessage, CalendarEvent, ROLE_ADMIN, ROLE_TEAM_MEMBER, ROLE_CLIENT
 from utils.decorators import require_super_admin
 from utils.decorators import require_admin
 from utils.trial_access import require_active_subscription, trial_warning_context, get_trial_notification
 from forms import ClientForm, TeamMemberForm
 import uuid
 import os
+from datetime import date, timedelta
 from werkzeug.utils import secure_filename
 
 admin_bp = Blueprint('admin', __name__)
@@ -20,20 +21,121 @@ def admin_dashboard():
     # Ensure admin has a law firm
     if not current_user.law_firm_id:
         current_user.create_law_firm_if_admin()
-    
+
+    law_firm_id = current_user.law_firm_id
+
     # Get law firm statistics
-    total_clients = User.query.filter_by(law_firm_id=current_user.law_firm_id, role=ROLE_CLIENT).count()
-    total_team_members = User.query.filter_by(law_firm_id=current_user.law_firm_id, role=ROLE_TEAM_MEMBER).count()
-    total_projects = Project.query.filter_by(law_firm_id=current_user.law_firm_id).count()
-    
+    total_clients = User.query.filter_by(law_firm_id=law_firm_id, role=ROLE_CLIENT).count()
+    total_team_members = User.query.filter_by(law_firm_id=law_firm_id, role=ROLE_TEAM_MEMBER).count()
+    total_projects = Project.query.filter_by(law_firm_id=law_firm_id).count()
+
     # Recent activity
-    recent_clients = User.query.filter_by(law_firm_id=current_user.law_firm_id, role=ROLE_CLIENT).order_by(User.created_at.desc()).limit(5).all()
-    recent_projects = Project.query.filter_by(law_firm_id=current_user.law_firm_id).order_by(Project.created_at.desc()).limit(5).all()
-    
+    recent_clients = User.query.filter_by(law_firm_id=law_firm_id, role=ROLE_CLIENT).order_by(User.created_at.desc()).limit(5).all()
+    recent_projects = Project.query.filter_by(law_firm_id=law_firm_id).order_by(Project.created_at.desc()).limit(5).all()
+
+    # ── Smart Notifications ──────────────────────────────────────────────────
+    today = date.today()
+    soon = today + timedelta(days=7)
+    smart_notifications = []
+
+    # 1. Projects with deadlines in the next 7 days
+    due_projects = Project.query.filter(
+        Project.law_firm_id == law_firm_id,
+        Project.deadline != None,
+        Project.deadline >= today,
+        Project.deadline <= soon,
+        Project.status == 'active'
+    ).order_by(Project.deadline).limit(5).all()
+    for p in due_projects:
+        days_left = (p.deadline - today).days
+        label = "Due today!" if days_left == 0 else f"Due in {days_left} day{'s' if days_left != 1 else ''}"
+        smart_notifications.append({
+            'type': 'deadline',
+            'icon': 'fas fa-calendar-exclamation',
+            'color': 'danger' if days_left <= 1 else 'warning',
+            'title': f'Project deadline: {p.title}',
+            'detail': label,
+            'link': url_for('projects.project_detail', project_id=p.id),
+        })
+
+    # 2. Overdue invoices
+    overdue_invoices = Invoice.query.filter(
+        Invoice.law_firm_id == law_firm_id,
+        Invoice.status.in_(['sent', 'overdue']),
+        Invoice.due_date < today
+    ).order_by(Invoice.due_date).limit(5).all()
+    for inv in overdue_invoices:
+        days_late = (today - inv.due_date).days
+        smart_notifications.append({
+            'type': 'invoice',
+            'icon': 'fas fa-file-invoice-dollar',
+            'color': 'danger',
+            'title': f'Invoice #{inv.invoice_number} overdue',
+            'detail': f'{days_late} day{"s" if days_late != 1 else ""} past due — ${inv.total_amount:,.2f}',
+            'link': url_for('invoices.view_invoice', id=inv.id),
+        })
+
+    # 3. Invoices due within 7 days (not yet overdue)
+    upcoming_invoices = Invoice.query.filter(
+        Invoice.law_firm_id == law_firm_id,
+        Invoice.status.in_(['sent', 'draft']),
+        Invoice.due_date >= today,
+        Invoice.due_date <= soon
+    ).order_by(Invoice.due_date).limit(3).all()
+    for inv in upcoming_invoices:
+        days_left = (inv.due_date - today).days
+        smart_notifications.append({
+            'type': 'invoice_upcoming',
+            'icon': 'fas fa-file-invoice',
+            'color': 'warning',
+            'title': f'Invoice #{inv.invoice_number} due soon',
+            'detail': f'Due in {days_left} day{"s" if days_left != 1 else ""} — ${inv.total_amount:,.2f}',
+            'link': url_for('invoices.view_invoice', id=inv.id),
+        })
+
+    # 4. Unread direct messages
+    unread_count = DirectMessage.query.filter_by(
+        receiver_id=current_user.id,
+        is_read=False
+    ).count()
+    if unread_count:
+        smart_notifications.append({
+            'type': 'message',
+            'icon': 'fas fa-envelope',
+            'color': 'info',
+            'title': f'{unread_count} unread message{"s" if unread_count != 1 else ""}',
+            'detail': 'You have unread messages waiting',
+            'link': url_for('chat.chat_home'),
+        })
+
+    # 5. Upcoming calendar events (next 3 days)
+    very_soon = today + timedelta(days=3)
+    try:
+        from datetime import datetime as dt
+        upcoming_events = CalendarEvent.query.filter(
+            CalendarEvent.law_firm_id == law_firm_id,
+            CalendarEvent.start_datetime >= dt.combine(today, dt.min.time()),
+            CalendarEvent.start_datetime <= dt.combine(very_soon, dt.max.time())
+        ).order_by(CalendarEvent.start_datetime).limit(4).all()
+        for ev in upcoming_events:
+            ev_date = ev.start_datetime.date()
+            days_left = (ev_date - today).days
+            smart_notifications.append({
+                'type': 'event',
+                'icon': 'fas fa-calendar-check',
+                'color': 'primary',
+                'title': ev.title,
+                'detail': 'Today' if days_left == 0 else f'In {days_left} day{"s" if days_left != 1 else ""}',
+                'link': url_for('calendar.index'),
+            })
+    except Exception:
+        pass
+    # ────────────────────────────────────────────────────────────────────────
+
     # Add trial context and notifications
     context = trial_warning_context()
     trial_notification = get_trial_notification()
-    
+
     return render_template('admin/dashboard.html',
                          total_clients=total_clients,
                          total_team_members=total_team_members,
@@ -41,6 +143,7 @@ def admin_dashboard():
                          recent_clients=recent_clients,
                          recent_projects=recent_projects,
                          trial_notification=trial_notification,
+                         smart_notifications=smart_notifications,
                          **context)
 
 @admin_bp.route('/add-client', methods=['GET', 'POST'])
