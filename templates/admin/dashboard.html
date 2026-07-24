@@ -2,451 +2,769 @@
 
 {% block title %}Admin Dashboard - LAWCOLAB{% endblock %}
 
-{% block extra_css %}
+{% block additional_css %}
 <style>
-/* ── Smart Notification System ─────────────────────────────── */
-.lc-notif-wrapper {
+/* ══════════════════════════════════════════════════════════════
+   ADMIN DASHBOARD — WORLD-CLASS DESIGN
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Hero Header ─────────────────────────────────────────────── */
+.adm-hero {
     position: relative;
-    margin-bottom: 1.5rem;
+    overflow: hidden;
+    background: #060f2e;
+    padding: 2.75rem 0 0;
 }
-
-.lc-notif-header {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    margin-bottom: 0.75rem;
-}
-
-.lc-notif-bell {
-    position: relative;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #6c47ff, #3b82f6);
-    color: #fff;
-    font-size: 1rem;
-    flex-shrink: 0;
-    animation: bellPulse 2.5s ease-in-out infinite;
-}
-
-.lc-notif-bell::after {
+.adm-hero::before {
     content: '';
-    position: absolute;
-    inset: -4px;
-    border-radius: 50%;
-    border: 2px solid rgba(108, 71, 255, 0.45);
-    animation: ringExpand 2.5s ease-in-out infinite;
+    position: absolute; inset: 0;
+    background-image: url('/static/images/sections/hero_lobby.jpg');
+    background-size: cover;
+    background-position: center top;
+    opacity: .18;
+}
+.adm-hero::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(
+        160deg,
+        rgba(6,15,46,.97) 0%,
+        rgba(13,27,75,.90) 55%,
+        rgba(6,15,46,.80) 100%
+    );
+}
+.adm-hero-inner { position: relative; z-index: 2; }
+
+/* greeting row */
+.adm-greeting { margin-bottom: 2rem; }
+.adm-greeting-label {
+    font-size: .72rem; font-weight: 700; letter-spacing: .12em;
+    text-transform: uppercase; color: #FFD700; margin-bottom: .35rem;
+}
+.adm-greeting-name {
+    font-size: clamp(1.55rem, 4vw, 2.4rem);
+    font-weight: 900; color: #fff; line-height: 1.15;
+    margin: 0 0 .4rem;
+}
+.adm-greeting-firm {
+    font-size: .9rem; color: rgba(255,255,255,.7);
+    display: flex; align-items: center; gap: .5rem;
+}
+.adm-greeting-firm i { color: #FFD700; }
+
+.adm-hero-actions { display: flex; gap: .65rem; flex-wrap: wrap; }
+.adm-hero-btn {
+    display: inline-flex; align-items: center; gap: .45rem;
+    padding: .5rem 1.1rem; border-radius: 10px;
+    font-size: .82rem; font-weight: 700; text-decoration: none;
+    transition: transform .15s, box-shadow .15s, opacity .15s;
+    white-space: nowrap;
+}
+.adm-hero-btn:hover { transform: translateY(-2px); text-decoration: none; }
+.adm-hero-btn-primary {
+    background: #FFD700; color: #0d1b4b;
+}
+.adm-hero-btn-primary:hover { background: #f5c800; color: #0d1b4b; box-shadow: 0 6px 20px rgba(255,215,0,.4); }
+.adm-hero-btn-outline {
+    background: rgba(255,255,255,.1); color: #fff;
+    border: 1px solid rgba(255,255,255,.25);
+    backdrop-filter: blur(6px);
+}
+.adm-hero-btn-outline:hover { background: rgba(255,255,255,.2); color: #fff; }
+
+/* ── Hero Stat Chips (inside hero, above fold) ─────────────── */
+.adm-hero-chips {
+    display: flex; gap: 1px;
+    background: rgba(255,255,255,.08);
+    border-radius: 0;
+    overflow: hidden;
+    margin-top: 2.25rem;
+}
+.adm-chip {
+    flex: 1; padding: 1.1rem 1.25rem;
+    background: rgba(255,255,255,.05);
+    transition: background .2s;
+    text-align: center;
+    border-right: 1px solid rgba(255,255,255,.07);
+}
+.adm-chip:last-child { border-right: none; }
+.adm-chip:hover { background: rgba(255,255,255,.1); }
+.adm-chip-num {
+    font-size: 1.9rem; font-weight: 900; color: #FFD700;
+    line-height: 1;
+}
+.adm-chip-label {
+    font-size: .7rem; color: rgba(255,255,255,.65);
+    font-weight: 600; letter-spacing: .05em;
+    text-transform: uppercase; margin-top: .3rem;
+}
+.adm-chip-icon {
+    font-size: .85rem; color: rgba(255,255,255,.45);
+    margin-bottom: .25rem;
+}
+@media(max-width: 576px) {
+    .adm-hero-chips { flex-wrap: wrap; }
+    .adm-chip { flex: 1 1 50%; border-right: 1px solid rgba(255,255,255,.07); }
+    .adm-chip:nth-child(even) { border-right: none; }
+    .adm-chip:nth-child(n+3) { border-top: 1px solid rgba(255,255,255,.07); }
+    .adm-chip-num { font-size: 1.5rem; }
 }
 
-@keyframes bellPulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(108,71,255,0.55), 0 0 12px rgba(108,71,255,0.35); }
-    50%       { box-shadow: 0 0 0 8px rgba(108,71,255,0), 0 0 20px rgba(108,71,255,0.6); }
+/* ── Subscription/Alert banner inside hero ──────────────────── */
+.adm-sub-banner {
+    position: relative; z-index: 3;
+    margin: 0; border-radius: 0;
+    font-size: .82rem; font-weight: 600;
+    border: none; border-bottom: 1px solid rgba(255,255,255,.08);
 }
 
-@keyframes ringExpand {
-    0%   { transform: scale(1); opacity: 0.8; }
-    100% { transform: scale(1.7); opacity: 0; }
+/* ── Body area below hero ─────────────────────────────────────── */
+.adm-body { background: #f0f2f8; min-height: 70vh; padding: 2rem 0 3rem; }
+
+/* ── Smart Notification Cards ─────────────────────────────────── */
+.adm-notif-section { margin-bottom: 1.75rem; }
+.adm-section-label {
+    font-size: .68rem; font-weight: 800; letter-spacing: .12em;
+    text-transform: uppercase; color: #64748b; margin-bottom: .75rem;
+    display: flex; align-items: center; gap: .5rem;
+}
+.adm-section-label::after {
+    content: ''; flex: 1; height: 1px; background: #e2e8f0;
+}
+.adm-notif-scroll {
+    display: flex; gap: .75rem;
+    overflow-x: auto; padding-bottom: 4px;
+    scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent;
+}
+.adm-notif-scroll::-webkit-scrollbar { height: 3px; }
+.adm-notif-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+.adm-notif-pill {
+    flex: 0 0 auto;
+    display: flex; align-items: center; gap: .55rem;
+    padding: .55rem 1rem;
+    border-radius: 100px;
+    font-size: .78rem; font-weight: 600;
+    text-decoration: none; color: inherit;
+    white-space: nowrap;
+    border: 1.5px solid transparent;
+    transition: transform .15s, box-shadow .15s;
+    animation: pillIn .35s ease both;
+}
+.adm-notif-pill:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,.12); text-decoration: none; color: inherit; }
+.adm-notif-pill.pill-danger   { background: #fff1f2; border-color: #fecdd3; color: #9f1239; }
+.adm-notif-pill.pill-warning  { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+.adm-notif-pill.pill-info     { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
+.adm-notif-pill.pill-primary  { background: #f5f3ff; border-color: #ddd6fe; color: #5b21b6; }
+.adm-notif-pill .pill-dot {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+    animation: dotBlink 1.6s ease-in-out infinite;
+}
+.pill-danger  .pill-dot { background: #ef4444; }
+.pill-warning .pill-dot { background: #f59e0b; }
+.pill-info    .pill-dot { background: #3b82f6; }
+.pill-primary .pill-dot { background: #7c3aed; }
+@keyframes pillIn { from { opacity:0; transform:translateX(10px); } to { opacity:1; transform:none; } }
+@keyframes dotBlink { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+
+.adm-notif-clear {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .5rem 1.1rem; border-radius: 100px;
+    background: #f0fdf4; border: 1.5px solid #bbf7d0;
+    font-size: .78rem; font-weight: 600; color: #166534;
+}
+.adm-notif-clear i { color: #22c55e; }
+
+/* ── Stat Cards ─────────────────────────────────────────────── */
+.adm-stat {
+    border-radius: 18px; padding: 1.5rem 1.6rem;
+    position: relative; overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+    text-decoration: none; display: block;
+}
+.adm-stat:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,.14); text-decoration: none; }
+.adm-stat-1 { background: linear-gradient(135deg, #0d1b4b 0%, #1d3a8a 100%); }
+.adm-stat-2 { background: linear-gradient(135deg, #064e3b 0%, #065f46 100%); }
+.adm-stat-3 { background: linear-gradient(135deg, #7c2d12 0%, #c2410c 100%); }
+.adm-stat-4 { background: linear-gradient(135deg, #581c87 0%, #7e22ce 100%); }
+.adm-stat-bg-icon {
+    position: absolute; right: -10px; bottom: -10px;
+    font-size: 5rem; opacity: .1; color: #fff;
+    pointer-events: none;
+}
+.adm-stat-label {
+    font-size: .68rem; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: rgba(255,255,255,.65);
+    margin-bottom: .5rem;
+}
+.adm-stat-num {
+    font-size: 2.6rem; font-weight: 900; color: #fff; line-height: 1;
+    margin-bottom: .35rem;
+}
+.adm-stat-sub {
+    font-size: .72rem; color: rgba(255,255,255,.55);
+}
+.adm-stat-icon-badge {
+    width: 40px; height: 40px; border-radius: 11px;
+    background: rgba(255,255,255,.15);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 1rem;
+    margin-bottom: 1rem;
 }
 
-.lc-notif-title {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0;
+/* ── Quick-Action Cards ─────────────────────────────────────── */
+.adm-qa-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .65rem;
 }
-
-.lc-notif-count {
-    font-size: 0.7rem;
-    font-weight: 600;
-    background: linear-gradient(135deg, #6c47ff, #3b82f6);
-    color: #fff;
-    border-radius: 30px;
-    padding: 2px 8px;
-    margin-left: 4px;
+@media(max-width:768px) {
+    .adm-qa-grid { grid-template-columns: repeat(2, 1fr); }
 }
-
-/* Scrollable strip */
-.lc-notif-strip {
-    display: flex;
-    gap: 0.85rem;
-    overflow-x: auto;
-    padding-bottom: 6px;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(108,71,255,0.2) transparent;
+@media(max-width:400px) {
+    .adm-qa-grid { grid-template-columns: repeat(1, 1fr); }
 }
-.lc-notif-strip::-webkit-scrollbar { height: 4px; }
-.lc-notif-strip::-webkit-scrollbar-thumb { background: rgba(108,71,255,0.25); border-radius: 4px; }
-
-/* Individual notification card */
-.lc-notif-card {
-    flex: 0 0 240px;
+.adm-qa-card {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: .4rem;
+    padding: 1rem .75rem;
+    border-radius: 14px;
+    text-decoration: none;
+    transition: transform .15s, box-shadow .15s;
+    text-align: center;
+    border: 1.5px solid transparent;
     background: #fff;
-    border-radius: 14px;
-    padding: 14px 16px;
-    text-decoration: none;
-    color: inherit;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.2s, box-shadow 0.2s;
-    border: 1px solid rgba(0,0,0,0.06);
-    animation: cardSlideIn 0.4s ease both;
 }
-.lc-notif-card:nth-child(1)  { animation-delay: 0.05s; }
-.lc-notif-card:nth-child(2)  { animation-delay: 0.10s; }
-.lc-notif-card:nth-child(3)  { animation-delay: 0.15s; }
-.lc-notif-card:nth-child(4)  { animation-delay: 0.20s; }
-.lc-notif-card:nth-child(5)  { animation-delay: 0.25s; }
-.lc-notif-card:nth-child(6)  { animation-delay: 0.30s; }
-.lc-notif-card:nth-child(7)  { animation-delay: 0.35s; }
-.lc-notif-card:nth-child(8)  { animation-delay: 0.40s; }
-
-@keyframes cardSlideIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-.lc-notif-card:hover {
+.adm-qa-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-    color: inherit;
+    box-shadow: 0 8px 24px rgba(0,0,0,.11);
     text-decoration: none;
 }
-
-/* Glow accent bar */
-.lc-notif-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    border-radius: 14px 14px 0 0;
-}
-
-.lc-notif-card.glow-danger::before  { background: linear-gradient(90deg, #ef4444, #f97316); }
-.lc-notif-card.glow-warning::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-.lc-notif-card.glow-info::before    { background: linear-gradient(90deg, #3b82f6, #06b6d4); }
-.lc-notif-card.glow-primary::before { background: linear-gradient(90deg, #6c47ff, #3b82f6); }
-
-/* Glow shadow */
-.lc-notif-card.glow-danger  { box-shadow: 0 4px 20px rgba(239,68,68,0.18); }
-.lc-notif-card.glow-warning { box-shadow: 0 4px 20px rgba(245,158,11,0.18); }
-.lc-notif-card.glow-info    { box-shadow: 0 4px 20px rgba(59,130,246,0.18); }
-.lc-notif-card.glow-primary { box-shadow: 0 4px 20px rgba(108,71,255,0.18); }
-
-/* Pulse dot */
-.lc-notif-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    margin-top: 3px;
-    animation: dotPulse 1.8s ease-in-out infinite;
-}
-.lc-notif-dot.dot-danger  { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
-.lc-notif-dot.dot-warning { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
-.lc-notif-dot.dot-info    { background: #3b82f6; box-shadow: 0 0 6px #3b82f6; }
-.lc-notif-dot.dot-primary { background: #6c47ff; box-shadow: 0 0 6px #6c47ff; }
-
-@keyframes dotPulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50%       { opacity: 0.5; transform: scale(0.75); }
-}
-
-.lc-notif-card-icon {
+.adm-qa-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
     font-size: 1.1rem;
-    margin-bottom: 6px;
 }
-.lc-notif-card-icon.icon-danger  { color: #ef4444; }
-.lc-notif-card-icon.icon-warning { color: #f59e0b; }
-.lc-notif-card-icon.icon-info    { color: #3b82f6; }
-.lc-notif-card-icon.icon-primary { color: #6c47ff; }
+.adm-qa-text { font-size: .72rem; font-weight: 700; color: #374151; line-height: 1.2; }
 
-.lc-notif-card-title {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: #1e293b;
-    line-height: 1.3;
-    margin-bottom: 3px;
-    white-space: nowrap;
+/* colour variants */
+.adm-qa-blue  .adm-qa-icon { background:#eff6ff; color:#1d4ed8; }
+.adm-qa-blue:hover  { border-color:#bfdbfe; }
+.adm-qa-green .adm-qa-icon { background:#f0fdf4; color:#15803d; }
+.adm-qa-green:hover { border-color:#bbf7d0; }
+.adm-qa-amber .adm-qa-icon { background:#fffbeb; color:#b45309; }
+.adm-qa-amber:hover { border-color:#fde68a; }
+.adm-qa-red   .adm-qa-icon { background:#fff1f2; color:#be123c; }
+.adm-qa-red:hover   { border-color:#fecdd3; }
+.adm-qa-purple .adm-qa-icon { background:#f5f3ff; color:#6d28d9; }
+.adm-qa-purple:hover { border-color:#ddd6fe; }
+.adm-qa-teal  .adm-qa-icon { background:#f0fdfa; color:#0f766e; }
+.adm-qa-teal:hover  { border-color:#99f6e4; }
+
+/* ── Section Cards ──────────────────────────────────────────── */
+.adm-card {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.06);
     overflow: hidden;
-    text-overflow: ellipsis;
+}
+.adm-card-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.1rem 1.4rem .65rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+.adm-card-title {
+    font-size: .85rem; font-weight: 800;
+    color: #0f172a; display: flex; align-items: center; gap: .5rem;
+}
+.adm-card-title i { color: #FFD700; font-size: .95rem; }
+.adm-card-body { padding: 1rem 1.4rem 1.25rem; }
+.adm-card-link {
+    font-size: .72rem; font-weight: 700;
+    color: #1d4ed8; text-decoration: none;
+    display: flex; align-items: center; gap: .25rem;
+    transition: gap .15s;
+}
+.adm-card-link:hover { gap: .45rem; color: #1d4ed8; text-decoration: none; }
+
+/* ── Client Row ─────────────────────────────────────────────── */
+.adm-client-row {
+    display: flex; align-items: center; gap: .85rem;
+    padding: .7rem 0;
+    border-bottom: 1px solid #f1f5f9;
+    text-decoration: none; color: inherit;
+    transition: background .15s;
+    border-radius: 10px;
+    margin: 0 -.5rem;
+    padding: .65rem .5rem;
+}
+.adm-client-row:hover { background: #f8fafc; text-decoration: none; color: inherit; }
+.adm-client-row:last-child { border-bottom: none; }
+.adm-avatar {
+    width: 40px; height: 40px; border-radius: 12px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: .9rem; color: #fff;
+}
+.adm-client-name { font-size: .84rem; font-weight: 700; color: #0f172a; }
+.adm-client-meta { font-size: .72rem; color: #64748b; }
+
+/* ── Project Row ─────────────────────────────────────────────── */
+.adm-proj-row {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .65rem .5rem;
+    border-bottom: 1px solid #f1f5f9;
+    text-decoration: none; color: inherit;
+    border-radius: 10px; margin: 0 -.5rem;
+    transition: background .15s;
+}
+.adm-proj-row:hover { background: #f8fafc; text-decoration: none; color: inherit; }
+.adm-proj-row:last-child { border-bottom: none; }
+.adm-proj-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.adm-proj-name { font-size: .84rem; font-weight: 700; color: #0f172a; flex: 1; }
+.adm-proj-status {
+    font-size: .65rem; font-weight: 700; letter-spacing: .05em;
+    text-transform: uppercase; padding: .2rem .6rem; border-radius: 100px;
+}
+.status-active { background: #dcfce7; color: #166534; }
+.status-completed { background: #dbeafe; color: #1e40af; }
+.status-on_hold { background: #fef9c3; color: #854d0e; }
+.status-other { background: #f1f5f9; color: #475569; }
+
+/* ── Firm Info ───────────────────────────────────────────────── */
+.adm-firm-banner {
+    background: linear-gradient(135deg, #0d1b4b 0%, #1d3a8a 100%);
+    border-radius: 16px; padding: 1.5rem;
+    color: #fff;
+}
+.adm-firm-name { font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: .3rem; }
+.adm-firm-meta { font-size: .78rem; color: rgba(255,255,255,.6); display: flex; align-items: center; gap: .4rem; }
+.adm-firm-action {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: rgba(255,255,255,.15); color: #fff; border: none;
+    border-radius: 8px; padding: .4rem .9rem;
+    font-size: .75rem; font-weight: 700; text-decoration: none;
+    transition: background .15s;
+}
+.adm-firm-action:hover { background: rgba(255,255,255,.25); color: #fff; text-decoration: none; }
+
+/* ── Calendar mini strip ─────────────────────────────────────── */
+.adm-cal-item {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .6rem .5rem;
+    border-radius: 10px; margin: 0 -.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background .15s;
+}
+.adm-cal-item:last-child { border-bottom: none; }
+.adm-cal-item:hover { background: #f8fafc; }
+.adm-cal-badge {
+    width: 42px; flex-shrink: 0; text-align: center;
+    background: #0d1b4b; border-radius: 10px; padding: .35rem .25rem;
+}
+.adm-cal-badge-day { font-size: .65rem; color: rgba(255,255,255,.6); text-transform: uppercase; }
+.adm-cal-badge-num { font-size: 1.1rem; font-weight: 900; color: #FFD700; line-height: 1; }
+.adm-cal-title { font-size: .82rem; font-weight: 700; color: #0f172a; }
+.adm-cal-time { font-size: .7rem; color: #64748b; }
+
+/* ── Empty state ─────────────────────────────────────────────── */
+.adm-empty {
+    text-align: center; padding: 2.5rem 1rem;
+    color: #94a3b8;
+}
+.adm-empty i { font-size: 2.5rem; margin-bottom: .75rem; display: block; opacity: .4; }
+.adm-empty p { font-size: .84rem; margin: 0 0 1rem; }
+
+/* ── Responsive tweaks ───────────────────────────────────────── */
+@media(max-width: 991px) {
+    .adm-hero { padding-top: 2rem; }
+    .adm-greeting-name { font-size: 1.5rem; }
+    .adm-stat-num { font-size: 2rem; }
+}
+@media(max-width: 576px) {
+    .adm-hero { padding-top: 1.5rem; }
+    .adm-hero-actions { gap: .45rem; }
+    .adm-hero-btn { padding: .45rem .85rem; font-size: .78rem; }
+    .adm-body { padding: 1.25rem 0 2.5rem; }
+    .adm-stat { padding: 1.1rem 1.2rem; }
+    .adm-stat-num { font-size: 1.8rem; }
 }
 
-.lc-notif-card-detail {
-    font-size: 0.72rem;
-    color: #64748b;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+/* ── Entrance animation ──────────────────────────────────────── */
+.adm-fade-up {
+    animation: fadeUpIn .45s ease both;
 }
-
-/* All-clear state */
-.lc-notif-clear {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-    border: 1px solid rgba(34,197,94,0.25);
-    border-radius: 14px;
-    padding: 14px 20px;
-    color: #166534;
-    font-size: 0.85rem;
-    font-weight: 600;
-    box-shadow: 0 4px 16px rgba(34,197,94,0.12);
-    animation: cardSlideIn 0.4s ease both;
-}
-
-.lc-notif-clear i {
-    font-size: 1.2rem;
-    color: #22c55e;
-    filter: drop-shadow(0 0 6px rgba(34,197,94,0.5));
+.adm-fade-up:nth-child(2) { animation-delay: .07s; }
+.adm-fade-up:nth-child(3) { animation-delay: .14s; }
+.adm-fade-up:nth-child(4) { animation-delay: .21s; }
+@keyframes fadeUpIn {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:none; }
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Subscription Notification -->
-{% include 'components/subscription_notification.html' %}
 
-<div class="container-fluid mt-4">
-
-    <!-- ── Smart Notification System ───────────────────────────────────── -->
-    <div class="lc-notif-wrapper">
-        <div class="lc-notif-header">
-            <div class="lc-notif-bell"><i class="fas fa-bell"></i></div>
-            <h6 class="lc-notif-title">Smart Alerts
-                {% if smart_notifications %}
-                <span class="lc-notif-count">{{ smart_notifications|length }}</span>
-                {% endif %}
-            </h6>
-        </div>
-
-        {% if smart_notifications %}
-        <div class="lc-notif-strip">
-            {% for n in smart_notifications %}
-            <a href="{{ n.link }}" class="lc-notif-card glow-{{ n.color }}">
-                <div class="lc-notif-card-icon icon-{{ n.color }}">
-                    <i class="{{ n.icon }}"></i>
-                </div>
-                <div class="lc-notif-card-title">{{ n.title }}</div>
-                <div class="d-flex align-items-center gap-2 mt-1">
-                    <div class="lc-notif-dot dot-{{ n.color }}"></div>
-                    <div class="lc-notif-card-detail">{{ n.detail }}</div>
-                </div>
-            </a>
-            {% endfor %}
-        </div>
+<!-- ═══════════════════  HERO HEADER  ═══════════════════ -->
+<div class="adm-hero">
+    <!-- Subscription / Access banner (above all) -->
+    {% if current_user.is_authenticated and current_user.law_firm %}
+        {% set firm = current_user.law_firm %}
+        {% if firm.admin_access_granted %}
+            {% if firm.is_subscription_expired %}
+            <div class="alert alert-danger adm-sub-banner mb-0 px-4 py-2 rounded-0">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Subscription Expired!</strong>
+                <a href="/chat-support" class="alert-link ms-1">Contact support to renew</a>.
+                <button type="button" class="btn-close float-end" data-bs-dismiss="alert"></button>
+            </div>
+            {% elif firm.days_until_expiry is not none and firm.days_until_expiry <= 7 %}
+            <div class="alert alert-warning adm-sub-banner mb-0 px-4 py-2 rounded-0">
+                <i class="fas fa-clock me-2"></i>
+                <strong>Subscription Expiring Soon!</strong>
+                Your subscription expires in {{ firm.days_until_expiry }} day{{ 's' if firm.days_until_expiry != 1 else '' }}.
+                <a href="/chat-support" class="alert-link ms-1">Contact support to renew</a>.
+                <button type="button" class="btn-close float-end" data-bs-dismiss="alert"></button>
+            </div>
+            {% endif %}
         {% else %}
-        <div class="lc-notif-clear">
-            <i class="fas fa-check-circle"></i>
-            All clear — no urgent alerts right now. Have a productive day!
+        <div class="alert alert-info adm-sub-banner mb-0 px-4 py-2 rounded-0">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Admin Access Pending.</strong>
+            <a href="/chat-support" class="alert-link ms-1">Request access now</a>.
+            <button type="button" class="btn-close float-end" data-bs-dismiss="alert"></button>
         </div>
         {% endif %}
-    </div>
-    <!-- ──────────────────────────────────────────────────────────────────── -->
-    <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-0 text-gradient">Admin Dashboard</h1>
-            <p class="text-muted">Manage your law firm's operations</p>
-        </div>
-        <div>
-            <a href="{{ url_for('admin.add_client') }}" class="btn btn-primary me-2">
-                <i class="fas fa-user-plus me-2"></i>Add Client
-            </a>
-            <a href="{{ url_for('admin.add_team_member') }}" class="btn btn-outline-primary">
-                <i class="fas fa-user-tie me-2"></i>Add Team Member
-            </a>
-        </div>
-    </div>
+    {% endif %}
 
-    <!-- Statistics Cards -->
-    <div class="row g-4 mb-5">
-        <div class="col-lg-3 col-md-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="rounded-circle p-3 me-3" style="background-color: #e3f2fd;">
-                            <i class="fas fa-user-friends text-primary"></i>
-                        </div>
-                        <div>
-                            <h3 class="mb-0">{{ total_clients }}</h3>
-                            <p class="text-muted mb-0">Total Clients</p>
-                        </div>
-                    </div>
+    <div class="adm-hero-inner container-fluid px-3 px-lg-4">
+        <div class="row align-items-center gy-3">
+            <!-- Greeting & actions -->
+            <div class="col-md-8 adm-greeting">
+                <div class="adm-greeting-label"><i class="fas fa-balance-scale me-1"></i>LawColab Admin</div>
+                <h1 class="adm-greeting-name">
+                    Good {% if now is defined %}{% set h = now.hour %}{% if h < 12 %}Morning{% elif h < 17 %}Afternoon{% else %}Evening{% endif %}{% else %}Welcome back{% endif %},<br>
+                    {{ current_user.first_name }}
+                </h1>
+                <div class="adm-greeting-firm">
+                    <i class="fas fa-building"></i>
+                    <span>{{ current_user.law_firm.name if current_user.law_firm else 'Your Law Firm' }}</span>
+                    <span style="color:rgba(255,255,255,.3);">•</span>
+                    <span style="color:rgba(255,255,255,.5);">{{ current_user.role.replace('_',' ').title() }}</span>
                 </div>
             </div>
-        </div>
-        
-        <div class="col-lg-3 col-md-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="rounded-circle p-3 me-3" style="background-color: #e8f5e8;">
-                            <i class="fas fa-user-tie text-success"></i>
-                        </div>
-                        <div>
-                            <h3 class="mb-0">{{ total_team_members }}</h3>
-                            <p class="text-muted mb-0">Team Members</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-3 col-md-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="rounded-circle p-3 me-3" style="background-color: #fff3e0;">
-                            <i class="fas fa-briefcase text-warning"></i>
-                        </div>
-                        <div>
-                            <h3 class="mb-0">{{ total_projects }}</h3>
-                            <p class="text-muted mb-0">Active Projects</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-3 col-md-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="rounded-circle p-3 me-3" style="background-color: #fce4ec;">
-                            <i class="fas fa-comments text-info"></i>
-                        </div>
-                        <div>
-                            <h3 class="mb-0">{{ conversations_count|default(0) }}</h3>
-                            <p class="text-muted mb-0">Active Chats</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <div class="row">
-        <!-- Recent Clients -->
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent border-0">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-users me-2 text-primary"></i>Recent Clients
-                        </h5>
-                        <a href="{{ url_for('clients.list_clients') }}" class="btn btn-sm btn-outline-primary">
-                            View All <i class="fas fa-arrow-right ms-1"></i>
-                        </a>
-                    </div>
-                </div>
-                <div class="card-body">
-                    {% if recent_clients %}
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Client</th>
-                                    <th>Email</th>
-                                    <th>Company</th>
-                                    <th>Joined</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for client in recent_clients %}
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="rounded-circle p-2 me-2" style="background-color: #e3f2fd; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
-                                                <i class="fas fa-user text-primary"></i>
-                                            </div>
-                                            <div>
-                                                <div class="fw-semibold">{{ client.full_name }}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="text-muted">{{ client.email or 'N/A' }}</td>
-                                    <td class="text-muted">{{ client.company_name or 'N/A' }}</td>
-                                    <td class="text-muted">{{ client.created_at.strftime('%b %d, %Y') if client.created_at else 'N/A' }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">No clients added yet</p>
-                        <a href="{{ url_for('admin.add_client') }}" class="btn btn-primary">
-                            <i class="fas fa-user-plus me-2"></i>Add Your First Client
-                        </a>
-                    </div>
-                    {% endif %}
+            <!-- Action buttons -->
+            <div class="col-md-4 text-md-end adm-greeting">
+                <div class="adm-hero-actions justify-content-md-end">
+                    <a href="{{ url_for('admin.add_client') }}" class="adm-hero-btn adm-hero-btn-primary">
+                        <i class="fas fa-user-plus"></i> Add Client
+                    </a>
+                    <a href="{{ url_for('admin.add_team_member') }}" class="adm-hero-btn adm-hero-btn-outline">
+                        <i class="fas fa-user-tie"></i> Add Member
+                    </a>
+                    <a href="{{ url_for('admin.firm_profile') }}" class="adm-hero-btn adm-hero-btn-outline">
+                        <i class="fas fa-cog"></i>
+                    </a>
                 </div>
             </div>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="col-lg-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent border-0">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-bolt me-2 text-primary"></i>Quick Actions
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('admin.add_client') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-user-plus me-2"></i>Add New Client
-                        </a>
-                        <a href="{{ url_for('admin.add_team_member') }}" class="btn btn-outline-success">
-                            <i class="fas fa-user-tie me-2"></i>Add Team Member
-                        </a>
-                        <a href="{{ url_for('clients.list_clients') }}" class="btn btn-outline-info">
-                            <i class="fas fa-users me-2"></i>View All Clients
-                        </a>
-                        <a href="{{ url_for('projects.list_projects') }}" class="btn btn-outline-warning">
-                            <i class="fas fa-briefcase me-2"></i>View Projects
-                        </a>
-                        <a href="{{ url_for('chat.chat_home') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-comments me-2"></i>Messages
-                        </a>
-                        <a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline-danger">
-                            <i class="fas fa-users-cog me-2"></i>Manage Users
-                        </a>
-                    </div>
-                </div>
+        <!-- ── Metric Chips ── -->
+        <div class="adm-hero-chips">
+            <div class="adm-chip">
+                <div class="adm-chip-icon"><i class="fas fa-users"></i></div>
+                <div class="adm-chip-num">{{ total_clients }}</div>
+                <div class="adm-chip-label">Clients</div>
             </div>
-
-            <!-- Law Firm Info -->
-            <div class="card border-0 shadow-sm mt-4">
-                <div class="card-header bg-transparent border-0">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-building me-2 text-primary"></i>Your Law Firm
-                    </h5>
-                </div>
-                <div class="card-body">
-                    {% if current_user.law_firm %}
-                    <h6 class="fw-bold">{{ current_user.law_firm.name }}</h6>
-                    {% if current_user.law_firm.description %}
-                    <p class="text-muted mb-3">{{ current_user.law_firm.description[:100] }}{% if current_user.law_firm.description|length > 100 %}...{% endif %}</p>
-                    {% endif %}
-                    
-                    {% if current_user.law_firm.email %}
-                    <div class="d-flex align-items-center mb-2">
-                        <i class="fas fa-envelope text-muted me-2"></i>
-                        <small>{{ current_user.law_firm.email }}</small>
-                    </div>
-                    {% endif %}
-                    {% else %}
-                    <p class="text-muted">Law firm information not available</p>
-                    {% endif %}
-                </div>
+            <div class="adm-chip">
+                <div class="adm-chip-icon"><i class="fas fa-user-tie"></i></div>
+                <div class="adm-chip-num">{{ total_team_members }}</div>
+                <div class="adm-chip-label">Team</div>
+            </div>
+            <div class="adm-chip">
+                <div class="adm-chip-icon"><i class="fas fa-briefcase"></i></div>
+                <div class="adm-chip-num">{{ total_projects }}</div>
+                <div class="adm-chip-label">Projects</div>
+            </div>
+            <div class="adm-chip">
+                <div class="adm-chip-icon"><i class="fas fa-bell"></i></div>
+                <div class="adm-chip-num">{{ smart_notifications|length if smart_notifications else 0 }}</div>
+                <div class="adm-chip-label">Alerts</div>
             </div>
         </div>
     </div>
 </div>
+<!-- ═══════════════════  END HERO  ═══════════════════════ -->
+
+
+<!-- ═══════════════════  BODY  ═══════════════════════════ -->
+<div class="adm-body">
+<div class="container-fluid px-3 px-lg-4">
+
+    <!-- ── Smart Alerts strip ─────────────────────────────── -->
+    {% if smart_notifications %}
+    <div class="adm-notif-section">
+        <div class="adm-section-label">
+            <i class="fas fa-bell text-amber-400" style="color:#f59e0b;"></i> Smart Alerts
+        </div>
+        <div class="adm-notif-scroll">
+            {% for n in smart_notifications %}
+            <a href="{{ n.link }}" class="adm-notif-pill pill-{{ n.color }}">
+                <i class="{{ n.icon }}"></i>
+                <span class="pill-dot"></span>
+                <span>{{ n.title }}</span>
+                <span style="opacity:.6; font-weight:500;">— {{ n.detail }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="adm-notif-section">
+        <div class="adm-notif-clear">
+            <i class="fas fa-check-circle"></i>
+            All clear — no urgent alerts right now. Have a productive day!
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ── Legal News / Slider ────────────────────────────── -->
+    {% include 'components/legal_news_banner.html' %}
+    {% include 'components/dashboard_slider.html' %}
+
+    <!-- ── Stat Cards row ─────────────────────────────────── -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-xl-3 adm-fade-up">
+            <a href="{{ url_for('clients.list_clients') }}" class="adm-stat adm-stat-1">
+                <div class="adm-stat-icon-badge"><i class="fas fa-users"></i></div>
+                <div class="adm-stat-label">Total Clients</div>
+                <div class="adm-stat-num">{{ total_clients }}</div>
+                <div class="adm-stat-sub">Registered clients</div>
+                <i class="fas fa-users adm-stat-bg-icon"></i>
+            </a>
+        </div>
+        <div class="col-6 col-xl-3 adm-fade-up">
+            <a href="{{ url_for('admin.manage_users') }}" class="adm-stat adm-stat-2">
+                <div class="adm-stat-icon-badge"><i class="fas fa-user-tie"></i></div>
+                <div class="adm-stat-label">Team Members</div>
+                <div class="adm-stat-num">{{ total_team_members }}</div>
+                <div class="adm-stat-sub">Active lawyers & staff</div>
+                <i class="fas fa-user-tie adm-stat-bg-icon"></i>
+            </a>
+        </div>
+        <div class="col-6 col-xl-3 adm-fade-up">
+            <a href="{{ url_for('projects.list_projects') }}" class="adm-stat adm-stat-3">
+                <div class="adm-stat-icon-badge"><i class="fas fa-briefcase"></i></div>
+                <div class="adm-stat-label">Total Projects</div>
+                <div class="adm-stat-num">{{ total_projects }}</div>
+                <div class="adm-stat-sub">Cases & matters</div>
+                <i class="fas fa-briefcase adm-stat-bg-icon"></i>
+            </a>
+        </div>
+        <div class="col-6 col-xl-3 adm-fade-up">
+            <a href="{{ url_for('invoices.list_invoices') }}" class="adm-stat adm-stat-4">
+                <div class="adm-stat-icon-badge"><i class="fas fa-file-invoice-dollar"></i></div>
+                <div class="adm-stat-label">Active Alerts</div>
+                <div class="adm-stat-num">{{ smart_notifications|length if smart_notifications else 0 }}</div>
+                <div class="adm-stat-sub">Deadlines & reminders</div>
+                <i class="fas fa-bell adm-stat-bg-icon"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- ── Main content grid ───────────────────────────────── -->
+    <div class="row g-3">
+
+        <!-- LEFT: Recent Clients + Recent Projects -->
+        <div class="col-lg-8">
+
+            <!-- Recent Clients -->
+            <div class="adm-card mb-3">
+                <div class="adm-card-head">
+                    <div class="adm-card-title">
+                        <i class="fas fa-users"></i> Recent Clients
+                    </div>
+                    <a href="{{ url_for('clients.list_clients') }}" class="adm-card-link">
+                        View all <i class="fas fa-chevron-right" style="font-size:.6rem;"></i>
+                    </a>
+                </div>
+                <div class="adm-card-body">
+                    {% if recent_clients %}
+                        {% for client in recent_clients %}
+                        {% set colors = ['#1d4ed8','#15803d','#b45309','#be123c','#7c3aed'] %}
+                        {% set col = colors[loop.index0 % colors|length] %}
+                        <a href="{{ url_for('clients.client_profile', client_id=client.id) }}" class="adm-client-row">
+                            <div class="adm-avatar" style="background:{{ col }};">
+                                {{ (client.first_name[0] if client.first_name else 'C')|upper }}
+                            </div>
+                            <div class="flex-grow-1 min-w-0">
+                                <div class="adm-client-name">{{ client.full_name }}</div>
+                                <div class="adm-client-meta">
+                                    {{ client.email or 'No email' }}
+                                    {% if client.company_name %}
+                                    <span class="mx-1" style="opacity:.4;">•</span>{{ client.company_name }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="text-end flex-shrink-0">
+                                <div style="font-size:.7rem;color:#94a3b8;">
+                                    {{ client.created_at.strftime('%b %d') if client.created_at else '' }}
+                                </div>
+                                <i class="fas fa-chevron-right" style="color:#cbd5e1;font-size:.6rem;"></i>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                    <div class="adm-empty">
+                        <i class="fas fa-users"></i>
+                        <p>No clients added yet</p>
+                        <a href="{{ url_for('admin.add_client') }}" class="adm-hero-btn adm-hero-btn-primary" style="color:#0d1b4b; display:inline-flex;">
+                            <i class="fas fa-user-plus"></i> Add First Client
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Recent Projects -->
+            <div class="adm-card">
+                <div class="adm-card-head">
+                    <div class="adm-card-title">
+                        <i class="fas fa-briefcase"></i> Recent Projects
+                    </div>
+                    <a href="{{ url_for('projects.list_projects') }}" class="adm-card-link">
+                        View all <i class="fas fa-chevron-right" style="font-size:.6rem;"></i>
+                    </a>
+                </div>
+                <div class="adm-card-body">
+                    {% if recent_projects %}
+                        {% for project in recent_projects %}
+                        {% set status_map = {'active':'status-active','completed':'status-completed','on_hold':'status-on_hold'} %}
+                        {% set dot_colors = {'active':'#22c55e','completed':'#3b82f6','on_hold':'#f59e0b'} %}
+                        <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="adm-proj-row">
+                            <div class="adm-proj-dot" style="background:{{ dot_colors.get(project.status,'#94a3b8') }};"></div>
+                            <div class="adm-proj-name">{{ project.title }}</div>
+                            <div class="adm-proj-status {{ status_map.get(project.status,'status-other') }}">
+                                {{ project.status.replace('_',' ').title() }}
+                            </div>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                    <div class="adm-empty">
+                        <i class="fas fa-briefcase"></i>
+                        <p>No projects created yet</p>
+                        <a href="{{ url_for('projects.create_project') }}" class="adm-hero-btn adm-hero-btn-primary" style="color:#0d1b4b; display:inline-flex;">
+                            <i class="fas fa-plus"></i> New Project
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT: Quick Actions + Firm Info + Calendar quick -->
+        <div class="col-lg-4">
+
+            <!-- Quick Actions -->
+            <div class="adm-card mb-3">
+                <div class="adm-card-head">
+                    <div class="adm-card-title"><i class="fas fa-bolt"></i> Quick Actions</div>
+                </div>
+                <div class="adm-card-body">
+                    <div class="adm-qa-grid">
+                        <a href="{{ url_for('admin.add_client') }}" class="adm-qa-card adm-qa-blue">
+                            <div class="adm-qa-icon"><i class="fas fa-user-plus"></i></div>
+                            <div class="adm-qa-text">Add Client</div>
+                        </a>
+                        <a href="{{ url_for('admin.add_team_member') }}" class="adm-qa-card adm-qa-green">
+                            <div class="adm-qa-icon"><i class="fas fa-user-tie"></i></div>
+                            <div class="adm-qa-text">Add Member</div>
+                        </a>
+                        <a href="{{ url_for('invoices.create_invoice') }}" class="adm-qa-card adm-qa-amber">
+                            <div class="adm-qa-icon"><i class="fas fa-file-invoice"></i></div>
+                            <div class="adm-qa-text">New Invoice</div>
+                        </a>
+                        <a href="{{ url_for('calendar.create_event') }}" class="adm-qa-card adm-qa-purple">
+                            <div class="adm-qa-icon"><i class="fas fa-calendar-plus"></i></div>
+                            <div class="adm-qa-text">New Event</div>
+                        </a>
+                        <a href="{{ url_for('projects.create_project') }}" class="adm-qa-card adm-qa-red">
+                            <div class="adm-qa-icon"><i class="fas fa-briefcase"></i></div>
+                            <div class="adm-qa-text">New Project</div>
+                        </a>
+                        <a href="{{ url_for('admin.manage_users') }}" class="adm-qa-card adm-qa-teal">
+                            <div class="adm-qa-icon"><i class="fas fa-users-cog"></i></div>
+                            <div class="adm-qa-text">Manage Users</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Law Firm Card -->
+            <div class="adm-firm-banner mb-3">
+                <div style="display:flex;align-items:center;gap:.65rem;margin-bottom:.85rem;">
+                    <div style="width:44px;height:44px;border-radius:12px;background:rgba(255,215,0,.15);border:1px solid rgba(255,215,0,.25);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#FFD700;flex-shrink:0;">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div>
+                        <div class="adm-firm-name">
+                            {{ current_user.law_firm.name if current_user.law_firm else 'Your Law Firm' }}
+                        </div>
+                        {% if current_user.law_firm and current_user.law_firm.email %}
+                        <div class="adm-firm-meta">
+                            <i class="fas fa-envelope" style="font-size:.65rem;"></i>
+                            {{ current_user.law_firm.email }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if current_user.law_firm and current_user.law_firm.description %}
+                <p style="font-size:.78rem;color:rgba(255,255,255,.55);margin-bottom:1rem;line-height:1.5;">
+                    {{ current_user.law_firm.description[:120] }}{% if current_user.law_firm.description|length > 120 %}…{% endif %}
+                </p>
+                {% endif %}
+                <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+                    <a href="{{ url_for('admin.firm_profile') }}" class="adm-firm-action">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </a>
+                    <a href="{{ url_for('admin.admin_dashboard') }}" class="adm-firm-action">
+                        <i class="fas fa-chart-bar"></i> Analytics
+                    </a>
+                </div>
+            </div>
+
+            <!-- Navigation Shortcuts -->
+            <div class="adm-card">
+                <div class="adm-card-head">
+                    <div class="adm-card-title"><i class="fas fa-compass"></i> Navigate</div>
+                </div>
+                <div class="adm-card-body" style="padding-top:.5rem;padding-bottom:.5rem;">
+                    {% set nav_items = [
+                        ('fas fa-users', 'Clients', url_for('clients.list_clients'), '#1d4ed8'),
+                        ('fas fa-briefcase', 'Projects', url_for('projects.list_projects'), '#15803d'),
+                        ('fas fa-calendar-alt', 'Calendar', url_for('calendar.index'), '#b45309'),
+                        ('fas fa-file-invoice-dollar', 'Invoices', url_for('invoices.list_invoices'), '#7c3aed'),
+                        ('fas fa-comments', 'Messages', url_for('chat.chat_home'), '#0f766e'),
+                        ('fas fa-gavel', 'Court Docket', url_for('calendar.court_docket'), '#be123c'),
+                    ] %}
+                    {% for icon, label, link, color in nav_items %}
+                    <a href="{{ link }}" style="display:flex;align-items:center;gap:.75rem;padding:.55rem .25rem;border-bottom:1px solid #f1f5f9;text-decoration:none;color:#0f172a;transition:background .15s;border-radius:8px;margin:0 -.25rem;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                        <div style="width:32px;height:32px;border-radius:9px;background:{{ color }}18;display:flex;align-items:center;justify-content:center;color:{{ color }};font-size:.8rem;flex-shrink:0;">
+                            <i class="{{ icon }}"></i>
+                        </div>
+                        <span style="font-size:.82rem;font-weight:600;flex:1;">{{ label }}</span>
+                        <i class="fas fa-chevron-right" style="color:#cbd5e1;font-size:.6rem;"></i>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+    </div><!-- /row -->
+</div><!-- /container -->
+</div><!-- /adm-body -->
+
 {% endblock %}
