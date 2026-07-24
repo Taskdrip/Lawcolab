@@ -207,7 +207,7 @@
 
 <!-- ── Filter bar ──────────────────────────────────────────────────────────── -->
 <div class="docket-filter-bar">
-  <form method="GET" action="{{ url_for('calendar.court_docket') }}" class="d-flex align-items-end gap-2 flex-wrap w-100">
+  <form method="GET" action="{{ url_for('calendar.court_docket') }}" class="d-flex align-items-end gap-2 flex-wrap w-100" id="docketFilterForm">
 
     <div>
       <label>Jurisdiction (State)</label>
@@ -261,11 +261,23 @@
     </div>
     {% endif %}
 
+    <div>
+      <label>From Date</label>
+      <input type="date" name="date_from" class="form-control form-control-sm"
+             value="{{ f_date_from }}" style="min-width:130px;">
+    </div>
+
+    <div>
+      <label>To Date</label>
+      <input type="date" name="date_to" class="form-control form-control-sm"
+             value="{{ f_date_to }}" style="min-width:130px;">
+    </div>
+
     <div class="d-flex gap-2 ms-auto">
       <button type="submit" class="btn-filter">
         <i class="fas fa-filter"></i>Filter
       </button>
-      {% if f_jurisdiction or f_court_type or f_judge or f_status or f_project %}
+      {% if f_jurisdiction or f_court_type or f_judge or f_status or f_project or f_date_from or f_date_to %}
       <a href="{{ url_for('calendar.court_docket') }}" class="btn-filter-clear">
         <i class="fas fa-times"></i>Clear
       </a>
@@ -273,6 +285,32 @@
     </div>
   </form>
 </div>
+
+<!-- ── Active filter chips ─────────────────────────────────────────────────── -->
+{% set any_filter = f_jurisdiction or f_court_type or f_judge or f_status or f_project or f_date_from or f_date_to %}
+{% if any_filter %}
+<div style="background:#fff;padding:.6rem 2rem;border-bottom:1px solid #f1f3f8;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
+  <span style="font-size:.72rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;">Active filters:</span>
+
+  {% macro filter_chip(label, param, value) %}
+  <span style="display:inline-flex;align-items:center;gap:.35rem;background:#fff1f2;color:#9f1239;border:1px solid #fecdd3;border-radius:100px;padding:.2rem .7rem;font-size:.75rem;font-weight:700;">
+    {{ label }}: {{ value }}
+    <a href="?{{ request.query_string.decode().replace(param+'='+value, param+'=') }}"
+       style="color:#e11d48;text-decoration:none;margin-left:.1rem;font-weight:900;line-height:1;" title="Remove filter">×</a>
+  </span>
+  {% endmacro %}
+
+  {% if f_jurisdiction %}{{ filter_chip('State', 'jurisdiction', f_jurisdiction) }}{% endif %}
+  {% if f_court_type %}{{ filter_chip('Court', 'court_type', f_court_type) }}{% endif %}
+  {% if f_judge %}{{ filter_chip('Judge', 'judge', f_judge) }}{% endif %}
+  {% if f_status %}{{ filter_chip('Status', 'status', f_status) }}{% endif %}
+  {% if f_date_from %}{{ filter_chip('From', 'date_from', f_date_from) }}{% endif %}
+  {% if f_date_to %}{{ filter_chip('To', 'date_to', f_date_to) }}{% endif %}
+
+  <a href="{{ url_for('calendar.court_docket') }}"
+     style="font-size:.74rem;color:#6b7280;text-decoration:none;margin-left:.25rem;">Clear all</a>
+</div>
+{% endif %}
 
 <!-- ── Body ───────────────────────────────────────────────────────────────── -->
 <div class="docket-body">

@@ -5,7 +5,7 @@ from utils.decorators import require_team_member_or_admin
 from utils.trial_access import require_active_subscription, trial_warning_context, get_trial_notification
 from utils.forms import ProjectForm
 from app import db
-from models import Project, ProjectAssignment, User, ProjectFile, ProjectMessage
+from models import Project, ProjectAssignment, User, ProjectFile, ProjectMessage, CalendarEvent, EVENT_TYPE_COURT
 import os
 from werkzeug.utils import secure_filename
 import uuid
@@ -92,10 +92,17 @@ def project_detail(project_id):
         ).order_by(User.role, User.first_name, User.last_name).all()
     
     from datetime import date
-    return render_template('projects/detail.html', 
-                         project=project, 
+    # Fetch court-date events linked to this project
+    court_events = (CalendarEvent.query
+                    .filter_by(project_id=project.id, event_type=EVENT_TYPE_COURT)
+                    .order_by(CalendarEvent.start_datetime)
+                    .all())
+
+    return render_template('projects/detail.html',
+                         project=project,
                          all_users=all_users,
-                         today=date.today())
+                         today=date.today(),
+                         court_events=court_events)
 
 @projects_bp.route('/<int:project_id>/assign', methods=['POST'])
 @require_team_member_or_admin

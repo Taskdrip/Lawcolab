@@ -55,7 +55,7 @@
 
 <div class="edit-body">
   <div class="edit-card">
-    <form method="POST" action="{{ url_for('calendar.edit_court_history', history_id=entry.id) }}">
+    <form id="editHistoryForm" method="POST" action="{{ url_for('calendar.edit_court_history', history_id=entry.id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
       <div class="mb-3">
@@ -92,4 +92,27 @@
   </div>
 </div>
 
+{% endblock %}
+
+{% block javascript %}
+<script>
+(function () {
+  const form = document.getElementById('editHistoryForm');
+  if (!form) return;
+  let submitting = false;
+  const initial = {};
+  form.querySelectorAll('input,textarea,select').forEach(el => { initial[el.name] = el.value; });
+  function isDirty() {
+    return Array.from(form.querySelectorAll('input,textarea,select'))
+                .some(el => el.value !== (initial[el.name] ?? ''));
+  }
+  form.addEventListener('submit', () => { submitting = true; });
+  window.addEventListener('beforeunload', (e) => {
+    if (!submitting && isDirty()) {
+      e.preventDefault();
+      e.returnValue = 'You have unsaved changes to this hearing entry. Leave without saving?';
+    }
+  });
+})();
+</script>
 {% endblock %}

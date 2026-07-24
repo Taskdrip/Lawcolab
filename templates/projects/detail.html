@@ -119,7 +119,101 @@
                     {% endif %}
                 </div>
             </div>
+
+            <!-- Court Dates -->
+            {% if not current_user.is_client() and court_events %}
+        <div class="card border-0 shadow-sm mb-4" style="border-left:4px solid #e11d48 !important;">
+            <div class="card-header bg-transparent border-0 pb-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-gavel me-2 text-danger"></i>Court Dates
+                        <span class="badge rounded-pill ms-1" style="background:#fff1f2;color:#9f1239;font-size:.72rem;">{{ court_events|length }}</span>
+                    </h5>
+                    <a href="{{ url_for('calendar.court_docket') }}?project_id={{ project.id }}"
+                       class="btn btn-sm" style="font-size:.75rem;color:#e11d48;font-weight:700;padding:.25rem .7rem;border:1px solid #fecdd3;border-radius:8px;text-decoration:none;">
+                        <i class="fas fa-external-link-alt me-1"></i>Full Docket
+                    </a>
+                </div>
+            </div>
+            <div class="card-body pt-2 px-0 pb-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" style="font-size:.84rem;">
+                        <thead style="background:#fff1f2;">
+                            <tr>
+                                <th style="color:#9f1239;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:.55rem 1.1rem;border:none;">Date</th>
+                                <th style="color:#9f1239;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:.55rem .75rem;border:none;">Court</th>
+                                <th style="color:#9f1239;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:.55rem .75rem;border:none;">Judge</th>
+                                <th style="color:#9f1239;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:.55rem .75rem;border:none;">Status</th>
+                                <th style="border:none;width:40px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ev in court_events %}
+                            {% set days_diff = (ev.start_datetime.date() - today).days %}
+                            <tr style="border-bottom:1px solid #f9fafb;">
+                                <td style="padding:.6rem 1.1rem;white-space:nowrap;font-weight:700;color:#0f172a;">
+                                    {{ ev.start_datetime.strftime('%d %b %Y') }}
+                                    {% if ev.status == 'upcoming' %}
+                                        {% if days_diff == 0 %}
+                                        <br><span style="font-size:.68rem;color:#e11d48;font-weight:800;">TODAY</span>
+                                        {% elif days_diff == 1 %}
+                                        <br><span style="font-size:.68rem;color:#f97316;font-weight:700;">TOMORROW</span>
+                                        {% elif days_diff > 0 and days_diff <= 7 %}
+                                        <br><span style="font-size:.68rem;color:#f59e0b;font-weight:700;">in {{ days_diff }}d</span>
+                                        {% elif days_diff < 0 %}
+                                        <br><span style="font-size:.68rem;color:#dc2626;font-weight:700;">{{ -days_diff }}d overdue</span>
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                                <td style="padding:.6rem .75rem;">
+                                    <div style="font-weight:600;color:#1e293b;font-size:.82rem;">{{ ev.court_type or '—' }}</div>
+                                    {% if ev.court_jurisdiction %}
+                                    <div style="font-size:.72rem;color:#6b7280;">{{ ev.court_jurisdiction }}</div>
+                                    {% endif %}
+                                </td>
+                                <td style="padding:.6rem .75rem;color:#374151;font-size:.82rem;">{{ ev.judge_name or '—' }}</td>
+                                <td style="padding:.6rem .75rem;">
+                                    {% if ev.status == 'upcoming' %}
+                                    <span style="background:#fff1f2;color:#9f1239;border-radius:100px;padding:.15rem .55rem;font-size:.7rem;font-weight:700;">Upcoming</span>
+                                    {% elif ev.status == 'completed' %}
+                                    <span style="background:#d1fae5;color:#065f46;border-radius:100px;padding:.15rem .55rem;font-size:.7rem;font-weight:700;">Done</span>
+                                    {% else %}
+                                    <span style="background:#f3f4f6;color:#6b7280;border-radius:100px;padding:.15rem .55rem;font-size:.7rem;font-weight:700;">Cancelled</span>
+                                    {% endif %}
+                                </td>
+                                <td style="padding:.6rem .5rem;">
+                                    <a href="{{ url_for('calendar.event_detail', event_id=ev.id) }}"
+                                       style="color:#e11d48;font-size:.78rem;" title="View details">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% set total_hearings = court_events | sum(attribute='court_history') | list | length %}
+                {% if total_hearings > 0 %}
+                <div style="padding:.5rem 1.1rem;font-size:.76rem;color:#6b7280;background:#fafafa;border-top:1px solid #f1f3f8;">
+                    <i class="fas fa-history me-1 text-danger opacity-75"></i>
+                    {{ total_hearings }} previous hearing{{ 's' if total_hearings != 1 }} recorded across all court dates
+                </div>
+                {% endif %}
+            </div>
         </div>
+        {% elif not current_user.is_client() %}
+        <div class="card border-0 shadow-sm mb-4" style="border-left:4px solid #fecdd3 !important;">
+            <div class="card-body py-3">
+                <h6 class="mb-1" style="color:#9f1239;"><i class="fas fa-gavel me-2"></i>Court Dates</h6>
+                <p class="text-muted small mb-2">No court dates linked to this matter yet.</p>
+                <a href="{{ url_for('calendar.create_event') }}"
+                   class="btn btn-sm" style="background:#e11d48;color:#fff;border-radius:8px;font-size:.78rem;">
+                    <i class="fas fa-plus me-1"></i>Schedule Court Date
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        </div><!-- /col-lg-8 -->
 
         <!-- Sidebar -->
         <div class="col-lg-4">

@@ -770,6 +770,8 @@ def court_docket():
     f_judge        = request.args.get('judge', '').strip()
     f_status       = request.args.get('status', '').strip()
     f_project      = request.args.get('project_id', '', type=str).strip()
+    f_date_from    = request.args.get('date_from', '').strip()
+    f_date_to      = request.args.get('date_to', '').strip()
 
     q = (get_firm_events_query()
          .filter(CalendarEvent.event_type == EVENT_TYPE_COURT))
@@ -787,6 +789,20 @@ def court_docket():
             q = q.filter(CalendarEvent.project_id == int(f_project))
         except ValueError:
             pass
+    if f_date_from:
+        try:
+            dt_from = datetime.strptime(f_date_from, '%Y-%m-%d')
+            q = q.filter(CalendarEvent.start_datetime >= dt_from)
+        except ValueError:
+            f_date_from = ''
+    if f_date_to:
+        try:
+            dt_to = datetime.strptime(f_date_to, '%Y-%m-%d')
+            # include the full end day
+            dt_to = dt_to.replace(hour=23, minute=59, second=59)
+            q = q.filter(CalendarEvent.start_datetime <= dt_to)
+        except ValueError:
+            f_date_to = ''
 
     events = q.order_by(CalendarEvent.start_datetime).all()
 
@@ -821,6 +837,8 @@ def court_docket():
                            f_judge=f_judge,
                            f_status=f_status,
                            f_project=f_project,
+                           f_date_from=f_date_from,
+                           f_date_to=f_date_to,
                            today=date.today())
 
 
