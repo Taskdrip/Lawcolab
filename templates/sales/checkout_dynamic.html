@@ -1,3 +1,6 @@
+{% set _currency_code = settings.checkout_currency if settings and settings.checkout_currency else 'USD' %}
+{% set _sym_map = {'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 'CAD': 'C$', 'GHS': '₵', 'KES': 'KSh', 'ZAR': 'R'} %}
+{% set csym = _sym_map.get(_currency_code, '$') %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -228,18 +231,18 @@
                                         <div class="col-md-6">
                                             <div class="payment-field">
                                                 <small class="text-muted">Currency</small>
-                                                <div class="font-monospace fw-bold text-primary">{{ config.currency or 'NGN' }}</div>
+                                                <div class="font-monospace fw-bold text-primary">{{ _currency_code }}</div>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="payment-field">
                                                 <small class="text-muted">Amount</small>
                                                 <div class="fw-bold text-success fs-5">
-                                                {% if selected_plan == 'founders' %}${{ "%.0f"|format(settings.founders_price or 1745) }} USD
-                                                {% elif selected_plan == 'starter' %} ${{ "%.0f"|format(settings.starter_price) }} USD
-                                                {% elif selected_plan == 'growth' %} ${{ "%.0f"|format(settings.growth_price) }} USD
-                                                {% elif selected_plan == 'enterprise' %} ${{ "%.0f"|format(settings.enterprise_price) }} USD
-                                                {% else %} ${{ settings.founders_price or 1745 }} USD
+                                                {% if selected_plan == 'founders' %}{{ csym }}{{ "%.0f"|format(settings.founders_price or 1745) }} {{ _currency_code }}
+                                                {% elif selected_plan == 'starter' %} {{ csym }}{{ "%.0f"|format(settings.starter_price) }} {{ _currency_code }}
+                                                {% elif selected_plan == 'growth' %} {{ csym }}{{ "%.0f"|format(settings.growth_price) }} {{ _currency_code }}
+                                                {% elif selected_plan == 'enterprise' %} {{ csym }}{{ "%.0f"|format(settings.enterprise_price) }} {{ _currency_code }}
+                                                {% else %} {{ csym }}{{ settings.founders_price or 1745 }} {{ _currency_code }}
                                                 {% endif %}
                                                 </div>
                                             </div>
@@ -323,11 +326,11 @@
                                     <div class="payment-field mb-3">
                                         <small class="text-muted">Amount to Send</small>
                                         <div class="fw-bold text-success fs-5">
-                                        {% if selected_plan == 'founders' %}${{ "%.0f"|format(settings.founders_price or 1745) }} {{ wallet.currency }}
-                                        {% elif selected_plan == 'starter' %} ${{ "%.0f"|format(settings.starter_price) }} {{ wallet.currency }}
-                                        {% elif selected_plan == 'growth' %} ${{ "%.0f"|format(settings.growth_price) }} {{ wallet.currency }}
-                                        {% elif selected_plan == 'enterprise' %} ${{ "%.0f"|format(settings.enterprise_price) }} {{ wallet.currency }}
-                                        {% else %} ${{ settings.founders_price or 1745 }} {{ wallet.currency }}
+                                        {% if selected_plan == 'founders' %}{{ csym }}{{ "%.0f"|format(settings.founders_price or 1745) }} {{ wallet.currency }}
+                                        {% elif selected_plan == 'starter' %} {{ csym }}{{ "%.0f"|format(settings.starter_price) }} {{ wallet.currency }}
+                                        {% elif selected_plan == 'growth' %} {{ csym }}{{ "%.0f"|format(settings.growth_price) }} {{ wallet.currency }}
+                                        {% elif selected_plan == 'enterprise' %} {{ csym }}{{ "%.0f"|format(settings.enterprise_price) }} {{ wallet.currency }}
+                                        {% else %} {{ csym }}{{ settings.founders_price or 1745 }} {{ wallet.currency }}
                                         {% endif %}
                                         </div>
                                     </div>
@@ -343,13 +346,13 @@
                         <div class="text-center mt-4">
                             <button type="submit" class="complete-btn" id="completeBtn" disabled>
                                 {% if lead_data.plan == 'Founders' %}
-                                Complete Purchase - ${{ "%.0f"|format(settings.founders_price or 1745) }}
+                                Complete Purchase — {{ csym }}{{ "%.0f"|format(settings.founders_price or 1745) }} {{ _currency_code }}
                                 {% elif lead_data.plan == 'Starter' %}
-                                Complete Purchase - ${{ "%.0f"|format(settings.starter_price) }}
+                                Complete Purchase — {{ csym }}{{ "%.0f"|format(settings.starter_price) }} {{ _currency_code }}
                                 {% elif lead_data.plan == 'Growth' %}
-                                Complete Purchase - ${{ "%.0f"|format(settings.growth_price) }}
+                                Complete Purchase — {{ csym }}{{ "%.0f"|format(settings.growth_price) }} {{ _currency_code }}
                                 {% elif lead_data.plan == 'Enterprise' %}
-                                Complete Purchase - ${{ "%.0f"|format(settings.enterprise_price) }}
+                                Complete Purchase — {{ csym }}{{ "%.0f"|format(settings.enterprise_price) }} {{ _currency_code }}
                                 {% else %}
                                 Complete Purchase
                                 {% endif %}
@@ -375,50 +378,50 @@
                         {% if lead_data.plan == 'Founders' %}
                         <div class="d-flex justify-content-between mb-2">
                             <span>LAWCOLAB White-Label License</span>
-                            <span class="fw-bold">${{ "%.0f"|format(settings.founders_price or 1745) }}</span>
+                            <span class="fw-bold">{{ csym }}{{ "%.0f"|format(settings.founders_price or 1745) }}</span>
                         </div>
                         
                         <hr>
                         
                         <div class="d-flex justify-content-between mb-3">
                             <strong>Total (Forever)</strong>
-                            <strong class="text-success">${{ "%.0f"|format(settings.founders_price or 1745) }}</strong>
+                            <strong class="text-success">{{ csym }}{{ "%.0f"|format(settings.founders_price or 1745) }}</strong>
                         </div>
                         {% elif lead_data.plan == 'Starter' %}
                         <div class="d-flex justify-content-between mb-2">
                             <span>LAWCOLAB Starter Plan</span>
-                            <span class="fw-bold">${{ "%.0f"|format(settings.starter_price) }}</span>
+                            <span class="fw-bold">{{ csym }}{{ "%.0f"|format(settings.starter_price) }}</span>
                         </div>
                         
                         <hr>
                         
                         <div class="d-flex justify-content-between mb-3">
                             <strong>Total (Monthly)</strong>
-                            <strong class="text-primary">${{ "%.0f"|format(settings.starter_price) }}</strong>
+                            <strong class="text-primary">{{ csym }}{{ "%.0f"|format(settings.starter_price) }}</strong>
                         </div>
                         {% elif lead_data.plan == 'Growth' %}
                         <div class="d-flex justify-content-between mb-2">
                             <span>LAWCOLAB Growth Plan</span>
-                            <span class="fw-bold">${{ "%.0f"|format(settings.growth_price) }}</span>
+                            <span class="fw-bold">{{ csym }}{{ "%.0f"|format(settings.growth_price) }}</span>
                         </div>
                         
                         <hr>
                         
                         <div class="d-flex justify-content-between mb-3">
                             <strong>Total (3 Months)</strong>
-                            <strong class="text-success">${{ "%.0f"|format(settings.growth_price) }}</strong>
+                            <strong class="text-success">{{ csym }}{{ "%.0f"|format(settings.growth_price) }}</strong>
                         </div>
                         {% elif lead_data.plan == 'Enterprise' %}
                         <div class="d-flex justify-content-between mb-2">
                             <span>LAWCOLAB Enterprise Plan</span>
-                            <span class="fw-bold">${{ "%.0f"|format(settings.enterprise_price) }}</span>
+                            <span class="fw-bold">{{ csym }}{{ "%.0f"|format(settings.enterprise_price) }}</span>
                         </div>
                         
                         <hr>
                         
                         <div class="d-flex justify-content-between mb-3">
                             <strong>Total (Annual)</strong>
-                            <strong class="text-danger">${{ "%.0f"|format(settings.enterprise_price) }}</strong>
+                            <strong class="text-danger">{{ csym }}{{ "%.0f"|format(settings.enterprise_price) }}</strong>
                         </div>
                         {% endif %}
                         

@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+{% block title %}Checkout Currency Settings — Super Admin{% endblock %}
+
+{% block additional_css %}
+<style>
+.curr-hero {
+    background: linear-gradient(135deg, #0d1b4b 0%, #1a3a6e 100%);
+    padding: 2.25rem 0 2rem;
+    position: relative; overflow: hidden;
+}
+.curr-hero::before {
+    content: '₦ $ € £';
+    position: absolute; right: 2rem; top: 50%; transform: translateY(-50%);
+    font-size: 5rem; font-weight: 900; opacity: .06; color: #fff;
+    letter-spacing: .5rem; pointer-events: none;
+}
+.curr-card {
+    background: #fff; border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.07);
+    overflow: hidden;
+}
+.curr-card-head {
+    padding: 1.25rem 1.6rem .9rem;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex; align-items: center; gap: .75rem;
+}
+.curr-card-head-icon {
+    width: 40px; height: 40px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+}
+.curr-card-body { padding: 1.5rem 1.6rem; }
+
+/* Currency radio grid */
+.curr-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: .75rem;
+}
+.curr-option { display: none; }
+.curr-label {
+    display: flex; align-items: center; gap: .85rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 14px; padding: 1rem 1.1rem;
+    cursor: pointer; transition: all .18s;
+    background: #fff;
+    user-select: none;
+}
+.curr-label:hover { border-color: #a5b4fc; background: #f8f9ff; }
+.curr-option:checked + .curr-label {
+    border-color: #4f46e5;
+    background: linear-gradient(135deg, #eef2ff 0%, #f0f4ff 100%);
+    box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+}
+.curr-flag { font-size: 1.8rem; line-height: 1; }
+.curr-name { font-size: .84rem; font-weight: 700; color: #1e293b; }
+.curr-code { font-size: .7rem; color: #64748b; }
+.curr-sym {
+    margin-left: auto; font-size: 1.3rem; font-weight: 900;
+    color: #4f46e5; background: rgba(79,70,229,.1);
+    border-radius: 8px; padding: .15rem .6rem;
+    flex-shrink: 0;
+}
+.curr-option:checked + .curr-label .curr-sym {
+    background: #4f46e5; color: #fff;
+}
+
+/* current badge */
+.curr-active-badge {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border: 1.5px solid #bbf7d0; border-radius: 100px;
+    padding: .45rem 1rem; font-size: .82rem; font-weight: 700; color: #166534;
+}
+.curr-active-badge .sym {
+    font-size: 1.4rem; font-weight: 900;
+}
+
+/* Preview box */
+.curr-preview {
+    background: #f8fafc; border: 1.5px dashed #cbd5e1;
+    border-radius: 14px; padding: 1.25rem 1.5rem;
+}
+.curr-preview-price {
+    font-size: 2rem; font-weight: 900; color: #0d1b4b;
+}
+.curr-preview-label { font-size: .78rem; color: #64748b; }
+
+/* Save button */
+.curr-save-btn {
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    border: none; color: #fff;
+    padding: .7rem 2rem; border-radius: 12px;
+    font-weight: 700; font-size: .9rem;
+    transition: transform .15s, box-shadow .15s;
+    cursor: pointer;
+}
+.curr-save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(79,70,229,.35);
+    color: #fff;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<div class="curr-hero">
+    <div class="container-fluid px-3 px-lg-4">
+        <nav aria-label="breadcrumb" class="mb-2">
+            <ol class="breadcrumb mb-0" style="font-size:.78rem;">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('superadmin.dashboard') }}" style="color:rgba(255,255,255,.6);">Super Admin</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('payment_management.payment_dashboard') }}" style="color:rgba(255,255,255,.6);">Payments</a>
+                </li>
+                <li class="breadcrumb-item active" style="color:rgba(255,255,255,.85);">Checkout Currency</li>
+            </ol>
+        </nav>
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <div style="width:52px;height:52px;border-radius:14px;background:rgba(255,215,0,.15);border:1px solid rgba(255,215,0,.3);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#FFD700;flex-shrink:0;">
+                <i class="fas fa-coins"></i>
+            </div>
+            <div>
+                <h1 style="font-size:1.7rem;font-weight:900;color:#fff;margin:0 0 .25rem;">Checkout Currency</h1>
+                <p style="color:rgba(255,255,255,.65);margin:0;font-size:.88rem;">
+                    Set the currency displayed on the subscription checkout page for all customers
+                </p>
+            </div>
+            <div class="ms-auto">
+                <div class="curr-active-badge">
+                    <span class="sym">{{ current_info.symbol }}</span>
+                    <span>Currently: <strong>{{ current_code }}</strong> — {{ current_info.name }}</span>
+                    <span>{{ current_info.flag }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid px-3 px-lg-4 py-4">
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show mb-3" role="alert">
+        <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <div class="row g-4">
+        <!-- Main selector -->
+        <div class="col-lg-8">
+            <div class="curr-card">
+                <div class="curr-card-head">
+                    <div class="curr-card-head-icon" style="background:#eef2ff;color:#4f46e5;">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight:800;color:#0f172a;font-size:.95rem;">Select Checkout Currency</div>
+                        <div style="font-size:.75rem;color:#64748b;">Prices shown to customers during plan purchase</div>
+                    </div>
+                </div>
+                <div class="curr-card-body">
+                    <form method="POST" action="{{ url_for('payment_management.checkout_currency_settings') }}" id="currencyForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                        <div class="curr-grid mb-4" id="currencyGrid">
+                            {% for code, info in currencies.items() %}
+                            <div>
+                                <input
+                                    type="radio"
+                                    name="currency"
+                                    id="curr_{{ code }}"
+                                    value="{{ code }}"
+                                    class="curr-option"
+                                    {{ 'checked' if code == current_code }}
+                                    onchange="updatePreview('{{ code }}', '{{ info.symbol }}', '{{ info.name }}', '{{ info.flag }}')"
+                                >
+                                <label class="curr-label" for="curr_{{ code }}">
+                                    <span class="curr-flag">{{ info.flag }}</span>
+                                    <div>
+                                        <div class="curr-name">{{ info.name }}</div>
+                                        <div class="curr-code">{{ code }}</div>
+                                    </div>
+                                    <span class="curr-sym">{{ info.symbol }}</span>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-flex align-items-center gap-3 flex-wrap">
+                            <button type="submit" class="curr-save-btn">
+                                <i class="fas fa-save me-2"></i>Save Currency Setting
+                            </button>
+                            <a href="{{ url_for('payment_management.payment_dashboard') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Payments
+                            </a>
+                            <span id="saveHint" style="font-size:.78rem;color:#64748b;display:none;">
+                                <i class="fas fa-info-circle me-1"></i>Click Save to apply
+                            </span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Preview + Info -->
+        <div class="col-lg-4">
+
+            <!-- Live preview -->
+            <div class="curr-card mb-3">
+                <div class="curr-card-head">
+                    <div class="curr-card-head-icon" style="background:#fff7ed;color:#ea580c;">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div style="font-weight:800;color:#0f172a;font-size:.9rem;">Checkout Preview</div>
+                </div>
+                <div class="curr-card-body">
+                    <div class="curr-preview mb-3">
+                        <div class="curr-preview-label mb-1">Starter Plan</div>
+                        <div class="curr-preview-price" id="prevStarter">
+                            {{ current_info.symbol }}{{ "%.0f"|format(settings.starter_price or 39) }}
+                        </div>
+                        <div class="curr-preview-label">/ month</div>
+                    </div>
+                    <div class="curr-preview mb-3">
+                        <div class="curr-preview-label mb-1">Growth Plan</div>
+                        <div class="curr-preview-price" id="prevGrowth">
+                            {{ current_info.symbol }}{{ "%.0f"|format(settings.growth_price or 90) }}
+                        </div>
+                        <div class="curr-preview-label">/ 3 months</div>
+                    </div>
+                    <div class="curr-preview mb-3">
+                        <div class="curr-preview-label mb-1">Enterprise Plan</div>
+                        <div class="curr-preview-price" id="prevEnterprise">
+                            {{ current_info.symbol }}{{ "%.0f"|format(settings.enterprise_price or 350) }}
+                        </div>
+                        <div class="curr-preview-label">/ year</div>
+                    </div>
+                    <div class="curr-preview">
+                        <div class="curr-preview-label mb-1">Founders Pack</div>
+                        <div class="curr-preview-price" id="prevFounders">
+                            {{ current_info.symbol }}{{ "%.0f"|format(settings.founders_price or 750) }}
+                        </div>
+                        <div class="curr-preview-label">one-time</div>
+                    </div>
+                    <p class="text-muted mt-3 mb-0" style="font-size:.72rem;">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Price amounts are set separately in the Sales Popup settings. This only changes the displayed currency label/symbol.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Info card -->
+            <div class="curr-card">
+                <div class="curr-card-head">
+                    <div class="curr-card-head-icon" style="background:#f0fdf4;color:#16a34a;">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <div style="font-weight:800;color:#0f172a;font-size:.9rem;">How It Works</div>
+                </div>
+                <div class="curr-card-body" style="font-size:.82rem;color:#475569;line-height:1.7;">
+                    <p class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Changing the currency updates the <strong>symbol and label</strong> shown on the public checkout page.</p>
+                    <p class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Bank transfer and crypto instructions will reflect the selected currency.</p>
+                    <p class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Price <em>amounts</em> (e.g. 39, 90, 350) remain unchanged — adjust them in <a href="{{ url_for('sales.admin_dashboard') }}">Sales → Popup Settings</a>.</p>
+                    <p class="mb-0"><i class="fas fa-info-circle text-primary me-2"></i>All new checkout sessions use the updated currency immediately after saving.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+// Prices from settings (Python-rendered, safe)
+const prices = {
+    starter:    {{ settings.starter_price    or 39  }},
+    growth:     {{ settings.growth_price     or 90  }},
+    enterprise: {{ settings.enterprise_price or 350 }},
+    founders:   {{ settings.founders_price   or 750 }},
+};
+
+function updatePreview(code, symbol, name, flag) {
+    document.getElementById('prevStarter').textContent    = symbol + Math.round(prices.starter);
+    document.getElementById('prevGrowth').textContent     = symbol + Math.round(prices.growth);
+    document.getElementById('prevEnterprise').textContent = symbol + Math.round(prices.enterprise);
+    document.getElementById('prevFounders').textContent   = symbol + Math.round(prices.founders);
+    document.getElementById('saveHint').style.display = 'inline';
+}
+</script>
+{% endblock %}

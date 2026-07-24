@@ -746,6 +746,9 @@ class PopupSettings(db.Model):
     enterprise_regular_price = db.Column(db.Numeric(10, 2), default=840.00)
     founders_regular_price = db.Column(db.Numeric(10, 2), default=840.00)
     
+    # Checkout currency setting (super-admin controlled)
+    checkout_currency = db.Column(db.String(3), default='USD', nullable=False)
+
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
 

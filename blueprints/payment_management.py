@@ -8,6 +8,18 @@ from models_payment_custom import PaymentOrder, PaymentTransaction, PaymentBankA
 from datetime import datetime
 import json
 
+# Supported checkout currencies
+CHECKOUT_CURRENCIES = {
+    'USD': {'symbol': '$',  'name': 'US Dollar',          'flag': '🇺🇸'},
+    'NGN': {'symbol': '₦',  'name': 'Nigerian Naira',     'flag': '🇳🇬'},
+    'EUR': {'symbol': '€',  'name': 'Euro',                'flag': '🇪🇺'},
+    'GBP': {'symbol': '£',  'name': 'British Pound',       'flag': '🇬🇧'},
+    'CAD': {'symbol': 'C$', 'name': 'Canadian Dollar',     'flag': '🇨🇦'},
+    'GHS': {'symbol': '₵',  'name': 'Ghanaian Cedi',       'flag': '🇬🇭'},
+    'KES': {'symbol': 'KSh','name': 'Kenyan Shilling',     'flag': '🇰🇪'},
+    'ZAR': {'symbol': 'R',  'name': 'South African Rand',  'flag': '🇿🇦'},
+}
+
 payment_mgmt_bp = Blueprint('payment_management', __name__, url_prefix='/superadmin/payments')
 
 @payment_mgmt_bp.route('/')
@@ -454,3 +466,46 @@ def payment_analytics():
     }
     
     return render_template('payment_management/analytics.html', analytics=analytics_data)
+
+
+# ── Checkout Currency Settings ────────────────────────────────────────────────
+
+@payment_mgmt_bp.route('/currency', methods=['GET', 'POST'])
+@require_super_admin
+def checkout_currency_settings():
+    """Allow super admin to set the checkout currency for subscription purchases."""
+    from models import PopupSettings
+
+    settings = PopupSettings.query.first()
+    if not settings:
+        settings = PopupSettings()
+        db.session.add(settings)
+        db.session.commit()
+
+    if request.method == 'POST':
+        new_currency = request.form.get('currency', 'USD').upper().strip()
+        if new_currency not in CHECKOUT_CURRENCIES:
+            flash(f'Invalid currency code: {new_currency}', 'error')
+            return redirect(url_for('payment_management.checkout_currency_settings'))
+
+        settings.checkout_currency = new_currency
+        db.session.commit()
+
+        currency_info = CHECKOUT_CURRENCIES[new_currency]
+        flash(
+            f'Checkout currency updated to {currency_info["flag"]} '
+            f'{new_currency} ({currency_info["name"]} {currency_info["symbol"]}). '
+            'All new checkout sessions will now display prices in this currency.',
+            'success'
+        )
+        return redirect(url_for('payment_management.checkout_currency_settings'))
+
+    current_code = settings.checkout_currency or 'USD'
+    current_info = CHECKOUT_CURRENCIES.get(current_code, CHECKOUT_CURRENCIES['USD'])
+    return render_template(
+        'payment_management/checkout_currency.html',
+        settings=settings,
+        currencies=CHECKOUT_CURRENCIES,
+        current_code=current_code,
+        current_info=current_info,
+    )
