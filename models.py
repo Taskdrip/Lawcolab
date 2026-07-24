@@ -1039,3 +1039,34 @@ class PublicLawFirmMessage(db.Model):
     
     # Relationships
     showcase = db.relationship('LawFirmShowcase', back_populates='public_messages')
+
+
+# ─── Platform Notifications (Super Admin → Law Firms) ────────────────────────
+
+NOTIF_TYPE_RENEWAL   = 'renewal_reminder'
+NOTIF_TYPE_EXPIRY    = 'expiry_warning'
+NOTIF_TYPE_SUSPENDED = 'access_suspended'
+NOTIF_TYPE_GENERAL   = 'general'
+NOTIF_TYPE_UPGRADE   = 'upgrade_prompt'
+
+
+class PlatformNotification(db.Model):
+    __tablename__ = 'platform_notifications'
+
+    id           = db.Column(db.Integer, primary_key=True)
+    # NULL law_firm_id = broadcast to all firms
+    law_firm_id  = db.Column(db.Integer, db.ForeignKey('law_firms.id'), nullable=True)
+    sent_by_id   = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+
+    title            = db.Column(db.String(300), nullable=False)
+    message          = db.Column(db.Text, nullable=False)
+    notification_type = db.Column(db.String(50), default=NOTIF_TYPE_GENERAL, nullable=False)
+    is_read          = db.Column(db.Boolean, default=False)
+    is_auto          = db.Column(db.Boolean, default=False)  # True = generated automatically
+
+    sent_at  = db.Column(db.DateTime, default=datetime.now)
+    read_at  = db.Column(db.DateTime, nullable=True)
+
+    # Relationships
+    law_firm = db.relationship('LawFirm', foreign_keys=[law_firm_id])
+    sent_by  = db.relationship('User', foreign_keys=[sent_by_id])

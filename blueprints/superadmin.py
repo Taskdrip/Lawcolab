@@ -2,13 +2,15 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import current_user
 from utils.decorators import require_super_admin
 from app import db
-from models import User, LawFirm, Project, SupportRequest, DashboardSlider, LegalNews, ROLE_ADMIN, ROLE_SUPER_ADMIN, ROLE_CLIENT, ROLE_TEAM_MEMBER
+from models import (User, LawFirm, Project, SupportRequest, DashboardSlider, LegalNews,
+                    PlatformNotification, ROLE_ADMIN, ROLE_SUPER_ADMIN, ROLE_CLIENT,
+                    ROLE_TEAM_MEMBER, NOTIF_TYPE_RENEWAL, NOTIF_TYPE_EXPIRY,
+                    NOTIF_TYPE_SUSPENDED, NOTIF_TYPE_GENERAL, NOTIF_TYPE_UPGRADE)
 import os
 from werkzeug.utils import secure_filename
-from sqlalchemy import or_
-# from utils.forms import LawFirmForm  # Not needed for super admin functions
+from sqlalchemy import or_, func, inspect, text
+from datetime import datetime, timedelta
 import uuid
-from datetime import datetime
 
 superadmin_bp = Blueprint('superadmin', __name__)
 
@@ -16,37 +18,63 @@ superadmin_bp = Blueprint('superadmin', __name__)
 @require_super_admin
 def dashboard():
     """Super admin dashboard showing all law firms and platform statistics"""
+    now = datetime.now()
+
     # Get platform-wide statistics
-    total_law_firms = LawFirm.query.count()
-    total_users = User.query.count()
-    total_admins = User.query.filter_by(role=ROLE_ADMIN).count()
+    total_law_firms    = LawFirm.query.count()
+    total_users        = User.query.count()
+    total_admins       = User.query.filter_by(role=ROLE_ADMIN).count()
     total_team_members = User.query.filter_by(role=ROLE_TEAM_MEMBER).count()
-    total_clients = User.query.filter_by(role=ROLE_CLIENT).count()
-    total_projects = Project.query.count()
-    
+    total_clients      = User.query.filter_by(role=ROLE_CLIENT).count()
+    total_projects     = Project.query.count()
+
+    # Subscription health
+    active_subs   = LawFirm.query.filter(
+        LawFirm.admin_access_granted == True,
+        LawFirm.admin_access_expires > now
+    ).count()
+    expired_subs  = LawFirm.query.filter(
+        LawFirm.admin_access_granted == True,
+        LawFirm.admin_access_expires <= now
+    ).count()
+    expiring_soon = LawFirm.query.filter(
+        LawFirm.admin_access_granted == True,
+        LawFirm.admin_access_expires > now,
+        LawFirm.admin_access_expires <= now + timedelta(days=7)
+    ).all()
+    expired_firms = LawFirm.query.filter(
+        LawFirm.admin_access_granted == True,
+        LawFirm.admin_access_expires <= now
+    ).all()
+
     # Get recent law firms
     recent_law_firms = LawFirm.query.order_by(LawFirm.created_at.desc()).limit(10).all()
-    
+
     # Get recent admin signups
     recent_admins = User.query.filter_by(role=ROLE_ADMIN).order_by(User.created_at.desc()).limit(10).all()
-    
+
     # Get support requests
     support_requests = SupportRequest.query.order_by(SupportRequest.created_at.desc()).limit(5).all()
-    
+
     stats = {
-        'total_law_firms': total_law_firms,
-        'total_users': total_users,
-        'total_admins': total_admins,
+        'total_law_firms':    total_law_firms,
+        'total_users':        total_users,
+        'total_admins':       total_admins,
         'total_team_members': total_team_members,
-        'total_clients': total_clients,
-        'total_projects': total_projects
+        'total_clients':      total_clients,
+        'total_projects':     total_projects,
+        'active_subs':        active_subs,
+        'expired_subs':       expired_subs,
+        'pending_access':     LawFirm.query.filter_by(admin_access_granted=False).count(),
     }
-    
-    return render_template('superadmin/dashboard.html', 
-                         stats=stats,
-                         recent_law_firms=recent_law_firms,
-                         recent_admins=recent_admins,
-                         support_requests=support_requests)
+
+    return render_template('superadmin/dashboard.html',
+                           stats=stats,
+                           recent_law_firms=recent_law_firms,
+                           recent_admins=recent_admins,
+                           support_requests=support_requests,
+                           expiring_soon=expiring_soon,
+                           expired_firms=expired_firms)
 
 @superadmin_bp.route('/users')
 @require_super_admin
@@ -732,3 +760,283 @@ def toggle_slider(slider_id):
     slide.is_active = not slide.is_active
     db.session.commit()
     return redirect(url_for('superadmin.manage_sliders'))
+
+
+# ── Password Reset ─────────────────────────────────────────────────────────────
+
+@superadmin_bp.route('/users/reset-password', methods=['POST'])
+@require_super_admin
+def reset_user_password():
+    """Super admin resets any user's password."""
+    data = request.get_json()
+    user_id  = data.get('user_id')
+    new_pass = (data.get('new_password') or '').strip()
+
+    if not new_pass or len(new_pass) < 8:
+        return jsonify({'success': False, 'message': 'Password must be at least 8 characters.'}), 400
+
+    user = User.query.get_or_404(user_id)
+    if user.is_super_admin() and user.id != current_user.id:
+        return jsonify({'success': False, 'message': 'Cannot reset another super-admin\'s password.'}), 403
+
+    user.set_password(new_pass)
+    user.failed_login_attempts = 0
+    user.locked_until = None
+    try:
+        db.session.commit()
+        return jsonify({'success': True, 'message': f'Password for {user.email} has been reset.'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+# ── Delete Law Firm ────────────────────────────────────────────────────────────
+
+@superadmin_bp.route('/law-firms/<int:firm_id>/delete', methods=['POST'])
+@require_super_admin
+def delete_law_firm(firm_id):
+    """Permanently delete a law firm and ALL associated data."""
+    firm = LawFirm.query.get_or_404(firm_id)
+    firm_name = firm.name
+    try:
+        # Nullify user FK references before deleting (users stay, unattached)
+        for u in list(firm.users):
+            u.law_firm_id = None
+            if u.role == ROLE_ADMIN:
+                u.role = ROLE_CLIENT  # downgrade
+        db.session.flush()
+
+        db.session.delete(firm)
+        db.session.commit()
+        flash(f'Law firm "{firm_name}" and all its data have been permanently deleted.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting law firm: {e}', 'error')
+    return redirect(url_for('superadmin.manage_law_firms'))
+
+
+# ── Extend / Modify Subscription ───────────────────────────────────────────────
+
+@superadmin_bp.route('/law-firms/<int:firm_id>/extend-subscription', methods=['POST'])
+@require_super_admin
+def extend_subscription(firm_id):
+    """Extend or change a law firm's subscription period."""
+    firm   = LawFirm.query.get_or_404(firm_id)
+    data   = request.get_json()
+    period = data.get('period', '1year')
+    action = data.get('action', 'extend')   # extend | set
+
+    period_map = {
+        '3days': 3, '1month': 30, '3months': 90,
+        '6months': 180, '1year': 365, '2years': 730
+    }
+    days = period_map.get(period, 365)
+
+    now = datetime.now()
+    if action == 'extend' and firm.admin_access_expires and firm.admin_access_expires > now:
+        expiry = firm.admin_access_expires + timedelta(days=days)
+    else:
+        expiry = now + timedelta(days=days)
+
+    firm.admin_access_granted = True
+    firm.admin_access_expires = expiry
+    firm.subscription_period  = period
+
+    # Also make sure the admin user is active
+    admin = next((u for u in firm.users if u.role == ROLE_ADMIN), None)
+    if admin:
+        admin.active = True
+
+    try:
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': f'Subscription {"extended" if action == "extend" else "set"} until {expiry.strftime("%B %d, %Y")} for {firm.name}.'
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+# ── Notifications ──────────────────────────────────────────────────────────────
+
+@superadmin_bp.route('/notifications')
+@require_super_admin
+def notifications():
+    """View all platform notifications sent to law firms."""
+    page = request.args.get('page', 1, type=int)
+    notifs = (PlatformNotification.query
+              .order_by(PlatformNotification.sent_at.desc())
+              .paginate(page=page, per_page=30, error_out=False))
+    law_firms = LawFirm.query.order_by(LawFirm.name).all()
+    return render_template('superadmin/notifications.html',
+                           notifs=notifs, law_firms=law_firms)
+
+
+@superadmin_bp.route('/notifications/send', methods=['POST'])
+@require_super_admin
+def send_notification():
+    """Send a manual notification to one firm or broadcast to all."""
+    data    = request.get_json()
+    title   = (data.get('title') or '').strip()
+    message = (data.get('message') or '').strip()
+    firm_id = data.get('firm_id')          # None / '' = broadcast
+    notif_type = data.get('notification_type', NOTIF_TYPE_GENERAL)
+
+    if not title or not message:
+        return jsonify({'success': False, 'message': 'Title and message are required.'}), 400
+
+    try:
+        if firm_id:
+            notif = PlatformNotification(
+                law_firm_id=int(firm_id),
+                sent_by_id=current_user.id,
+                title=title,
+                message=message,
+                notification_type=notif_type,
+                is_auto=False,
+            )
+            db.session.add(notif)
+            db.session.commit()
+            return jsonify({'success': True, 'message': 'Notification sent to the selected law firm.'})
+        else:
+            # Broadcast – one record per firm
+            firms = LawFirm.query.all()
+            for firm in firms:
+                notif = PlatformNotification(
+                    law_firm_id=firm.id,
+                    sent_by_id=current_user.id,
+                    title=title,
+                    message=message,
+                    notification_type=notif_type,
+                    is_auto=False,
+                )
+                db.session.add(notif)
+            db.session.commit()
+            return jsonify({'success': True, 'message': f'Broadcast sent to {len(firms)} law firms.'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@superadmin_bp.route('/notifications/auto-renewal', methods=['POST'])
+@require_super_admin
+def auto_renewal_notifications():
+    """
+    Check all active subscriptions and automatically send renewal-reminder
+    notifications to firms that expire within 7 days or are already expired.
+    """
+    now      = datetime.now()
+    warning  = now + timedelta(days=7)
+    sent     = 0
+    skipped  = 0
+
+    firms = LawFirm.query.filter(LawFirm.admin_access_granted == True).all()
+    for firm in firms:
+        if not firm.admin_access_expires:
+            continue
+
+        days_left = (firm.admin_access_expires - now).days
+
+        if firm.admin_access_expires < now:
+            # Already expired
+            notif_type = NOTIF_TYPE_SUSPENDED
+            title = '⚠️ Subscription Expired'
+            msg   = (f'Your LawColab subscription for {firm.name} expired on '
+                     f'{firm.admin_access_expires.strftime("%B %d, %Y")}. '
+                     f'Please renew to restore full access.')
+        elif firm.admin_access_expires <= warning:
+            # Expiring soon
+            notif_type = NOTIF_TYPE_EXPIRY
+            title = f'🔔 Subscription Expires in {days_left} Day{"s" if days_left != 1 else ""}'
+            msg   = (f'Your LawColab subscription for {firm.name} will expire on '
+                     f'{firm.admin_access_expires.strftime("%B %d, %Y")}. '
+                     f'Contact us to renew and avoid service interruption.')
+        else:
+            skipped += 1
+            continue
+
+        # Avoid duplicate auto-notifications sent in the last 24 hours
+        recent = PlatformNotification.query.filter(
+            PlatformNotification.law_firm_id == firm.id,
+            PlatformNotification.is_auto == True,
+            PlatformNotification.notification_type == notif_type,
+            PlatformNotification.sent_at >= now - timedelta(hours=24)
+        ).first()
+        if recent:
+            skipped += 1
+            continue
+
+        notif = PlatformNotification(
+            law_firm_id=firm.id,
+            sent_by_id=current_user.id,
+            title=title,
+            message=msg,
+            notification_type=notif_type,
+            is_auto=True,
+        )
+        db.session.add(notif)
+        sent += 1
+
+    db.session.commit()
+    return jsonify({
+        'success': True,
+        'message': f'Auto-renewal check complete. {sent} notification(s) sent, {skipped} skipped.'
+    })
+
+
+@superadmin_bp.route('/notifications/<int:notif_id>/delete', methods=['POST'])
+@require_super_admin
+def delete_notification(notif_id):
+    notif = PlatformNotification.query.get_or_404(notif_id)
+    db.session.delete(notif)
+    db.session.commit()
+    flash('Notification deleted.', 'success')
+    return redirect(url_for('superadmin.notifications'))
+
+
+# ── Database Overview ──────────────────────────────────────────────────────────
+
+@superadmin_bp.route('/database-overview')
+@require_super_admin
+def database_overview():
+    """Show row counts and basic health stats for all tables."""
+    from sqlalchemy import inspect as sa_inspect
+    insp = sa_inspect(db.engine)
+    table_names = sorted(insp.get_table_names())
+
+    table_stats = []
+    for tname in table_names:
+        try:
+            count = db.session.execute(text(f'SELECT COUNT(*) FROM "{tname}"')).scalar()
+        except Exception:
+            count = 'N/A'
+        table_stats.append({'table': tname, 'rows': count})
+
+    # Summary health stats
+    now = datetime.now()
+    active_subs    = LawFirm.query.filter(
+        LawFirm.admin_access_granted == True,
+        LawFirm.admin_access_expires > now
+    ).count()
+    expired_subs   = LawFirm.query.filter(
+        LawFirm.admin_access_granted == True,
+        LawFirm.admin_access_expires <= now
+    ).count()
+    expiring_soon  = LawFirm.query.filter(
+        LawFirm.admin_access_granted == True,
+        LawFirm.admin_access_expires > now,
+        LawFirm.admin_access_expires <= now + timedelta(days=7)
+    ).count()
+    pending_access = LawFirm.query.filter_by(admin_access_granted=False).count()
+
+    health = {
+        'active_subscriptions': active_subs,
+        'expired_subscriptions': expired_subs,
+        'expiring_soon': expiring_soon,
+        'pending_access': pending_access,
+        'total_notifications': PlatformNotification.query.count(),
+    }
+
+    return render_template('superadmin/database_overview.html',
+                           table_stats=table_stats, health=health)

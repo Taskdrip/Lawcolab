@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}Platform Notifications - Super Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0" style="color:#0d1b4b; font-weight:700;">
+                <i class="fas fa-bell me-2 text-warning"></i>Platform Notifications
+            </h1>
+            <p class="text-muted mb-0">Send renewal reminders and announcements to law firms</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-warning text-white" onclick="triggerAutoRenewal()">
+                <i class="fas fa-magic me-2"></i>Auto-Check Renewals
+            </button>
+            <button class="btn btn-primary" onclick="showSendModal()">
+                <i class="fas fa-paper-plane me-2"></i>Send Notification
+            </button>
+            <a href="{{ url_for('superadmin.dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body py-3">
+                    <h4 class="mb-0 text-primary">{{ notifs.total }}</h4>
+                    <small class="text-muted">Total Sent</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body py-3">
+                    <h4 class="mb-0 text-success">{{ notifs.items | selectattr('is_auto', 'equalto', False) | list | length }}</h4>
+                    <small class="text-muted">Manual (This Page)</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body py-3">
+                    <h4 class="mb-0 text-warning">{{ notifs.items | selectattr('is_auto') | list | length }}</h4>
+                    <small class="text-muted">Auto-Generated (This Page)</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body py-3">
+                    <h4 class="mb-0 text-info">{{ law_firms | length }}</h4>
+                    <small class="text-muted">Law Firms</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-semibold">
+                <i class="fas fa-list me-2 text-primary"></i>Notification History
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            {% if notifs.items %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Recipient</th>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Sent By</th>
+                            <th>Sent At</th>
+                            <th>Mode</th>
+                            <th class="text-end pe-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for notif in notifs.items %}
+                        <tr>
+                            <td class="ps-3">
+                                {% if notif.law_firm %}
+                                    <span class="fw-semibold">{{ notif.law_firm.name }}</span>
+                                {% else %}
+                                    <span class="badge bg-dark">Broadcast</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="fw-semibold">{{ notif.title }}</div>
+                                <small class="text-muted">{{ notif.message[:80] }}{% if notif.message|length > 80 %}…{% endif %}</small>
+                            </td>
+                            <td>
+                                {% if notif.notification_type == 'renewal_reminder' %}
+                                    <span class="badge bg-info text-white"><i class="fas fa-redo me-1"></i>Renewal</span>
+                                {% elif notif.notification_type == 'expiry_warning' %}
+                                    <span class="badge bg-warning text-dark"><i class="fas fa-exclamation-triangle me-1"></i>Expiry</span>
+                                {% elif notif.notification_type == 'access_suspended' %}
+                                    <span class="badge bg-danger"><i class="fas fa-ban me-1"></i>Suspended</span>
+                                {% elif notif.notification_type == 'upgrade_prompt' %}
+                                    <span class="badge bg-success"><i class="fas fa-arrow-up me-1"></i>Upgrade</span>
+                                {% else %}
+                                    <span class="badge bg-secondary"><i class="fas fa-bell me-1"></i>General</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted">{{ notif.sent_by.full_name if notif.sent_by else 'System' }}</td>
+                            <td class="text-muted">{{ notif.sent_at.strftime('%b %d, %Y %I:%M %p') if notif.sent_at }}</td>
+                            <td>
+                                {% if notif.is_auto %}
+                                    <span class="badge bg-light text-dark border"><i class="fas fa-robot me-1"></i>Auto</span>
+                                {% else %}
+                                    <span class="badge bg-light text-dark border"><i class="fas fa-user me-1"></i>Manual</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-3">
+                                <form method="POST" action="{{ url_for('superadmin.delete_notification', notif_id=notif.id) }}"
+                                      onsubmit="return confirm('Delete this notification record?')" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if notifs.pages > 1 %}
+            <div class="d-flex justify-content-center py-3">
+                <nav>
+                    <ul class="pagination mb-0">
+                        {% if notifs.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('superadmin.notifications', page=notifs.prev_num) }}">Previous</a>
+                        </li>
+                        {% endif %}
+                        {% for p in notifs.iter_pages() %}
+                            {% if p %}
+                            <li class="page-item {% if p == notifs.page %}active{% endif %}">
+                                <a class="page-link" href="{{ url_for('superadmin.notifications', page=p) }}">{{ p }}</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled"><span class="page-link">…</span></li>
+                            {% endif %}
+                        {% endfor %}
+                        {% if notifs.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('superadmin.notifications', page=notifs.next_num) }}">Next</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No notifications sent yet. Use the button above to send one.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Send Notification Modal -->
+<div class="modal fade" id="sendNotifModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-paper-plane me-2 text-primary"></i>Send Notification</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Recipient</label>
+                    <select class="form-select" id="notifFirmId">
+                        <option value="">📢 Broadcast to ALL Law Firms</option>
+                        {% for firm in law_firms %}
+                        <option value="{{ firm.id }}">{{ firm.name }}{% if firm.email %} — {{ firm.email }}{% endif %}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Notification Type</label>
+                    <select class="form-select" id="notifType">
+                        <option value="general">📢 General Announcement</option>
+                        <option value="renewal_reminder">🔄 Renewal Reminder</option>
+                        <option value="expiry_warning">⚠️ Expiry Warning</option>
+                        <option value="access_suspended">🚫 Access Suspended</option>
+                        <option value="upgrade_prompt">⬆️ Upgrade Prompt</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Title <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="notifTitle" placeholder="e.g. Your subscription expires soon">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Message <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="notifMessage" rows="5"
+                              placeholder="Write your message here…"></textarea>
+                </div>
+
+                <!-- Quick templates -->
+                <div class="mb-2">
+                    <label class="form-label text-muted small">Quick Templates:</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-warning"
+                                onclick="fillTemplate('renewal')">Renewal Reminder</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                onclick="fillTemplate('expiry')">Expiry Warning</button>
+                        <button type="button" class="btn btn-sm btn-outline-info"
+                                onclick="fillTemplate('upgrade')">Upgrade Prompt</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="sendNotification()">
+                    <i class="fas fa-paper-plane me-2"></i>Send Notification
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showSendModal() {
+    new bootstrap.Modal(document.getElementById('sendNotifModal')).show();
+}
+
+const templates = {
+    renewal: {
+        type: 'renewal_reminder',
+        title: '🔄 Time to Renew Your LawColab Subscription',
+        message: 'Dear Law Firm,\n\nYour LawColab subscription is due for renewal. Renewing ensures uninterrupted access to all features including client management, invoicing, team collaboration, and more.\n\nPlease contact us to renew your subscription and continue growing your practice seamlessly.\n\nBest regards,\nLawColab Team'
+    },
+    expiry: {
+        type: 'expiry_warning',
+        title: '⚠️ Your Subscription Expires Soon',
+        message: 'Dear Law Firm,\n\nYour LawColab subscription is expiring soon. After expiry, access to your dashboard and all features will be suspended until renewal.\n\nTo avoid disruption, please renew as soon as possible by contacting our support team.\n\nBest regards,\nLawColab Team'
+    },
+    upgrade: {
+        type: 'upgrade_prompt',
+        title: '⬆️ Upgrade to a Longer Plan & Save',
+        message: 'Dear Law Firm,\n\nThank you for being a valued LawColab subscriber! We\'d like to let you know that you can save by upgrading to a longer subscription plan.\n\nCheck out our 6-month and 1-year plans for significant savings. Contact us today to upgrade!\n\nBest regards,\nLawColab Team'
+    }
+};
+
+function fillTemplate(key) {
+    const t = templates[key];
+    document.getElementById('notifType').value = t.type;
+    document.getElementById('notifTitle').value = t.title;
+    document.getElementById('notifMessage').value = t.message;
+}
+
+function sendNotification() {
+    const firmId = document.getElementById('notifFirmId').value;
+    const title  = document.getElementById('notifTitle').value.trim();
+    const msg    = document.getElementById('notifMessage').value.trim();
+    const type   = document.getElementById('notifType').value;
+
+    if (!title || !msg) {
+        alert('Title and message are required.');
+        return;
+    }
+
+    fetch('/superadmin/notifications/send', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({firm_id: firmId || null, title, message: msg, notification_type: type})
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            bootstrap.Modal.getInstance(document.getElementById('sendNotifModal')).hide();
+            alert(res.message);
+            location.reload();
+        } else {
+            alert('Error: ' + res.message);
+        }
+    });
+}
+
+function triggerAutoRenewal() {
+    if (!confirm('Run the automatic renewal check? This will send notifications to firms expiring within 7 days and already-expired firms (max one per 24 hours per firm).')) return;
+    fetch('/superadmin/notifications/auto-renewal', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({})
+    })
+    .then(r => r.json())
+    .then(res => {
+        alert(res.message);
+        location.reload();
+    });
+}
+</script>
+{% endblock %}

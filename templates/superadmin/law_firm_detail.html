@@ -1,98 +1,115 @@
 {% extends "base.html" %}
 
-{% block title %}Law Firm Details - Super Admin{% endblock %}
+{% block title %}{{ law_firm.name }} - Super Admin{% endblock %}
 
 {% block content %}
 <div class="container-fluid mt-4">
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-0">{{ law_firm.name }}</h1>
-            <p class="text-muted">Law Firm Management</p>
+            <h1 class="h3 mb-0" style="color:#0d1b4b; font-weight:700;">{{ law_firm.name }}</h1>
+            <p class="text-muted mb-0">Law Firm Management &mdash; Full Admin Control</p>
         </div>
-        <div>
-            <a href="{{ url_for('superadmin.lawfirms') }}" class="btn btn-outline-secondary me-2">
-                <i class="fas fa-arrow-left me-2"></i>Back to Law Firms
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ url_for('superadmin.manage_law_firms') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i>Back
             </a>
+            <button class="btn btn-info btn-sm text-white" onclick="showSendNotifModal({{ law_firm.id }}, '{{ law_firm.name|e }}')">
+                <i class="fas fa-bell me-1"></i>Send Notification
+            </button>
+            <button class="btn btn-warning btn-sm text-white" onclick="showExtendModal({{ law_firm.id }}, '{{ law_firm.name|e }}')">
+                <i class="fas fa-calendar-plus me-1"></i>Extend Subscription
+            </button>
             {% if not law_firm.admin_access_granted %}
-            <button class="btn btn-success" onclick="showGrantAccessModal('{{ law_firm.id }}', '{{ law_firm.name }}')">
-                <i class="fas fa-user-shield me-2"></i>Grant Admin Access
+            <button class="btn btn-success btn-sm" onclick="showGrantAccessModal('{{ law_firm.id }}', '{{ law_firm.name|e }}')">
+                <i class="fas fa-user-shield me-1"></i>Grant Access
             </button>
             {% else %}
-            <button class="btn btn-warning" onclick="revokeAdminAccess('{{ law_firm.id }}', '{{ law_firm.name }}')">
-                <i class="fas fa-user-times me-2"></i>Revoke Access
+            <button class="btn btn-outline-warning btn-sm" onclick="revokeAdminAccess('{{ law_firm.id }}', '{{ law_firm.name|e }}')">
+                <i class="fas fa-user-times me-1"></i>Revoke Access
             </button>
             {% endif %}
+            <button class="btn btn-danger btn-sm" onclick="confirmDeleteFirm({{ law_firm.id }}, '{{ law_firm.name|e }}')">
+                <i class="fas fa-trash-alt me-1"></i>Delete Firm
+            </button>
         </div>
     </div>
 
-    <!-- Law Firm Info -->
-    <div class="row g-4 mb-5">
+    <!-- Subscription Alert Banner -->
+    {% if law_firm.admin_access_granted %}
+        {% if law_firm.is_subscription_expired %}
+        <div class="alert alert-danger d-flex align-items-center mb-4">
+            <i class="fas fa-exclamation-triangle fa-lg me-3"></i>
+            <div>
+                <strong>Subscription Expired</strong> — This firm's subscription expired on
+                {{ law_firm.admin_access_expires.strftime('%B %d, %Y') if law_firm.admin_access_expires }}.
+                Use <strong>Extend Subscription</strong> to restore access.
+            </div>
+        </div>
+        {% elif law_firm.days_until_expiry is not none and law_firm.days_until_expiry <= 7 %}
+        <div class="alert alert-warning d-flex align-items-center mb-4">
+            <i class="fas fa-clock fa-lg me-3"></i>
+            <div>
+                <strong>Expiring Soon</strong> — This firm's subscription expires in
+                <strong>{{ law_firm.days_until_expiry }} day{{ 's' if law_firm.days_until_expiry != 1 }}</strong>
+                ({{ law_firm.admin_access_expires.strftime('%B %d, %Y') }}).
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+
+    <!-- Info + Stats Row -->
+    <div class="row g-4 mb-4">
+        <!-- Law Firm Info -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-transparent border-0">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-building me-2 text-primary"></i>Law Firm Information
-                    </h5>
+                    <h5 class="card-title mb-0"><i class="fas fa-building me-2 text-primary"></i>Firm Information</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted">Firm Name</label>
-                                <p class="mb-0 fw-semibold">{{ law_firm.name }}</p>
-                            </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Firm Name</label>
+                            <div class="fw-semibold">{{ law_firm.name }}</div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted">Email</label>
-                                <p class="mb-0">{{ law_firm.email or 'Not provided' }}</p>
-                            </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Email</label>
+                            <div>{{ law_firm.email or '—' }}</div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted">Phone</label>
-                                <p class="mb-0">{{ law_firm.phone or 'Not provided' }}</p>
-                            </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Phone</label>
+                            <div>{{ law_firm.phone or '—' }}</div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted">Address</label>
-                                <p class="mb-0">{{ law_firm.address or 'Not provided' }}</p>
-                            </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Address</label>
+                            <div>{{ law_firm.address or '—' }}</div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted">Created Date</label>
-                                <p class="mb-0">{{ law_firm.created_at.strftime('%B %d, %Y at %I:%M %p') if law_firm.created_at }}</p>
-                            </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Created</label>
+                            <div>{{ law_firm.created_at.strftime('%B %d, %Y') if law_firm.created_at else '—' }}</div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted">Status</label>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Subscription Status</label>
+                            <div>
                                 {% if law_firm.subscription_status == "Active" %}
-                                    <span class="badge bg-success">{{ law_firm.subscription_status }}</span>
+                                    <span class="badge bg-success fs-6">Active</span>
                                 {% elif law_firm.subscription_status == "Expired" %}
-                                    <span class="badge bg-danger">{{ law_firm.subscription_status }}</span>
+                                    <span class="badge bg-danger fs-6">Expired</span>
                                 {% elif "Expires in" in law_firm.subscription_status %}
-                                    <span class="badge bg-warning">{{ law_firm.subscription_status }}</span>
+                                    <span class="badge bg-warning text-dark fs-6">{{ law_firm.subscription_status }}</span>
                                 {% else %}
-                                    <span class="badge bg-secondary">{{ law_firm.subscription_status }}</span>
+                                    <span class="badge bg-secondary fs-6">{{ law_firm.subscription_status }}</span>
                                 {% endif %}
                             </div>
                         </div>
                         {% if law_firm.admin_access_granted %}
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted">Subscription Period</label>
-                                <p class="mb-0">{{ law_firm.subscription_period or 'Not set' }}</p>
-                            </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Subscription Plan</label>
+                            <div>{{ law_firm.subscription_period or '—' }}</div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted">Access Expires</label>
-                                <p class="mb-0">{{ law_firm.admin_access_expires.strftime('%B %d, %Y at %I:%M %p') if law_firm.admin_access_expires else 'Not set' }}</p>
-                            </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Access Expires</label>
+                            <div>{{ law_firm.admin_access_expires.strftime('%B %d, %Y') if law_firm.admin_access_expires else '—' }}</div>
                         </div>
                         {% endif %}
                     </div>
@@ -100,74 +117,108 @@
             </div>
         </div>
 
+        <!-- Stats + Quick Actions -->
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm mb-3">
                 <div class="card-header bg-transparent border-0">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-chart-bar me-2 text-primary"></i>Statistics
-                    </h5>
+                    <h5 class="card-title mb-0"><i class="fas fa-chart-bar me-2 text-primary"></i>Statistics</h5>
                 </div>
                 <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-6">
-                            <div class="border-end">
-                                <h4 class="mb-1">{{ law_firm.users|selectattr('active')|list|length }}</h4>
+                    <div class="row text-center g-3">
+                        <div class="col-4">
+                            <div class="p-2 rounded bg-light">
+                                <h4 class="mb-0 text-primary">{{ law_firm.users|length }}</h4>
                                 <small class="text-muted">Users</small>
                             </div>
                         </div>
-                        <div class="col-6">
-                            <h4 class="mb-1">{{ law_firm.projects|length if law_firm.projects else 0 }}</h4>
-                            <small class="text-muted">Projects</small>
+                        <div class="col-4">
+                            <div class="p-2 rounded bg-light">
+                                <h4 class="mb-0 text-success">{{ law_firm.projects|length if law_firm.projects else 0 }}</h4>
+                                <small class="text-muted">Projects</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2 rounded bg-light">
+                                <h4 class="mb-0 text-warning">
+                                    {{ law_firm.users|selectattr('role','equalto','admin')|list|length }}
+                                </h4>
+                                <small class="text-muted">Admins</small>
+                            </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0"><i class="fas fa-bolt me-2 text-warning"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body d-grid gap-2">
+                    <button class="btn btn-outline-primary btn-sm" onclick="showSendNotifModal({{ law_firm.id }}, '{{ law_firm.name|e }}')">
+                        <i class="fas fa-bell me-2"></i>Send Renewal Notification
+                    </button>
+                    <button class="btn btn-outline-success btn-sm" onclick="showExtendModal({{ law_firm.id }}, '{{ law_firm.name|e }}')">
+                        <i class="fas fa-calendar-plus me-2"></i>Extend / Set Subscription
+                    </button>
+                    {% if not law_firm.admin_access_granted %}
+                    <button class="btn btn-outline-success btn-sm" onclick="showGrantAccessModal('{{ law_firm.id }}', '{{ law_firm.name|e }}')">
+                        <i class="fas fa-user-shield me-2"></i>Grant Admin Access
+                    </button>
+                    {% else %}
+                    <button class="btn btn-outline-warning btn-sm" onclick="revokeAdminAccess('{{ law_firm.id }}', '{{ law_firm.name|e }}')">
+                        <i class="fas fa-user-times me-2"></i>Revoke Admin Access
+                    </button>
+                    {% endif %}
+                    <button class="btn btn-outline-danger btn-sm" onclick="confirmDeleteFirm({{ law_firm.id }}, '{{ law_firm.name|e }}')">
+                        <i class="fas fa-trash-alt me-2"></i>Delete This Firm
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Users Table -->
-    <div class="card border-0 shadow-sm">
-        <div class="card-header bg-transparent border-0">
-            <h5 class="card-title mb-0">
-                <i class="fas fa-users me-2 text-primary"></i>Users in {{ law_firm.name }}
-            </h5>
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0"><i class="fas fa-users me-2 text-primary"></i>Users in {{ law_firm.name }}</h5>
         </div>
-        <div class="card-body">
+        <div class="card-body p-0">
             {% if law_firm.users %}
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
+                <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Name</th>
+                            <th class="ps-3">Name</th>
                             <th>Email</th>
                             <th>Role</th>
                             <th>Joined</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            <th class="text-end pe-3">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for user in law_firm.users %}
-                        {% if user.active %}
                         <tr>
-                            <td>
+                            <td class="ps-3">
                                 <div class="d-flex align-items-center">
-                                    <div class="rounded-circle p-2 me-2" 
-                                         style="background-color: {% if user.role == 'admin' %}#e8f5e8{% elif user.role == 'team_member' %}#fff3e0{% else %}#f3e5f5{% endif %}; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
-                                        <i class="fas {% if user.role == 'admin' %}fa-user-shield text-success{% elif user.role == 'team_member' %}fa-user-tie text-warning{% else %}fa-user text-info{% endif %}"></i>
+                                    <div class="rounded-circle p-2 me-2 flex-shrink-0"
+                                         style="background-color: {% if user.role == 'admin' %}#e8f5e8{% elif user.role == 'team_member' %}#fff3e0{% else %}#f3e5f5{% endif %}; width:36px; height:36px; display:flex; align-items:center; justify-content:center;">
+                                        <i class="fas {% if user.role == 'admin' %}fa-user-shield text-success{% elif user.role == 'team_member' %}fa-user-tie text-warning{% else %}fa-user text-info{% endif %} fa-sm"></i>
                                     </div>
                                     <div>
                                         <div class="fw-semibold">{{ user.full_name }}</div>
+                                        <small class="text-muted">ID: {{ user.id[:8] }}…</small>
                                     </div>
                                 </div>
                             </td>
-                            <td>{{ user.email }}</td>
+                            <td>{{ user.email or '—' }}</td>
                             <td>
-                                <span class="badge {% if user.role == 'admin' %}bg-success{% elif user.role == 'team_member' %}bg-warning{% else %}bg-info{% endif %}">
-                                    {{ user.role|title }}
+                                <span class="badge {% if user.role == 'admin' %}bg-success{% elif user.role == 'team_member' %}bg-warning text-dark{% else %}bg-info text-white{% endif %}">
+                                    {{ user.role|replace('_',' ')|title }}
                                 </span>
                             </td>
-                            <td class="text-muted">{{ user.created_at.strftime('%b %d, %Y') if user.created_at }}</td>
+                            <td class="text-muted">{{ user.created_at.strftime('%b %d, %Y') if user.created_at else '—' }}</td>
                             <td>
                                 {% if user.active %}
                                     <span class="badge bg-success">Active</span>
@@ -175,30 +226,202 @@
                                     <span class="badge bg-secondary">Inactive</span>
                                 {% endif %}
                             </td>
-                            <td>
-                                <div class="btn-group" role="group">
+                            <td class="text-end pe-3">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" title="Reset Password"
+                                            onclick="showResetPasswordModal('{{ user.id }}', '{{ user.email|e }}')">
+                                        <i class="fas fa-key"></i>
+                                    </button>
                                     {% if user.role != 'admin' %}
-                                    <button class="btn btn-sm btn-outline-success" onclick="promoteToAdmin('{{ user.id }}', '{{ user.full_name }}')">
-                                        <i class="fas fa-user-shield"></i> Make Admin
+                                    <button class="btn btn-outline-success" title="Make Admin"
+                                            onclick="promoteToAdmin('{{ user.id }}', '{{ user.full_name|e }}')">
+                                        <i class="fas fa-user-shield"></i>
                                     </button>
                                     {% endif %}
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deactivateUser('{{ user.id }}', '{{ user.full_name }}')">
-                                        <i class="fas fa-user-times"></i>
+                                    <button class="btn btn-outline-{% if user.active %}warning{% else %}success{% endif %}" title="Toggle Active"
+                                            onclick="toggleUserStatus('{{ user.id }}', '{{ user.full_name|e }}', {{ 'true' if user.active else 'false' }})">
+                                        <i class="fas fa-{% if user.active %}pause{% else %}play{% endif %}"></i>
                                     </button>
                                 </div>
                             </td>
                         </tr>
-                        {% endif %}
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
             {% else %}
-            <div class="text-center py-4">
+            <div class="text-center py-5">
                 <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                <p class="text-muted">No users in this law firm yet</p>
+                <p class="text-muted">No users in this law firm yet.</p>
             </div>
             {% endif %}
+        </div>
+    </div>
+
+    <!-- Projects Summary -->
+    {% if law_firm.projects %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0">
+            <h5 class="card-title mb-0"><i class="fas fa-briefcase me-2 text-primary"></i>Projects ({{ law_firm.projects|length }})</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Title</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for proj in law_firm.projects[:15] %}
+                        <tr>
+                            <td class="ps-3 fw-semibold">{{ proj.title }}</td>
+                            <td>
+                                <span class="badge {% if proj.status == 'active' %}bg-success{% elif proj.status == 'completed' %}bg-primary{% else %}bg-secondary{% endif %}">
+                                    {{ proj.status|title }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge {% if proj.priority == 'high' %}bg-danger{% elif proj.priority == 'medium' %}bg-warning text-dark{% else %}bg-light text-dark border{% endif %}">
+                                    {{ proj.priority|title }}
+                                </span>
+                            </td>
+                            <td class="text-muted">{{ proj.created_at.strftime('%b %d, %Y') if proj.created_at else '—' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ── Modals ──────────────────────────────────────────────────────────── -->
+
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-key me-2 text-warning"></i>Reset Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Reset password for <strong id="resetUserEmail"></strong></p>
+                <div class="mb-3">
+                    <label class="form-label">New Password <span class="text-danger">*</span></label>
+                    <input type="password" class="form-control" id="newPassword" placeholder="Minimum 8 characters">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                    <input type="password" class="form-control" id="confirmPassword" placeholder="Repeat password">
+                </div>
+                <div class="alert alert-warning small">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    This will immediately update the user's password. Any active sessions may remain until they log out.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" onclick="doResetPassword()">
+                    <i class="fas fa-key me-1"></i>Reset Password
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Extend Subscription Modal -->
+<div class="modal fade" id="extendSubModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-calendar-plus me-2 text-success"></i>Extend / Set Subscription</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Adjust subscription for <strong id="extendFirmName"></strong></p>
+                <div class="mb-3">
+                    <label class="form-label">Action</label>
+                    <select class="form-select" id="extendAction">
+                        <option value="extend">Extend from current expiry date</option>
+                        <option value="set">Set from today (override)</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Period to Add / Set</label>
+                    <select class="form-select" id="extendPeriod">
+                        <option value="3days">3 Days (Trial)</option>
+                        <option value="1month">1 Month</option>
+                        <option value="3months">3 Months</option>
+                        <option value="6months">6 Months</option>
+                        <option value="1year" selected>1 Year</option>
+                        <option value="2years">2 Years</option>
+                    </select>
+                </div>
+                <div class="alert alert-info small">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Current status: <strong>{{ law_firm.subscription_status }}</strong>
+                    {% if law_firm.admin_access_expires %}
+                    — expires {{ law_firm.admin_access_expires.strftime('%B %d, %Y') }}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="doExtendSubscription()">
+                    <i class="fas fa-check me-1"></i>Apply
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Send Notification Modal -->
+<div class="modal fade" id="sendNotifModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-bell me-2 text-info"></i>Send Notification to <span id="notifFirmName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Type</label>
+                    <select class="form-select" id="notifType">
+                        <option value="renewal_reminder">🔄 Renewal Reminder</option>
+                        <option value="expiry_warning">⚠️ Expiry Warning</option>
+                        <option value="general">📢 General Announcement</option>
+                        <option value="upgrade_prompt">⬆️ Upgrade Prompt</option>
+                        <option value="access_suspended">🚫 Access Suspended</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Title <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="notifTitle" placeholder="Notification title">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Message <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="notifMessage" rows="5" placeholder="Your message…"></textarea>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label text-muted small">Quick Templates:</label>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="button" class="btn btn-sm btn-outline-warning" onclick="fillDetailTemplate('renewal')">Renewal Reminder</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="fillDetailTemplate('expiry')">Expiry Warning</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-info text-white" onclick="doSendNotification()">
+                    <i class="fas fa-paper-plane me-1"></i>Send
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -208,20 +431,13 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Grant Admin Access</h5>
+                <h5 class="modal-title"><i class="fas fa-user-shield me-2 text-success"></i>Grant Admin Access</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>Grant admin access to <strong id="firmNameDisplay"></strong>? This will allow them to:</p>
-                <ul>
-                    <li>Add team members and clients</li>
-                    <li>Create and manage projects</li>
-                    <li>Assign lawyers to projects</li>
-                    <li>Manage firm settings</li>
-                </ul>
-                
+                <p>Grant admin access to <strong id="firmNameDisplay"></strong>?</p>
                 <div class="mb-3">
-                    <label class="form-label">Select Subscription Period:</label>
+                    <label class="form-label">Subscription Period</label>
                     <select class="form-select" id="subscriptionPeriod">
                         <option value="3days">3 Days (Free Trial)</option>
                         <option value="1month">1 Month</option>
@@ -230,10 +446,8 @@
                         <option value="1year" selected>1 Year</option>
                     </select>
                 </div>
-                
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i>
-                    Make sure you have verified their payment before granting access.
+                <div class="alert alert-info small">
+                    <i class="fas fa-info-circle me-1"></i>Verify payment before granting access.
                 </div>
             </div>
             <div class="modal-footer">
@@ -244,114 +458,172 @@
     </div>
 </div>
 
+<!-- Delete Firm Form (hidden) -->
+<form id="deleteFirmForm" method="POST" style="display:none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+</form>
+
 <script>
-function showGrantAccessModal(firmId, firmName) {
-    document.getElementById('firmNameDisplay').textContent = firmName;
-    
-    document.getElementById('confirmGrantAdmin').onclick = function() {
-        const period = document.getElementById('subscriptionPeriod').value;
-        grantAdminAccess(firmId, firmName, period);
-    };
-    
-    new bootstrap.Modal(document.getElementById('grantAdminModal')).show();
+// ─── State ────────────────────────────────────────────────────────────────
+let _resetUserId   = null;
+let _extendFirmId  = null;
+let _notifFirmId   = null;
+
+// ─── Reset Password ───────────────────────────────────────────────────────
+function showResetPasswordModal(userId, email) {
+    _resetUserId = userId;
+    document.getElementById('resetUserEmail').textContent = email;
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+    new bootstrap.Modal(document.getElementById('resetPasswordModal')).show();
 }
 
-function grantAdminAccess(firmId, firmName, period) {
-    // Close the modal first
-    bootstrap.Modal.getInstance(document.getElementById('grantAdminModal')).hide();
-    
-    console.log(`Granting access to firm ${firmId} for period ${period}`);
-    
-    fetch('/superadmin/grant-admin-access', {
+function doResetPassword() {
+    const np = document.getElementById('newPassword').value;
+    const cp = document.getElementById('confirmPassword').value;
+    if (!np || np.length < 8) { alert('Password must be at least 8 characters.'); return; }
+    if (np !== cp) { alert('Passwords do not match.'); return; }
+
+    fetch('/superadmin/users/reset-password', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            action: 'grant_access',
-            firm_id: firmId,
-            period: period
-        })
-    })
-    .then(response => {
-        console.log('Response status:', response.status);
-        return response.json();
-    })
-    .then(result => {
-        console.log('Result:', result);
-        if (result.success) {
-            alert(result.message);
-            location.reload();
-        } else {
-            alert('Error: ' + result.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred. Please try again.');
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({user_id: _resetUserId, new_password: np})
+    }).then(r => r.json()).then(res => {
+        bootstrap.Modal.getInstance(document.getElementById('resetPasswordModal')).hide();
+        alert(res.message);
     });
 }
 
-function revokeAdminAccess(firmId, firmName) {
-    if (confirm(`Revoke admin access for "${firmName}"? This will downgrade their account.`)) {
+// ─── Extend Subscription ──────────────────────────────────────────────────
+function showExtendModal(firmId, firmName) {
+    _extendFirmId = firmId;
+    document.getElementById('extendFirmName').textContent = firmName;
+    new bootstrap.Modal(document.getElementById('extendSubModal')).show();
+}
+
+function doExtendSubscription() {
+    const period = document.getElementById('extendPeriod').value;
+    const action = document.getElementById('extendAction').value;
+    fetch(`/superadmin/law-firms/${_extendFirmId}/extend-subscription`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({period, action})
+    }).then(r => r.json()).then(res => {
+        bootstrap.Modal.getInstance(document.getElementById('extendSubModal')).hide();
+        alert(res.message);
+        if (res.success) location.reload();
+    });
+}
+
+// ─── Send Notification ────────────────────────────────────────────────────
+function showSendNotifModal(firmId, firmName) {
+    _notifFirmId = firmId;
+    document.getElementById('notifFirmName').textContent = firmName;
+    document.getElementById('notifTitle').value = '';
+    document.getElementById('notifMessage').value = '';
+    new bootstrap.Modal(document.getElementById('sendNotifModal')).show();
+}
+
+const _detailTemplates = {
+    renewal: {
+        type: 'renewal_reminder',
+        title: '🔄 Time to Renew Your LawColab Subscription',
+        message: 'Dear Law Firm,\n\nYour LawColab subscription is due for renewal. Renewing ensures uninterrupted access to all features.\n\nPlease contact us to renew at your earliest convenience.\n\nBest regards,\nLawColab Team'
+    },
+    expiry: {
+        type: 'expiry_warning',
+        title: '⚠️ Your Subscription Expires Soon',
+        message: 'Dear Law Firm,\n\nYour LawColab subscription is expiring soon. After expiry, dashboard access will be suspended.\n\nPlease renew now to avoid interruption.\n\nBest regards,\nLawColab Team'
+    }
+};
+
+function fillDetailTemplate(key) {
+    const t = _detailTemplates[key];
+    document.getElementById('notifType').value = t.type;
+    document.getElementById('notifTitle').value = t.title;
+    document.getElementById('notifMessage').value = t.message;
+}
+
+function doSendNotification() {
+    const title   = document.getElementById('notifTitle').value.trim();
+    const message = document.getElementById('notifMessage').value.trim();
+    const type    = document.getElementById('notifType').value;
+    if (!title || !message) { alert('Title and message are required.'); return; }
+
+    fetch('/superadmin/notifications/send', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({firm_id: _notifFirmId, title, message, notification_type: type})
+    }).then(r => r.json()).then(res => {
+        bootstrap.Modal.getInstance(document.getElementById('sendNotifModal')).hide();
+        alert(res.message);
+    });
+}
+
+// ─── Grant / Revoke Admin Access ──────────────────────────────────────────
+function showGrantAccessModal(firmId, firmName) {
+    document.getElementById('firmNameDisplay').textContent = firmName;
+    document.getElementById('confirmGrantAdmin').onclick = function () {
+        const period = document.getElementById('subscriptionPeriod').value;
+        bootstrap.Modal.getInstance(document.getElementById('grantAdminModal')).hide();
         fetch('/superadmin/grant-admin-access', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'revoke_access',
-                firm_id: firmId
-            })
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.success) {
-                alert(result.message);
-                location.reload();
-            } else {
-                alert('Error: ' + result.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred. Please try again.');
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({action: 'grant_access', firm_id: firmId, period})
+        }).then(r => r.json()).then(res => {
+            alert(res.message);
+            if (res.success) location.reload();
         });
-    }
+    };
+    new bootstrap.Modal(document.getElementById('grantAdminModal')).show();
 }
 
+function revokeAdminAccess(firmId, firmName) {
+    if (!confirm(`Revoke admin access for "${firmName}"? Their account will be downgraded.`)) return;
+    fetch('/superadmin/grant-admin-access', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({action: 'revoke_access', firm_id: firmId})
+    }).then(r => r.json()).then(res => {
+        alert(res.message);
+        if (res.success) location.reload();
+    });
+}
+
+// ─── Promote to Admin ─────────────────────────────────────────────────────
 function promoteToAdmin(userId, userName) {
-    if (confirm(`Promote ${userName} to admin role?`)) {
-        // Implementation for promoting user to admin
-        alert('Promotion functionality will be implemented');
-    }
+    if (!confirm(`Promote ${userName} to admin role?`)) return;
+    fetch('/superadmin/grant-admin-privileges', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({action: 'promote', user_id: userId})
+    }).then(r => r.json()).then(res => {
+        alert(res.message);
+        if (res.success) location.reload();
+    });
 }
 
-function deactivateUser(userId, userName) {
-    if (confirm(`Deactivate ${userName}? They will no longer be able to access the system.`)) {
-        fetch('/superadmin/deactivate-user', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                user_id: userId
-            })
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.success) {
-                alert(result.message);
-                location.reload();
-            } else {
-                alert('Error: ' + result.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred. Please try again.');
-        });
+// ─── Toggle User Active ───────────────────────────────────────────────────
+function toggleUserStatus(userId, userName, isActive) {
+    const verb = isActive ? 'deactivate' : 'activate';
+    if (!confirm(`${verb.charAt(0).toUpperCase() + verb.slice(1)} ${userName}?`)) return;
+    fetch('/superadmin/users/toggle-status', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: new URLSearchParams({user_id: userId, csrf_token: '{{ csrf_token() }}'})
+    }).then(() => location.reload());
+}
+
+// ─── Delete Law Firm ──────────────────────────────────────────────────────
+function confirmDeleteFirm(firmId, firmName) {
+    const typed = prompt(`WARNING: This will permanently delete "${firmName}" and remove all its users' firm association.\n\nType the firm name exactly to confirm:`);
+    if (typed !== firmName) {
+        if (typed !== null) alert('Name did not match. Deletion cancelled.');
+        return;
     }
+    const form = document.getElementById('deleteFirmForm');
+    form.action = `/superadmin/law-firms/${firmId}/delete`;
+    form.submit();
 }
 </script>
 
