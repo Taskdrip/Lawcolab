@@ -3,59 +3,67 @@
 {% block title %}Super Admin Dashboard - LAWCOLAB{% endblock %}
 
 {% block content %}
-<div class="container-fluid mt-4">
-    <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-0 text-gradient">Platform Management Dashboard</h1>
-            <p class="text-muted">Manage all law firms and users across the platform</p>
-        </div>
-        <div>
-            <a href="{{ url_for('superadmin.create_super_admin') }}" class="btn btn-primary me-2">
-                <i class="fas fa-user-shield me-2"></i>Add Super Admin
-            </a>
-            <div class="dropdown d-inline">
-                <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    <i class="fas fa-plus me-2"></i>Quick Actions
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#" onclick="showGrantAdminModal()">
-                        <i class="fas fa-user-plus me-2"></i>Create Law Firm Admin
-                    </a></li>
-                    <li><a class="dropdown-item" href="{{ url_for('superadmin.platform_users') }}">
-                        <i class="fas fa-users me-2"></i>View All Users
-                    </a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="{{ url_for('enhanced_chat.superadmin_broadcast') }}">
-                        <i class="fas fa-bullhorn me-2"></i>Send Broadcast
-                    </a></li>
-                    <li><a class="dropdown-item" href="{{ url_for('enhanced_chat.superadmin_support_rooms') }}">
-                        <i class="fas fa-headset me-2"></i>Support Chat Rooms
-                    </a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="{{ url_for('payment_management.payment_dashboard') }}">
-                        <i class="fas fa-credit-card me-2"></i>Payment Management
-                    </a></li>
-                    <li><a class="dropdown-item" href="{{ url_for('payment_management.manage_bank_accounts') }}">
-                        <i class="fas fa-university me-2"></i>Bank Accounts
-                    </a></li>
-                    <li><a class="dropdown-item" href="{{ url_for('payment_management.manage_crypto_wallets') }}">
-                        <i class="fas fa-wallet me-2"></i>Crypto Wallets
-                    </a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="{{ url_for('sales.manage_reviews') }}">
-                        <i class="fas fa-star me-2"></i>Manage Reviews
-                    </a></li>
-                    <li><a class="dropdown-item" href="{{ url_for('sales.admin_dashboard') }}">
-                        <i class="fas fa-chart-line me-2"></i>Sales & Content
-                    </a></li>
-                    <li><a class="dropdown-item" href="{{ url_for('showcase.admin_manage') }}">
-                        <i class="fas fa-trophy me-2"></i>Manage Showcases
-                    </a></li>
-                </ul>
+<!-- Page Header -->
+<div class="lc-page-header lc-ph-bg-dashboard">
+    <div class="container-fluid px-3 px-lg-4">
+        <div class="lc-ph-inner d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="lc-ph-icon"><i class="fas fa-crown"></i></div>
+                <div>
+                    <h1>Platform Management</h1>
+                    <p class="lc-ph-sub mb-0">Manage all law firms and users across the platform</p>
+                </div>
+            </div>
+            <div class="lc-ph-actions d-flex gap-2 flex-wrap">
+                <a href="{{ url_for('superadmin.create_super_admin') }}" class="btn btn-warning btn-sm fw-semibold">
+                    <i class="fas fa-user-shield me-1"></i>Add Super Admin
+                </a>
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-plus me-1"></i>Quick Actions
+                    </button>
+                    <ul class="dropdown-menu lc-dropdown">
+                        <li><a class="dropdown-item" href="#" onclick="showGrantAdminModal()">
+                            <i class="fas fa-user-plus me-2"></i>Create Law Firm Admin
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('superadmin.platform_users') }}">
+                            <i class="fas fa-users me-2"></i>View All Users
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('enhanced_chat.superadmin_broadcast') }}">
+                            <i class="fas fa-bullhorn me-2"></i>Send Broadcast
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('enhanced_chat.superadmin_support_rooms') }}">
+                            <i class="fas fa-headset me-2"></i>Support Chat Rooms
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('payment_management.payment_dashboard') }}">
+                            <i class="fas fa-credit-card me-2"></i>Payment Management
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('payment_management.manage_bank_accounts') }}">
+                            <i class="fas fa-university me-2"></i>Bank Accounts
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('payment_management.manage_crypto_wallets') }}">
+                            <i class="fas fa-wallet me-2"></i>Crypto Wallets
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('sales.manage_reviews') }}">
+                            <i class="fas fa-star me-2"></i>Manage Reviews
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('sales.admin_dashboard') }}">
+                            <i class="fas fa-chart-line me-2"></i>Sales & Content
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('showcase.admin_manage') }}">
+                            <i class="fas fa-trophy me-2"></i>Manage Showcases
+                        </a></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
+</div>
+
+<div class="container-fluid mt-4">
 
     <!-- Quick Access Management Cards -->
     <div class="row g-4 mb-4">
