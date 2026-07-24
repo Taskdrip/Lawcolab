@@ -12,9 +12,10 @@ A full-stack law firm practice management platform built with Flask, SQLAlchemy,
 ## Features
 - Multi-tenant: each law firm is isolated by `law_firm_id`
 - Role system: Super Admin → Admin → Team Member → Client
-- **Calendar** with court-specific fields (jurisdiction, court type, address, judge)
-- Court hearing history log per case event (previous dates + court notes)
-- Export court dates to Excel (`.xlsx`) and any event to iCal (`.ics`)
+- **Calendar** with court-specific fields (jurisdiction/state, court type, court address, judge/magistrate name)
+- **Court Docket** (`/calendar/court-docket`) — dedicated view for all court matters with filters by state, court type, judge, status, and linked project; shows live hearing countdown, court metadata grid, and expandable hearing history per matter
+- Court hearing history log per case event (previous dates + court notes); entries can be added, edited, and deleted
+- Export court dates to Excel (`.xlsx`, two sheets: upcoming dates + full hearing history) and any event to iCal (`.ics`)
 - Case / project management
 - Invoice & billing with line items
 - Team chat and direct messaging

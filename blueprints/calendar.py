@@ -730,6 +730,100 @@ def export_event_ical(event_id):
     )
 
 
+@calendar_bp.route('/history/<int:history_id>/edit', methods=['GET', 'POST'])
+@simple_login_required
+def edit_court_history(history_id):
+    entry = CourtDateHistory.query.get_or_404(history_id)
+    event = CalendarEvent.query.get_or_404(entry.event_id)
+    _check_access(event)
+    if not (current_user.is_admin() or current_user.is_super_admin() or
+            entry.recorded_by_id == current_user.id):
+        abort(403)
+
+    if request.method == 'POST':
+        hearing_date_str = request.form.get('hearing_date', '').strip()
+        try:
+            entry.hearing_date = datetime.strptime(hearing_date_str, '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            flash('Invalid date.', 'danger')
+            return redirect(url_for('calendar.event_detail', event_id=event.id))
+
+        entry.outcome = request.form.get('outcome', '').strip() or None
+        entry.court_notes = request.form.get('court_notes', '').strip() or None
+        db.session.commit()
+        flash('History entry updated.', 'success')
+        return redirect(url_for('calendar.event_detail', event_id=event.id))
+
+    return render_template('calendar/edit_history.html', entry=entry, event=event)
+
+
+@calendar_bp.route('/court-docket')
+@simple_login_required
+def court_docket():
+    """Dedicated court docket — all court-date events with filters and history summary."""
+    if current_user.is_client():
+        abort(403)
+
+    # Filter params
+    f_jurisdiction = request.args.get('jurisdiction', '').strip()
+    f_court_type   = request.args.get('court_type', '').strip()
+    f_judge        = request.args.get('judge', '').strip()
+    f_status       = request.args.get('status', '').strip()
+    f_project      = request.args.get('project_id', '', type=str).strip()
+
+    q = (get_firm_events_query()
+         .filter(CalendarEvent.event_type == EVENT_TYPE_COURT))
+
+    if f_jurisdiction:
+        q = q.filter(CalendarEvent.court_jurisdiction == f_jurisdiction)
+    if f_court_type:
+        q = q.filter(CalendarEvent.court_type == f_court_type)
+    if f_judge:
+        q = q.filter(CalendarEvent.judge_name.ilike(f'%{f_judge}%'))
+    if f_status:
+        q = q.filter(CalendarEvent.status == f_status)
+    if f_project:
+        try:
+            q = q.filter(CalendarEvent.project_id == int(f_project))
+        except ValueError:
+            pass
+
+    events = q.order_by(CalendarEvent.start_datetime).all()
+
+    # Stats
+    total = len(events)
+    upcoming_count  = sum(1 for e in events if e.status == EVENT_STATUS_UPCOMING)
+    completed_count = sum(1 for e in events if e.status == EVENT_STATUS_COMPLETED)
+    cancelled_count = sum(1 for e in events if e.status == EVENT_STATUS_CANCELLED)
+
+    # Unique values for filter dropdowns (from all firm court events, not filtered subset)
+    all_court_q = (get_firm_events_query()
+                   .filter(CalendarEvent.event_type == EVENT_TYPE_COURT))
+    all_court_events = all_court_q.all()
+
+    jurisdictions = sorted({e.court_jurisdiction for e in all_court_events if e.court_jurisdiction})
+    judges        = sorted({e.judge_name for e in all_court_events if e.judge_name})
+    projects      = get_firm_projects()
+
+    return render_template('calendar/court_docket.html',
+                           events=events,
+                           total=total,
+                           upcoming_count=upcoming_count,
+                           completed_count=completed_count,
+                           cancelled_count=cancelled_count,
+                           jurisdictions=jurisdictions,
+                           judges=judges,
+                           court_types=COURT_TYPES,
+                           event_statuses=EVENT_STATUSES,
+                           projects=projects,
+                           f_jurisdiction=f_jurisdiction,
+                           f_court_type=f_court_type,
+                           f_judge=f_judge,
+                           f_status=f_status,
+                           f_project=f_project,
+                           today=date.today())
+
+
 @calendar_bp.route('/upcoming')
 @simple_login_required
 def upcoming_events():

@@ -481,12 +481,41 @@
                         </a>
                     </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link lc-link{% if 'calendar' in (request.endpoint or '') %} active{% endif %}"
-                           href="{{ url_for('calendar.index') }}">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link lc-link dropdown-toggle{% if 'calendar' in (request.endpoint or '') %} active{% endif %}"
+                           href="#" id="calNavDropdown" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-calendar-alt"></i><span>Calendar</span>
                             <span class="lc-cal-badge" id="lc-cal-reminder-badge">0</span>
                         </a>
+                        <ul class="dropdown-menu shadow-sm" aria-labelledby="calNavDropdown"
+                            style="border-radius:12px;border:1px solid #e5e7eb;min-width:200px;">
+                            <li>
+                                <a class="dropdown-item py-2" href="{{ url_for('calendar.index') }}">
+                                    <i class="fas fa-calendar-alt me-2 text-primary"></i>Full Calendar
+                                </a>
+                            </li>
+                            {% if not current_user.is_client() %}
+                            <li>
+                                <a class="dropdown-item py-2" href="{{ url_for('calendar.court_docket') }}">
+                                    <i class="fas fa-gavel me-2 text-danger"></i>Court Docket
+                                </a>
+                            </li>
+                            {% endif %}
+                            <li>
+                                <a class="dropdown-item py-2" href="{{ url_for('calendar.upcoming_events') }}">
+                                    <i class="fas fa-list-ul me-2 text-success"></i>Upcoming Events
+                                </a>
+                            </li>
+                            {% if not current_user.is_client() %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item py-2" href="{{ url_for('calendar.create_event') }}">
+                                    <i class="fas fa-plus-circle me-2 text-warning"></i>New Event
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
                     </li>
 
                     <li class="nav-item">

@@ -1,0 +1,493 @@
+{% extends "base.html" %}
+{% block title %}Court Docket - LAWCOLAB{% endblock %}
+
+{% block additional_css %}
+<style>
+/* ── Hero ─────────────────────────────────────────────────────────── */
+.docket-hero {
+  background:
+    linear-gradient(135deg, rgba(100,0,20,0.92) 0%, rgba(180,20,40,0.80) 100%),
+    url("{{ url_for('static', filename='images/Modern_law_office_interior_98a5776a.png') }}")
+    center / cover no-repeat;
+  padding: 2.25rem 2rem 1.75rem;
+  position: relative; overflow: hidden;
+}
+.docket-hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 80% 30%, rgba(255,255,255,.07) 0%, transparent 65%);
+  pointer-events: none;
+}
+.docket-hero-inner { position: relative; z-index: 1; }
+.docket-breadcrumb { display: flex; align-items: center; gap: .4rem; margin-bottom: .65rem; }
+.docket-breadcrumb a { color: rgba(255,255,255,.65); font-size: .78rem; text-decoration: none; }
+.docket-breadcrumb a:hover { color: #fff; }
+.docket-breadcrumb span { color: rgba(255,255,255,.35); font-size: .75rem; }
+.docket-title {
+  font-size: 1.75rem; font-weight: 900; color: #fff !important;
+  margin: 0 0 .25rem; letter-spacing: -.02em;
+  text-shadow: 0 1px 10px rgba(0,0,0,.7);
+}
+.docket-title i { color: #fbbf24; margin-right: .4rem; }
+.docket-sub {
+  color: #fff !important; font-size: .85rem; opacity: .9;
+  text-shadow: 0 1px 6px rgba(0,0,0,.6); margin: 0;
+}
+
+/* ── Stat pills ── */
+.stat-pills { display: flex; gap: .75rem; flex-wrap: wrap; margin-top: 1.1rem; }
+.stat-pill {
+  display: flex; align-items: center; gap: .5rem;
+  background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22);
+  border-radius: 100px; padding: .3rem 1rem; font-size: .8rem; font-weight: 700; color: #fff;
+  backdrop-filter: blur(6px);
+}
+.stat-pill i { font-size: .85rem; }
+
+/* ── Filter bar ── */
+.docket-filter-bar {
+  background: #fff; border-bottom: 1px solid #e5e7eb;
+  padding: 1rem 2rem; display: flex; align-items: flex-end; gap: .75rem; flex-wrap: wrap;
+}
+.docket-filter-bar label { font-size: .72rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: .05em; display: block; margin-bottom: .25rem; }
+.docket-filter-bar .form-control,
+.docket-filter-bar .form-select {
+  font-size: .83rem; border-radius: 9px; border: 1.5px solid #e5e7eb; min-width: 140px;
+}
+.docket-filter-bar .form-control:focus,
+.docket-filter-bar .form-select:focus { border-color: #e11d48; box-shadow: 0 0 0 3px rgba(225,29,72,.1); }
+.btn-filter {
+  background: #e11d48; color: #fff; border: none; border-radius: 9px;
+  padding: .45rem 1.1rem; font-weight: 700; font-size: .83rem;
+  display: inline-flex; align-items: center; gap: .4rem; cursor: pointer;
+}
+.btn-filter:hover { background: #be123c; color: #fff; }
+.btn-filter-clear {
+  color: #6b7280; border: 1.5px solid #e5e7eb; border-radius: 9px;
+  padding: .42rem .9rem; font-size: .82rem; background: #fff; text-decoration: none;
+  display: inline-flex; align-items: center; gap: .4rem;
+}
+.btn-filter-clear:hover { border-color: #9ca3af; color: #374151; }
+
+/* ── Body ── */
+.docket-body { background: #f4f6fb; padding: 1.5rem 2rem 3rem; }
+
+/* ── Matter card ── */
+.matter-card {
+  background: #fff; border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.07);
+  margin-bottom: 1.1rem; overflow: hidden;
+  border-left: 5px solid #e11d48;
+  transition: box-shadow .15s, transform .15s;
+}
+.matter-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,.12); transform: translateY(-1px); }
+.matter-card.completed { border-left-color: #10b981; }
+.matter-card.cancelled { border-left-color: #9ca3af; opacity: .75; }
+
+.matter-card-head {
+  padding: 1rem 1.25rem .75rem;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+  flex-wrap: wrap;
+}
+.matter-title {
+  font-size: 1rem; font-weight: 800; color: #0f172a; margin: 0 0 .15rem;
+  text-decoration: none; display: block;
+}
+.matter-title:hover { color: #e11d48; }
+.matter-badges { display: flex; align-items: center; gap: .45rem; flex-wrap: wrap; margin-top: .2rem; }
+.matter-badge {
+  display: inline-flex; align-items: center; gap: .25rem;
+  padding: .18rem .65rem; border-radius: 100px; font-size: .71rem; font-weight: 700;
+}
+.mb-upcoming  { background: #fff1f2; color: #9f1239; }
+.mb-completed { background: #d1fae5; color: #065f46; }
+.mb-cancelled { background: #f3f4f6; color: #6b7280; }
+.mb-project   { background: #eff6ff; color: #1d4ed8; }
+
+/* ── Court meta grid ── */
+.court-meta-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: .6rem; padding: .5rem 1.25rem 1rem; background: #fafafa;
+  border-top: 1px solid #f1f3f8;
+}
+.court-meta-item { display: flex; flex-direction: column; gap: .1rem; }
+.court-meta-label {
+  font-size: .67rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .07em; color: #9ca3af;
+}
+.court-meta-value { font-size: .83rem; font-weight: 600; color: #1e293b; }
+.court-meta-value.empty { color: #d1d5db; font-weight: 400; font-style: italic; }
+
+/* ── History section ── */
+.matter-history-toggle {
+  padding: .55rem 1.25rem; background: #fff1f2;
+  border-top: 1px solid #fecdd3;
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none;
+  font-size: .78rem; font-weight: 700; color: #9f1239;
+}
+.matter-history-toggle:hover { background: #ffe4e6; }
+.matter-history-toggle i { transition: transform .2s; }
+.matter-history-toggle[aria-expanded="true"] i.fa-chevron-down { transform: rotate(180deg); }
+
+.history-table { font-size: .82rem; }
+.history-table th {
+  background: #fff1f2; color: #9f1239; font-size: .7rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .06em; padding: .55rem 1rem;
+  border-bottom: 1px solid #fecdd3; white-space: nowrap;
+}
+.history-table td { padding: .6rem 1rem; border-bottom: 1px solid #f9fafb; vertical-align: top; }
+.history-table tr:last-child td { border-bottom: none; }
+.outcome-badge {
+  display: inline-flex; align-items: center; gap: .3rem;
+  background: #fee2e2; color: #9f1239; border-radius: 100px;
+  padding: .15rem .65rem; font-size: .72rem; font-weight: 700;
+}
+
+/* ── Empty state ── */
+.docket-empty {
+  text-align: center; padding: 4rem 2rem;
+  background: #fff; border-radius: 18px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.06);
+}
+.docket-empty-icon {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: linear-gradient(135deg, #fff1f2, #fecdd3);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1.25rem; font-size: 1.75rem; color: #e11d48; opacity: .6;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Hero ───────────────────────────────────────────────────────────────── -->
+<div class="docket-hero">
+  <div class="docket-hero-inner">
+    <div class="docket-breadcrumb">
+      <a href="{{ url_for('calendar.index') }}"><i class="fas fa-calendar-alt me-1"></i>Calendar</a>
+      <span>/</span>
+      <span style="color:rgba(255,255,255,.75);">Court Docket</span>
+    </div>
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2">
+      <div>
+        <h1 class="docket-title"><i class="fas fa-gavel"></i>Court Docket</h1>
+        <p class="docket-sub">All court matters — jurisdictions, benches, hearing history &amp; notes</p>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ url_for('calendar.create_event') }}?event_type=court_date"
+           class="btn btn-sm fw-bold"
+           style="background:#fbbf24;color:#1e293b;border-radius:10px;padding:.45rem 1.1rem;">
+          <i class="fas fa-plus me-1"></i>New Court Date
+        </a>
+        {% if not current_user.is_client() %}
+        <a href="{{ url_for('calendar.export_excel') }}"
+           class="btn btn-sm fw-bold"
+           style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:10px;padding:.45rem 1.1rem;">
+          <i class="fas fa-file-excel me-1"></i>Export Excel
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="stat-pills">
+      <div class="stat-pill"><i class="fas fa-gavel"></i>{{ total }} Matter{{ 's' if total != 1 }}</div>
+      <div class="stat-pill" style="background:rgba(251,191,36,.18);border-color:rgba(251,191,36,.35);">
+        <i class="fas fa-calendar-alt" style="color:#fbbf24;"></i>{{ upcoming_count }} Upcoming
+      </div>
+      <div class="stat-pill" style="background:rgba(16,185,129,.18);border-color:rgba(16,185,129,.35);">
+        <i class="fas fa-check-circle" style="color:#10b981;"></i>{{ completed_count }} Completed
+      </div>
+      {% if cancelled_count %}
+      <div class="stat-pill" style="background:rgba(156,163,175,.18);border-color:rgba(156,163,175,.35);">
+        <i class="fas fa-ban" style="color:#9ca3af;"></i>{{ cancelled_count }} Cancelled
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- ── Filter bar ──────────────────────────────────────────────────────────── -->
+<div class="docket-filter-bar">
+  <form method="GET" action="{{ url_for('calendar.court_docket') }}" class="d-flex align-items-end gap-2 flex-wrap w-100">
+
+    <div>
+      <label>Jurisdiction (State)</label>
+      <select name="jurisdiction" class="form-select form-select-sm">
+        <option value="">All States</option>
+        {% for j in jurisdictions %}
+        <option value="{{ j }}" {{ 'selected' if f_jurisdiction == j }}>{{ j }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label>Court Type</label>
+      <select name="court_type" class="form-select form-select-sm">
+        <option value="">All Courts</option>
+        {% for ct in court_types %}
+        <option value="{{ ct }}" {{ 'selected' if f_court_type == ct }}>{{ ct }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label>Judge / Magistrate</label>
+      <select name="judge" class="form-select form-select-sm">
+        <option value="">All Judges</option>
+        {% for j in judges %}
+        <option value="{{ j }}" {{ 'selected' if f_judge == j }}>{{ j }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label>Status</label>
+      <select name="status" class="form-select form-select-sm">
+        <option value="">All Statuses</option>
+        {% for val, label in event_statuses %}
+        <option value="{{ val }}" {{ 'selected' if f_status == val }}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    {% if projects %}
+    <div>
+      <label>Linked Project</label>
+      <select name="project_id" class="form-select form-select-sm" style="min-width:160px;">
+        <option value="">All Projects</option>
+        {% for p in projects %}
+        <option value="{{ p.id }}" {{ 'selected' if f_project == p.id|string }}>{{ p.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+
+    <div class="d-flex gap-2 ms-auto">
+      <button type="submit" class="btn-filter">
+        <i class="fas fa-filter"></i>Filter
+      </button>
+      {% if f_jurisdiction or f_court_type or f_judge or f_status or f_project %}
+      <a href="{{ url_for('calendar.court_docket') }}" class="btn-filter-clear">
+        <i class="fas fa-times"></i>Clear
+      </a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- ── Body ───────────────────────────────────────────────────────────────── -->
+<div class="docket-body">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+    <div class="alert alert-{{ cat }} alert-dismissible fade show" role="alert">
+      {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+  {% endwith %}
+
+  {% if events %}
+
+  {% for event in events %}
+  {% set status_class = 'completed' if event.status == 'completed' else ('cancelled' if event.status == 'cancelled' else '') %}
+  <div class="matter-card {{ status_class }}">
+
+    <!-- Card header -->
+    <div class="matter-card-head">
+      <div>
+        <a href="{{ url_for('calendar.event_detail', event_id=event.id) }}" class="matter-title">
+          <i class="fas fa-gavel me-2" style="color:#e11d48;font-size:.85rem;"></i>{{ event.title }}
+        </a>
+        <div class="matter-badges">
+          <!-- Status -->
+          {% if event.status == 'upcoming' %}
+          <span class="matter-badge mb-upcoming">
+            <i class="fas fa-calendar-alt"></i>Upcoming
+          </span>
+          {% elif event.status == 'completed' %}
+          <span class="matter-badge mb-completed">
+            <i class="fas fa-check-circle"></i>Completed
+          </span>
+          {% else %}
+          <span class="matter-badge mb-cancelled">
+            <i class="fas fa-ban"></i>Cancelled
+          </span>
+          {% endif %}
+          <!-- Project -->
+          {% if event.project %}
+          <a href="{{ url_for('projects.project_detail', project_id=event.project.id) }}"
+             class="matter-badge mb-project" style="text-decoration:none;">
+            <i class="fas fa-briefcase"></i>{{ event.project.title }}
+          </a>
+          {% endif %}
+          <!-- History count -->
+          {% if event.court_history %}
+          <span class="matter-badge" style="background:#fff7ed;color:#c2410c;">
+            <i class="fas fa-history"></i>{{ event.court_history|length }} hearing{{ 's' if event.court_history|length != 1 }}
+          </span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Next hearing date -->
+      <div class="text-end flex-shrink-0">
+        <div style="font-size:.75rem;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">
+          {% if event.status == 'upcoming' %}Next Hearing{% else %}Last Scheduled{% endif %}
+        </div>
+        <div style="font-size:1.05rem;font-weight:900;color:#0f172a;">
+          {{ event.start_datetime.strftime('%d %b %Y') }}
+        </div>
+        {% if not event.all_day %}
+        <div style="font-size:.78rem;color:#6b7280;">{{ event.start_datetime.strftime('%I:%M %p') }}</div>
+        {% endif %}
+        {% set days_diff = (event.start_datetime.date() - today).days %}
+        {% if event.status == 'upcoming' %}
+          {% if days_diff == 0 %}
+          <span style="font-size:.72rem;font-weight:800;color:#e11d48;">TODAY</span>
+          {% elif days_diff == 1 %}
+          <span style="font-size:.72rem;font-weight:700;color:#f97316;">TOMORROW</span>
+          {% elif days_diff > 0 %}
+          <span style="font-size:.72rem;color:#6b7280;">in {{ days_diff }} days</span>
+          {% elif days_diff < 0 %}
+          <span style="font-size:.72rem;font-weight:700;color:#dc2626;">{{ (-days_diff) }} day{{ 's' if -days_diff != 1 }} overdue</span>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Court meta grid -->
+    <div class="court-meta-grid">
+      <div class="court-meta-item">
+        <div class="court-meta-label"><i class="fas fa-map-pin me-1"></i>Jurisdiction</div>
+        {% if event.court_jurisdiction %}
+        <div class="court-meta-value">{{ event.court_jurisdiction }}</div>
+        {% else %}
+        <div class="court-meta-value empty">Not set</div>
+        {% endif %}
+      </div>
+
+      <div class="court-meta-item">
+        <div class="court-meta-label"><i class="fas fa-balance-scale me-1"></i>Court</div>
+        {% if event.court_type %}
+        <div class="court-meta-value">{{ event.court_type }}</div>
+        {% else %}
+        <div class="court-meta-value empty">Not set</div>
+        {% endif %}
+      </div>
+
+      <div class="court-meta-item">
+        <div class="court-meta-label"><i class="fas fa-user-tie me-1"></i>Judge / Magistrate</div>
+        {% if event.judge_name %}
+        <div class="court-meta-value">{{ event.judge_name }}</div>
+        {% else %}
+        <div class="court-meta-value empty">Not set</div>
+        {% endif %}
+      </div>
+
+      <div class="court-meta-item" style="grid-column: span 2;">
+        <div class="court-meta-label"><i class="fas fa-landmark me-1"></i>Court Address</div>
+        {% if event.court_address %}
+        <div class="court-meta-value">{{ event.court_address }}</div>
+        {% else %}
+        <div class="court-meta-value empty">Not set</div>
+        {% endif %}
+      </div>
+
+      {% if event.notes %}
+      <div class="court-meta-item" style="grid-column: span 3;">
+        <div class="court-meta-label"><i class="fas fa-lock me-1"></i>Private Notes</div>
+        <div class="court-meta-value" style="white-space:pre-line;font-size:.8rem;color:#374151;">{{ event.notes }}</div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Hearing history accordion -->
+    {% if event.court_history %}
+    <div class="matter-history-toggle"
+         data-bs-toggle="collapse"
+         data-bs-target="#hist-{{ event.id }}"
+         aria-expanded="false">
+      <span><i class="fas fa-history me-2"></i>Previous Hearings ({{ event.court_history|length }})</span>
+      <i class="fas fa-chevron-down"></i>
+    </div>
+    <div class="collapse" id="hist-{{ event.id }}">
+      <div class="table-responsive">
+        <table class="table history-table mb-0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Outcome / Result</th>
+              <th>Court Notes</th>
+              <th>Recorded By</th>
+              <th style="width:60px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for h in event.court_history %}
+            <tr>
+              <td style="white-space:nowrap;font-weight:700;color:#0f172a;">
+                {{ h.hearing_date.strftime('%d %b %Y') }}
+              </td>
+              <td>
+                {% if h.outcome %}
+                <span class="outcome-badge">{{ h.outcome }}</span>
+                {% else %}
+                <span style="color:#d1d5db;">—</span>
+                {% endif %}
+              </td>
+              <td style="max-width:320px;white-space:pre-line;color:#374151;">{{ h.court_notes or '—' }}</td>
+              <td style="color:#6b7280;font-size:.78rem;">{{ h.recorded_by.full_name if h.recorded_by else '—' }}</td>
+              <td>
+                <div class="d-flex gap-1">
+                  {% if current_user.is_admin() or current_user.is_super_admin() or h.recorded_by_id == current_user.id %}
+                  <a href="{{ url_for('calendar.edit_court_history', history_id=h.id) }}"
+                     class="btn btn-sm btn-outline-secondary" style="font-size:.7rem;padding:.2rem .45rem;"
+                     title="Edit">
+                    <i class="fas fa-pen"></i>
+                  </a>
+                  <form method="POST" action="{{ url_for('calendar.delete_court_history', history_id=h.id) }}"
+                        onsubmit="return confirm('Delete this entry?');" style="margin:0;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                            style="font-size:.7rem;padding:.2rem .45rem;" title="Delete">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% else %}
+    <div style="padding:.55rem 1.25rem;background:#fafafa;border-top:1px solid #f1f3f8;font-size:.78rem;color:#9ca3af;">
+      <i class="fas fa-info-circle me-1"></i>No previous hearings recorded.
+      <a href="{{ url_for('calendar.event_detail', event_id=event.id) }}#addHistoryForm" style="color:#e11d48;font-weight:600;margin-left:.3rem;">Log first hearing →</a>
+    </div>
+    {% endif %}
+
+  </div>
+  {% endfor %}
+
+  {% else %}
+  <!-- Empty state -->
+  <div class="docket-empty">
+    <div class="docket-empty-icon"><i class="fas fa-gavel"></i></div>
+    <h5 class="fw-bold text-muted">No court matters found</h5>
+    {% if f_jurisdiction or f_court_type or f_judge or f_status or f_project %}
+    <p class="text-muted small mb-3">No results match your current filters.</p>
+    <a href="{{ url_for('calendar.court_docket') }}" class="btn btn-outline-secondary btn-sm me-2">Clear Filters</a>
+    {% else %}
+    <p class="text-muted small mb-3">No court dates have been scheduled yet.</p>
+    {% endif %}
+    <a href="{{ url_for('calendar.create_event') }}" class="btn btn-sm fw-bold"
+       style="background:#e11d48;color:#fff;border-radius:9px;padding:.5rem 1.4rem;">
+      <i class="fas fa-plus me-1"></i>Schedule First Court Date
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

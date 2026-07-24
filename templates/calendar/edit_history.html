@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Edit Hearing Entry - Calendar - LAWCOLAB{% endblock %}
+
+{% block additional_css %}
+<style>
+.edit-hero {
+  background: linear-gradient(135deg, rgba(100,0,20,0.92) 0%, rgba(180,20,40,0.82) 100%);
+  padding: 2rem 2rem 1.75rem; position: relative;
+}
+.edit-hero-inner { position: relative; z-index: 1; max-width: 680px; }
+.edit-breadcrumb { display: flex; align-items: center; gap: .4rem; margin-bottom: .6rem; }
+.edit-breadcrumb a { color: rgba(255,255,255,.65); font-size: .78rem; text-decoration: none; }
+.edit-breadcrumb a:hover { color: #fff; }
+.edit-breadcrumb span { color: rgba(255,255,255,.35); font-size: .75rem; }
+.edit-title {
+  font-size: 1.5rem; font-weight: 900; color: #fff !important; margin: 0;
+  text-shadow: 0 1px 10px rgba(0,0,0,.7);
+}
+.edit-sub { color: rgba(255,255,255,.85); font-size: .84rem; margin: .25rem 0 0; }
+
+.edit-body { background: #f4f6fb; padding: 1.75rem 2rem 3rem; }
+.edit-card {
+  background: #fff; border-radius: 18px;
+  box-shadow: 0 6px 32px rgba(0,0,0,.09);
+  max-width: 680px; padding: 1.75rem;
+}
+.form-label-field { font-size: .82rem; font-weight: 700; color: #374151; margin-bottom: .3rem; display: block; }
+.form-control { border-radius: 10px; border: 1.5px solid #e5e7eb; font-size: .88rem; }
+.form-control:focus { border-color: #e11d48; box-shadow: 0 0 0 3px rgba(225,29,72,.1); }
+.btn-save {
+  background: linear-gradient(135deg, #9f1239, #e11d48);
+  color: #fff; border: none; border-radius: 10px;
+  padding: .6rem 1.6rem; font-weight: 700; font-size: .9rem;
+  display: inline-flex; align-items: center; gap: .4rem;
+}
+.btn-save:hover { opacity: .9; color: #fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="edit-hero">
+  <div class="edit-hero-inner">
+    <div class="edit-breadcrumb">
+      <a href="{{ url_for('calendar.index') }}"><i class="fas fa-calendar-alt me-1"></i>Calendar</a>
+      <span>/</span>
+      <a href="{{ url_for('calendar.event_detail', event_id=event.id) }}">{{ event.title }}</a>
+      <span>/</span>
+      <span style="color:rgba(255,255,255,.75);">Edit Hearing</span>
+    </div>
+    <h1 class="edit-title"><i class="fas fa-pen me-2" style="color:#fbbf24;"></i>Edit Hearing Entry</h1>
+    <p class="edit-sub">Hearing date: {{ entry.hearing_date.strftime('%d %B %Y') }}</p>
+  </div>
+</div>
+
+<div class="edit-body">
+  <div class="edit-card">
+    <form method="POST" action="{{ url_for('calendar.edit_court_history', history_id=entry.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="mb-3">
+        <label class="form-label-field">Hearing Date <span class="text-danger">*</span></label>
+        <input type="date" name="hearing_date" class="form-control"
+               value="{{ entry.hearing_date.strftime('%Y-%m-%d') }}" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label-field">Outcome / Result
+          <span style="font-size:.72rem;color:#9ca3af;font-weight:400;">(brief summary)</span>
+        </label>
+        <input type="text" name="outcome" class="form-control"
+               value="{{ entry.outcome or '' }}"
+               placeholder="e.g. Adjourned, Ruling delivered, Witness examined…">
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label-field">Court Notes</label>
+        <textarea name="court_notes" class="form-control" rows="5"
+                  placeholder="Detailed notes about what transpired at this sitting…">{{ entry.court_notes or '' }}</textarea>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn-save">
+          <i class="fas fa-save"></i>Save Changes
+        </button>
+        <a href="{{ url_for('calendar.event_detail', event_id=event.id) }}"
+           class="btn btn-outline-secondary px-4" style="border-radius:10px;font-size:.88rem;">
+          Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
