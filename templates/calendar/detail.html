@@ -142,6 +142,9 @@
       <a href="{{ url_for('calendar.edit_event', event_id=event.id) }}" class="btn-ev-edit">
         <i class="fas fa-edit"></i>Edit Event
       </a>
+      <a href="{{ url_for('calendar.export_event_ical', event_id=event.id) }}" class="btn-ev-edit">
+        <i class="fas fa-calendar-export"></i><i class="far fa-calendar-plus"></i> Add to Calendar
+      </a>
       <form method="POST" action="{{ url_for('calendar.delete_event', event_id=event.id) }}"
             onsubmit="return confirm('Permanently delete this event?');" style="margin:0;">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -238,6 +241,43 @@
         </div>
         {% endif %}
 
+        {% if event.event_type == 'court_date' and (event.court_jurisdiction or event.court_type or event.court_address or event.judge_name) %}
+        <!-- Court details -->
+        <div class="ev-section">
+          <div class="ev-section-label" style="color:#9f1239;">
+            <i class="fas fa-gavel" style="color:#e11d48;"></i>Court Details
+          </div>
+          {% if event.court_jurisdiction %}
+          <div class="ev-info-row">
+            <i class="fas fa-map-pin text-danger"></i>
+            <div><span class="text-muted" style="font-size:.8rem;">Jurisdiction</span><br>
+              <strong>{{ event.court_jurisdiction }}</strong></div>
+          </div>
+          {% endif %}
+          {% if event.court_type %}
+          <div class="ev-info-row">
+            <i class="fas fa-balance-scale text-danger"></i>
+            <div><span class="text-muted" style="font-size:.8rem;">Court Type</span><br>
+              <strong>{{ event.court_type }}</strong></div>
+          </div>
+          {% endif %}
+          {% if event.judge_name %}
+          <div class="ev-info-row">
+            <i class="fas fa-user-tie text-danger"></i>
+            <div><span class="text-muted" style="font-size:.8rem;">Judge / Magistrate</span><br>
+              <strong>{{ event.judge_name }}</strong></div>
+          </div>
+          {% endif %}
+          {% if event.court_address %}
+          <div class="ev-info-row">
+            <i class="fas fa-landmark text-danger"></i>
+            <div><span class="text-muted" style="font-size:.8rem;">Court Address</span><br>
+              {{ event.court_address }}</div>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+
         {% if event.project %}
         <!-- Linked project -->
         <div class="ev-section">
@@ -319,6 +359,31 @@
         </div>
         {% endif %}
 
+        <!-- Export / Actions -->
+        {% if not current_user.is_client() %}
+        <div class="ev-section">
+          <div class="ev-section-label" style="color:#1d4ed8;">
+            <i class="fas fa-download" style="color:#3b82f6;"></i>Export &amp; Integrations
+          </div>
+          <div class="d-grid gap-2">
+            <a href="{{ url_for('calendar.export_event_ical', event_id=event.id) }}"
+               class="btn btn-outline-primary btn-sm">
+              <i class="far fa-calendar-plus me-1"></i>Add to Calendar (.ics)
+            </a>
+            {% if event.event_type == 'court_date' %}
+            <a href="{{ url_for('calendar.export_excel') }}"
+               class="btn btn-outline-success btn-sm">
+              <i class="fas fa-file-excel me-1"></i>Export All Court Dates (Excel)
+            </a>
+            {% endif %}
+          </div>
+          <p class="text-muted mt-2 mb-0" style="font-size:.72rem;">
+            <i class="fas fa-info-circle me-1"></i>
+            .ics works with Google Calendar, Outlook &amp; Apple Calendar.
+          </p>
+        </div>
+        {% endif %}
+
         <!-- Back link -->
         <div class="ev-section">
           <a href="{{ url_for('calendar.index', year=event.start_datetime.year, month=event.start_datetime.month) }}"
@@ -335,5 +400,118 @@
       </div>
     </div>
   </div>
+
+  {# ── Court Date History ─────────────────────────────────────────────────── #}
+  {% if event.event_type == 'court_date' and not current_user.is_client() %}
+  <div class="ev-card mt-4" style="max-width:900px;">
+    <div class="ev-section" style="border-bottom:2px solid #fee2e2;">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="ev-section-label mb-0" style="color:#9f1239;">
+          <i class="fas fa-history" style="color:#e11d48;font-size:1rem;"></i>
+          Previous Hearing Dates
+          {% if event.court_history %}
+          <span class="badge rounded-pill ms-1" style="background:#fee2e2;color:#9f1239;font-size:.7rem;">
+            {{ event.court_history|length }}
+          </span>
+          {% endif %}
+        </div>
+        {% if can_edit %}
+        <button class="btn btn-sm" style="background:#e11d48;color:#fff;border-radius:8px;font-size:.8rem;"
+                data-bs-toggle="collapse" data-bs-target="#addHistoryForm">
+          <i class="fas fa-plus me-1"></i>Add Entry
+        </button>
+        {% endif %}
+      </div>
+
+      {% if can_edit %}
+      <div class="collapse mt-3" id="addHistoryForm">
+        <form method="POST" action="{{ url_for('calendar.add_court_history', event_id=event.id) }}"
+              class="rounded-3 p-3" style="background:#fff1f2;border:1.5px solid #fecdd3;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="row g-2 mb-2">
+            <div class="col-md-4">
+              <label class="form-label" style="font-size:.8rem;font-weight:600;color:#374151;">Hearing Date <span class="text-danger">*</span></label>
+              <input type="date" name="hearing_date" class="form-control form-control-sm" required
+                     style="border-radius:8px;border:1.5px solid #fecdd3;">
+            </div>
+            <div class="col-md-8">
+              <label class="form-label" style="font-size:.8rem;font-weight:600;color:#374151;">Outcome / Result <span class="text-muted fw-normal">(brief)</span></label>
+              <input type="text" name="outcome" class="form-control form-control-sm"
+                     placeholder="e.g. Adjourned, Ruling delivered, Witness examined…"
+                     style="border-radius:8px;border:1.5px solid #fecdd3;">
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label" style="font-size:.8rem;font-weight:600;color:#374151;">Court Notes</label>
+            <textarea name="court_notes" class="form-control form-control-sm" rows="3"
+                      placeholder="Detailed notes about what transpired at this sitting…"
+                      style="border-radius:8px;border:1.5px solid #fecdd3;"></textarea>
+          </div>
+          <button type="submit" class="btn btn-sm"
+                  style="background:#e11d48;color:#fff;border-radius:8px;font-size:.82rem;">
+            <i class="fas fa-save me-1"></i>Save Entry
+          </button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+
+    {% if event.court_history %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0" style="font-size:.86rem;">
+        <thead style="background:#fff1f2;">
+          <tr>
+            <th style="color:#9f1239;font-weight:700;padding:.75rem 1.25rem;white-space:nowrap;">Date</th>
+            <th style="color:#9f1239;font-weight:700;padding:.75rem 1rem;">Outcome</th>
+            <th style="color:#9f1239;font-weight:700;padding:.75rem 1rem;">Court Notes</th>
+            <th style="color:#9f1239;font-weight:700;padding:.75rem 1rem;">Recorded By</th>
+            {% if can_edit %}<th style="width:60px;"></th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for h in event.court_history %}
+          <tr>
+            <td style="padding:.7rem 1.25rem;white-space:nowrap;font-weight:600;">
+              {{ h.hearing_date.strftime('%d %b %Y') }}
+            </td>
+            <td style="padding:.7rem 1rem;">
+              {% if h.outcome %}
+              <span class="badge rounded-pill" style="background:#fee2e2;color:#9f1239;font-size:.78rem;">
+                {{ h.outcome }}
+              </span>
+              {% else %}<span class="text-muted">—</span>{% endif %}
+            </td>
+            <td style="padding:.7rem 1rem;max-width:320px;">
+              <span style="white-space:pre-line;">{{ h.court_notes or '—' }}</span>
+            </td>
+            <td style="padding:.7rem 1rem;color:#6b7280;font-size:.82rem;">
+              {{ h.recorded_by.full_name if h.recorded_by else '—' }}
+            </td>
+            {% if current_user.is_admin() or current_user.is_super_admin() or h.recorded_by_id == current_user.id %}
+            <td style="padding:.7rem .75rem;">
+              <form method="POST"
+                    action="{{ url_for('calendar.delete_court_history', history_id=h.id) }}"
+                    onsubmit="return confirm('Delete this history entry?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm btn-outline-danger" style="font-size:.72rem;padding:.25rem .55rem;">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+            </td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="ev-section text-muted" style="font-size:.85rem;">
+      <i class="fas fa-info-circle me-2 opacity-50"></i>
+      No previous hearing dates recorded yet. Click <strong>Add Entry</strong> to log the first one.
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
 </div>
 {% endblock %}

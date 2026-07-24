@@ -143,6 +143,46 @@
           </div>
         </div>
 
+        <!-- Court Details (shown only when Court Date is selected) -->
+        <div class="form-section-card" id="courtDetailsSection"
+             style="{{ '' if event.event_type == 'court_date' else 'display:none;' }}">
+          <div class="form-section-head fsh-red">
+            <i class="fas fa-gavel"></i>Court Details
+          </div>
+          <div class="form-section-body">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label-field">Jurisdiction (State)</label>
+                <select name="court_jurisdiction" class="form-select">
+                  <option value="">— Select state —</option>
+                  {% for s in nigerian_states %}
+                  <option value="{{ s }}" {{ 'selected' if event.court_jurisdiction == s }}>{{ s }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label-field">Court Type</label>
+                <select name="court_type" class="form-select">
+                  <option value="">— Select court type —</option>
+                  {% for ct in court_types %}
+                  <option value="{{ ct }}" {{ 'selected' if event.court_type == ct }}>{{ ct }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label-field">Judge / Magistrate</label>
+                <input type="text" name="judge_name" class="form-control"
+                       value="{{ event.judge_name or '' }}" placeholder="e.g. Hon. Justice A. Okafor">
+              </div>
+              <div class="col-12">
+                <label class="form-label-field">Court Address</label>
+                <input type="text" name="court_address" class="form-control"
+                       value="{{ event.court_address or '' }}" placeholder="Full address of the court…">
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Location -->
         <div class="form-section-card">
           <div class="form-section-head fsh-green"><i class="fas fa-map-marker-alt"></i>Location</div>
@@ -295,5 +335,16 @@ document.getElementById('all_day')?.addEventListener('change', function() {
   const e = document.getElementById('endDateInput');
   if (e) e.disabled = this.checked;
 });
+// Show/hide court details section based on event type
+const eventTypeSelectEdit = document.querySelector('select[name="event_type"]');
+const courtSectionEdit = document.getElementById('courtDetailsSection');
+function toggleCourtSectionEdit() {
+  if (eventTypeSelectEdit && courtSectionEdit) {
+    courtSectionEdit.style.display = eventTypeSelectEdit.value === 'court_date' ? '' : 'none';
+  }
+}
+if (eventTypeSelectEdit) {
+  eventTypeSelectEdit.addEventListener('change', toggleCourtSectionEdit);
+}
 </script>
 {% endblock %}

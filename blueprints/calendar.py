@@ -1,13 +1,15 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, jsonify, Response
 from flask_login import current_user
 from app import db
-from models import (CalendarEvent, CalendarEventAttendee, Project, ProjectAssignment, User,
+from models import (CalendarEvent, CalendarEventAttendee, CourtDateHistory,
+                    Project, ProjectAssignment, User,
                     EVENT_TYPE_COURT, EVENT_TYPE_MEETING, EVENT_TYPE_APPOINTMENT,
                     EVENT_TYPE_DEADLINE, EVENT_TYPE_OTHER,
                     EVENT_STATUS_UPCOMING, EVENT_STATUS_COMPLETED, EVENT_STATUS_CANCELLED)
 from utils.decorators import simple_login_required
 from datetime import datetime, date, timedelta
 import calendar as cal_module
+import io
 
 calendar_bp = Blueprint('calendar', __name__)
 
@@ -36,6 +38,25 @@ REMINDER_OPTIONS = [
     (10080, '1 week before'),
 ]
 
+COURT_TYPES = [
+    'Magistrate Court',
+    'State High Court',
+    'Federal High Court',
+    'Court of Appeal',
+    'Supreme Court',
+    'Customary Court',
+    'Sharia Court',
+    'Other',
+]
+
+NIGERIAN_STATES = [
+    'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue',
+    'Borno', 'Cross River', 'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu',
+    'FCT - Abuja', 'Gombe', 'Imo', 'Jigawa', 'Kaduna', 'Kano', 'Katsina',
+    'Kebbi', 'Kogi', 'Kwara', 'Lagos', 'Nasarawa', 'Niger', 'Ogun', 'Ondo',
+    'Osun', 'Oyo', 'Plateau', 'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara',
+]
+
 
 def get_firm_events_query():
     """Base query for events visible to the current user."""
@@ -43,7 +64,6 @@ def get_firm_events_query():
         return CalendarEvent.query
     q = CalendarEvent.query.filter_by(law_firm_id=current_user.law_firm_id)
     if current_user.is_client():
-        # Clients only see events they are attendees of
         q = q.join(CalendarEventAttendee).filter(CalendarEventAttendee.user_id == current_user.id)
     return q
 
@@ -66,6 +86,14 @@ def get_firm_users():
             .all())
 
 
+def _save_court_fields(event, form):
+    """Copy court-specific fields from form into the event object."""
+    event.court_jurisdiction = form.get('court_jurisdiction', '').strip() or None
+    event.court_type = form.get('court_type', '').strip() or None
+    event.court_address = form.get('court_address', '').strip() or None
+    event.judge_name = form.get('judge_name', '').strip() or None
+
+
 @calendar_bp.route('/')
 @simple_login_required
 def index():
@@ -74,7 +102,6 @@ def index():
     month = request.args.get('month', today.month, type=int)
     view = request.args.get('view', 'month')
 
-    # Clamp month
     if month < 1:
         month = 12
         year -= 1
@@ -82,19 +109,16 @@ def index():
         month = 1
         year += 1
 
-    # Month boundaries
     first_day = datetime(year, month, 1)
     last_day_num = cal_module.monthrange(year, month)[1]
     last_day = datetime(year, month, last_day_num, 23, 59, 59)
 
-    # Events for this month
     events = (get_firm_events_query()
               .filter(CalendarEvent.start_datetime >= first_day,
                       CalendarEvent.start_datetime <= last_day)
               .order_by(CalendarEvent.start_datetime)
               .all())
 
-    # Upcoming events (next 7 days) for sidebar
     upcoming = (get_firm_events_query()
                 .filter(CalendarEvent.start_datetime >= datetime.now(),
                         CalendarEvent.status == EVENT_STATUS_UPCOMING)
@@ -102,10 +126,8 @@ def index():
                 .limit(10)
                 .all())
 
-    # Build calendar grid
     cal = cal_module.monthcalendar(year, month)
 
-    # Map day -> events
     events_by_day = {}
     for ev in events:
         d = ev.start_datetime.day
@@ -118,10 +140,8 @@ def index():
 
     month_name = first_day.strftime('%B %Y')
 
-    # ── Week view data ────────────────────────────────────────────────────────
-    week_offset = request.args.get('week', 0, type=int)   # offset in weeks from this week
+    week_offset = request.args.get('week', 0, type=int)
     today_dt = date.today()
-    # Find Monday of the current/offset week
     week_start = today_dt - timedelta(days=today_dt.weekday()) + timedelta(weeks=week_offset)
     week_days  = [week_start + timedelta(days=i) for i in range(7)]
     week_start_dt = datetime.combine(week_start, datetime.min.time())
@@ -142,16 +162,12 @@ def index():
     next_week_offset = week_offset + 1
     week_label = (f"{week_days[0].strftime('%b %d')} – {week_days[-1].strftime('%b %d, %Y')}")
 
-    # ── List view data (all events this month, chronological) ────────────────
-    # events is already sorted by start_datetime for the month – reuse it
-    # Group by date for list view
     events_by_date = {}
     for ev in events:
         d = ev.start_datetime.date()
         events_by_date.setdefault(d, []).append(ev)
     list_dates = sorted(events_by_date.keys())
 
-    # ── "Due soon" flags for glow ─────────────────────────────────────────────
     now_dt = datetime.now()
     due_today_ids = set()
     overdue_ids   = set()
@@ -201,6 +217,8 @@ def create_event():
             return render_template('calendar/create.html',
                                    event_types=EVENT_TYPES,
                                    reminder_options=REMINDER_OPTIONS,
+                                   court_types=COURT_TYPES,
+                                   nigerian_states=NIGERIAN_STATES,
                                    projects=projects,
                                    firm_users=firm_users)
 
@@ -214,6 +232,8 @@ def create_event():
             return render_template('calendar/create.html',
                                    event_types=EVENT_TYPES,
                                    reminder_options=REMINDER_OPTIONS,
+                                   court_types=COURT_TYPES,
+                                   nigerian_states=NIGERIAN_STATES,
                                    projects=projects,
                                    firm_users=firm_users)
 
@@ -238,6 +258,9 @@ def create_event():
         event.law_firm_id = current_user.law_firm_id
         event.created_by_id = current_user.id
 
+        if event.event_type == EVENT_TYPE_COURT:
+            _save_court_fields(event, request.form)
+
         proj_id = request.form.get('project_id', '')
         if proj_id:
             try:
@@ -254,13 +277,11 @@ def create_event():
         db.session.add(event)
         db.session.flush()
 
-        # Add attendees
         attendee_ids = request.form.getlist('attendee_ids')
         for uid in attendee_ids:
             if uid != current_user.id:
                 att = CalendarEventAttendee(event_id=event.id, user_id=uid)
                 db.session.add(att)
-        # Always add creator
         creator_att = CalendarEventAttendee(event_id=event.id, user_id=current_user.id, rsvp_status='accepted')
         db.session.add(creator_att)
 
@@ -268,7 +289,6 @@ def create_event():
         flash('Event created successfully!', 'success')
         return redirect(url_for('calendar.event_detail', event_id=event.id))
 
-    # Pre-fill date from query param
     default_date = request.args.get('date', '')
     default_dt = ''
     if default_date:
@@ -281,6 +301,8 @@ def create_event():
     return render_template('calendar/create.html',
                            event_types=EVENT_TYPES,
                            reminder_options=REMINDER_OPTIONS,
+                           court_types=COURT_TYPES,
+                           nigerian_states=NIGERIAN_STATES,
                            projects=projects,
                            firm_users=firm_users,
                            default_dt=default_dt)
@@ -324,6 +346,8 @@ def edit_event(event_id):
                 return render_template('calendar/edit.html', event=event,
                                        event_types=EVENT_TYPES, event_statuses=EVENT_STATUSES,
                                        reminder_options=REMINDER_OPTIONS,
+                                       court_types=COURT_TYPES,
+                                       nigerian_states=NIGERIAN_STATES,
                                        projects=projects, firm_users=firm_users,
                                        current_attendee_ids=current_attendee_ids)
 
@@ -342,6 +366,14 @@ def edit_event(event_id):
             event.virtual_link = request.form.get('virtual_link', '').strip()
             event.notes = request.form.get('notes', '').strip()
 
+            if event.event_type == EVENT_TYPE_COURT:
+                _save_court_fields(event, request.form)
+            else:
+                event.court_jurisdiction = None
+                event.court_type = None
+                event.court_address = None
+                event.judge_name = None
+
             proj_id = request.form.get('project_id', '')
             event.project_id = int(proj_id) if proj_id else None
 
@@ -350,7 +382,6 @@ def edit_event(event_id):
             except ValueError:
                 event.reminder_minutes = 60
 
-            # Update attendees
             CalendarEventAttendee.query.filter_by(event_id=event.id).delete()
             attendee_ids = request.form.getlist('attendee_ids')
             added = set()
@@ -371,6 +402,8 @@ def edit_event(event_id):
     return render_template('calendar/edit.html', event=event,
                            event_types=EVENT_TYPES, event_statuses=EVENT_STATUSES,
                            reminder_options=REMINDER_OPTIONS,
+                           court_types=COURT_TYPES,
+                           nigerian_states=NIGERIAN_STATES,
                            projects=projects, firm_users=firm_users,
                            current_attendee_ids=current_attendee_ids)
 
@@ -402,6 +435,301 @@ def update_status(event_id):
     return redirect(url_for('calendar.event_detail', event_id=event_id))
 
 
+# ── Court date history ────────────────────────────────────────────────────────
+
+def _can_edit_event(event):
+    """Return True if the current user may create/edit/delete records on this event."""
+    return (event.created_by_id == current_user.id or
+            current_user.is_admin() or current_user.is_super_admin())
+
+
+@calendar_bp.route('/<int:event_id>/history/add', methods=['POST'])
+@simple_login_required
+def add_court_history(event_id):
+    event = CalendarEvent.query.get_or_404(event_id)
+    _check_access(event)
+    # Only the event creator, firm admins, and super-admins may log history
+    if not _can_edit_event(event):
+        abort(403)
+    # History only makes sense on court-date events
+    if event.event_type != EVENT_TYPE_COURT:
+        abort(400)
+
+    hearing_date_str = request.form.get('hearing_date', '').strip()
+    try:
+        hearing_date = datetime.strptime(hearing_date_str, '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        flash('Invalid date for history entry.', 'danger')
+        return redirect(url_for('calendar.event_detail', event_id=event_id))
+
+    entry = CourtDateHistory(
+        event_id=event_id,
+        hearing_date=hearing_date,
+        outcome=request.form.get('outcome', '').strip() or None,
+        court_notes=request.form.get('court_notes', '').strip() or None,
+        recorded_by_id=current_user.id,
+    )
+    db.session.add(entry)
+    db.session.commit()
+    flash('Court history entry added.', 'success')
+    return redirect(url_for('calendar.event_detail', event_id=event_id))
+
+
+@calendar_bp.route('/history/<int:history_id>/delete', methods=['POST'])
+@simple_login_required
+def delete_court_history(history_id):
+    entry = CourtDateHistory.query.get_or_404(history_id)
+    event = CalendarEvent.query.get_or_404(entry.event_id)
+    _check_access(event)
+    # Admins/super-admins can delete any entry; others can only delete their own
+    if not (current_user.is_admin() or current_user.is_super_admin() or
+            entry.recorded_by_id == current_user.id):
+        abort(403)
+    db.session.delete(entry)
+    db.session.commit()
+    flash('History entry deleted.', 'success')
+    return redirect(url_for('calendar.event_detail', event_id=entry.event_id))
+
+
+# ── Export: Excel ─────────────────────────────────────────────────────────────
+
+@calendar_bp.route('/export/excel')
+@simple_login_required
+def export_excel():
+    """Export all court-date events (with history) for the firm as an Excel workbook."""
+    if current_user.is_client():
+        abort(403)
+
+    import openpyxl
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
+
+    events = (get_firm_events_query()
+              .filter(CalendarEvent.event_type == EVENT_TYPE_COURT)
+              .order_by(CalendarEvent.start_datetime)
+              .all())
+
+    wb = openpyxl.Workbook()
+
+    # ── Sheet 1: Upcoming court dates ──────────────────────────────────────
+    ws1 = wb.active
+    ws1.title = 'Court Dates'
+
+    header_fill = PatternFill('solid', fgColor='0A1847')
+    header_font = Font(bold=True, color='FFFFFF', size=11)
+    thin = Side(border_style='thin', color='D1D5DB')
+    border = Border(left=thin, right=thin, top=thin, bottom=thin)
+
+    headers = [
+        'Case / Event Title', 'Linked Project', 'Date', 'Time',
+        'Jurisdiction (State)', 'Court Type', 'Court Address',
+        'Judge / Magistrate', 'Status', 'Description', 'Internal Notes',
+    ]
+    col_widths = [35, 25, 14, 10, 20, 22, 35, 25, 12, 40, 40]
+
+    for ci, (h, w) in enumerate(zip(headers, col_widths), 1):
+        cell = ws1.cell(row=1, column=ci, value=h)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        cell.border = border
+        ws1.column_dimensions[get_column_letter(ci)].width = w
+    ws1.row_dimensions[1].height = 28
+
+    for row_idx, ev in enumerate(events, 2):
+        row_fill = PatternFill('solid', fgColor='F9FAFB') if row_idx % 2 == 0 else None
+        values = [
+            ev.title,
+            ev.project.title if ev.project else '',
+            ev.start_datetime.strftime('%Y-%m-%d'),
+            '' if ev.all_day else ev.start_datetime.strftime('%I:%M %p'),
+            ev.court_jurisdiction or '',
+            ev.court_type or '',
+            ev.court_address or '',
+            ev.judge_name or '',
+            ev.status.title(),
+            ev.description or '',
+            ev.notes or '',
+        ]
+        for ci, val in enumerate(values, 1):
+            cell = ws1.cell(row=row_idx, column=ci, value=val)
+            cell.alignment = Alignment(vertical='top', wrap_text=True)
+            cell.border = border
+            if row_fill:
+                cell.fill = row_fill
+        ws1.row_dimensions[row_idx].height = 22
+
+    # ── Sheet 2: Previous hearing history ─────────────────────────────────
+    ws2 = wb.create_sheet('Hearing History')
+    h2 = ['Case / Event Title', 'Linked Project', 'Hearing Date', 'Outcome / Result', 'Court Notes', 'Recorded By']
+    w2 = [35, 25, 14, 25, 55, 22]
+    for ci, (h, w) in enumerate(zip(h2, w2), 1):
+        cell = ws2.cell(row=1, column=ci, value=h)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        cell.border = border
+        ws2.column_dimensions[get_column_letter(ci)].width = w
+    ws2.row_dimensions[1].height = 28
+
+    row_idx2 = 2
+    for ev in events:
+        for h in ev.court_history:
+            row_fill = PatternFill('solid', fgColor='F9FAFB') if row_idx2 % 2 == 0 else None
+            values = [
+                ev.title,
+                ev.project.title if ev.project else '',
+                h.hearing_date.strftime('%Y-%m-%d'),
+                h.outcome or '',
+                h.court_notes or '',
+                h.recorded_by.full_name if h.recorded_by else '',
+            ]
+            for ci, val in enumerate(values, 1):
+                cell = ws2.cell(row=row_idx2, column=ci, value=val)
+                cell.alignment = Alignment(vertical='top', wrap_text=True)
+                cell.border = border
+                if row_fill:
+                    cell.fill = row_fill
+            ws2.row_dimensions[row_idx2].height = 22
+            row_idx2 += 1
+
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    filename = f"court_calendar_{date.today().strftime('%Y%m%d')}.xlsx"
+    return Response(
+        output.getvalue(),
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={'Content-Disposition': f'attachment; filename="{filename}"'}
+    )
+
+
+# ── Export: iCal ──────────────────────────────────────────────────────────────
+
+@calendar_bp.route('/export/ical')
+@simple_login_required
+def export_ical():
+    """Export upcoming events as an .ics file compatible with Google Calendar, Outlook, Apple Calendar."""
+    from icalendar import Calendar, Event as IEvent
+    import pytz
+
+    events = (get_firm_events_query()
+              .filter(CalendarEvent.start_datetime >= datetime.now(),
+                      CalendarEvent.status == EVENT_STATUS_UPCOMING)
+              .order_by(CalendarEvent.start_datetime)
+              .all())
+
+    cal = Calendar()
+    cal.add('prodid', '-//LawFirmOS//Court Calendar//EN')
+    cal.add('version', '2.0')
+    cal.add('calscale', 'GREGORIAN')
+    cal.add('method', 'PUBLISH')
+    cal.add('x-wr-calname', 'LawFirmOS – Court Dates')
+    cal.add('x-wr-timezone', 'Africa/Lagos')
+
+    tz = pytz.timezone('Africa/Lagos')
+
+    for ev in events:
+        iev = IEvent()
+        iev.add('uid', f'lawfirmos-event-{ev.id}@lawcolab')
+        iev.add('summary', ev.title)
+
+        start = tz.localize(ev.start_datetime) if ev.start_datetime.tzinfo is None else ev.start_datetime
+        iev.add('dtstart', start)
+
+        if ev.end_datetime:
+            end = tz.localize(ev.end_datetime) if ev.end_datetime.tzinfo is None else ev.end_datetime
+            iev.add('dtend', end)
+
+        description_parts = []
+        if ev.description:
+            description_parts.append(ev.description)
+        if ev.event_type == EVENT_TYPE_COURT:
+            if ev.court_jurisdiction:
+                description_parts.append(f'Jurisdiction: {ev.court_jurisdiction}')
+            if ev.court_type:
+                description_parts.append(f'Court: {ev.court_type}')
+            if ev.judge_name:
+                description_parts.append(f'Judge/Magistrate: {ev.judge_name}')
+        if description_parts:
+            iev.add('description', '\n'.join(description_parts))
+
+        location_parts = []
+        if ev.court_address:
+            location_parts.append(ev.court_address)
+        elif ev.location:
+            location_parts.append(ev.location)
+        if location_parts:
+            iev.add('location', ' | '.join(location_parts))
+
+        iev.add('status', 'CONFIRMED')
+        iev.add('dtstamp', datetime.now(pytz.utc))
+        cal.add_component(iev)
+
+    ical_bytes = cal.to_ical()
+    filename = f"lawfirmos_calendar_{date.today().strftime('%Y%m%d')}.ics"
+    return Response(
+        ical_bytes,
+        mimetype='text/calendar',
+        headers={'Content-Disposition': f'attachment; filename="{filename}"'}
+    )
+
+
+# ── Export: iCal for single event ─────────────────────────────────────────────
+
+@calendar_bp.route('/<int:event_id>/export/ical')
+@simple_login_required
+def export_event_ical(event_id):
+    """Download a single event as .ics."""
+    from icalendar import Calendar, Event as IEvent
+    import pytz
+
+    event = CalendarEvent.query.get_or_404(event_id)
+    _check_access(event)
+
+    tz = pytz.timezone('Africa/Lagos')
+    cal = Calendar()
+    cal.add('prodid', '-//LawFirmOS//Court Calendar//EN')
+    cal.add('version', '2.0')
+
+    iev = IEvent()
+    iev.add('uid', f'lawfirmos-event-{event.id}@lawcolab')
+    iev.add('summary', event.title)
+    start = tz.localize(event.start_datetime) if event.start_datetime.tzinfo is None else event.start_datetime
+    iev.add('dtstart', start)
+    if event.end_datetime:
+        end = tz.localize(event.end_datetime) if event.end_datetime.tzinfo is None else event.end_datetime
+        iev.add('dtend', end)
+
+    desc_parts = []
+    if event.description:
+        desc_parts.append(event.description)
+    if event.event_type == EVENT_TYPE_COURT:
+        for label, val in [('Jurisdiction', event.court_jurisdiction),
+                           ('Court', event.court_type),
+                           ('Judge/Magistrate', event.judge_name)]:
+            if val:
+                desc_parts.append(f'{label}: {val}')
+    if desc_parts:
+        iev.add('description', '\n'.join(desc_parts))
+
+    location = event.court_address or event.location
+    if location:
+        iev.add('location', location)
+
+    iev.add('status', 'CONFIRMED')
+    iev.add('dtstamp', datetime.now(pytz.utc))
+    cal.add_component(iev)
+
+    filename = f"event_{event.id}.ics"
+    return Response(
+        cal.to_ical(),
+        mimetype='text/calendar',
+        headers={'Content-Disposition': f'attachment; filename="{filename}"'}
+    )
+
+
 @calendar_bp.route('/upcoming')
 @simple_login_required
 def upcoming_events():
@@ -429,10 +757,7 @@ def _check_access(event):
 @calendar_bp.route('/api/reminders')
 @simple_login_required
 def api_reminders():
-    """Return upcoming events within their reminder window as JSON.
-    The client polls this every minute to drive popup alerts."""
     now = datetime.now()
-    # Look ahead 7 days so the client can pre-load and schedule
     window_end = now + timedelta(days=7)
 
     events = (get_firm_events_query()
@@ -445,7 +770,6 @@ def api_reminders():
     result = []
     for ev in events:
         reminder_mins = ev.reminder_minutes if ev.reminder_minutes is not None else 60
-        # Timestamp (ms) when the reminder should fire
         reminder_fire_ts = int(
             (ev.start_datetime - timedelta(minutes=reminder_mins)).timestamp() * 1000
         )
@@ -478,7 +802,6 @@ def api_reminders():
 @calendar_bp.route('/api/events')
 @simple_login_required
 def api_events():
-    """Return all events for a given year/month as JSON (used for dynamic sync)."""
     today = date.today()
     year = request.args.get('year', today.year, type=int)
     month = request.args.get('month', today.month, type=int)

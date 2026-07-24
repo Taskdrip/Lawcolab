@@ -17,6 +17,27 @@ def run_migrations(db):
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS locked_until TIMESTAMP",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMP",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_ip VARCHAR(45)",
+
+        # Court-specific fields on calendar_events
+        "ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS court_jurisdiction VARCHAR(150)",
+        "ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS court_type VARCHAR(100)",
+        "ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS court_address VARCHAR(400)",
+        "ALTER TABLE calendar_events ADD COLUMN IF NOT EXISTS judge_name VARCHAR(200)",
+
+        # Court hearing history table
+        """
+        CREATE TABLE IF NOT EXISTS court_date_history (
+            id SERIAL PRIMARY KEY,
+            event_id INTEGER NOT NULL REFERENCES calendar_events(id) ON DELETE CASCADE,
+            hearing_date DATE NOT NULL,
+            outcome VARCHAR(200),
+            court_notes TEXT,
+            recorded_by_id VARCHAR REFERENCES users(id),
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+        """,
+        "CREATE INDEX IF NOT EXISTS idx_court_history_event ON court_date_history(event_id)",
+        "CREATE INDEX IF NOT EXISTS idx_court_history_date ON court_date_history(hearing_date DESC)",
     ]
 
     with db.engine.connect() as conn:

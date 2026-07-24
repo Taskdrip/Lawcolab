@@ -1,57 +1,34 @@
-# LawColab / LawFirmOS
+# LawFirmOS (LawColab)
 
-A full-stack law firm management platform built with Python Flask + PostgreSQL.
-
-## Features
-- Multi-tenant law firm management (clients, cases, invoices, team)
-- Role-based access: Super Admin, Admin, Team Member, Client
-- Real-time team chat and support chat
-- Escrow and payment management
-- Billing / invoice generation (PDF via WeasyPrint)
-- Trial subscription system (3-day free trial on signup)
-- Dashboard with sliders and legal news (managed by Super Admin)
+A full-stack law firm practice management platform built with Flask, SQLAlchemy, and PostgreSQL.
 
 ## Stack
-- **Backend**: Python 3.11, Flask 3.x
-- **Database**: PostgreSQL (via Flask-SQLAlchemy)
-- **Auth**: Flask-Login + email/password
-- **Security**: Flask-Limiter (rate limiting), brute-force lockout, security headers
-- **PDF**: WeasyPrint / ReportLab
+- **Backend**: Python / Flask
+- **Database**: PostgreSQL (Replit built-in, via SQLAlchemy)
 - **Frontend**: Jinja2 templates, Bootstrap 5, vanilla JS
+- **Auth**: Email/password with Flask-Login; Replit OAuth optional
+- **Run**: `gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app`
 
-## Running on Replit
+## Features
+- Multi-tenant: each law firm is isolated by `law_firm_id`
+- Role system: Super Admin → Admin → Team Member → Client
+- **Calendar** with court-specific fields (jurisdiction, court type, address, judge)
+- Court hearing history log per case event (previous dates + court notes)
+- Export court dates to Excel (`.xlsx`) and any event to iCal (`.ics`)
+- Case / project management
+- Invoice & billing with line items
+- Team chat and direct messaging
 
-The app is configured to run via gunicorn on port 5000.
+## Running the app
+The workflow `Start application` starts the server on port 5000.  
+All tables are created/migrated automatically on startup via `app.py`.
 
-### Required secrets (set in Replit Secrets panel)
-| Secret | Purpose |
+## Environment variables required
+| Variable | Purpose |
 |---|---|
-| `SESSION_SECRET` | Flask session signing key |
-| `SUPER_ADMIN_EMAIL` | Email for the platform super admin |
-| `SUPER_ADMIN_PASSWORD` | Password for the platform super admin |
+| `SESSION_SECRET` | Flask session signing key (set in Replit Secrets) |
+| `DATABASE_URL` | PostgreSQL connection string (auto-provided by Replit DB) |
 
-### Optional secrets
-| Secret | Default |
-|---|---|
-| `SUPER_ADMIN_FIRST_NAME` | "Super" |
-| `SUPER_ADMIN_LAST_NAME` | "Admin" |
-
-### First-time setup
-1. Set the secrets above in the Replit Secrets panel
-2. Click **Run** — the app creates all DB tables and seeds the super admin automatically
-3. Visit `/auth/superadmin-access` to log in as super admin
-
-## Deploying to Railway
-See [RAILWAY_DEPLOY.md](RAILWAY_DEPLOY.md) for the full Railway deployment guide.
-
-## Security Architecture
-- **Rate limiting**: 10 login attempts/min per IP (Flask-Limiter, in-memory)
-- **Brute-force lockout**: DB-backed — accounts lock for 30 min after 10 failed logins
-- **Security headers**: X-Frame-Options, HSTS, X-Content-Type-Options, CSP, Referrer-Policy
-- **Secure cookies**: HttpOnly=True, SameSite=Lax, Secure=True in production
-- **CSRF**: Flask-WTF CSRF protection enabled globally
-- **ProxyFix**: Correctly handles Railway's TLS-terminating reverse proxy
-
-## User Preferences
-- Keep existing project structure — do not restructure blueprints or rename routes
-- Use proper `logging` (not `print`) for all server-side output
+## User preferences
+- Keep existing project structure and stack; do not migrate to other frameworks.
+- Nigerian states pre-loaded in court jurisdiction selector.

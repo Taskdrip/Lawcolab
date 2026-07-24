@@ -53,6 +53,7 @@
 .fsh-orange { background: #fff7ed; color: #c2410c; border-bottom: 1px solid #fed7aa; }
 .fsh-indigo { background: #eef2ff; color: #3730a3; border-bottom: 1px solid #c7d2fe; }
 .fsh-amber  { background: #fffbeb; color: #92400e; border-bottom: 1px solid #fde68a; }
+.fsh-red    { background: #fff1f2; color: #9f1239; border-bottom: 1px solid #fecdd3; }
 .form-section-head i { font-size: .8rem; }
 .form-section-body { padding: 1rem 1rem .75rem; background: #fff; }
 
@@ -170,6 +171,43 @@
                   <input type="checkbox" name="all_day" id="all_day" class="form-check-input">
                   <label for="all_day" class="form-check-label" style="font-size:.82rem;color:#374151;">All day</label>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Court Details (shown only when Court Date is selected) -->
+        <div class="form-section-card" id="courtDetailsSection" style="display:none;">
+          <div class="form-section-head fsh-red">
+            <i class="fas fa-gavel"></i>Court Details
+          </div>
+          <div class="form-section-body">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label-field">Jurisdiction (State) <span class="form-label-hint">(optional)</span></label>
+                <select name="court_jurisdiction" class="form-select">
+                  <option value="">— Select state —</option>
+                  {% for s in nigerian_states %}
+                  <option value="{{ s }}">{{ s }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label-field">Court Type <span class="form-label-hint">(optional)</span></label>
+                <select name="court_type" class="form-select">
+                  <option value="">— Select court type —</option>
+                  {% for ct in court_types %}
+                  <option value="{{ ct }}">{{ ct }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label-field">Judge / Magistrate <span class="form-label-hint">(optional)</span></label>
+                <input type="text" name="judge_name" class="form-control" placeholder="e.g. Hon. Justice A. Okafor">
+              </div>
+              <div class="col-12">
+                <label class="form-label-field">Court Address <span class="form-label-hint">(optional)</span></label>
+                <input type="text" name="court_address" class="form-control" placeholder="Full address of the court…">
               </div>
             </div>
           </div>
@@ -343,5 +381,17 @@ document.getElementById('all_day')?.addEventListener('change', function() {
   const e = document.getElementById('endDateInput');
   if (e) e.disabled = this.checked;
 });
+// Show/hide court details section based on event type
+const eventTypeSelect = document.getElementById('eventTypeSelect');
+const courtSection = document.getElementById('courtDetailsSection');
+function toggleCourtSection() {
+  if (eventTypeSelect && courtSection) {
+    courtSection.style.display = eventTypeSelect.value === 'court_date' ? '' : 'none';
+  }
+}
+if (eventTypeSelect) {
+  eventTypeSelect.addEventListener('change', toggleCourtSection);
+  toggleCourtSection();
+}
 </script>
 {% endblock %}

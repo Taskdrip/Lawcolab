@@ -903,6 +903,13 @@ class CalendarEvent(db.Model):
 
     notes = db.Column(db.Text, nullable=True)
 
+    # ── Court-specific fields (populated when event_type == 'court_date') ──────
+    court_jurisdiction = db.Column(db.String(150), nullable=True)   # e.g. "Lagos State"
+    court_type = db.Column(db.String(100), nullable=True)           # e.g. "Magistrate Court", "State High Court"
+    court_address = db.Column(db.String(400), nullable=True)        # Full address of the court
+    judge_name = db.Column(db.String(200), nullable=True)           # Judge / Magistrate name
+    # ──────────────────────────────────────────────────────────────────────────
+
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
@@ -911,6 +918,8 @@ class CalendarEvent(db.Model):
     created_by = db.relationship('User', foreign_keys=[created_by_id], backref='created_events')
     project = db.relationship('Project', backref='calendar_events')
     attendees = db.relationship('CalendarEventAttendee', back_populates='event', cascade='all, delete-orphan')
+    court_history = db.relationship('CourtDateHistory', back_populates='event',
+                                    cascade='all, delete-orphan', order_by='CourtDateHistory.hearing_date.desc()')
 
     @property
     def type_label(self):
@@ -956,6 +965,22 @@ class CalendarEventAttendee(db.Model):
 
     event = db.relationship('CalendarEvent', back_populates='attendees')
     user = db.relationship('User', backref='event_attendances')
+
+
+class CourtDateHistory(db.Model):
+    """Records every past hearing date for a court event, with per-date court notes."""
+    __tablename__ = 'court_date_history'
+
+    id = db.Column(db.Integer, primary_key=True)
+    event_id = db.Column(db.Integer, db.ForeignKey('calendar_events.id'), nullable=False)
+    hearing_date = db.Column(db.Date, nullable=False)
+    outcome = db.Column(db.String(200), nullable=True)   # brief outcome label
+    court_notes = db.Column(db.Text, nullable=True)       # detailed notes for that sitting
+    recorded_by_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+
+    event = db.relationship('CalendarEvent', back_populates='court_history')
+    recorded_by = db.relationship('User', foreign_keys=[recorded_by_id])
 
 
 # ─────────────────────────────────────────────────────────────────────────────
