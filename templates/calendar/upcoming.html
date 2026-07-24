@@ -1,78 +1,190 @@
 {% extends "base.html" %}
 {% block title %}Upcoming Events - Calendar - LAWCOLAB{% endblock %}
 
+{% block additional_css %}
+<style>
+.cal-page-hero {
+  background:
+    linear-gradient(135deg, rgba(8,18,60,0.91) 0%, rgba(20,55,130,0.82) 100%),
+    url("{{ url_for('static', filename='images/Modern_law_office_interior_98a5776a.png') }}")
+    center / cover no-repeat;
+  padding: 2.25rem 2rem 2rem; position: relative; overflow: hidden;
+}
+.cal-page-hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 80% 50%, rgba(29,78,216,0.2) 0%, transparent 65%);
+  pointer-events: none;
+}
+.cal-page-hero-inner { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.cal-page-hero h1 { font-size: 1.6rem; font-weight: 900; color: #fff; margin: 0; letter-spacing: -.02em; }
+.cal-page-hero h1 i { color: #f59e0b; }
+.cal-page-hero p { color: rgba(255,255,255,.8); font-size: .84rem; margin: .25rem 0 0; }
+.cal-breadcrumb { display: flex; align-items: center; gap: .4rem; margin-bottom: .6rem; }
+.cal-breadcrumb a { color: rgba(255,255,255,.65); font-size: .78rem; text-decoration: none; }
+.cal-breadcrumb a:hover { color: #fff; }
+.cal-breadcrumb span { color: rgba(255,255,255,.35); font-size: .75rem; }
+.hero-btn-group { display: flex; gap: .6rem; flex-wrap: wrap; }
+.btn-hero-outline {
+  background: rgba(255,255,255,.14); color: #fff; border: 1px solid rgba(255,255,255,.28);
+  border-radius: 10px; padding: .4rem 1rem; font-size: .81rem; font-weight: 600;
+  text-decoration: none; display: inline-flex; align-items: center; gap: .4rem;
+  backdrop-filter: blur(6px); transition: background .15s;
+}
+.btn-hero-outline:hover { background: rgba(255,255,255,.24); color: #fff; text-decoration: none; }
+.btn-hero-gold {
+  background: #f59e0b; color: #0a1847; border: none; border-radius: 10px;
+  padding: .4rem 1rem; font-size: .81rem; font-weight: 800;
+  text-decoration: none; display: inline-flex; align-items: center; gap: .4rem;
+  box-shadow: 0 4px 12px rgba(245,158,11,.4); transition: background .15s;
+}
+.btn-hero-gold:hover { background: #fbbf24; color: #0a1847; text-decoration: none; }
+
+/* ── Body ── */
+.upcoming-body { background: #f4f6fb; padding: 1.75rem 2rem 2.5rem; }
+
+/* Date group header */
+.date-group-header {
+  display: flex; align-items: center; gap: .65rem;
+  padding: .55rem 1rem;
+  background: linear-gradient(135deg, #0a1847 0%, #1d4ed8 100%);
+  border-radius: 12px; margin-bottom: .6rem; margin-top: 1.25rem;
+}
+.date-group-header:first-child { margin-top: 0; }
+.date-group-header .date-label { font-size: .78rem; font-weight: 800; color: #fff; letter-spacing: .03em; text-transform: uppercase; }
+.date-group-header .today-pill { background: #f59e0b; color: #0a1847; font-size: .65rem; font-weight: 900; border-radius: 100px; padding: 2px 8px; }
+
+/* Event cards */
+.upcoming-ev-card {
+  background: #fff; border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06);
+  border: 1.5px solid #eef0f8;
+  margin-bottom: .55rem; overflow: hidden;
+  transition: transform .15s, box-shadow .15s;
+  text-decoration: none; color: inherit;
+  display: block;
+}
+.upcoming-ev-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,.1); text-decoration: none; color: inherit; }
+.upcoming-ev-card-inner { display: flex; align-items: center; gap: 1rem; padding: .85rem 1.1rem; }
+
+.ev-type-icon-lg {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+}
+.ev-card-title { font-size: .92rem; font-weight: 700; color: #1e293b; margin-bottom: .15rem; }
+.ev-card-meta  { font-size: .78rem; color: #6b7280; display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+.ev-card-meta i { font-size: .72rem; }
+.ev-card-badge { font-size: .68rem; font-weight: 700; border-radius: 100px; padding: .2rem .65rem; }
+.ev-card-attendees { font-size: .72rem; color: #6b7280; white-space: nowrap; margin-left: auto; flex-shrink: 0; }
+
+/* Type colors */
+{% set type_map = {'court_date': ('#fee2e2','#991b1b','#ef4444'), 'meeting': ('#dbeafe','#1e40af','#3b82f6'), 'appointment': ('#d1fae5','#065f46','#10b981'), 'deadline': ('#fff7ed','#9a3412','#f97316')} %}
+.ev-type-court   { background: #fee2e2; color: #991b1b; }
+.ev-type-meeting { background: #dbeafe; color: #1e40af; }
+.ev-type-appt    { background: #d1fae5; color: #065f46; }
+.ev-type-deadline{ background: #fff7ed; color: #9a3412; }
+.ev-type-other   { background: #f3f4f6; color: #374151; }
+.ev-card-court   { border-left: 4px solid #ef4444; }
+.ev-card-meeting { border-left: 4px solid #3b82f6; }
+.ev-card-appt    { border-left: 4px solid #10b981; }
+.ev-card-dead    { border-left: 4px solid #f97316; }
+.ev-card-other   { border-left: 4px solid #9ca3af; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
+
+<!-- ── Hero ──────────────────────────────────────────────────────────────── -->
+<div class="cal-page-hero">
+  <div class="cal-page-hero-inner">
     <div>
-      <h2 class="mb-0"><i class="fas fa-clock me-2 text-primary"></i>Upcoming Events</h2>
-      <p class="text-muted mb-0 small">All future events sorted by date</p>
+      <div class="cal-breadcrumb">
+        <a href="{{ url_for('calendar.index') }}"><i class="fas fa-calendar-alt me-1"></i>Calendar</a>
+        <span>/</span>
+        <span style="color:rgba(255,255,255,.75);">Upcoming Events</span>
+      </div>
+      <h1><i class="fas fa-stream"></i> Upcoming Events</h1>
+      <p>All future court dates, meetings, deadlines and appointments — sorted by date</p>
     </div>
-    <div class="d-flex gap-2">
-      <a href="{{ url_for('calendar.index') }}" class="btn btn-outline-secondary btn-sm">
-        <i class="fas fa-calendar me-1"></i>Calendar View
+    <div class="hero-btn-group">
+      <a href="{{ url_for('calendar.index') }}" class="btn-hero-outline">
+        <i class="fas fa-calendar-alt"></i>Calendar View
       </a>
       {% if not current_user.is_client() %}
-      <a href="{{ url_for('calendar.create_event') }}" class="btn btn-primary btn-sm">
-        <i class="fas fa-plus me-1"></i>New Event
+      <a href="{{ url_for('calendar.create_event') }}" class="btn-hero-gold">
+        <i class="fas fa-plus"></i>New Event
       </a>
       {% endif %}
     </div>
   </div>
+</div>
 
+<!-- ── Body ─────────────────────────────────────────────────────────────── -->
+<div class="upcoming-body">
   {% if events %}
   {% set ns = namespace(current_date=None) %}
   {% for event in events %}
   {% set event_date = event.start_datetime.strftime('%A, %B %d, %Y') %}
+  {% set is_today   = (event.start_datetime.date() == today) %}
+
   {% if event_date != ns.current_date %}
   {% set ns.current_date = event_date %}
-  <div class="fw-bold text-muted small text-uppercase mt-4 mb-2 border-bottom pb-1">
-    <i class="fas fa-calendar-day me-1"></i>{{ event_date }}
+  <div class="date-group-header">
+    <i class="fas fa-calendar-day text-warning"></i>
+    <span class="date-label">{{ event_date }}</span>
+    {% if is_today %}<span class="today-pill">TODAY</span>{% endif %}
   </div>
   {% endif %}
-  <div class="card border-0 shadow-sm mb-2">
-    <div class="card-body py-2 px-3">
-      <div class="d-flex align-items-center gap-3">
-        <div class="rounded p-2 bg-{{ event.type_color }} bg-opacity-10 border border-{{ event.type_color }}"
-             style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <i class="fas {{ event.type_icon }} text-{{ event.type_color }}"></i>
-        </div>
-        <div class="flex-grow-1 min-w-0">
-          <div class="d-flex align-items-center gap-2 flex-wrap">
-            <a href="{{ url_for('calendar.event_detail', event_id=event.id) }}"
-               class="fw-semibold text-decoration-none text-dark">
-              {{ event.title }}
-            </a>
-            <span class="badge bg-{{ event.type_color }}" style="font-size:.7rem;">{{ event.type_label }}</span>
-          </div>
-          <div class="text-muted small">
-            {% if not event.all_day %}
-            <i class="fas fa-clock me-1"></i>{{ event.start_datetime.strftime('%I:%M %p') }}
-            {% if event.end_datetime %} – {{ event.end_datetime.strftime('%I:%M %p') }}{% endif %}
-            {% else %}
-            All day
+
+  {% set type_ev_cls = {'court_date':'ev-card-court','meeting':'ev-card-meeting','appointment':'ev-card-appt','deadline':'ev-card-dead'}.get(event.event_type,'ev-card-other') %}
+  {% set type_ic_cls = {'court_date':'ev-type-court','meeting':'ev-type-meeting','appointment':'ev-type-appt','deadline':'ev-type-deadline'}.get(event.event_type,'ev-type-other') %}
+  {% set dot_col     = {'court_date':'#ef4444','meeting':'#3b82f6','appointment':'#10b981','deadline':'#f97316'}.get(event.event_type,'#9ca3af') %}
+
+  <a href="{{ url_for('calendar.event_detail', event_id=event.id) }}"
+     class="upcoming-ev-card {{ type_ev_cls }}">
+    <div class="upcoming-ev-card-inner">
+      <div class="ev-type-icon-lg {{ type_ic_cls }}">
+        <i class="fas {{ event.type_icon }}"></i>
+      </div>
+      <div class="flex-grow-1 min-w-0">
+        <div class="ev-card-title">{{ event.title }}</div>
+        <div class="ev-card-meta">
+          <span>
+            <i class="fas fa-clock"></i>
+            {% if event.all_day %}All day
+            {% else %}{{ event.start_datetime.strftime('%I:%M %p') }}
+              {% if event.end_datetime %} – {{ event.end_datetime.strftime('%I:%M %p') }}{% endif %}
             {% endif %}
-            {% if event.location %}
-            &bull; <i class="fas fa-map-marker-alt me-1"></i>{{ event.location }}
-            {% endif %}
-            {% if event.project %}
-            &bull; <i class="fas fa-briefcase me-1"></i>{{ event.project.title }}
-            {% endif %}
-          </div>
-        </div>
-        <div class="text-end flex-shrink-0">
-          <div class="text-muted small">{{ event.attendees|length }} attendee{{ 's' if event.attendees|length != 1 else '' }}</div>
+          </span>
+          {% if event.location %}
+          <span><i class="fas fa-map-marker-alt"></i>{{ event.location }}</span>
+          {% endif %}
+          {% if event.project %}
+          <span><i class="fas fa-briefcase"></i>{{ event.project.title }}</span>
+          {% endif %}
         </div>
       </div>
+      <div class="d-flex flex-column align-items-end gap-1 flex-shrink-0">
+        <span class="ev-card-badge" style="background:{{ dot_col }}22;color:{{ dot_col }};">
+          {{ event.type_label }}
+        </span>
+        <span class="ev-card-attendees">
+          <i class="fas fa-users me-1"></i>{{ event.attendees|length }} attendee{{ 's' if event.attendees|length != 1 }}
+        </span>
+      </div>
     </div>
-  </div>
+  </a>
   {% endfor %}
+
   {% else %}
   <div class="text-center py-5">
-    <i class="fas fa-calendar-check fa-4x text-muted mb-3 opacity-50"></i>
-    <h5 class="text-muted">No upcoming events</h5>
+    <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#eff6ff,#dbeafe);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;">
+      <i class="fas fa-calendar-check fa-2x" style="color:#3b82f6;opacity:.5;"></i>
+    </div>
+    <h5 class="text-muted fw-bold">No upcoming events</h5>
+    <p class="text-muted small mb-3">Your schedule is clear — add an event to get started.</p>
     {% if not current_user.is_client() %}
-    <a href="{{ url_for('calendar.create_event') }}" class="btn btn-primary mt-2">
+    <a href="{{ url_for('calendar.create_event') }}" class="btn btn-primary px-4">
       <i class="fas fa-plus me-1"></i>Create First Event
     </a>
     {% endif %}

@@ -4,249 +4,288 @@
 {% block additional_css %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css">
 <style>
-/* ── Calendar shell ───────────────────────────────────────────────── */
+/* ── Tokens ────────────────────────────────────────────────────────────── */
 :root {
-  --cal-navy:   #0d1b4b;
-  --cal-gold:   #FFD700;
-  --cal-red:    #dc3545;
-  --cal-blue:   #0d6efd;
-  --cal-green:  #198754;
-  --cal-amber:  #fd7e14;
-  --cal-purple: #6f42c1;
+  --cal-navy:   #0a1847;
+  --cal-blue:   #1d4ed8;
+  --cal-gold:   #f59e0b;
+  --cal-red:    #ef4444;
+  --cal-green:  #10b981;
+  --cal-orange: #f97316;
+  --cal-purple: #8b5cf6;
 }
 
-.cal-shell { background:#f4f6fb; min-height:calc(100vh - 70px); padding:1.5rem 1.75rem; }
-
-/* ── Header ── */
-.cal-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem; margin-bottom:1.25rem; }
-.cal-title   { font-size:1.5rem; font-weight:800; color:var(--cal-navy); margin:0; }
-.cal-title i { color:var(--cal-blue); }
-
-/* ── View Toggle ── */
-.cal-view-tabs { display:flex; gap:4px; background:#e9ecef; padding:4px; border-radius:10px; }
-.cal-view-tab  {
-  padding:.38rem .9rem; border-radius:7px; font-size:.8rem; font-weight:600;
-  color:#6c757d; text-decoration:none; border:none; background:transparent; cursor:pointer;
-  transition:all .18s;
+/* ── Hero ──────────────────────────────────────────────────────────────── */
+.cal-hero {
+  background:
+    linear-gradient(135deg, rgba(8,18,60,0.91) 0%, rgba(20,55,130,0.82) 100%),
+    url("{{ url_for('static', filename='images/Modern_law_office_interior_98a5776a.png') }}")
+    center / cover no-repeat;
+  padding: 2.25rem 2rem 1.75rem;
+  position: relative;
+  overflow: hidden;
 }
-.cal-view-tab.active, .cal-view-tab:hover { background:#fff; color:var(--cal-navy); box-shadow:0 1px 4px rgba(0,0,0,.1); }
-.cal-view-tab.active { color:var(--cal-blue); }
+.cal-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 80% 50%, rgba(29,78,216,0.25) 0%, transparent 70%);
+  pointer-events: none;
+}
+.cal-hero-inner {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 1rem;
+}
+.cal-hero-title {
+  font-size: 1.65rem; font-weight: 900; color: #fff;
+  margin: 0; letter-spacing: -.02em;
+}
+.cal-hero-title i { color: var(--cal-gold); margin-right: .5rem; }
+.cal-hero-sub {
+  color: rgba(255,255,255,.78); font-size: .85rem; margin: .25rem 0 0;
+}
+.cal-hero-pill {
+  display: inline-flex; align-items: center; gap: .3rem;
+  background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+  border-radius: 100px; padding: .2rem .65rem; font-size: .72rem;
+  color: rgba(255,255,255,.85); margin-right: .35rem;
+  backdrop-filter: blur(6px);
+}
+.cal-hero-pill i { font-size: .65rem; }
+
+/* ── View toggle ── */
+.cal-view-tabs {
+  display: flex; gap: 3px;
+  background: rgba(255,255,255,.12); padding: 4px; border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.18);
+}
+.cal-view-tab {
+  padding: .35rem .85rem; border-radius: 7px; font-size: .78rem; font-weight: 600;
+  color: rgba(255,255,255,.7); text-decoration: none; border: none;
+  background: transparent; cursor: pointer; transition: all .18s;
+}
+.cal-view-tab.active, .cal-view-tab:hover {
+  background: #fff; color: var(--cal-navy);
+  box-shadow: 0 2px 8px rgba(0,0,0,.18);
+}
+.cal-view-tab.active { color: var(--cal-blue); }
+.btn-new-event {
+  background: var(--cal-gold); color: #0a1847; border: none;
+  border-radius: 10px; padding: .45rem 1.1rem;
+  font-weight: 800; font-size: .82rem; text-decoration: none;
+  display: inline-flex; align-items: center; gap: .4rem;
+  transition: background .15s, transform .15s, box-shadow .15s;
+  box-shadow: 0 4px 12px rgba(245,158,11,.4);
+}
+.btn-new-event:hover {
+  background: #fbbf24; color: #0a1847; transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(245,158,11,.5);
+}
+
+/* ── Shell ── */
+.cal-shell { background: #f4f6fb; min-height: calc(100vh - 70px); padding: 1.5rem 1.75rem; }
 
 /* ── Nav row ── */
-.cal-nav { display:flex; align-items:center; gap:.5rem; }
 .cal-nav-btn {
-  width:32px; height:32px; border-radius:8px; border:1.5px solid #dee2e6;
-  background:#fff; color:#555; display:flex; align-items:center; justify-content:center;
-  cursor:pointer; font-size:.78rem; text-decoration:none; transition:all .15s;
+  width: 34px; height: 34px; border-radius: 10px; border: 1.5px solid #d1d5db;
+  background: #fff; color: #4b5563; display: flex; align-items: center;
+  justify-content: center; cursor: pointer; font-size: .78rem;
+  text-decoration: none; transition: all .15s;
+  box-shadow: 0 1px 4px rgba(0,0,0,.07);
 }
-.cal-nav-btn:hover { background:var(--cal-navy); color:#fff; border-color:var(--cal-navy); }
-.cal-period-label { font-size:1rem; font-weight:700; color:var(--cal-navy); min-width:180px; text-align:center; }
+.cal-nav-btn:hover { background: var(--cal-navy); color: #fff; border-color: var(--cal-navy); }
+.cal-period-label {
+  font-size: 1.05rem; font-weight: 800; color: var(--cal-navy);
+  min-width: 190px; text-align: center;
+}
 
 /* ── Month grid ── */
-.cal-grid-wrap { background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 2px 16px rgba(0,0,0,.07); }
-.cal-dow-row { display:grid; grid-template-columns:repeat(7,1fr); background:var(--cal-navy); }
-.cal-dow { padding:.55rem; text-align:center; font-size:.72rem; font-weight:700; color:rgba(255,255,255,.75); letter-spacing:.05em; text-transform:uppercase; }
-.cal-dow.weekend { color:rgba(255,215,0,.75); }
-.cal-weeks { display:flex; flex-direction:column; }
-.cal-week { display:grid; grid-template-columns:repeat(7,1fr); }
+.cal-grid-wrap {
+  background: #fff; border-radius: 18px; overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,.08);
+}
+.cal-dow-row {
+  display: grid; grid-template-columns: repeat(7,1fr);
+  background: var(--cal-navy);
+}
+.cal-dow {
+  padding: .6rem; text-align: center; font-size: .71rem; font-weight: 700;
+  color: rgba(255,255,255,.7); letter-spacing: .06em; text-transform: uppercase;
+}
+.cal-dow.weekend { color: rgba(245,158,11,.85); }
+.cal-weeks { display: flex; flex-direction: column; }
+.cal-week { display: grid; grid-template-columns: repeat(7,1fr); }
 .cal-cell {
-  min-height:100px; border-right:1px solid #f0f2f5; border-bottom:1px solid #f0f2f5;
-  padding:.4rem .45rem; position:relative; overflow:hidden;
-  transition:background .15s;
+  min-height: 104px; border-right: 1px solid #f1f3f8; border-bottom: 1px solid #f1f3f8;
+  padding: .45rem .5rem; position: relative; overflow: hidden;
+  transition: background .15s;
 }
-.cal-cell:hover { background:#f8f9ff; }
-.cal-cell.empty { background:#f9fafb; }
+.cal-cell:hover { background: #f8f9ff; }
+.cal-cell.empty { background: #fafbfc; }
 .cal-cell.today {
-  background:linear-gradient(135deg,#fffbe6 0%,#fff8d6 100%);
-  border-color:#ffc107 !important;
-}
-.cal-cell.today .cal-day-num { color:var(--cal-blue); }
-
-/* Today glow */
-.cal-cell.today {
-  box-shadow:inset 0 0 0 2px #ffc107, 0 0 18px rgba(255,193,7,.35);
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border-color: #fbbf24 !important;
+  box-shadow: inset 0 0 0 2px #fbbf24, 0 0 18px rgba(251,191,36,.3);
   animation: todayPulse 3s ease-in-out infinite;
 }
 @keyframes todayPulse {
-  0%,100% { box-shadow:inset 0 0 0 2px #ffc107, 0 0 14px rgba(255,193,7,.3); }
-  50%      { box-shadow:inset 0 0 0 2px #ffc107, 0 0 28px rgba(255,193,7,.55); }
+  0%,100% { box-shadow: inset 0 0 0 2px #fbbf24, 0 0 12px rgba(251,191,36,.25); }
+  50%      { box-shadow: inset 0 0 0 2px #fbbf24, 0 0 26px rgba(251,191,36,.5); }
 }
-
 .cal-day-num {
-  font-size:.8rem; font-weight:700; color:#374151;
-  display:flex; align-items:center; justify-content:space-between; margin-bottom:3px;
+  font-size: .8rem; font-weight: 700; color: #374151;
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px;
 }
+.cal-cell.today .cal-day-num { color: var(--cal-blue); }
 .cal-add-btn {
-  opacity:0; font-size:.65rem; color:#9ca3af; text-decoration:none;
-  width:18px; height:18px; border-radius:5px; display:flex; align-items:center; justify-content:center;
-  transition:all .15s;
+  opacity: 0; font-size: .63rem; color: #9ca3af; text-decoration: none;
+  width: 18px; height: 18px; border-radius: 5px;
+  display: flex; align-items: center; justify-content: center; transition: all .15s;
 }
-.cal-cell:hover .cal-add-btn { opacity:1; background:#e0e7ff; color:var(--cal-blue); }
+.cal-cell:hover .cal-add-btn { opacity: 1; background: #ede9fe; color: var(--cal-blue); }
 
-/* Event badges on grid */
+/* Event badges */
 .cal-ev-badge {
-  display:block; font-size:.67rem; font-weight:600; border-radius:5px;
-  padding:2px 5px; margin-bottom:2px; text-decoration:none; white-space:nowrap;
-  overflow:hidden; text-overflow:ellipsis; position:relative;
-  transition:transform .12s, box-shadow .12s;
-  cursor:pointer;
+  display: block; font-size: .67rem; font-weight: 600; border-radius: 6px;
+  padding: 2px 6px; margin-bottom: 2px; text-decoration: none; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; position: relative;
+  transition: transform .12s, box-shadow .12s; cursor: pointer;
 }
-.cal-ev-badge:hover { transform:translateY(-1px); text-decoration:none; }
+.cal-ev-badge:hover { transform: translateY(-1px); text-decoration: none; }
+.cal-ev-court    { background: #fee2e2; color: #991b1b; border-left: 3px solid #ef4444; }
+.cal-ev-meeting  { background: #dbeafe; color: #1e40af; border-left: 3px solid #3b82f6; }
+.cal-ev-appt     { background: #d1fae5; color: #065f46; border-left: 3px solid #10b981; }
+.cal-ev-deadline { background: #fff7ed; color: #9a3412; border-left: 3px solid #f97316; }
+.cal-ev-other    { background: #f3f4f6; color: #374151; border-left: 3px solid #9ca3af; }
 
-/* Colour variants */
-.cal-ev-court   { background:#fde8ea; color:#b91c1c; border-left:3px solid #dc3545; }
-.cal-ev-meeting { background:#dbeafe; color:#1d4ed8; border-left:3px solid #3b82f6; }
-.cal-ev-appt    { background:#dcfce7; color:#15803d; border-left:3px solid #22c55e; }
-.cal-ev-deadline{ background:#fff7ed; color:#c2410c; border-left:3px solid #f97316; }
-.cal-ev-other   { background:#f3f4f6; color:#374151; border-left:3px solid #9ca3af; }
-
-/* Glow on overdue */
-.glow-overdue {
-  animation: overdueGlow 1.8s ease-in-out infinite;
-}
-@keyframes overdueGlow {
-  0%,100% { box-shadow:0 0 0 0 rgba(220,53,69,0); }
-  50%      { box-shadow:0 0 8px 3px rgba(220,53,69,.55); }
-}
-
-/* Glow on due today */
-.glow-today-event {
-  animation: todayEvGlow 2s ease-in-out infinite;
-}
-@keyframes todayEvGlow {
-  0%,100% { box-shadow:0 0 0 0 rgba(255,152,0,0); }
-  50%      { box-shadow:0 0 9px 3px rgba(255,152,0,.6); }
-}
-
-/* Deadline / court extra glow */
+/* Glows */
+.glow-overdue      { animation: overdueGlow 1.8s ease-in-out infinite; }
+.glow-today-event  { animation: todayEvGlow 2s ease-in-out infinite; }
 .glow-deadline-badge { animation: deadlineGlow 2.2s ease-in-out infinite; }
-@keyframes deadlineGlow {
-  0%,100% { box-shadow:0 0 0 0 rgba(249,115,22,0); }
-  50%      { box-shadow:0 0 10px 3px rgba(249,115,22,.5); }
-}
-.glow-court-badge { animation: courtGlow 2.2s ease-in-out infinite; }
-@keyframes courtGlow {
-  0%,100% { box-shadow:0 0 0 0 rgba(220,53,69,0); }
-  50%      { box-shadow:0 0 10px 4px rgba(220,53,69,.5); }
-}
+.glow-court-badge  { animation: courtGlow 2.2s ease-in-out infinite; }
+@keyframes overdueGlow  { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0)} 50%{box-shadow:0 0 8px 3px rgba(239,68,68,.55)} }
+@keyframes todayEvGlow  { 0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0)} 50%{box-shadow:0 0 9px 3px rgba(245,158,11,.6)} }
+@keyframes deadlineGlow { 0%,100%{box-shadow:0 0 0 0 rgba(249,115,22,0)} 50%{box-shadow:0 0 10px 3px rgba(249,115,22,.5)} }
+@keyframes courtGlow    { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0)} 50%{box-shadow:0 0 10px 4px rgba(239,68,68,.5)} }
 
-/* Reminder pulse dot */
 .reminder-dot {
-  display:inline-block; width:6px; height:6px; border-radius:50%;
-  background:#ffc107; margin-right:3px; flex-shrink:0;
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: #f59e0b; margin-right: 3px; flex-shrink: 0;
   animation: reminderDot 1.5s ease-in-out infinite;
 }
-@keyframes reminderDot {
-  0%,100% { opacity:1; transform:scale(1); }
-  50%      { opacity:.4; transform:scale(.7); }
-}
+@keyframes reminderDot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
 
 /* ── Week view ── */
-.week-grid { background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 2px 16px rgba(0,0,0,.07); }
-.week-header { display:grid; grid-template-columns:56px repeat(7,1fr); background:var(--cal-navy); }
-.week-header-time { padding:.55rem; }
-.week-header-day { padding:.55rem .4rem; text-align:center; }
-.week-header-day .dow { font-size:.68rem; font-weight:700; color:rgba(255,255,255,.65); text-transform:uppercase; letter-spacing:.05em; }
-.week-header-day .date-num { font-size:1.15rem; font-weight:800; color:#fff; line-height:1.1; }
-.week-header-day.today-col .date-num {
-  color:var(--cal-gold);
-  text-shadow:0 0 12px rgba(255,215,0,.7);
-}
-.week-body { display:grid; grid-template-columns:56px repeat(7,1fr); }
-.week-time-col { border-right:1px solid #f0f2f5; }
-.week-time-slot {
-  height:56px; border-bottom:1px solid #f0f2f5;
-  font-size:.68rem; color:#9ca3af; padding:.25rem .4rem; text-align:right;
-}
-.week-day-col { border-right:1px solid #f0f2f5; position:relative; }
-.week-hour-cell {
-  height:56px; border-bottom:1px solid #f5f5f5; position:relative;
-}
-.week-hour-cell:hover { background:#f8f9ff; }
+.week-grid { background: #fff; border-radius: 18px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,.08); }
+.week-header { display: grid; grid-template-columns: 56px repeat(7,1fr); background: var(--cal-navy); }
+.week-header-time { padding: .55rem; }
+.week-header-day { padding: .55rem .4rem; text-align: center; }
+.week-header-day .dow { font-size: .68rem; font-weight: 700; color: rgba(255,255,255,.6); text-transform: uppercase; letter-spacing: .05em; }
+.week-header-day .date-num { font-size: 1.2rem; font-weight: 800; color: #fff; line-height: 1.1; }
+.week-header-day.today-col .date-num { color: var(--cal-gold); text-shadow: 0 0 14px rgba(245,158,11,.7); }
+.week-body { display: grid; grid-template-columns: 56px repeat(7,1fr); }
+.week-time-col { border-right: 1px solid #f1f3f8; }
+.week-time-slot { height: 56px; border-bottom: 1px solid #f1f3f8; font-size: .68rem; color: #9ca3af; padding: .25rem .4rem; text-align: right; }
+.week-day-col { border-right: 1px solid #f1f3f8; position: relative; }
+.week-hour-cell { height: 56px; border-bottom: 1px solid #f8f9fb; position: relative; }
+.week-hour-cell:hover { background: #f8f9ff; }
+.week-allday-row { display: grid; grid-template-columns: 56px repeat(7,1fr); border-bottom: 1px solid #f1f3f8; min-height: 28px; background: #fafbff; }
+.week-allday-label { font-size: .64rem; color: #9ca3af; padding: .35rem .4rem; text-align: right; border-right: 1px solid #f1f3f8; }
+.week-allday-cell { border-right: 1px solid #f1f3f8; padding: 2px; }
 .week-ev-pill {
-  position:absolute; left:2px; right:2px;
-  border-radius:6px; padding:2px 5px;
-  font-size:.68rem; font-weight:600; overflow:hidden;
-  text-overflow:ellipsis; white-space:nowrap;
-  cursor:pointer; z-index:2;
-  transition:transform .12s;
+  position: absolute; left: 2px; right: 2px; border-radius: 6px; padding: 2px 5px;
+  font-size: .68rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; cursor: pointer; z-index: 2; transition: transform .12s;
 }
-.week-ev-pill:hover { transform:scaleY(1.04); }
+.week-ev-pill:hover { transform: scaleY(1.04); }
 
-/* All-day row */
-.week-allday-row { display:grid; grid-template-columns:56px repeat(7,1fr); border-bottom:1px solid #f0f2f5; min-height:28px; }
-.week-allday-label { font-size:.65rem; color:#9ca3af; padding:.3rem .4rem; text-align:right; border-right:1px solid #f0f2f5; }
-.week-allday-cell { border-right:1px solid #f0f2f5; padding:2px; }
-
-/* ── List / Agenda view ── */
-.agenda-wrap { background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 2px 16px rgba(0,0,0,.07); }
+/* ── List view ── */
+.agenda-wrap { background: #fff; border-radius: 18px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,.08); }
 .agenda-day-header {
-  background:#f8f9ff; padding:.5rem 1.1rem;
-  font-size:.75rem; font-weight:700; color:var(--cal-navy); letter-spacing:.04em; text-transform:uppercase;
-  border-bottom:1px solid #eee; display:flex; align-items:center; gap:.5rem;
+  background: #f8f9ff; padding: .5rem 1.2rem;
+  font-size: .74rem; font-weight: 700; color: var(--cal-navy); letter-spacing: .04em; text-transform: uppercase;
+  border-bottom: 1px solid #eef0f8; display: flex; align-items: center; gap: .5rem;
 }
-.agenda-day-header.today-row { background:#fffbe6; color:var(--cal-blue); }
-.agenda-day-header.today-row .agenda-today-badge {
-  background:var(--cal-blue); color:#fff; font-size:.65rem; padding:1px 6px; border-radius:100px;
-}
+.agenda-day-header.today-row { background: #fffbeb; color: var(--cal-blue); }
+.agenda-today-badge { background: var(--cal-blue); color: #fff; font-size: .65rem; padding: 1px 7px; border-radius: 100px; }
 .agenda-ev-row {
-  display:flex; align-items:center; gap:.9rem;
-  padding:.6rem 1.1rem; border-bottom:1px solid #f5f5f5;
-  text-decoration:none; transition:background .12s;
+  display: flex; align-items: center; gap: .9rem; padding: .65rem 1.2rem;
+  border-bottom: 1px solid #f8f9fb; text-decoration: none; transition: background .12s;
+  color: inherit;
 }
-.agenda-ev-row:hover { background:#f8f9ff; }
-.agenda-type-dot {
-  width:10px; height:10px; border-radius:50%; flex-shrink:0;
-}
-.agenda-time { font-size:.78rem; color:#6b7280; min-width:80px; font-variant-numeric:tabular-nums; }
-.agenda-title { font-size:.88rem; font-weight:600; color:#111827; flex:1; }
-.agenda-meta  { font-size:.72rem; color:#9ca3af; white-space:nowrap; }
+.agenda-ev-row:hover { background: #f8f9ff; color: inherit; text-decoration: none; }
+.agenda-type-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.agenda-time { font-size: .78rem; color: #6b7280; min-width: 80px; font-variant-numeric: tabular-nums; }
+.agenda-title { font-size: .88rem; font-weight: 600; color: #111827; flex: 1; }
+.agenda-meta  { font-size: .72rem; color: #9ca3af; white-space: nowrap; }
 
 /* ── Sidebar ── */
-.cal-sidebar { display:flex; flex-direction:column; gap:1rem; }
-.side-card { background:#fff; border-radius:14px; box-shadow:0 2px 12px rgba(0,0,0,.06); overflow:hidden; }
-.side-card-header { padding:.7rem 1rem; font-size:.8rem; font-weight:700; color:var(--cal-navy); border-bottom:1px solid #f0f2f5; display:flex; align-items:center; gap:.5rem; }
-.side-card-header i { color:var(--cal-blue); }
-.upcoming-ev-row { display:flex; align-items:flex-start; gap:.65rem; padding:.6rem 1rem; border-bottom:1px solid #f7f7f7; text-decoration:none; transition:background .12s; }
-.upcoming-ev-row:hover { background:#f8f9ff; }
-.upcoming-type-icon { width:26px; height:26px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:.65rem; flex-shrink:0; margin-top:2px; }
-.upcoming-ev-title { font-size:.82rem; font-weight:600; color:#111827; }
-.upcoming-ev-time  { font-size:.72rem; color:#6b7280; }
+.cal-sidebar { display: flex; flex-direction: column; gap: 1rem; }
+.side-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.07); overflow: hidden; }
+.side-card-header {
+  padding: .8rem 1.1rem; font-size: .8rem; font-weight: 700; color: #fff;
+  background: var(--cal-navy); display: flex; align-items: center; gap: .5rem;
+}
+.side-card-header i { color: var(--cal-gold); }
+.upcoming-ev-row {
+  display: flex; align-items: flex-start; gap: .65rem; padding: .65rem 1.1rem;
+  border-bottom: 1px solid #f5f7ff; text-decoration: none; transition: background .12s;
+  color: inherit;
+}
+.upcoming-ev-row:hover { background: #f8f9ff; text-decoration: none; color: inherit; }
+.upcoming-type-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: .65rem; flex-shrink: 0; margin-top: 2px; }
+.upcoming-ev-title { font-size: .82rem; font-weight: 600; color: #1e293b; }
+.upcoming-ev-time  { font-size: .72rem; color: #6b7280; }
 
 /* Stat tiles */
-.stat-tiles { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; padding:.75rem; }
-.stat-tile { background:#f8f9ff; border-radius:10px; padding:.6rem .7rem; text-align:center; }
-.stat-tile-num { font-size:1.35rem; font-weight:800; line-height:1; }
-.stat-tile-label { font-size:.68rem; color:#6b7280; margin-top:2px; }
+.stat-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; padding: .8rem; }
+.stat-tile { border-radius: 12px; padding: .7rem; text-align: center; }
+.stat-tile-court   { background: linear-gradient(135deg,#fee2e2,#fecaca); }
+.stat-tile-meeting { background: linear-gradient(135deg,#dbeafe,#bfdbfe); }
+.stat-tile-appt    { background: linear-gradient(135deg,#d1fae5,#a7f3d0); }
+.stat-tile-dead    { background: linear-gradient(135deg,#fff7ed,#fed7aa); }
+.stat-tile-num   { font-size: 1.45rem; font-weight: 900; line-height: 1; }
+.stat-tile-label { font-size: .68rem; font-weight: 600; margin-top: 3px; opacity: .75; }
 
 /* Legend */
-.cal-legend { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.75rem; }
-.legend-pill { display:flex; align-items:center; gap:.35rem; font-size:.72rem; font-weight:600; color:#374151; background:#fff; border:1px solid #e9ecef; border-radius:100px; padding:.25rem .7rem; }
-.legend-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.cal-legend { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .85rem; }
+.legend-pill {
+  display: flex; align-items: center; gap: .35rem; font-size: .72rem; font-weight: 600;
+  color: #374151; background: #fff; border: 1px solid #e5e7eb;
+  border-radius: 100px; padding: .28rem .75rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-/* ── Popover overrides ── */
-.cal-popover .popover-body { padding:.65rem .85rem; font-size:.8rem; }
+/* Popover */
+.cal-popover .popover-body { padding: .65rem .85rem; font-size: .8rem; }
 
-/* ── Responsive ── */
+/* Responsive */
 @media(max-width:767px) {
-  .cal-shell { padding:1rem .75rem; }
-  .cal-cell { min-height:60px; }
-  .week-grid .week-ev-pill { font-size:.62rem; }
+  .cal-shell { padding: 1rem .75rem; }
+  .cal-cell { min-height: 62px; }
+  .cal-hero { padding: 1.5rem 1rem; }
+  .cal-hero-title { font-size: 1.25rem; }
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="cal-shell">
 
-  <!-- ── Top header ────────────────────────────────────────────────────────── -->
-  <div class="cal-header">
+<!-- ── Hero ──────────────────────────────────────────────────────────────── -->
+<div class="cal-hero">
+  <div class="cal-hero-inner">
     <div>
-      <h2 class="cal-title"><i class="fas fa-calendar-alt me-2"></i>Calendar</h2>
-      <p class="text-muted mb-0" style="font-size:.82rem;">Court dates · Meetings · Deadlines · Reminders</p>
+      <h1 class="cal-hero-title"><i class="fas fa-calendar-alt"></i>Calendar</h1>
+      <p class="cal-hero-sub mb-2">Manage court dates, meetings, deadlines &amp; appointments</p>
+      <div>
+        <span class="cal-hero-pill"><i class="fas fa-circle" style="color:#ef4444;"></i> Court Dates</span>
+        <span class="cal-hero-pill"><i class="fas fa-circle" style="color:#3b82f6;"></i> Meetings</span>
+        <span class="cal-hero-pill"><i class="fas fa-circle" style="color:#f97316;"></i> Deadlines</span>
+        <span class="cal-hero-pill"><i class="fas fa-circle" style="color:#10b981;"></i> Appointments</span>
+      </div>
     </div>
     <div class="d-flex align-items-center gap-2 flex-wrap">
-      <!-- View toggle -->
       <div class="cal-view-tabs">
         <a href="{{ url_for('calendar.index', year=year, month=month, view='month') }}"
            class="cal-view-tab {{ 'active' if view == 'month' }}">
@@ -262,20 +301,23 @@
         </a>
       </div>
       {% if not current_user.is_client() %}
-      <a href="{{ url_for('calendar.create_event') }}" class="btn btn-primary btn-sm px-3">
-        <i class="fas fa-plus me-1"></i>New Event
+      <a href="{{ url_for('calendar.create_event') }}" class="btn-new-event">
+        <i class="fas fa-plus"></i>New Event
       </a>
       {% endif %}
     </div>
   </div>
+</div>
 
+<!-- ── Shell ─────────────────────────────────────────────────────────────── -->
+<div class="cal-shell">
   <div class="row g-3">
 
-    <!-- ── Main calendar area ──────────────────────────────────────────────── -->
+    <!-- ── Main area ─────────────────────────────────────────────────────── -->
     <div class="col-xl-9 col-lg-8">
 
-      <!-- Navigation row -->
-      <div class="d-flex align-items-center justify-content-between mb-2">
+      <!-- Period navigation -->
+      <div class="d-flex align-items-center justify-content-between mb-3">
         {% if view == 'week' %}
         <a href="{{ url_for('calendar.index', view='week', week=prev_week_offset) }}" class="cal-nav-btn">
           <i class="fas fa-chevron-left"></i>
@@ -295,38 +337,34 @@
         {% endif %}
       </div>
 
-      {# ────────────── MONTH VIEW ────────────── #}
+      {# ── MONTH VIEW ────────────────────────────────────────────── #}
       {% if view == 'month' %}
       <div class="cal-grid-wrap">
-        <!-- Day-of-week headers -->
         <div class="cal-dow-row">
           {% for d in ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] %}
           <div class="cal-dow {{ 'weekend' if loop.index >= 6 }}">{{ d }}</div>
           {% endfor %}
         </div>
-
-        <!-- Weeks -->
         <div class="cal-weeks">
           {% for week in cal %}
           <div class="cal-week">
             {% for day_num in week %}
             {% set is_today = (day_num == today.day and month == today.month and year == today.year) %}
-            <div class="cal-cell {{ 'empty' if day_num == 0 else '' }} {{ 'today' if is_today }}">
+            <div class="cal-cell {{ 'empty' if day_num == 0 }} {{ 'today' if is_today }}">
               {% if day_num != 0 %}
               <div class="cal-day-num">
                 <span>{{ day_num }}</span>
                 {% if not current_user.is_client() %}
                 <a href="{{ url_for('calendar.create_event', date='%04d-%02d-%02d'|format(year, month, day_num)) }}"
-                   class="cal-add-btn" title="Add event for this day">
+                   class="cal-add-btn" title="Add event">
                   <i class="fas fa-plus"></i>
                 </a>
                 {% endif %}
               </div>
-
               {% set day_evs = events_by_day.get(day_num, []) %}
               {% for ev in day_evs[:3] %}
-              {% set is_overdue  = ev.id in overdue_ids %}
-              {% set is_due_tod  = ev.id in due_today_ids %}
+              {% set is_overdue = ev.id in overdue_ids %}
+              {% set is_due_tod = ev.id in due_today_ids %}
               {% set ev_cls = {'court_date':'cal-ev-court','meeting':'cal-ev-meeting','appointment':'cal-ev-appt','deadline':'cal-ev-deadline'}.get(ev.event_type,'cal-ev-other') %}
               {% set glow_cls = '' %}
               {% if is_overdue %}{% set glow_cls = 'glow-overdue' %}
@@ -334,21 +372,17 @@
               {% elif ev.event_type == 'deadline' %}{% set glow_cls = 'glow-deadline-badge' %}
               {% elif ev.event_type == 'court_date' %}{% set glow_cls = 'glow-court-badge' %}
               {% endif %}
-
               <a href="{{ url_for('calendar.event_detail', event_id=ev.id) }}"
                  class="cal-ev-badge {{ ev_cls }} {{ glow_cls }}"
-                 data-bs-toggle="popover"
-                 data-bs-trigger="hover focus"
-                 data-bs-placement="right"
-                 data-bs-html="true"
-                 data-bs-content="<strong>{{ ev.title|e }}</strong><br><small>{{ ev.start_datetime.strftime('%I:%M %p') if not ev.all_day else 'All day' }}{% if ev.location %} · {{ ev.location|e }}{% endif %}</small>{% if ev.event_type == 'deadline' or ev.event_type == 'court_date' %}<br><span class='badge bg-danger mt-1' style='font-size:.6rem;'>⚠ {{ ev.type_label }}</span>{% endif %}">
+                 data-bs-toggle="popover" data-bs-trigger="hover focus"
+                 data-bs-placement="right" data-bs-html="true"
+                 data-bs-content="<strong>{{ ev.title|e }}</strong><br><small>{{ ev.start_datetime.strftime('%I:%M %p') if not ev.all_day else 'All day' }}{% if ev.location %} · {{ ev.location|e }}{% endif %}</small>{% if ev.event_type in ('deadline','court_date') %}<br><span class='badge bg-danger mt-1' style='font-size:.6rem;'>⚠ {{ ev.type_label }}</span>{% endif %}">
                 {% if is_overdue or is_due_tod %}<span class="reminder-dot"></span>{% endif %}
                 <i class="fas {{ ev.type_icon }} me-1"></i>{{ ev.title }}
               </a>
               {% endfor %}
-
               {% if day_evs|length > 3 %}
-              <div style="font-size:.62rem;color:#6b7280;padding:1px 4px;">+{{ day_evs|length - 3 }} more</div>
+              <div style="font-size:.62rem;color:#6b7280;padding:1px 4px;font-weight:600;">+{{ day_evs|length - 3 }} more</div>
               {% endif %}
               {% endif %}
             </div>
@@ -357,20 +391,18 @@
           {% endfor %}
         </div>
       </div>
-
       <!-- Legend -->
       <div class="cal-legend">
-        <div class="legend-pill"><span class="legend-dot" style="background:#dc3545;"></span>Court Date</div>
+        <div class="legend-pill"><span class="legend-dot" style="background:#ef4444;"></span>Court Date</div>
         <div class="legend-pill"><span class="legend-dot" style="background:#3b82f6;"></span>Meeting</div>
-        <div class="legend-pill"><span class="legend-dot" style="background:#22c55e;"></span>Appointment</div>
-        <div class="legend-pill"><span class="legend-dot" style="background:#f97316;box-shadow:0 0 6px rgba(249,115,22,.6);"></span>Deadline <small class="text-muted">(glows)</small></div>
+        <div class="legend-pill"><span class="legend-dot" style="background:#10b981;"></span>Appointment</div>
+        <div class="legend-pill"><span class="legend-dot" style="background:#f97316;box-shadow:0 0 6px rgba(249,115,22,.6);"></span>Deadline <span class="text-muted fw-normal">(glows)</span></div>
         <div class="legend-pill"><span class="reminder-dot"></span>Due today / Overdue</div>
       </div>
 
-      {# ────────────── WEEK VIEW ────────────── #}
+      {# ── WEEK VIEW ─────────────────────────────────────────────── #}
       {% elif view == 'week' %}
       <div class="week-grid">
-        <!-- Header -->
         <div class="week-header">
           <div class="week-header-time"></div>
           {% for wd in week_days %}
@@ -381,10 +413,8 @@
           </div>
           {% endfor %}
         </div>
-
-        <!-- All-day strip -->
         <div class="week-allday-row">
-          <div class="week-allday-label">all-day</div>
+          <div class="week-allday-label">all‑day</div>
           {% for wd in week_days %}
           <div class="week-allday-cell">
             {% for ev in week_events_by_day.get(wd, []) %}
@@ -397,8 +427,6 @@
           </div>
           {% endfor %}
         </div>
-
-        <!-- Hourly grid 6am–10pm -->
         <div class="week-body" style="max-height:520px;overflow-y:auto;">
           <div class="week-time-col">
             {% for h in range(6, 23) %}
@@ -432,7 +460,7 @@
         </div>
       </div>
 
-      {# ────────────── LIST VIEW ────────────── #}
+      {# ── LIST VIEW ─────────────────────────────────────────────── #}
       {% elif view == 'list' %}
       <div class="agenda-wrap">
         {% if list_dates %}
@@ -444,13 +472,12 @@
           {% if is_td %}<span class="agenda-today-badge">TODAY</span>{% endif %}
         </div>
         {% for ev in events_by_date[d] %}
-        {% set dot_col = {'court_date':'#dc3545','meeting':'#3b82f6','appointment':'#22c55e','deadline':'#f97316','other':'#9ca3af'}.get(ev.event_type,'#9ca3af') %}
+        {% set dot_col = {'court_date':'#ef4444','meeting':'#3b82f6','appointment':'#10b981','deadline':'#f97316'}.get(ev.event_type,'#9ca3af') %}
         {% set is_overdue = ev.id in overdue_ids %}
         {% set is_due_tod = ev.id in due_today_ids %}
         {% set glow_cls = 'glow-overdue' if is_overdue else ('glow-today-event' if is_due_tod else '') %}
-        <a href="{{ url_for('calendar.event_detail', event_id=ev.id) }}"
-           class="agenda-ev-row {{ glow_cls }}">
-          <span class="agenda-type-dot" style="background:{{ dot_col }};"></span>
+        <a href="{{ url_for('calendar.event_detail', event_id=ev.id) }}" class="agenda-ev-row {{ glow_cls }}">
+          <span class="agenda-type-dot" style="background:{{ dot_col }};box-shadow:0 0 5px {{ dot_col }}40;"></span>
           <span class="agenda-time">
             {% if is_overdue or is_due_tod %}<span class="reminder-dot"></span>{% endif %}
             {% if ev.all_day %}All day{% else %}{{ ev.start_datetime.strftime('%I:%M %p') }}{% endif %}
@@ -461,7 +488,7 @@
           </span>
           <span class="agenda-meta">
             {% if ev.location %}<i class="fas fa-map-marker-alt me-1"></i>{{ ev.location }}{% endif %}
-            {% if ev.event_type == 'deadline' or ev.event_type == 'court_date' %}
+            {% if ev.event_type in ('deadline','court_date') %}
             <span class="badge text-bg-danger ms-1" style="font-size:.62rem;">⚠ {{ ev.type_label }}</span>
             {% endif %}
           </span>
@@ -470,7 +497,7 @@
         {% endfor %}
         {% else %}
         <div class="text-center py-5 text-muted">
-          <i class="fas fa-calendar-check fa-3x mb-3 d-block opacity-25"></i>
+          <i class="fas fa-calendar-check fa-3x mb-3 d-block" style="opacity:.2;"></i>
           <div class="fw-semibold">No events this month</div>
           {% if not current_user.is_client() %}
           <a href="{{ url_for('calendar.create_event') }}" class="btn btn-primary btn-sm mt-3">
@@ -482,25 +509,25 @@
       </div>
       {% endif %}
 
-    </div>
+    </div><!-- /col main -->
 
-    <!-- ── Sidebar ──────────────────────────────────────────────────────────── -->
+    <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
     <div class="col-xl-3 col-lg-4">
       <div class="cal-sidebar">
 
         <!-- Upcoming events -->
         <div class="side-card">
           <div class="side-card-header">
-            <i class="fas fa-bell"></i> Upcoming Events
+            <i class="fas fa-bell"></i>Upcoming Events
           </div>
           {% if upcoming %}
           {% for ev in upcoming[:8] %}
-          {% set dot_col = {'court_date':'#dc3545','meeting':'#3b82f6','appointment':'#22c55e','deadline':'#f97316','other':'#9ca3af'}.get(ev.event_type,'#9ca3af') %}
+          {% set dot_col = {'court_date':'#ef4444','meeting':'#3b82f6','appointment':'#10b981','deadline':'#f97316'}.get(ev.event_type,'#9ca3af') %}
           {% set is_due_tod = ev.id in due_today_ids %}
           <a href="{{ url_for('calendar.event_detail', event_id=ev.id) }}"
              class="upcoming-ev-row {{ 'glow-today-event' if is_due_tod }}">
-            <div class="upcoming-type-icon" style="background:{{ dot_col }}20;">
-              <i class="fas {{ ev.type_icon }}" style="color:{{ dot_col }};font-size:.7rem;"></i>
+            <div class="upcoming-type-icon" style="background:{{ dot_col }}22;">
+              <i class="fas {{ ev.type_icon }}" style="color:{{ dot_col }};"></i>
             </div>
             <div class="flex-grow-1 min-w-0">
               <div class="upcoming-ev-title text-truncate">
@@ -514,66 +541,76 @@
             </div>
           </a>
           {% endfor %}
-          <div class="text-center py-2" style="border-top:1px solid #f0f2f5;">
-            <a href="{{ url_for('calendar.upcoming_events') }}" class="text-primary" style="font-size:.78rem;">
-              View all →
+          <div class="text-center py-2 border-top">
+            <a href="{{ url_for('calendar.upcoming_events') }}" style="font-size:.78rem;color:var(--cal-blue);">
+              View all upcoming →
             </a>
           </div>
           {% else %}
           <div class="text-center py-4 text-muted" style="font-size:.82rem;">
-            <i class="fas fa-calendar-check fa-2x mb-2 d-block opacity-25"></i>
+            <i class="fas fa-calendar-check fa-2x mb-2 d-block" style="opacity:.2;"></i>
             No upcoming events
           </div>
           {% endif %}
         </div>
 
-        <!-- This month stats -->
+        <!-- Stats for this month -->
         <div class="side-card">
           <div class="side-card-header">
-            <i class="fas fa-chart-pie"></i> {{ month_name }}
+            <i class="fas fa-chart-pie"></i>{{ month_name }} at a Glance
           </div>
           {% set court_count    = events | selectattr('event_type','equalto','court_date')  | list | length %}
           {% set meeting_count  = events | selectattr('event_type','equalto','meeting')     | list | length %}
           {% set appt_count     = events | selectattr('event_type','equalto','appointment') | list | length %}
           {% set deadline_count = events | selectattr('event_type','equalto','deadline')    | list | length %}
           <div class="stat-tiles">
-            <div class="stat-tile">
-              <div class="stat-tile-num" style="color:#dc3545;">{{ court_count }}</div>
-              <div class="stat-tile-label">Court Dates</div>
+            <div class="stat-tile stat-tile-court">
+              <div class="stat-tile-num" style="color:#991b1b;">{{ court_count }}</div>
+              <div class="stat-tile-label" style="color:#7f1d1d;">Court Dates</div>
             </div>
-            <div class="stat-tile">
-              <div class="stat-tile-num" style="color:#3b82f6;">{{ meeting_count }}</div>
-              <div class="stat-tile-label">Meetings</div>
+            <div class="stat-tile stat-tile-meeting">
+              <div class="stat-tile-num" style="color:#1e40af;">{{ meeting_count }}</div>
+              <div class="stat-tile-label" style="color:#1e3a8a;">Meetings</div>
             </div>
-            <div class="stat-tile">
-              <div class="stat-tile-num" style="color:#22c55e;">{{ appt_count }}</div>
-              <div class="stat-tile-label">Appointments</div>
+            <div class="stat-tile stat-tile-appt">
+              <div class="stat-tile-num" style="color:#065f46;">{{ appt_count }}</div>
+              <div class="stat-tile-label" style="color:#064e3b;">Appointments</div>
             </div>
-            <div class="stat-tile">
-              <div class="stat-tile-num" style="color:#f97316;">{{ deadline_count }}</div>
-              <div class="stat-tile-label">Deadlines</div>
+            <div class="stat-tile stat-tile-dead">
+              <div class="stat-tile-num" style="color:#9a3412;">{{ deadline_count }}</div>
+              <div class="stat-tile-label" style="color:#7c2d12;">Deadlines</div>
             </div>
           </div>
           <div class="text-center pb-3 text-muted" style="font-size:.75rem;">
-            {{ events|length }} total event{{ 's' if events|length != 1 else '' }}
-            {% if overdue_ids %} · <span class="text-danger fw-semibold">{{ overdue_ids|length }} overdue</span>{% endif %}
+            {{ events|length }} total event{{ 's' if events|length != 1 }}
+            {% if overdue_ids %} · <span class="text-danger fw-bold">{{ overdue_ids|length }} overdue</span>{% endif %}
           </div>
         </div>
 
-        <!-- Quick jump to today -->
-        <a href="{{ url_for('calendar.index', year=today.year, month=today.month, view=view) }}"
-           class="btn btn-outline-primary btn-sm w-100">
-          <i class="fas fa-crosshairs me-1"></i>Jump to Today
-        </a>
-
-        {% if not current_user.is_client() %}
-        <a href="{{ url_for('calendar.create_event') }}" class="btn btn-primary btn-sm w-100">
-          <i class="fas fa-plus me-1"></i>Schedule New Event
-        </a>
-        {% endif %}
+        <!-- Navigation shortcuts -->
+        <div class="side-card">
+          <div class="side-card-header">
+            <i class="fas fa-compass"></i>Quick Navigation
+          </div>
+          <div class="p-3 d-grid gap-2">
+            <a href="{{ url_for('calendar.index', year=today.year, month=today.month, view=view) }}"
+               class="btn btn-outline-primary btn-sm">
+              <i class="fas fa-crosshairs me-1"></i>Jump to Today
+            </a>
+            <a href="{{ url_for('calendar.upcoming_events') }}" class="btn btn-outline-secondary btn-sm">
+              <i class="fas fa-stream me-1"></i>All Upcoming Events
+            </a>
+            {% if not current_user.is_client() %}
+            <a href="{{ url_for('calendar.create_event') }}" class="btn btn-primary btn-sm">
+              <i class="fas fa-plus me-1"></i>Schedule New Event
+            </a>
+            {% endif %}
+          </div>
+        </div>
 
       </div>
     </div>
+
   </div>
 </div>
 {% endblock %}
@@ -581,7 +618,6 @@
 {% block javascript %}
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 <script>
-// Initialise Bootstrap popovers on calendar badges
 document.querySelectorAll('[data-bs-toggle="popover"]').forEach(el => {
   new bootstrap.Popover(el, { container: 'body', sanitize: false });
 });

@@ -410,7 +410,7 @@ def upcoming_events():
                       CalendarEvent.status == EVENT_STATUS_UPCOMING)
               .order_by(CalendarEvent.start_datetime)
               .all())
-    return render_template('calendar/upcoming.html', events=events)
+    return render_template('calendar/upcoming.html', events=events, today=date.today())
 
 
 def _check_access(event):
