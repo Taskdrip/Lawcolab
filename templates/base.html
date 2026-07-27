@@ -153,10 +153,47 @@
         .lc-brand{ gap:.35rem; }
     }
     @media(max-width:360px){
-        /* Hide "COLAB" text on very small screens, keep "LAW" + icon */
-        .lc-brand-text .lc-brand-accent,
-        .lc-brand-text span:not(strong){ display:none; }
-        .lc-brand-text strong::after{ content:"COLAB";color:#FFD700; }
+        /* Collapse brand to "LAW" + gold "CoLab" via ::after */
+        .lc-brand-text .lc-brand-co,
+        .lc-brand-text .lc-brand-accent{ display:none; }
+        .lc-brand-text strong::after{ content:"CoLab";color:#FFD700; }
+    }
+
+    /* ── Mobile bottom navigation ── */
+    .lc-bottom-nav{
+        display:none;
+        position:fixed;bottom:0;left:0;right:0;
+        background:#0d1b4b;
+        border-top:1px solid rgba(255,255,255,.12);
+        z-index:1025;
+        padding-bottom:env(safe-area-inset-bottom,0px);
+    }
+    .lc-bottom-nav .lc-bn-inner{
+        display:flex;align-items:stretch;
+    }
+    .lc-bottom-nav .lc-bn-item{
+        flex:1;display:flex;flex-direction:column;
+        align-items:center;justify-content:center;
+        padding:.55rem .25rem .4rem;
+        color:rgba(255,255,255,.65);
+        text-decoration:none;
+        font-size:.6rem;font-weight:500;letter-spacing:.01em;
+        gap:.22rem;
+        border:none;background:transparent;cursor:pointer;
+        transition:color .15s,background .15s;
+        -webkit-tap-highlight-color:transparent;
+    }
+    .lc-bottom-nav .lc-bn-item i{ font-size:1.05rem; }
+    .lc-bottom-nav .lc-bn-item:hover,
+    .lc-bottom-nav .lc-bn-item.active{ color:#FFD700; }
+    .lc-bottom-nav .lc-bn-item .lc-bn-badge{
+        position:absolute;top:.3rem;
+        background:#e74c3c;color:#fff;font-size:.55rem;font-weight:700;
+        border-radius:100px;padding:.1rem .32rem;min-width:15px;text-align:center;
+    }
+    @media(max-width:991px){
+        .lc-bottom-nav{ display:block; }
+        body{ padding-bottom:58px; }
     }
 
     /* ── Page header banner ── */
@@ -397,7 +434,7 @@
             <!-- Brand -->
             <a class="navbar-brand lc-brand" href="{{ url_for('index') }}">
                 <span class="lc-brand-icon"><i class="fas fa-balance-scale"></i></span>
-                <span class="lc-brand-text"><strong>LAW</strong>CO<span class="lc-brand-accent">LAB</span></span>
+                <span class="lc-brand-text"><strong>Law</strong><span class="lc-brand-co">Co</span><span class="lc-brand-accent">Lab</span></span>
             </a>
 
             <!-- Mobile toggle -->
@@ -614,6 +651,35 @@
             </div>
         </div>
     </nav>
+
+    <!-- Mobile Bottom Navigation (authenticated users only) -->
+    {% if current_user.is_authenticated %}
+    <nav class="lc-bottom-nav" aria-label="Mobile navigation">
+        <div class="lc-bn-inner">
+            <a class="lc-bn-item{% if request.endpoint in ['index','dashboard.admin_dashboard','dashboard.team_member_dashboard','dashboard.client_dashboard'] %} active{% endif %}"
+               href="{{ url_for('index') }}">
+                <i class="fas fa-home"></i><span>Home</span>
+            </a>
+            <a class="lc-bn-item{% if 'projects' in (request.endpoint or '') %} active{% endif %}"
+               href="{{ url_for('projects.list_projects') }}">
+                <i class="fas fa-briefcase"></i><span>Cases</span>
+            </a>
+            <a class="lc-bn-item{% if 'calendar' in (request.endpoint or '') %} active{% endif %}"
+               href="{{ url_for('calendar.index') }}">
+                <i class="fas fa-calendar-alt"></i><span>Calendar</span>
+            </a>
+            <a class="lc-bn-item{% if 'clients' in (request.endpoint or '') %} active{% endif %}"
+               href="{{ url_for('clients.list_clients') }}">
+                <i class="fas fa-users"></i><span>Clients</span>
+            </a>
+            <button class="lc-bn-item" type="button"
+                    onclick="var c=document.getElementById('lcNav');var bsC=bootstrap.Collapse.getOrCreateInstance(c);bsC.toggle();this.classList.toggle('active');"
+                    aria-label="Open menu">
+                <i class="fas fa-bars"></i><span>Menu</span>
+            </button>
+        </div>
+    </nav>
+    {% endif %}
 
     <!-- Flash Messages -->
     <div class="container mt-3">

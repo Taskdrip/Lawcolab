@@ -26,7 +26,15 @@ def popup_page():
         settings = PopupSettings()
         db.session.add(settings)
         db.session.commit()
-    
+
+    # Block access if sales page is disabled (super admin can still preview)
+    if not settings.popup_enabled:
+        from flask_login import current_user
+        from models import ROLE_SUPER_ADMIN
+        is_super = current_user.is_authenticated and current_user.role == ROLE_SUPER_ADMIN
+        if not is_super:
+            return render_template('sales/sales_disabled.html'), 403
+
     # Get featured reviews
     reviews = CustomerReview.query.filter_by(is_active=True).order_by(desc(CustomerReview.is_featured), CustomerReview.id).limit(20).all()
     

@@ -14,8 +14,64 @@
                         <i class="fas fa-star me-2"></i>Manage Reviews
                     </a>
                     <a href="{{ url_for('sales.popup_page') }}" class="btn btn-outline-secondary" target="_blank">
-                        <i class="fas fa-external-link-alt me-2"></i>View Popup
+                        <i class="fas fa-external-link-alt me-2"></i>View Sales Page
                     </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales Page On/Off Toggle -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm"
+                 style="border-left: 5px solid {{ '#28a745' if settings.popup_enabled else '#dc3545' }} !important;">
+                <div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3 py-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div style="width:46px;height:46px;border-radius:12px;background:{{ '#d4edda' if settings.popup_enabled else '#f8d7da' }};display:flex;align-items:center;justify-content:center;font-size:1.4rem;">
+                            {{ '🟢' if settings.popup_enabled else '🔴' }}
+                        </div>
+                        <div>
+                            <div class="fw-bold" style="font-size:1rem;color:#1a1a2e;">
+                                Sales Page is currently
+                                <span class="badge {{ 'bg-success' if settings.popup_enabled else 'bg-danger' }} ms-1">
+                                    {{ 'ENABLED' if settings.popup_enabled else 'DISABLED' }}
+                                </span>
+                            </div>
+                            <div class="text-muted" style="font-size:.82rem;">
+                                {% if settings.popup_enabled %}
+                                    The public sign-up / checkout page is live and accepting visitors.
+                                {% else %}
+                                    The public sign-up / checkout page is hidden. Only super admins can view it.
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <form method="POST" action="{{ url_for('sales.update_settings') }}" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <!-- Preserve all existing settings -->
+                        <input type="hidden" name="popup_delay_seconds" value="{{ settings.popup_delay_seconds or 15 }}">
+                        <input type="hidden" name="welcome_video_url" value="{{ settings.welcome_video_url or '' }}">
+                        <input type="hidden" name="thankyou_video_url" value="{{ settings.thankyou_video_url or '' }}">
+                        <input type="hidden" name="trial_duration_days" value="{{ settings.trial_duration_days or 3 }}">
+                        <input type="hidden" name="starter_price" value="{{ settings.starter_price or 39 }}">
+                        <input type="hidden" name="growth_price" value="{{ settings.growth_price or 90 }}">
+                        <input type="hidden" name="enterprise_price" value="{{ settings.enterprise_price or 350 }}">
+                        <input type="hidden" name="founders_price" value="{{ settings.founders_price or 1745 }}">
+                        <input type="hidden" name="lifetime_price" value="{{ settings.lifetime_price or 999 }}">
+                        {% if settings.popup_enabled %}
+                            {# Currently ON → button turns it OFF (omit the checkbox so it becomes false) #}
+                            <button type="submit" class="btn btn-danger btn-sm px-4">
+                                <i class="fas fa-toggle-off me-2"></i>Disable Sales Page
+                            </button>
+                        {% else %}
+                            {# Currently OFF → button turns it ON (include popup_enabled=on) #}
+                            <input type="hidden" name="popup_enabled" value="on">
+                            <button type="submit" class="btn btn-success btn-sm px-4">
+                                <i class="fas fa-toggle-on me-2"></i>Enable Sales Page
+                            </button>
+                        {% endif %}
+                    </form>
                 </div>
             </div>
         </div>

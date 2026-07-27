@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Coming Soon — LawCoLab{% endblock %}
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="row justify-content-center">
+        <div class="col-lg-5 col-md-7">
+            <div class="card border-0 shadow-sm p-4 p-md-5 mt-5">
+                <div class="mb-4">
+                    <span style="font-size:3.5rem;">🔒</span>
+                </div>
+                <h1 class="h3 fw-bold mb-2" style="color:#0d1b4b;">Sales Page Coming Soon</h1>
+                <p class="text-muted mb-4">
+                    Our sales and subscription sign-up page is currently unavailable.<br>
+                    Please check back soon or contact us directly.
+                </p>
+                <a href="{{ url_for('contact') }}" class="btn btn-primary mb-2">
+                    <i class="fas fa-envelope me-2"></i>Contact Us
+                </a>
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

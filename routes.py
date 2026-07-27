@@ -68,8 +68,12 @@ def make_session_permanent():
 @app.route('/popup')
 def popup_page():
     """Simple clean landing page with automatic popup redirect after 7 seconds"""
-    from flask import request
-    # Check if user came from popup page to prevent auto-popup on back navigation
+    from models import PopupSettings, ROLE_SUPER_ADMIN
+    settings = PopupSettings.query.first()
+    if settings and not settings.popup_enabled:
+        is_super = current_user.is_authenticated and current_user.role == ROLE_SUPER_ADMIN
+        if not is_super:
+            return render_template('sales/sales_disabled.html'), 403
     referrer = request.headers.get('Referer', '')
     auto_popup = 'sales/popup' not in referrer
     return render_template('simple_popup_landing.html', auto_popup=auto_popup)
