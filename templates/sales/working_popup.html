@@ -260,6 +260,14 @@
         <div class="container">
             <h3 class="text-center mb-5" style="font-size: 2.5rem; font-weight: 700;">Choose Your Plan</h3>
             
+            <!-- Currency badge — updated by JS after geo-detection -->
+            <div class="text-center mb-4">
+                <span id="currency-badge" style="display:inline-flex;align-items:center;gap:6px;background:#f0f4ff;border:1.5px solid #c7d7ff;border-radius:100px;padding:6px 18px;font-size:.82rem;font-weight:700;color:#3b5bdb;">
+                    <i class="fas fa-globe" style="font-size:.75rem;"></i>
+                    <span id="currency-label">Detecting your location…</span>
+                </span>
+            </div>
+
             <!-- Free Trial Section -->
             <div class="row justify-content-center mb-5">
                 <div class="col-lg-8">
@@ -296,7 +304,11 @@
                             <div style="background: #2563eb; color: white; padding: 8px 20px; border-radius: 25px; display: inline-block; margin-bottom: 20px; font-weight: 600; font-size: 0.9rem;">
                                 🚀 Starter
                             </div>
-                            <h3 class="price-display" style="font-size: 2.8rem; font-weight: 700; color: #1a1a1a; margin: 15px 0 8px 0; line-height: 1;">${{ settings.starter_price or 39 }}</h3>
+                            <h3 class="price-display" id="price-starter" style="font-size: 2.8rem; font-weight: 700; color: #1a1a1a; margin: 15px 0 8px 0; line-height: 1;"
+                                data-usd="{{ settings.starter_price or 39 }}"
+                                data-ngn="{{ settings.starter_price_ngn or 60000 }}">
+                                <span class="price-sym">$</span><span class="price-amt">{{ settings.starter_price or 39 }}</span>
+                            </h3>
                             <p style="color: #64748b; font-size: 1rem; margin-bottom: 20px;">per month</p>
                             
                             <!-- Strategic Features -->
@@ -323,7 +335,7 @@
                                 </div>
                             </div>
                         </div>
-                        <a href="javascript:void(0)" onclick="selectPlan('starter', 'Starter Plan - ${{ settings.starter_price or 39 }}/month')" class="btn-get-started" style="background: #2563eb; color: white; padding: 14px 20px; border-radius: 12px; text-decoration: none; font-weight: 600; display: block; transition: all 0.3s; box-shadow: 0 4px 15px rgba(37,99,235,0.3); font-size: 0.95rem;">
+                        <a href="javascript:void(0)" onclick="selectPlanDynamic(event,'starter','month')" class="btn-get-started" style="background: #2563eb; color: white; padding: 14px 20px; border-radius: 12px; text-decoration: none; font-weight: 600; display: block; transition: all 0.3s; box-shadow: 0 4px 15px rgba(37,99,235,0.3); font-size: 0.95rem;">
                             Choose Starter
                         </a>
                     </div>
@@ -339,7 +351,11 @@
                             <div style="background: #16a34a; color: white; padding: 8px 20px; border-radius: 25px; display: inline-block; margin-bottom: 20px; font-weight: 600; margin-top: 15px; font-size: 0.9rem;">
                                 📈 Growth
                             </div>
-                            <h3 class="price-display" style="font-size: 2.8rem; font-weight: 700; color: #1a1a1a; margin: 15px 0 8px 0; line-height: 1;">${{ settings.growth_price or 90 }}</h3>
+                            <h3 class="price-display" id="price-growth" style="font-size: 2.8rem; font-weight: 700; color: #1a1a1a; margin: 15px 0 8px 0; line-height: 1;"
+                                data-usd="{{ settings.growth_price or 90 }}"
+                                data-ngn="{{ settings.growth_price_ngn or 140000 }}">
+                                <span class="price-sym">$</span><span class="price-amt">{{ settings.growth_price or 90 }}</span>
+                            </h3>
                             <p style="color: #64748b; font-size: 1rem; margin-bottom: 20px;">per 3 months</p>
                             
                             <!-- Strategic Features -->
@@ -370,7 +386,7 @@
                                 💰 Save $12/month vs monthly
                             </div>
                         </div>
-                        <a href="javascript:void(0)" onclick="selectPlan('growth', 'Growth Plan - ${{ settings.growth_price or 90 }}/3mo')" class="btn-get-started" style="background: #16a34a; color: white; padding: 14px 20px; border-radius: 12px; text-decoration: none; font-weight: 600; display: block; transition: all 0.3s; box-shadow: 0 4px 15px rgba(22,163,74,0.3); font-size: 0.95rem;">
+                        <a href="javascript:void(0)" onclick="selectPlanDynamic(event,'growth','3 months')" class="btn-get-started" style="background: #16a34a; color: white; padding: 14px 20px; border-radius: 12px; text-decoration: none; font-weight: 600; display: block; transition: all 0.3s; box-shadow: 0 4px 15px rgba(22,163,74,0.3); font-size: 0.95rem;">
                             Choose Growth
                         </a>
                     </div>
@@ -383,7 +399,11 @@
                             <div style="background: #dc2626; color: white; padding: 8px 20px; border-radius: 25px; display: inline-block; margin-bottom: 20px; font-weight: 600; font-size: 0.9rem;">
                                 👑 Enterprise
                             </div>
-                            <h3 class="price-display" style="font-size: 2.8rem; font-weight: 700; color: #1a1a1a; margin: 15px 0 8px 0; line-height: 1;">${{ settings.enterprise_price or 350 }}</h3>
+                            <h3 class="price-display" id="price-enterprise" style="font-size: 2.8rem; font-weight: 700; color: #1a1a1a; margin: 15px 0 8px 0; line-height: 1;"
+                                data-usd="{{ settings.enterprise_price or 350 }}"
+                                data-ngn="{{ settings.enterprise_price_ngn or 550000 }}">
+                                <span class="price-sym">$</span><span class="price-amt">{{ settings.enterprise_price or 350 }}</span>
+                            </h3>
                             <p style="color: #64748b; font-size: 1rem; margin-bottom: 20px;">per year</p>
                             
                             <!-- Strategic Features -->
@@ -410,7 +430,7 @@
                                 </div>
                             </div>
                         </div>
-                        <a href="javascript:void(0)" onclick="selectPlan('enterprise', 'Enterprise Plan - ${{ settings.enterprise_price or 350 }}/year')" class="btn-get-started" style="background: #dc2626; color: white; padding: 14px 20px; border-radius: 12px; text-decoration: none; font-weight: 600; display: block; transition: all 0.3s; box-shadow: 0 4px 15px rgba(220,38,38,0.3); font-size: 0.95rem;">
+                        <a href="javascript:void(0)" onclick="selectPlanDynamic(event,'enterprise','year')" class="btn-get-started" style="background: #dc2626; color: white; padding: 14px 20px; border-radius: 12px; text-decoration: none; font-weight: 600; display: block; transition: all 0.3s; box-shadow: 0 4px 15px rgba(220,38,38,0.3); font-size: 0.95rem;">
                             Choose Enterprise
                         </a>
                     </div>
@@ -503,8 +523,10 @@
                         </div>
                         
                         <h4 style="color: #1a1a1a; margin-bottom: 20px; margin-top: 30px;">White-Label SaaS Forever License</h4>
-                        <div class="price" style="font-size: 2.5rem; color: #FFD700;">
-                            ${{ settings.founders_price or 1745 }}
+                        <div class="price" id="price-founders" style="font-size: 2.5rem; color: #FFD700;"
+                             data-usd="{{ settings.founders_price or 1745 }}"
+                             data-ngn="{{ settings.founders_price_ngn or 2750000 }}">
+                            <span class="price-sym">$</span><span class="price-amt">{{ settings.founders_price or 1745 }}</span>
                         </div>
                         <p style="color: #999; text-decoration: line-through; margin: 0; font-size: 1rem;">Regular: $5,000+</p>
                         <p class="price-note">one-time forever • 6-Month Setup & Support</p>
@@ -520,8 +542,8 @@
                             <li><i class="fas fa-rocket text-warning me-2"></i> <strong>👑 Exclusive Founder Badge & VIP status</strong></li>
                         </ul>
                         
-                        <a href="javascript:void(0)" onclick="selectPlan('founder', 'Founder Pack - ${{ settings.founders_price or 1745 }} one-time')" style="background: linear-gradient(45deg, #FFD700, #FFA500); color: #1a1a1a; padding: 20px 45px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 800; width: 100%; text-align: center; box-shadow: 0 8px 25px rgba(255,215,0,0.5); transition: all 0.3s ease; transform: translateY(-3px);">
-                            👑 Secure White-Label License - $1,745
+                        <a href="javascript:void(0)" onclick="selectPlanDynamic(event,'founder','one-time')" style="background: linear-gradient(45deg, #FFD700, #FFA500); color: #1a1a1a; padding: 20px 45px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 20px; font-weight: 800; width: 100%; text-align: center; box-shadow: 0 8px 25px rgba(255,215,0,0.5); transition: all 0.3s ease; transform: translateY(-3px);">
+                            👑 Secure White-Label License — <span id="founder-btn-price">$1,745</span>
                         </a>
                         
                         <p style="margin-top: 15px; font-size: 0.85rem; color: #d4af37; font-weight: 600;">
@@ -749,20 +771,84 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Countdown timer functionality
+        // ── Currency geo-switching ────────────────────────────────────────────
+        // Map of plan key → DOM element id
+        const PRICE_IDS = {starter:'price-starter', growth:'price-growth', enterprise:'price-enterprise', founders:'price-founders'};
+        let _currentCurrency = 'USD';
+        let _currentSymbol   = '$';
+        let _currentPrices   = {};
+
+        function _fmtPrice(num) {
+            // Format with commas, no decimals
+            return Number(num).toLocaleString('en-US', {maximumFractionDigits:0});
+        }
+
+        function applyPrices(symbol, prices) {
+            _currentSymbol = symbol;
+            _currentPrices = prices;
+            for (const [key, elId] of Object.entries(PRICE_IDS)) {
+                const el = document.getElementById(elId);
+                if (!el) continue;
+                const symEl = el.querySelector('.price-sym');
+                const amtEl = el.querySelector('.price-amt');
+                if (symEl) symEl.textContent = symbol;
+                if (amtEl) amtEl.textContent  = _fmtPrice(prices[key]);
+            }
+            // Update founder CTA button price text
+            const founderBtn = document.getElementById('founder-btn-price');
+            if (founderBtn) founderBtn.textContent = symbol + _fmtPrice(prices.founders);
+        }
+
+        async function detectAndApplyCurrency() {
+            const badge = document.getElementById('currency-label');
+            try {
+                const res = await fetch('/sales/api/currency-settings');
+                const cfg = await res.json();
+
+                _currentCurrency = cfg.currency || 'USD';
+                applyPrices(cfg.symbol, cfg.prices);
+
+                const labels = {
+                    NGN: '🇳🇬 Prices in Nigerian Naira (₦)',
+                    USD: '🌍 Prices in USD ($)'
+                };
+                if (badge) badge.textContent = labels[_currentCurrency] || ('Prices in ' + _currentCurrency);
+
+            } catch(e) {
+                if (badge) badge.textContent = 'Prices in USD ($)';
+            }
+        }
+
+        // Run on load
+        detectAndApplyCurrency();
+
+        // Dynamic plan selection — uses current live prices
+        function selectPlanDynamic(event, planId, period) {
+            const priceEl = document.getElementById(PRICE_IDS[planId] || 'price-' + planId);
+            let priceStr  = '';
+            if (priceEl) {
+                const sym = priceEl.querySelector('.price-sym');
+                const amt = priceEl.querySelector('.price-amt');
+                priceStr  = (sym ? sym.textContent : _currentSymbol) + (amt ? amt.textContent : '');
+            }
+            const planLabels = {starter:'Starter Plan', growth:'Growth Plan', enterprise:'Enterprise Plan', founders:'White-Label License'};
+            const planName   = `${planLabels[planId] || planId} — ${priceStr}/${period}`;
+            selectPlan(planId, planName, event);
+        }
+
+        // ── Countdown timer ───────────────────────────────────────────────────
         function updateCountdown() {
             const countdownElements = document.querySelectorAll('#countdown-timer');
             countdownElements.forEach(element => {
                 element.textContent = '47:28:17';
             });
         }
-        
-        // Update countdown every second
         setInterval(updateCountdown, 1000);
         updateCountdown();
-        
+
         // Plan selection functionality
-        function selectPlan(planId, planName) {
+        function selectPlan(planId, planName, evtArg) {
+            const event = evtArg || window.event;
             // Update hidden form field
             const planInput = document.getElementById('selected-plan');
             if (planInput) {
@@ -800,7 +886,7 @@
             
             // Add visual feedback - highlight the selected plan button
             // Remove previous selections
-            const allPlanButtons = document.querySelectorAll('[onclick^="selectPlan"]');
+            const allPlanButtons = document.querySelectorAll('[onclick^="selectPlan"],[onclick^="selectPlanDynamic"]');
             allPlanButtons.forEach(button => {
                 button.style.border = 'none';
                 button.style.boxShadow = button.getAttribute('data-original-shadow') || button.style.boxShadow;

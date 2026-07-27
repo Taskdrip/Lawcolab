@@ -154,13 +154,54 @@ def checkout_page():
     settings = PopupSettings.query.first()
     if not settings:
         settings = PopupSettings()
-    
-    return render_template('sales/checkout_dynamic.html', 
-                         lead_data=lead_data, 
+
+    # ── Geo-currency resolution (same logic as currency_settings_api) ──────────
+    auto_geo       = bool(getattr(settings, 'auto_geo_currency', True))
+    default_curr   = settings.checkout_currency or 'USD'
+    detected_country = 'unknown'
+    if auto_geo:
+        try:
+            import requests as _req
+            ip = request.headers.get('X-Forwarded-For', request.remote_addr) or ''
+            if ',' in ip:
+                ip = ip.split(',')[0].strip()
+            if ip and not ip.startswith(('127.', '10.', '192.168.', '172.')):
+                resp = _req.get(f'https://ipapi.co/{ip}/json/', timeout=3)
+                if resp.status_code == 200:
+                    detected_country = resp.json().get('country_code', 'unknown')
+        except Exception:
+            pass
+    # Nigeria → NGN, everyone else → admin default
+    active_currency = 'NGN' if (auto_geo and detected_country == 'NG') else default_curr
+
+    sym_map = {'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 'CAD': 'C$', 'GHS': '₵', 'KES': 'KSh', 'ZAR': 'R'}
+    currency_symbol = sym_map.get(active_currency, '$')
+
+    # Pick price set based on active currency
+    if active_currency == 'NGN':
+        plan_prices = {
+            'starter':    float(getattr(settings, 'starter_price_ngn',    None) or 60000),
+            'growth':     float(getattr(settings, 'growth_price_ngn',     None) or 140000),
+            'enterprise': float(getattr(settings, 'enterprise_price_ngn', None) or 550000),
+            'founders':   float(getattr(settings, 'founders_price_ngn',   None) or 2750000),
+        }
+    else:
+        plan_prices = {
+            'starter':    float(settings.starter_price    or 39),
+            'growth':     float(settings.growth_price     or 90),
+            'enterprise': float(settings.enterprise_price or 350),
+            'founders':   float(settings.founders_price   or 1745),
+        }
+
+    return render_template('sales/checkout_dynamic.html',
+                         lead_data=lead_data,
                          selected_plan=selected_plan,
                          payment_gateways=payment_gateways,
                          crypto_wallets=crypto_wallets,
-                         settings=settings)
+                         settings=settings,
+                         active_currency=active_currency,
+                         currency_symbol=currency_symbol,
+                         plan_prices=plan_prices)
 
 @sales_bp.route('/checkout/complete', methods=['POST'])
 def complete_checkout():
@@ -439,6 +480,67 @@ def admin_dashboard():
                          plan_stats=plan_stats,
                          settings=settings)
 
+@sales_bp.route('/api/currency-settings')
+def currency_settings_api():
+    """Detect user country server-side and return the right currency + prices."""
+    settings = PopupSettings.query.first()
+    if not settings:
+        settings = PopupSettings()
+
+    usd_prices = {
+        'symbol': '$',
+        'starter':    float(settings.starter_price    or 39),
+        'growth':     float(settings.growth_price     or 90),
+        'enterprise': float(settings.enterprise_price or 350),
+        'founders':   float(settings.founders_price   or 1745),
+    }
+    ngn_prices = {
+        'symbol': '₦',
+        'starter':    float(getattr(settings, 'starter_price_ngn',    None) or 60000),
+        'growth':     float(getattr(settings, 'growth_price_ngn',     None) or 140000),
+        'enterprise': float(getattr(settings, 'enterprise_price_ngn', None) or 550000),
+        'founders':   float(getattr(settings, 'founders_price_ngn',   None) or 2750000),
+    }
+
+    auto_geo = bool(getattr(settings, 'auto_geo_currency', True))
+    default_currency = settings.checkout_currency or 'USD'
+
+    # Server-side geo-detection
+    detected_country = 'unknown'
+    if auto_geo:
+        try:
+            import requests as _req
+            ip = request.headers.get('X-Forwarded-For', request.remote_addr) or ''
+            if ',' in ip:
+                ip = ip.split(',')[0].strip()
+            # Avoid loopback/private IP lookups
+            if ip and not ip.startswith(('127.', '10.', '192.168.', '172.')):
+                resp = _req.get(f'https://ipapi.co/{ip}/json/', timeout=3)
+                if resp.status_code == 200:
+                    detected_country = resp.json().get('country_code', 'unknown')
+        except Exception:
+            pass
+
+    # Decide active currency
+    # In auto-geo mode: Nigeria → NGN, everyone else → admin-configured default currency
+    if auto_geo:
+        active_currency = 'NGN' if detected_country == 'NG' else default_currency
+    else:
+        active_currency = default_currency
+
+    active_prices = ngn_prices if active_currency == 'NGN' else usd_prices
+
+    return jsonify({
+        'currency':     active_currency,
+        'symbol':       active_prices['symbol'],
+        'country':      detected_country,
+        'prices':       active_prices,
+        # Also send both sets so JS can do any additional switching
+        'usd':          usd_prices,
+        'ngn':          ngn_prices,
+    })
+
+
 @sales_bp.route('/admin/settings', methods=['POST'])
 @login_required
 @role_required([ROLE_SUPER_ADMIN])
@@ -456,13 +558,26 @@ def update_settings():
         settings.welcome_video_url = request.form.get('welcome_video_url', '').strip()
         settings.thankyou_video_url = request.form.get('thankyou_video_url', '').strip()
         
-        # Update 5-plan pricing structure
+        # Update 5-plan pricing structure (USD)
         settings.trial_duration_days = int(request.form.get('trial_duration_days', 3))
-        settings.starter_price = float(request.form.get('starter_price', 39.00))
-        settings.growth_price = float(request.form.get('growth_price', 90.00))
+        settings.starter_price    = float(request.form.get('starter_price',    39.00))
+        settings.growth_price     = float(request.form.get('growth_price',     90.00))
         settings.enterprise_price = float(request.form.get('enterprise_price', 350.00))
-        settings.founders_price = float(request.form.get('founders_price', 750.00))
-        settings.lifetime_price = float(request.form.get('lifetime_price', 999.00))
+        settings.founders_price   = float(request.form.get('founders_price',   750.00))
+        settings.lifetime_price   = float(request.form.get('lifetime_price',   999.00))
+
+        # NGN pricing
+        if request.form.get('starter_price_ngn'):
+            settings.starter_price_ngn    = float(request.form.get('starter_price_ngn',    60000))
+        if request.form.get('growth_price_ngn'):
+            settings.growth_price_ngn     = float(request.form.get('growth_price_ngn',     140000))
+        if request.form.get('enterprise_price_ngn'):
+            settings.enterprise_price_ngn = float(request.form.get('enterprise_price_ngn', 550000))
+        if request.form.get('founders_price_ngn'):
+            settings.founders_price_ngn   = float(request.form.get('founders_price_ngn',   2750000))
+
+        # Auto geo-currency flag
+        settings.auto_geo_currency = request.form.get('auto_geo_currency') == 'on'
         
         db.session.commit()
         flash('Settings updated successfully!', 'success')

@@ -142,11 +142,22 @@
 
 /* ── Mobile responsive ── */
 @media(max-width:768px){
-    .lc-slider{height:280px;}
-    .lc-slide-body{padding:1.25rem 1.5rem;flex-direction:column;align-items:flex-start;}
+    .lc-slider{height:300px;}
+    .lc-slide-body{padding:1rem 1.25rem 2.5rem;flex-direction:column;align-items:flex-start;}
     .lc-slide-content{max-width:100%;}
     .lc-slide-icon-wrap{display:none;}
     .lc-slide-title{font-size:1.25rem;}
+    /* Move arrows below content — no longer overlapping text */
+    .lc-slider-arrow{
+        top:auto !important;
+        bottom:8px !important;
+        transform:none !important;
+        width:34px;height:34px;font-size:.8rem;
+    }
+    .lc-slider-arrow.prev{left:8px !important;}
+    .lc-slider-arrow.next{right:8px !important;}
+    /* Keep dots centered between arrows */
+    .lc-slider-dots{bottom:14px;}
 }
 </style>
 

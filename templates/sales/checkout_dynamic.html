@@ -1,6 +1,6 @@
-{% set _currency_code = settings.checkout_currency if settings and settings.checkout_currency else 'USD' %}
-{% set _sym_map = {'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 'CAD': 'C$', 'GHS': '₵', 'KES': 'KSh', 'ZAR': 'R'} %}
-{% set csym = _sym_map.get(_currency_code, '$') %}
+{# currency_symbol and plan_prices are resolved server-side (geo-aware) by the checkout_page route #}
+{% set csym = currency_symbol if currency_symbol else '$' %}
+{% set pp = plan_prices if plan_prices else {'starter': settings.starter_price or 39, 'growth': settings.growth_price or 90, 'enterprise': settings.enterprise_price or 350, 'founders': settings.founders_price or 1745} %}
 <!DOCTYPE html>
 <html lang="en">
 <head>

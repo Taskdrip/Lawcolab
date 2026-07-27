@@ -749,6 +749,16 @@ class PopupSettings(db.Model):
     # Checkout currency setting (super-admin controlled)
     checkout_currency = db.Column(db.String(3), default='USD', nullable=False)
 
+    # NGN pricing — shown automatically to Nigerian visitors
+    starter_price_ngn    = db.Column(db.Numeric(12, 2), default=60000.00)
+    growth_price_ngn     = db.Column(db.Numeric(12, 2), default=140000.00)
+    enterprise_price_ngn = db.Column(db.Numeric(12, 2), default=550000.00)
+    founders_price_ngn   = db.Column(db.Numeric(12, 2), default=2750000.00)
+
+    # Auto geo-currency: when True, Nigerian IPs see NGN; all others see USD
+    # When False, always use checkout_currency for everyone
+    auto_geo_currency = db.Column(db.Boolean, default=True, nullable=False)
+
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
 

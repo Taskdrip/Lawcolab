@@ -489,13 +489,31 @@ def checkout_currency_settings():
             return redirect(url_for('payment_management.checkout_currency_settings'))
 
         settings.checkout_currency = new_currency
+
+        # Auto geo-currency toggle
+        settings.auto_geo_currency = request.form.get('auto_geo_currency') == 'on'
+
+        # NGN price fields (optional — only update if provided)
+        try:
+            if request.form.get('starter_price_ngn'):
+                settings.starter_price_ngn    = float(request.form['starter_price_ngn'])
+            if request.form.get('growth_price_ngn'):
+                settings.growth_price_ngn     = float(request.form['growth_price_ngn'])
+            if request.form.get('enterprise_price_ngn'):
+                settings.enterprise_price_ngn = float(request.form['enterprise_price_ngn'])
+            if request.form.get('founders_price_ngn'):
+                settings.founders_price_ngn   = float(request.form['founders_price_ngn'])
+        except ValueError:
+            flash('Invalid NGN price value — prices must be numbers.', 'error')
+            return redirect(url_for('payment_management.checkout_currency_settings'))
+
         db.session.commit()
 
         currency_info = CHECKOUT_CURRENCIES[new_currency]
+        geo_note = ' Auto geo-switching enabled (Nigeria→₦, others→$USD).' if settings.auto_geo_currency else ''
         flash(
-            f'Checkout currency updated to {currency_info["flag"]} '
-            f'{new_currency} ({currency_info["name"]} {currency_info["symbol"]}). '
-            'All new checkout sessions will now display prices in this currency.',
+            f'Settings saved. Default currency: {currency_info["flag"]} '
+            f'{new_currency} ({currency_info["name"]} {currency_info["symbol"]}).{geo_note}',
             'success'
         )
         return redirect(url_for('payment_management.checkout_currency_settings'))

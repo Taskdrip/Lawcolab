@@ -63,6 +63,13 @@ def run_migrations(db):
         "ALTER TABLE popup_settings ADD COLUMN IF NOT EXISTS enterprise_regular_price NUMERIC(10,2) DEFAULT 840.00",
         "ALTER TABLE popup_settings ADD COLUMN IF NOT EXISTS founders_regular_price NUMERIC(10,2) DEFAULT 840.00",
         "ALTER TABLE popup_settings ADD COLUMN IF NOT EXISTS checkout_currency VARCHAR(3) NOT NULL DEFAULT 'USD'",
+        # NGN pricing columns
+        "ALTER TABLE popup_settings ADD COLUMN IF NOT EXISTS starter_price_ngn NUMERIC(12,2) DEFAULT 60000.00",
+        "ALTER TABLE popup_settings ADD COLUMN IF NOT EXISTS growth_price_ngn NUMERIC(12,2) DEFAULT 140000.00",
+        "ALTER TABLE popup_settings ADD COLUMN IF NOT EXISTS enterprise_price_ngn NUMERIC(12,2) DEFAULT 550000.00",
+        "ALTER TABLE popup_settings ADD COLUMN IF NOT EXISTS founders_price_ngn NUMERIC(12,2) DEFAULT 2750000.00",
+        # Auto geo-currency flag
+        "ALTER TABLE popup_settings ADD COLUMN IF NOT EXISTS auto_geo_currency BOOLEAN NOT NULL DEFAULT TRUE",
 
         # ── law_firm_showcases table ──────────────────────────────────────────
         "ALTER TABLE law_firm_showcases ADD COLUMN IF NOT EXISTS logo_image_url VARCHAR(500)",
