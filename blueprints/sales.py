@@ -163,43 +163,16 @@ def checkout_page():
     if not settings:
         settings = PopupSettings()
 
-    # ── Geo-currency resolution (same logic as currency_settings_api) ──────────
-    auto_geo       = bool(getattr(settings, 'auto_geo_currency', True))
-    default_curr   = settings.checkout_currency or 'USD'
-    detected_country = 'unknown'
-    if auto_geo:
-        try:
-            import requests as _req
-            ip = request.headers.get('X-Forwarded-For', request.remote_addr) or ''
-            if ',' in ip:
-                ip = ip.split(',')[0].strip()
-            if ip and not ip.startswith(('127.', '10.', '192.168.', '172.')):
-                resp = _req.get(f'https://ipapi.co/{ip}/json/', timeout=3)
-                if resp.status_code == 200:
-                    detected_country = resp.json().get('country_code', 'unknown')
-        except Exception:
-            pass
-    # Nigeria → NGN, everyone else → admin default
-    active_currency = 'NGN' if (auto_geo and detected_country == 'NG') else default_curr
+    # ── Single source of truth: geo + currency + August discount ──────────────
+    active_currency, currency_symbol, plan_prices, original_prices, august_discount, discount_rate = \
+        _resolve_checkout_pricing(settings)
 
-    sym_map = {'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 'CAD': 'C$', 'GHS': '₵', 'KES': 'KSh', 'ZAR': 'R'}
-    currency_symbol = sym_map.get(active_currency, '$')
-
-    # Pick price set based on active currency
-    if active_currency == 'NGN':
-        plan_prices = {
-            'starter':    float(getattr(settings, 'starter_price_ngn',    None) or 60000),
-            'growth':     float(getattr(settings, 'growth_price_ngn',     None) or 140000),
-            'enterprise': float(getattr(settings, 'enterprise_price_ngn', None) or 550000),
-            'founders':   float(getattr(settings, 'founders_price_ngn',   None) or 2750000),
-        }
-    else:
-        plan_prices = {
-            'starter':    float(settings.starter_price    or 39),
-            'growth':     float(settings.growth_price     or 90),
-            'enterprise': float(settings.enterprise_price or 350),
-            'founders':   float(settings.founders_price   or 1745),
-        }
+    # Persist the exact payable amount in the session now (at page render) so
+    # complete_checkout() reads a value that is always consistent with what the
+    # user sees — no second geo-lookup, no currency mismatch.
+    plan_key = 'founders' if selected_plan in ('founder', 'lifetime') else (selected_plan or '')
+    session['payment_amount']   = plan_prices.get(plan_key, 0)
+    session['payment_currency'] = active_currency
 
     return render_template('sales/checkout_dynamic.html',
                          lead_data=lead_data,
@@ -208,8 +181,12 @@ def checkout_page():
                          crypto_wallets=crypto_wallets,
                          settings=settings,
                          active_currency=active_currency,
+                         _currency_code=active_currency,
                          currency_symbol=currency_symbol,
-                         plan_prices=plan_prices)
+                         plan_prices=plan_prices,
+                         original_prices=original_prices,
+                         august_discount=august_discount,
+                         discount_rate=discount_rate)
 
 @sales_bp.route('/checkout/complete', methods=['POST'])
 def complete_checkout():
@@ -240,13 +217,20 @@ def complete_checkout():
                 lead.status = 'payment_pending'
                 db.session.commit()
         
-        # Generate payment reference and store details
+        # Generate payment reference and store details.
+        # payment_amount / payment_currency were already written to the session by
+        # checkout_page() using _resolve_checkout_pricing(), so they always match
+        # what the user was shown (correct currency + August discount applied).
         import time
         payment_reference = f"LAWCOLAB-{selected_plan.upper() if selected_plan else 'PLAN'}-{int(time.time())}"
-        session['payment_method'] = payment_method
-        session['payment_reference'] = payment_reference
+        session['payment_method']     = payment_method
+        session['payment_reference']  = payment_reference
         session['payment_start_time'] = int(time.time())
-        session['payment_amount'] = get_plan_amount(selected_plan)
+        # Preserve the amount/currency already stamped by checkout_page(); only
+        # set a fallback if somehow the session was cleared between renders.
+        if 'payment_amount' not in session or not session['payment_amount']:
+            session['payment_amount']   = get_plan_amount(selected_plan)
+            session['payment_currency'] = 'USD'
         
         # For crypto payments, redirect to evidence upload
         if payment_method.startswith('crypto_') or payment_method == 'crypto':
@@ -261,22 +245,83 @@ def complete_checkout():
         flash('An error occurred processing your request. Please try again.', 'error')
         return redirect(url_for('sales.checkout_page'))
 
-def get_plan_amount(plan):
-    """Get the amount for a given plan"""
-    settings = PopupSettings.query.first()
-    if not settings:
-        settings = PopupSettings()
-    
-    if plan == 'starter':
-        return settings.starter_price
-    elif plan == 'growth':
-        return settings.growth_price
-    elif plan == 'enterprise':
-        return settings.enterprise_price
-    elif plan == 'founders' or plan == 'founder':
-        return settings.founders_price or 1745
+def _resolve_checkout_pricing(settings=None):
+    """Return (active_currency, currency_symbol, plan_prices, original_prices, august_discount, discount_rate).
+
+    This is the single source of truth for geo-detection, NGN/USD selection, and
+    August 40% discount.  Called by both checkout_page() (rendering) and
+    complete_checkout() (amount persistence) so they always agree.
+    """
+    if settings is None:
+        settings = PopupSettings.query.first()
+        if not settings:
+            settings = PopupSettings()
+
+    auto_geo     = bool(getattr(settings, 'auto_geo_currency', True))
+    default_curr = settings.checkout_currency or 'USD'
+
+    detected_country = 'unknown'
+    if auto_geo:
+        try:
+            import requests as _req
+            ip = request.headers.get('X-Forwarded-For', request.remote_addr) or ''
+            if ',' in ip:
+                ip = ip.split(',')[0].strip()
+            if ip and not ip.startswith(('127.', '10.', '192.168.', '172.')):
+                resp = _req.get(f'https://ipapi.co/{ip}/json/', timeout=3)
+                if resp.status_code == 200:
+                    detected_country = resp.json().get('country_code', 'unknown')
+        except Exception:
+            pass
+
+    active_currency = 'NGN' if (auto_geo and detected_country == 'NG') else default_curr
+
+    sym_map = {'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£',
+               'CAD': 'C$', 'GHS': '₵', 'KES': 'KSh', 'ZAR': 'R'}
+    currency_symbol = sym_map.get(active_currency, '$')
+
+    if active_currency == 'NGN':
+        base_prices = {
+            'starter':    float(getattr(settings, 'starter_price_ngn',    None) or 60000),
+            'growth':     float(getattr(settings, 'growth_price_ngn',     None) or 140000),
+            'enterprise': float(getattr(settings, 'enterprise_price_ngn', None) or 550000),
+            'founders':   float(getattr(settings, 'founders_price_ngn',   None) or 2750000),
+        }
     else:
-        return 0
+        base_prices = {
+            'starter':    float(settings.starter_price    or 39),
+            'growth':     float(settings.growth_price     or 90),
+            'enterprise': float(settings.enterprise_price or 350),
+            'founders':   float(settings.founders_price   or 1745),
+        }
+
+    # August 40 % discount — NGN / Nigerian users only
+    august_discount = False
+    discount_rate   = 0.0
+    original_prices = dict(base_prices)
+    if active_currency == 'NGN' and datetime.now().month == 8:
+        august_discount = True
+        discount_rate   = 0.40
+        plan_prices = {k: round(v * (1 - discount_rate)) for k, v in base_prices.items()}
+    else:
+        plan_prices = base_prices
+
+    return active_currency, currency_symbol, plan_prices, original_prices, august_discount, discount_rate
+
+
+def get_plan_amount(plan, active_currency=None, plan_prices=None):
+    """Return the exact payable amount for *plan* in the active currency + discount.
+
+    If plan_prices (pre-resolved dict) is supplied it is used directly.
+    Otherwise _resolve_checkout_pricing() is called so the result is always
+    consistent with what was shown on the checkout page.
+    """
+    plan_key = 'founders' if plan in ('founder', 'lifetime') else (plan or '')
+    if plan_prices is not None:
+        return plan_prices.get(plan_key, 0)
+    # Fallback: resolve fresh (used by legacy callers)
+    _, _, resolved_prices, _, _, _ = _resolve_checkout_pricing()
+    return resolved_prices.get(plan_key, 0)
 
 @sales_bp.route('/payment-evidence')
 def payment_evidence():
@@ -495,57 +540,46 @@ def currency_settings_api():
     if not settings:
         settings = PopupSettings()
 
+    # Build raw USD and NGN price dicts (with symbol key for JS consumers)
     usd_prices = {
-        'symbol': '$',
+        'symbol':     '$',
         'starter':    float(settings.starter_price    or 39),
         'growth':     float(settings.growth_price     or 90),
         'enterprise': float(settings.enterprise_price or 350),
         'founders':   float(settings.founders_price   or 1745),
     }
     ngn_prices = {
-        'symbol': '₦',
+        'symbol':     '₦',
         'starter':    float(getattr(settings, 'starter_price_ngn',    None) or 60000),
         'growth':     float(getattr(settings, 'growth_price_ngn',     None) or 140000),
         'enterprise': float(getattr(settings, 'enterprise_price_ngn', None) or 550000),
         'founders':   float(getattr(settings, 'founders_price_ngn',   None) or 2750000),
     }
 
-    auto_geo = bool(getattr(settings, 'auto_geo_currency', True))
-    default_currency = settings.checkout_currency or 'USD'
+    # Use _resolve_checkout_pricing as the single source of truth for
+    # geo-detection, active currency, and August discount
+    active_currency, currency_symbol, plan_prices, _, august_discount, discount_rate = \
+        _resolve_checkout_pricing(settings)
 
-    # Server-side geo-detection
-    detected_country = 'unknown'
-    if auto_geo:
-        try:
-            import requests as _req
-            ip = request.headers.get('X-Forwarded-For', request.remote_addr) or ''
-            if ',' in ip:
-                ip = ip.split(',')[0].strip()
-            # Avoid loopback/private IP lookups
-            if ip and not ip.startswith(('127.', '10.', '192.168.', '172.')):
-                resp = _req.get(f'https://ipapi.co/{ip}/json/', timeout=3)
-                if resp.status_code == 200:
-                    detected_country = resp.json().get('country_code', 'unknown')
-        except Exception:
-            pass
+    ngn_prices_discounted = {
+        'symbol': '₦',
+        **{k: plan_prices[k] for k in ('starter', 'growth', 'enterprise', 'founders')}
+    } if active_currency == 'NGN' else ngn_prices
 
-    # Decide active currency
-    # In auto-geo mode: Nigeria → NGN, everyone else → admin-configured default currency
-    if auto_geo:
-        active_currency = 'NGN' if detected_country == 'NG' else default_currency
-    else:
-        active_currency = default_currency
-
-    active_prices = ngn_prices if active_currency == 'NGN' else usd_prices
+    active_prices = {
+        'symbol': currency_symbol,
+        **{k: plan_prices[k] for k in ('starter', 'growth', 'enterprise', 'founders')}
+    }
 
     return jsonify({
-        'currency':     active_currency,
-        'symbol':       active_prices['symbol'],
-        'country':      detected_country,
-        'prices':       active_prices,
-        # Also send both sets so JS can do any additional switching
-        'usd':          usd_prices,
-        'ngn':          ngn_prices,
+        'currency':        active_currency,
+        'symbol':          currency_symbol,
+        'prices':          active_prices,
+        'usd':             usd_prices,
+        'ngn':             ngn_prices,
+        'ngn_discounted':  ngn_prices_discounted,
+        'august_discount': august_discount,
+        'discount_rate':   discount_rate,
     })
 
 

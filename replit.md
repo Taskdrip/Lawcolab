@@ -1,35 +1,42 @@
-# LawFirmOS (LawColab)
+# LawFirmOS / LawColab
 
-A full-stack law firm practice management platform built with Flask, SQLAlchemy, and PostgreSQL.
+A full-stack law firm management SaaS platform built with Python Flask.
 
 ## Stack
-- **Backend**: Python / Flask
-- **Database**: PostgreSQL (Replit built-in, via SQLAlchemy)
-- **Frontend**: Jinja2 templates, Bootstrap 5, vanilla JS
-- **Auth**: Email/password with Flask-Login; Replit OAuth optional
-- **Run**: `gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app`
+- **Backend**: Flask + SQLAlchemy (PostgreSQL in production, falls back to SQLite for dev)
+- **Auth**: Flask-Login, Flask-Dance (OAuth)
+- **Payments**: Manual bank transfer (Zenith Bank NGN) + crypto (USDT multi-network)
+- **Run server**: Gunicorn (`gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app`)
 
-## Features
-- Multi-tenant: each law firm is isolated by `law_firm_id`
-- Role system: Super Admin → Admin → Team Member → Client
-- **Calendar** with court-specific fields (jurisdiction/state, court type, court address, judge/magistrate name)
-- **Court Docket** (`/calendar/court-docket`) — dedicated view for all court matters with filters by state, court type, judge, status, and linked project; shows live hearing countdown, court metadata grid, and expandable hearing history per matter
-- Court hearing history log per case event (previous dates + court notes); entries can be added, edited, and deleted
-- Export court dates to Excel (`.xlsx`, two sheets: upcoming dates + full hearing history) and any event to iCal (`.ics`)
-- Case / project management
-- Invoice & billing with line items
-- Team chat and direct messaging
+## How to run
+The workflow `Start application` is configured and runs automatically.
+Requires `SESSION_SECRET` environment variable (already set).
+Optionally set `DATABASE_URL` for PostgreSQL (otherwise SQLite is used in dev).
 
-## Running the app
-The workflow `Start application` starts the server on port 5000.  
-All tables are created/migrated automatically on startup via `app.py`.
+## Key routes
+- `/` — Landing page
+- `/pricing` — Subscription plans (geo-aware NGN pricing for Nigerian visitors)
+- `/sales/popup` — Sales funnel popup
+- `/sales/checkout` — Stripe-style checkout (requires session from lead form)
+- `/auth/login`, `/auth/signup` — Authentication
+- `/dashboard` — Main app dashboard (requires login)
 
-## Environment variables required
-| Variable | Purpose |
-|---|---|
-| `SESSION_SECRET` | Flask session signing key (set in Replit Secrets) |
-| `DATABASE_URL` | PostgreSQL connection string (auto-provided by Replit DB) |
+## Payment setup
+- **Bank transfer**: Zenith Bank · Lawcolab Global · Account `1310505179` (NGN)
+- **Geo-detection**: Nigerian IPs automatically shown NGN prices via `/sales/api/currency-settings`
+- **August discount**: 40% off all NGN prices throughout August for Nigerian law firms (auto-applied)
+- Crypto wallets and additional payment gateways configurable by super admin
+
+## Project structure
+- `app.py` — Flask app factory, DB setup, context processors
+- `main.py` — Entry point
+- `routes.py` — Blueprint registration
+- `models.py` — Core models (User, LawFirm, Cases, PopupSettings…)
+- `models_payment.py` / `models_payment_custom.py` — Payment models
+- `blueprints/` — Feature blueprints (sales, auth, dashboard, admin, invoices…)
+- `templates/` — Jinja2 templates
 
 ## User preferences
-- Keep existing project structure and stack; do not migrate to other frameworks.
-- Nigerian states pre-loaded in court jurisdiction selector.
+- Naira (NGN) bank transfer: Zenith Bank, Lawcolab Global, account 1310505179
+- 40% August discount for Nigerian law firms (month == 8, currency == NGN)
+- Checkout should look clean and minimal like Stripe

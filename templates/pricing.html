@@ -4,6 +4,55 @@
 
 {% block content %}
 <style>
+/* August NGN discount banner */
+.aug-banner {
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ffcc02 100%);
+    color: #fff;
+    padding: 16px 24px;
+    border-radius: 14px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 4px 20px rgba(255,107,53,0.3);
+}
+.aug-banner .aug-pill {
+    background: rgba(255,255,255,0.25);
+    border: 1.5px solid rgba(255,255,255,0.5);
+    border-radius: 50px;
+    padding: 5px 14px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+.aug-banner p { margin: 0; font-size: 0.92rem; line-height: 1.45; }
+.aug-banner strong { font-size: 1rem; display: block; margin-bottom: 2px; }
+.ngn-price { display: none; }
+.ngn-discount-badge {
+    background: #e65c00;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-left: 5px;
+    vertical-align: middle;
+    letter-spacing: 0.3px;
+}
+</style>
+
+<!-- August 40% Discount Banner for Nigerian Law Firms -->
+<div class="aug-banner" id="aug-banner" style="display:none">
+    <div style="font-size:2rem">🎉</div>
+    <div style="flex:1">
+        <strong>August Special — 40% Off for Nigerian Law Firms!</strong>
+        All subscription plans are 40% off throughout August. Prices below update automatically for Nigerian visitors.
+    </div>
+    <div class="aug-pill">40% OFF</div>
+</div>
+
+<style>
 /* Clean Pricing Page Styling */
 .pricing-container {
     max-width: 1200px;
@@ -265,7 +314,10 @@
         <!-- Starter Plan -->
         <div class="pricing-card">
             <div class="plan-name">Starter Plan</div>
-            <div class="plan-price"><span class="currency">$</span>{{ settings.starter_price or 39 }}</div>
+            <div class="plan-price" id="price-starter">
+                <span class="currency" id="sym-starter">$</span><span id="val-starter">{{ settings.starter_price or 39 }}</span>
+                <del class="ngn-price" id="orig-starter" style="font-size:0.55em;color:#aaa;display:none"></del>
+            </div>
             <div class="plan-period">1 month • Essential features</div>
             <ul class="plan-features">
                 <li><i class="fas fa-check"></i> Up to 5 users + unlimited clients</li>
@@ -275,7 +327,7 @@
                 <li><i class="fas fa-check"></i> Basic team collaboration</li>
                 <li><i class="fas fa-check"></i> Client portal access</li>
             </ul>
-            <a href="javascript:void(0)" onclick="selectPlan('starter', 'Starter Plan - ${{ settings.starter_price }}/month')" class="plan-button secondary">
+            <a href="javascript:void(0)" onclick="selectPlan('starter', document.getElementById('val-starter').textContent)" class="plan-button secondary">
                 Choose Starter
             </a>
         </div>
@@ -284,7 +336,10 @@
         <div class="pricing-card">
             <div class="pricing-badge save">Most Popular</div>
             <div class="plan-name">Growth Plan</div>
-            <div class="plan-price"><span class="currency">$</span>{{ settings.growth_price or 90 }}</div>
+            <div class="plan-price" id="price-growth">
+                <span class="currency" id="sym-growth">$</span><span id="val-growth">{{ settings.growth_price or 90 }}</span>
+                <del class="ngn-price" id="orig-growth" style="font-size:0.55em;color:#aaa;display:none"></del>
+            </div>
             <div class="plan-period">3 months • Advanced features</div>
             <ul class="plan-features">
                 <li><i class="fas fa-check"></i> Up to 20 users + unlimited clients</li>
@@ -294,17 +349,19 @@
                 <li><i class="fas fa-check"></i> Advanced analytics & reporting</li>
                 <li><i class="fas fa-check"></i> All integrations + API access</li>
             </ul>
-            <a href="javascript:void(0)" onclick="selectPlan('growth', 'Growth Plan - ${{ settings.growth_price }}/3mo')" class="plan-button secondary">
+            <a href="javascript:void(0)" onclick="selectPlan('growth', document.getElementById('val-growth').textContent)" class="plan-button secondary">
                 Choose Growth
             </a>
         </div>
-
 
         <!-- Enterprise Plan -->
         <div class="pricing-card">
             <div class="pricing-badge">Premium</div>
             <div class="plan-name">Enterprise Plan</div>
-            <div class="plan-price"><span class="currency">$</span>{{ settings.enterprise_price or 350 }}</div>
+            <div class="plan-price" id="price-enterprise">
+                <span class="currency" id="sym-enterprise">$</span><span id="val-enterprise">{{ settings.enterprise_price or 350 }}</span>
+                <del class="ngn-price" id="orig-enterprise" style="font-size:0.55em;color:#aaa;display:none"></del>
+            </div>
             <div class="plan-period">1 year • Premium features</div>
             <ul class="plan-features">
                 <li><i class="fas fa-check"></i> Everything in Growth + unlimited users</li>
@@ -314,17 +371,19 @@
                 <li><i class="fas fa-check"></i> 24/7 priority support & training</li>
                 <li><i class="fas fa-check"></i> 500GB storage + daily backups</li>
             </ul>
-            <a href="javascript:void(0)" onclick="selectPlan('enterprise', 'Enterprise Plan - ${{ settings.enterprise_price }}/year')" class="plan-button secondary">
+            <a href="javascript:void(0)" onclick="selectPlan('enterprise', document.getElementById('val-enterprise').textContent)" class="plan-button secondary">
                 Choose Enterprise
             </a>
         </div>
-
 
         <!-- White-Label SaaS License -->
         <div class="pricing-card featured">
             <div class="pricing-badge best">White-Label License</div>
             <div class="plan-name">White-Label SaaS Forever License</div>
-            <div class="plan-price"><span class="currency">$</span>{{ settings.founders_price or 1745 }}</div>
+            <div class="plan-price" id="price-founders">
+                <span class="currency" id="sym-founders">$</span><span id="val-founders">{{ settings.founders_price or 1745 }}</span>
+                <del class="ngn-price" id="orig-founders" style="font-size:0.55em;color:#aaa;display:none"></del>
+            </div>
             <div class="plan-period">one-time forever • 6-Month Setup & Support</div>
             <ul class="plan-features">
                 <li><i class="fas fa-rocket text-warning"></i> <strong>🏷️ COMPLETE WHITE-LABEL SaaS LICENSE</strong></li>
@@ -335,8 +394,8 @@
                 <li><i class="fas fa-rocket text-warning"></i> <strong>🎯 Request new features on flexible pricing</strong></li>
                 <li><i class="fas fa-rocket text-warning"></i> <strong>🔥 Never pay licensing fees again</strong></li>
             </ul>
-            <a href="/sales/popup" class="plan-button primary">
-                👑 Secure White-Label License - $1,745
+            <a href="/sales/popup" class="plan-button primary" id="btn-founders">
+                👑 Secure White-Label License
             </a>
         </div>
     </div>
@@ -350,4 +409,60 @@
         </a>
     </div>
 </div>
+
+<script>
+// Fetch geo-aware pricing from server and update the pricing cards
+(function () {
+    function fmt(n) {
+        return new Intl.NumberFormat().format(Math.round(n));
+    }
+
+    fetch('/sales/api/currency-settings')
+        .then(r => r.json())
+        .then(data => {
+            if (data.currency !== 'NGN') return; // USD — defaults already rendered server-side
+
+            const sym   = data.symbol || '₦';
+            const prices = data.prices;       // already discounted if august
+            const orig   = data.ngn;          // full NGN without discount
+            const isAug  = data.august_discount;
+
+            const plans = ['starter', 'growth', 'enterprise', 'founders'];
+            plans.forEach(p => {
+                const symEl  = document.getElementById('sym-' + p);
+                const valEl  = document.getElementById('val-' + p);
+                const origEl = document.getElementById('orig-' + p);
+                if (!symEl || !valEl) return;
+
+                symEl.textContent = sym;
+                valEl.textContent = fmt(prices[p]);
+
+                if (isAug && origEl && orig[p] !== prices[p]) {
+                    origEl.textContent = sym + fmt(orig[p]);
+                    origEl.style.display = 'inline';
+                    // Add discount badge next to value
+                    if (!valEl.nextElementSibling || !valEl.nextElementSibling.classList.contains('ngn-discount-badge')) {
+                        const badge = document.createElement('span');
+                        badge.className = 'ngn-discount-badge';
+                        badge.textContent = '40% OFF';
+                        valEl.after(badge);
+                    }
+                }
+            });
+
+            // Show August banner
+            if (isAug) {
+                const banner = document.getElementById('aug-banner');
+                if (banner) banner.style.display = 'flex';
+            }
+
+            // Update founders button text
+            const btnF = document.getElementById('btn-founders');
+            if (btnF && prices.founders) {
+                btnF.textContent = '👑 Secure White-Label License — ' + sym + fmt(prices.founders);
+            }
+        })
+        .catch(() => {}); // silently fail — server-side defaults remain
+})();
+</script>
 {% endblock %}
