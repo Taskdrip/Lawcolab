@@ -87,6 +87,10 @@ app.register_blueprint(email_crm_bp, url_prefix="/superadmin/crm/email")  # Emai
 from blueprints.blog import blog_bp
 app.register_blueprint(blog_bp, url_prefix="/blog")  # Public blog & news
 
+# Import & register SEO analytics blueprint
+from blueprints.seo_analytics import seo_analytics_bp
+app.register_blueprint(seo_analytics_bp, url_prefix="/superadmin/analytics")  # SEO & Analytics dashboard
+
 
 # ── Page analytics helpers ──────────────────────────────────────────────────
 def _detect_device(ua: str) -> str:

@@ -686,6 +686,13 @@
                                 <i class="fas fa-users me-2" style="color:#198754;"></i>Communities CRM
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('superadmin.web_analytics') }}">
+                                <i class="fab fa-google me-2" style="color:#4285F4;"></i>SEO &amp; Google Settings
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('seo_analytics.dashboard') }}">
+                                <i class="fas fa-chart-area me-2" style="color:#FFD700;"></i>Analytics Reports
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
                             <li>
                               <a class="dropdown-item d-flex align-items-center justify-content-between" href="{{ url_for('superadmin.admin_notifications') }}">
                                 <span><i class="fas fa-bell me-2" style="color:#FFD700;"></i>Notifications</span>
