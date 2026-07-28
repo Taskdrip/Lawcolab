@@ -312,6 +312,56 @@ def run_migrations(db):
         """,
         "CREATE INDEX IF NOT EXISTS idx_sc_platform ON social_communities(platform)",
         "CREATE INDEX IF NOT EXISTS idx_sc_outreach_status ON social_communities(outreach_status)",
+
+        # ── admin_notifications table ─────────────────────────────────────────
+        """
+        CREATE TABLE IF NOT EXISTS admin_notifications (
+            id SERIAL PRIMARY KEY,
+            title VARCHAR(300) NOT NULL,
+            message TEXT NOT NULL,
+            notification_type VARCHAR(50) DEFAULT 'general',
+            link_url VARCHAR(500),
+            firm_id INTEGER REFERENCES directory_law_firms(id) ON DELETE SET NULL,
+            is_read BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+        """,
+        "CREATE INDEX IF NOT EXISTS idx_an_is_read ON admin_notifications(is_read)",
+        "CREATE INDEX IF NOT EXISTS idx_an_type ON admin_notifications(notification_type)",
+
+        # ── message_templates table ───────────────────────────────────────────
+        """
+        CREATE TABLE IF NOT EXISTS message_templates (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(200) NOT NULL,
+            template_type VARCHAR(50) NOT NULL,
+            channel VARCHAR(50) NOT NULL,
+            message_subtype VARCHAR(50),
+            subject_template VARCHAR(500),
+            body_template TEXT NOT NULL,
+            is_active BOOLEAN DEFAULT TRUE,
+            is_default BOOLEAN DEFAULT FALSE,
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT NOW(),
+            updated_at TIMESTAMP DEFAULT NOW()
+        )
+        """,
+
+        # ── directory_law_firms claim fields ──────────────────────────────────
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS claim_pending BOOLEAN DEFAULT FALSE",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS claim_contact_name VARCHAR(200)",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS claim_contact_email VARCHAR(200)",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS claim_contact_phone VARCHAR(100)",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS claim_contact_role VARCHAR(100)",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS claim_description TEXT",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS claim_tagline VARCHAR(300)",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS claim_social_json TEXT",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS claim_logo_url VARCHAR(500)",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS claim_bg_url VARCHAR(500)",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS claim_website VARCHAR(500)",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS claim_address TEXT",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS claim_submitted_at TIMESTAMP",
+        "CREATE INDEX IF NOT EXISTS idx_dlf_claim_pending ON directory_law_firms(claim_pending)",
     ]
 
     with db.engine.connect() as conn:

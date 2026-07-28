@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+{% block title %}Claim Your Listing — {{ firm.name }} | LAWCOLAB Directory{% endblock %}
+
+{% block content %}
+<style>
+.claim-hero{background:linear-gradient(135deg,#0d1b4b 0%,#1a3a6b 100%);padding:3.5rem 0 2.5rem;}
+.claim-card{background:#fff;border-radius:20px;border:1px solid #e8ecf0;padding:2.5rem;}
+.field-label{font-size:.82rem;font-weight:700;color:#0d1b4b;letter-spacing:.04em;text-transform:uppercase;margin-bottom:.4rem;}
+.claim-input{border-radius:10px;border:1.5px solid #dee2e6;padding:.75rem 1rem;font-size:.95rem;transition:border-color .2s;}
+.claim-input:focus{border-color:#0d1b4b;box-shadow:0 0 0 3px rgba(13,27,75,.08);outline:none;}
+.upload-zone{border:2px dashed #dee2e6;border-radius:14px;padding:2rem;text-align:center;cursor:pointer;transition:all .2s;background:#fafbff;}
+.upload-zone:hover,.upload-zone.drag-over{border-color:#0d1b4b;background:#f0f4ff;}
+.upload-zone img.preview{max-height:120px;border-radius:10px;margin-top:.75rem;}
+.social-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.step-badge{width:28px;height:28px;border-radius:50%;background:#0d1b4b;color:#fff;font-weight:800;font-size:.78rem;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+</style>
+
+<!-- Hero -->
+<div class="claim-hero">
+  <div class="container" style="max-width:760px;">
+    <a href="{{ url_for('directory.external_firm', firm_id=firm.id) }}" class="btn btn-outline-light btn-sm mb-3" style="border-radius:8px;">
+      <i class="fas fa-arrow-left me-1"></i>Back to Listing
+    </a>
+    <div class="d-flex align-items-center gap-3 mb-2">
+      <div style="width:56px;height:56px;background:rgba(255,215,0,.15);border-radius:14px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,215,0,.3);">
+        <i class="fas fa-check-circle" style="color:#FFD700;font-size:1.5rem;"></i>
+      </div>
+      <div>
+        <h1 style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:800;color:#fff;margin:0;">Claim Your Listing</h1>
+        <div style="color:rgba(255,255,255,.7);font-size:.92rem;">{{ firm.name }} — LAWCOLAB Smart Legal Directory</div>
+      </div>
+    </div>
+    <p style="color:rgba(255,255,255,.75);max-width:600px;margin-top:.75rem;line-height:1.7;">
+      Verify that you represent <strong style="color:#FFD700;">{{ firm.name }}</strong> and unlock a fully enhanced profile — add your logo, cover image, description, social media, practice areas, and let clients worldwide discover your firm.
+    </p>
+  </div>
+</div>
+
+<div class="container py-5" style="max-width:760px;">
+
+  <!-- What you get -->
+  <div class="row g-3 mb-4">
+    {% for icon, color, label in [
+      ('fas fa-star','#FFD700','Verified badge on your profile'),
+      ('fas fa-globe','#0d6efd','Clients worldwide find your firm'),
+      ('fas fa-upload','#198754','Upload logo & cover image'),
+      ('fas fa-share-alt','#6610f2','Social media & contact links'),
+    ] %}
+    <div class="col-6 col-md-3">
+      <div style="background:#f8f9ff;border-radius:14px;padding:1.25rem;text-align:center;height:100%;">
+        <i class="{{ icon }}" style="font-size:1.6rem;color:{{ color }};margin-bottom:.5rem;display:block;"></i>
+        <div style="font-size:.8rem;font-weight:600;color:#0d1b4b;line-height:1.4;">{{ label }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <form method="POST" action="{{ url_for('claim.submit_claim', firm_id=firm.id) }}" enctype="multipart/form-data" id="claimForm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <!-- ── Step 1: Your identity ── -->
+    <div class="claim-card mb-4">
+      <div class="d-flex align-items-center gap-2 mb-4">
+        <span class="step-badge">1</span>
+        <h5 style="font-family:'Playfair Display',serif;font-weight:700;color:#0d1b4b;margin:0;">Your Identity at the Firm</h5>
+      </div>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="field-label">Your Full Name <span class="text-danger">*</span></div>
+          <input type="text" name="contact_name" class="form-control claim-input" placeholder="e.g. Adaeze Okafor" required>
+        </div>
+        <div class="col-md-6">
+          <div class="field-label">Your Email Address <span class="text-danger">*</span></div>
+          <input type="email" name="contact_email" class="form-control claim-input" placeholder="adaeze@firmname.com" required>
+        </div>
+        <div class="col-md-6">
+          <div class="field-label">Your Phone Number</div>
+          <input type="tel" name="contact_phone" class="form-control claim-input" placeholder="+234 800 000 0000">
+        </div>
+        <div class="col-md-6">
+          <div class="field-label">Your Role at the Firm</div>
+          <select name="your_role" class="form-select claim-input">
+            <option value="">Select role…</option>
+            <option>Managing Partner</option>
+            <option>Senior Partner</option>
+            <option>Partner</option>
+            <option>Associate</option>
+            <option>Firm Administrator</option>
+            <option>Marketing Manager</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Step 2: Firm Profile ── -->
+    <div class="claim-card mb-4">
+      <div class="d-flex align-items-center gap-2 mb-4">
+        <span class="step-badge">2</span>
+        <h5 style="font-family:'Playfair Display',serif;font-weight:700;color:#0d1b4b;margin:0;">Firm Profile Details</h5>
+      </div>
+
+      <div class="mb-3">
+        <div class="field-label">Firm Tagline</div>
+        <input type="text" name="tagline" class="form-control claim-input"
+               placeholder="e.g. Nigeria's Leading Corporate & Commercial Law Firm" maxlength="200">
+        <div class="form-text">A short powerful headline shown on your profile card.</div>
+      </div>
+
+      <div class="mb-3">
+        <div class="field-label">About the Firm</div>
+        <textarea name="description" class="form-control claim-input" rows="5"
+                  placeholder="Describe your firm's history, values, expertise, and what makes you stand out for clients…">{{ firm.description or '' }}</textarea>
+        <div class="form-text">This appears on your public profile and helps clients decide to contact you.</div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="field-label">Firm Website</div>
+          <input type="url" name="website" class="form-control claim-input"
+                 placeholder="https://yourfirm.com" value="{{ firm.website or '' }}">
+        </div>
+        <div class="col-md-6">
+          <div class="field-label">Office Address</div>
+          <input type="text" name="address" class="form-control claim-input"
+                 placeholder="Full office address" value="{{ firm.address or '' }}">
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Step 3: Images ── -->
+    <div class="claim-card mb-4">
+      <div class="d-flex align-items-center gap-2 mb-4">
+        <span class="step-badge">3</span>
+        <h5 style="font-family:'Playfair Display',serif;font-weight:700;color:#0d1b4b;margin:0;">Logo &amp; Cover Image</h5>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-md-5">
+          <div class="field-label">Firm Logo</div>
+          <div class="upload-zone" id="logoZone" onclick="document.getElementById('logoFile').click()">
+            <i class="fas fa-image" style="font-size:2rem;color:#0d1b4b;opacity:.4;"></i>
+            <div style="font-size:.88rem;color:#6c757d;margin-top:.5rem;">Click to upload logo<br><span style="font-size:.78rem;">PNG, JPG, WebP — max 5MB</span></div>
+            <img id="logoPreview" class="preview d-none">
+          </div>
+          <input type="file" id="logoFile" name="logo" accept="image/*" class="d-none" onchange="previewImage(this,'logoPreview','logoZone')">
+        </div>
+        <div class="col-md-7">
+          <div class="field-label">Background / Cover Image</div>
+          <div class="upload-zone" id="bgZone" onclick="document.getElementById('bgFile').click()">
+            <i class="fas fa-panorama" style="font-size:2rem;color:#0d1b4b;opacity:.4;"></i>
+            <div style="font-size:.88rem;color:#6c757d;margin-top:.5rem;">Click to upload cover image<br><span style="font-size:.78rem;">PNG, JPG, WebP — recommended 1200×400px</span></div>
+            <img id="bgPreview" class="preview d-none">
+          </div>
+          <input type="file" id="bgFile" name="background_image" accept="image/*" class="d-none" onchange="previewImage(this,'bgPreview','bgZone')">
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Step 4: Social Media ── -->
+    <div class="claim-card mb-4">
+      <div class="d-flex align-items-center gap-2 mb-4">
+        <span class="step-badge">4</span>
+        <h5 style="font-family:'Playfair Display',serif;font-weight:700;color:#0d1b4b;margin:0;">Social Media &amp; Online Presence</h5>
+      </div>
+
+      {% set socials = [
+        ('linkedin','fab fa-linkedin','#0077b5','LinkedIn Page','https://linkedin.com/company/yourfirm'),
+        ('facebook','fab fa-facebook','#1877f2','Facebook Page','https://facebook.com/yourfirm'),
+        ('twitter','fab fa-x-twitter','#000','X / Twitter','https://twitter.com/yourfirm'),
+        ('instagram','fab fa-instagram','#e4405f','Instagram','https://instagram.com/yourfirm'),
+        ('youtube','fab fa-youtube','#ff0000','YouTube Channel','https://youtube.com/@yourfirm'),
+        ('whatsapp_url','fab fa-whatsapp','#25d366','WhatsApp Business Link','https://wa.me/2348000000000'),
+      ] %}
+
+      <div class="row g-3">
+        {% for field, icon, color, label, placeholder in socials %}
+        <div class="col-md-6">
+          <div class="field-label">{{ label }}</div>
+          <div class="input-group">
+            <span class="input-group-text" style="background:{{ color }};border-color:{{ color }};border-radius:10px 0 0 10px;width:42px;justify-content:center;">
+              <i class="{{ icon }}" style="color:#fff;font-size:1rem;"></i>
+            </span>
+            <input type="url" name="{{ field }}" class="form-control claim-input" placeholder="{{ placeholder }}"
+                   style="border-radius:0 10px 10px 0;"
+                   value="{{ social.get(field,'') if social else '' }}">
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="claim-card" style="background:linear-gradient(135deg,#f8f9ff,#fff);border-color:#0d1b4b;">
+      <div class="d-flex align-items-start gap-3">
+        <div>
+          <i class="fas fa-shield-alt" style="color:#0d1b4b;font-size:1.5rem;margin-top:.2rem;"></i>
+        </div>
+        <div class="flex-grow-1">
+          <h6 style="font-weight:700;color:#0d1b4b;">Verification Statement</h6>
+          <div class="mb-3" style="font-size:.9rem;color:#555;line-height:1.7;">
+            By submitting this claim, you confirm that you are authorised to represent
+            <strong>{{ firm.name }}</strong> and that the information provided is accurate.
+            Our team will verify your claim within <strong>48 hours</strong> and contact you at
+            the email address provided.
+          </div>
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="agreeCheck" required>
+            <label class="form-check-label" for="agreeCheck" style="font-size:.9rem;color:#444;">
+              I confirm I am authorised to represent <strong>{{ firm.name }}</strong> and agree to
+              LAWCOLAB's <a href="/terms-of-service" target="_blank" style="color:#0d1b4b;">Terms of Service</a>.
+            </label>
+          </div>
+          <button type="submit" class="btn btn-warning btn-lg fw-bold px-5" style="border-radius:12px;color:#0d1b4b;font-size:1rem;">
+            <i class="fas fa-check-circle me-2"></i>Submit Claim Request
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+function previewImage(input, previewId, zoneId) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById(previewId);
+    img.src = e.target.result;
+    img.classList.remove('d-none');
+    document.getElementById(zoneId).querySelector('i').classList.add('d-none');
+    document.getElementById(zoneId).querySelector('div').classList.add('d-none');
+  };
+  reader.readAsDataURL(file);
+}
+
+// Drag-and-drop for upload zones
+['logoZone','bgZone'].forEach(id => {
+  const zone = document.getElementById(id);
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('drag-over');
+    const fileInput = id === 'logoZone' ? document.getElementById('logoFile') : document.getElementById('bgFile');
+    if (e.dataTransfer.files.length) {
+      fileInput.files = e.dataTransfer.files;
+      fileInput.dispatchEvent(new Event('change'));
+    }
+  });
+});
+</script>
+{% endblock %}

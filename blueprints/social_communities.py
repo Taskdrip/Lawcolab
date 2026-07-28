@@ -497,6 +497,26 @@ def robot_run():
         added += 1
 
     db.session.commit()
+
+    # Create admin notification if new communities were found
+    if added > 0:
+        try:
+            from models import AdminNotification
+            notif = AdminNotification(
+                title=f"🤖 Robot found {added} new legal communities",
+                message=(
+                    f"The Communities Robot completed a crawl and added {added} new social media "
+                    f"legal communities ({skipped} already existed). "
+                    f"Generate outreach messages and start engaging them."
+                ),
+                notification_type="new_communities_crawled",
+                link_url="/superadmin/crm/communities/",
+            )
+            db.session.add(notif)
+            db.session.commit()
+        except Exception:
+            pass
+
     return jsonify({
         'success': True, 'added': added, 'skipped': skipped,
         'message': f'Robot complete: {added} communities added, {skipped} already existed.'
@@ -510,11 +530,8 @@ def generate_message(community_id):
     community = SocialCommunity.query.get_or_404(community_id)
     channel = request.json.get('channel', 'post') if request.is_json else request.form.get('channel', 'post')
 
-    openai_key = os.environ.get('OPENAI_API_KEY', '')
-    if openai_key:
-        msg = _generate_community_message_openai(community, channel, openai_key)
-    else:
-        msg = _generate_community_message_template(community, channel)
+    from utils.ai import generate_community_message
+    msg = generate_community_message(community, channel)
 
     # Append to existing messages
     messages = community.ai_outreach_messages

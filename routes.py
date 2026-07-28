@@ -43,6 +43,9 @@ from blueprints.calendar import calendar_bp
 from blueprints.crm import crm_bp
 from blueprints.social_communities import social_communities_bp
 
+# Import claim blueprint
+from blueprints.claim import claim_bp
+
 # Import payment models
 import models_payment  # noqa: F401
 
@@ -71,6 +74,7 @@ app.register_blueprint(simple_checkout_bp, url_prefix="/payment")  # Simple paym
 app.register_blueprint(calendar_bp, url_prefix="/calendar")  # Calendar & scheduling
 app.register_blueprint(crm_bp, url_prefix="/superadmin/crm")  # CRM
 app.register_blueprint(social_communities_bp, url_prefix="/superadmin/crm/communities")  # Social communities CRM
+app.register_blueprint(claim_bp, url_prefix="/directory/claim")  # Listing claim flow
 
 # Make session permanent
 @app.before_request
@@ -155,18 +159,29 @@ def trial_dashboard():
                          trial_notification=trial_notification,
                          **context)
 
-# Global context processor for trial notifications
+# Global context processor for trial notifications + admin notification count
 @app.context_processor
 def inject_trial_context():
-    """Inject trial context and notifications into all templates"""
+    """Inject trial context, notifications, and admin badge count into all templates"""
     from utils.trial_access import trial_warning_context, get_trial_notification
-    
+
     if current_user.is_authenticated:
         context = trial_warning_context()
         trial_notification = get_trial_notification()
+
+        # Admin notification badge count for super admins
+        admin_notif_count = 0
+        try:
+            if current_user.role == 'super_admin':
+                from models import AdminNotification
+                admin_notif_count = AdminNotification.query.filter_by(is_read=False).count()
+        except Exception:
+            pass
+
         return {
             'trial_context': context,
-            'trial_notification': trial_notification
+            'trial_notification': trial_notification,
+            'admin_notif_count': admin_notif_count,
         }
     return {}
 

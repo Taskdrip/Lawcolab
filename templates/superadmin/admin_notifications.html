@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Admin Notifications — LAWCOLAB{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width:900px;">
+
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h3 class="mb-0 fw-bold" style="color:#0d1b4b;font-family:'Playfair Display',serif;">
+        <i class="fas fa-bell me-2" style="color:#FFD700;"></i>Admin Notifications
+      </h3>
+      <p class="text-muted mb-0 small">Robot discoveries, listing claims, and platform alerts</p>
+    </div>
+    {% if unread_count > 0 %}
+    <button class="btn btn-sm btn-outline-secondary" style="border-radius:8px;" id="markAllReadBtn">
+      <i class="fas fa-check-double me-1"></i>Mark All Read
+    </button>
+    {% endif %}
+  </div>
+
+  {% if not notifications %}
+  <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:3rem;text-align:center;">
+    <i class="fas fa-bell-slash" style="font-size:3rem;color:#dee2e6;margin-bottom:1rem;display:block;"></i>
+    <h5 style="color:#6c757d;font-weight:600;">No notifications yet</h5>
+    <p class="text-muted small">Run the Discovery Robot to start receiving alerts about new law firms and communities.</p>
+    <a href="{{ url_for('dir_admin.robot_dashboard') }}" class="btn btn-warning fw-bold mt-2" style="border-radius:10px;color:#0d1b4b;">
+      <i class="fas fa-robot me-2"></i>Go to Discovery Robot
+    </a>
+  </div>
+  {% else %}
+  <div id="notifList">
+    {% for notif in notifications %}
+    <div class="notif-item d-flex gap-3 mb-3 p-3 {% if not notif.is_read %}unread{% endif %}"
+         style="background:#fff;border-radius:14px;border:1.5px solid {% if not notif.is_read %}{{ notif.type_color }}40{% else %}#e8ecf0{% endif %};transition:all .2s;"
+         data-id="{{ notif.id }}">
+      <!-- Icon -->
+      <div style="width:44px;height:44px;border-radius:12px;background:{{ notif.type_color }}18;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid {{ notif.type_color }}30;">
+        <i class="{{ notif.type_icon }}" style="color:{{ notif.type_color }};font-size:1.1rem;"></i>
+      </div>
+      <!-- Content -->
+      <div class="flex-grow-1">
+        <div class="d-flex align-items-start justify-content-between gap-2">
+          <div>
+            <div style="font-weight:{% if not notif.is_read %}700{% else %}600{% endif %};color:#0d1b4b;font-size:.95rem;">
+              {{ notif.title }}
+              {% if not notif.is_read %}
+              <span style="background:#FFD700;color:#0d1b4b;font-size:.65rem;font-weight:800;padding:.15rem .5rem;border-radius:50px;vertical-align:middle;margin-left:.4rem;">NEW</span>
+              {% endif %}
+            </div>
+            <div style="color:#555;font-size:.87rem;margin-top:.25rem;line-height:1.6;">{{ notif.message }}</div>
+          </div>
+          <div style="font-size:.75rem;color:#9ca3af;white-space:nowrap;margin-top:.1rem;">
+            {{ notif.created_at.strftime('%d %b %Y, %H:%M') }}
+          </div>
+        </div>
+        <div class="mt-2 d-flex gap-2 flex-wrap">
+          {% if notif.link_url %}
+          <a href="{{ notif.link_url }}" class="btn btn-sm fw-semibold" style="background:#0d1b4b;color:#fff;border-radius:8px;font-size:.78rem;padding:.3rem .75rem;">
+            <i class="fas fa-arrow-right me-1"></i>View Details
+          </a>
+          {% endif %}
+          {% if not notif.is_read %}
+          <button class="btn btn-sm btn-outline-secondary mark-read-btn" data-id="{{ notif.id }}" style="border-radius:8px;font-size:.78rem;padding:.3rem .75rem;">
+            <i class="fas fa-check me-1"></i>Mark Read
+          </button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div>
+
+<script>
+document.querySelectorAll('.mark-read-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const id = btn.dataset.id;
+    const r = await fetch(`/superadmin/notifications/read/${id}`, {method:'POST', headers:{'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value || ''}});
+    if ((await r.json()).success) {
+      const item = document.querySelector(`.notif-item[data-id="${id}"]`);
+      item.classList.remove('unread');
+      item.style.borderColor = '#e8ecf0';
+      btn.remove();
+      item.querySelector('.fw-bold span')?.remove();
+      // Update badge
+      const badge = document.getElementById('adminNotifBadge');
+      if (badge) {
+        const c = parseInt(badge.textContent) - 1;
+        if (c <= 0) badge.remove(); else badge.textContent = c;
+      }
+    }
+  });
+});
+
+const markAllBtn = document.getElementById('markAllReadBtn');
+if (markAllBtn) {
+  markAllBtn.addEventListener('click', async () => {
+    const r = await fetch('/superadmin/notifications/read-all', {method:'POST', headers:{'X-CSRFToken': document.querySelector('[name=csrf_token]')?.value || ''}});
+    if ((await r.json()).success) location.reload();
+  });
+}
+</script>
+{% endblock %}

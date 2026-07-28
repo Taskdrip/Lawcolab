@@ -1199,113 +1199,8 @@ def generate_pitch(firm_id):
     import requests as req_lib
     firm = DirectoryLawFirm.query.get_or_404(firm_id)
 
-    openai_key = os.environ.get('OPENAI_API_KEY', '')
-    areas = ', '.join(firm.practice_areas[:4]) if firm.practice_areas else 'legal practice'
-    city  = firm.city or firm.country or 'your area'
-    has_web = 'Yes' if firm.has_website else 'No (no existing website)'
-    social  = json.dumps(firm.social_links) if firm.social_links else 'none found'
-    gmb_status = 'Unverified GMB listing' if not firm.gmb_verified else 'Verified GMB listing'
-    reviews = f"{firm.google_reviews_count} Google reviews, {firm.google_rating}★" if firm.google_rating else 'no Google rating found'
-
-    _LAWCOLAB_FEATURES = """
-LAWCOLAB features:
-• Case & Matter Management — track every case, deadline, and document
-• Client Portal — clients get 24/7 secure online access to their case updates
-• Billing & Invoicing — instant invoice generation, payment tracking, receipts
-• Court Calendar — deadline reminders, hearing alerts, court date history
-• Team Collaboration — task assignment, internal messaging, document sharing
-• Analytics Dashboard — firm performance, revenue, case statistics at a glance
-• Client Acquisition Tools — digital intake forms, referral tracking, leads
-• Integrations — works alongside existing websites, email, and firm tools
-• Custom Feature Development — our developer team builds features on request
-• Mobile-Friendly — works on any device, anywhere
-"""
-
-    if openai_key:
-        try:
-            # Email pitch
-            prompt_email = f"""You are a top legal software sales writer for LAWCOLAB.
-
-Write a personalized cold-outreach email to this law firm to pitch LAWCOLAB:
-- Firm: {firm.name}
-- Location: {city}, {firm.state or ''}, {firm.country or 'Nigeria'}
-- Practice Areas: {areas}
-- Website: {has_web}
-- Social Media: {social}
-- Google Maps status: {gmb_status}
-- Google presence: {reviews}
-- Source: Found on Google Maps / public directory
-
-{_LAWCOLAB_FEATURES}
-
-Email structure:
-1. Warm, specific greeting referencing how you found them (Google Maps / directory, mention their location/speciality)
-2. Brief intro of LAWCOLAB as a Legal Operating System
-3. List 4-5 features most relevant to their practice area
-4. Emphasize: works WITH or WITHOUT their existing website / current systems
-5. Highlight: our developer team readily adds new custom features for their firm
-6. Emphasize how LAWCOLAB helps them acquire more clients and grow revenue
-7. Clear CTA: free trial / 20-min demo call at https://lawcolab.com
-8. Professional sign-off from "LAWCOLAB Growth Team"
-
-Rules:
-- Reference their specific practice areas and location naturally
-- If no website — position LAWCOLAB as the solution to their digital presence gap
-- If unverified GMB — mention we can help them look more professional online
-- Sound personal and research-based, never generic or spammy
-- Concise and professional: 250-350 words max
-
-Return JSON: {{"subject": "...", "body": "..."}}"""
-
-            r1 = req_lib.post(
-                'https://api.openai.com/v1/chat/completions',
-                headers={'Authorization': f'Bearer {openai_key}', 'Content-Type': 'application/json'},
-                json={'model': 'gpt-4o-mini', 'messages': [{'role': 'user', 'content': prompt_email}],
-                      'response_format': {'type': 'json_object'}, 'max_tokens': 700, 'temperature': 0.82},
-                timeout=25,
-            )
-            email_result = json.loads(r1.json()['choices'][0]['message']['content'])
-
-            # Call script
-            prompt_call = f"""You are a legal software sales trainer for LAWCOLAB.
-
-Write a complete phone call script for calling this law firm cold:
-- Firm: {firm.name}
-- Location: {city}, {firm.state or ''}, {firm.country or 'Nigeria'}
-- Practice Areas: {areas}
-- Website: {has_web}
-- Google status: {gmb_status} — {reviews}
-
-{_LAWCOLAB_FEATURES}
-
-Script structure (use clear headers):
-1. OPENING — Warm greeting, introduce yourself by name as "from LAWCOLAB team", state you're calling because you came across their firm on Google Maps / online directories
-2. PERMISSION CHECK — Ask if they have 2 minutes (respect their time)
-3. PROBLEM STATEMENT — Reference a specific pain most law firms in {city} face (managing cases, billing manually, missing deadlines, no client portal)
-4. SOLUTION INTRO — Briefly introduce LAWCOLAB as a legal operating system built for Nigerian / African law firms
-5. KEY FEATURES — Mention 3-4 features most relevant to {areas} practice
-6. WEBSITE BRIDGE — Whether or not they have a website, LAWCOLAB integrates with their current setup
-7. CUSTOM DEVELOPMENT — Mention our developer team can add features specific to their firm
-8. SOCIAL PROOF — Mention firms using LAWCOLAB improved client retention and billing efficiency
-9. CTA — Offer a free 20-minute screen-share demo, ask for a good time
-10. OBJECTION HANDLERS — 3 common objections with confident, respectful responses
-11. CLOSING — Thank them, confirm next step, share website https://lawcolab.com
-
-Keep each section practical. Use [PAUSE], [LISTEN], [SMILE] stage directions where helpful."""
-
-            r2 = req_lib.post(
-                'https://api.openai.com/v1/chat/completions',
-                headers={'Authorization': f'Bearer {openai_key}', 'Content-Type': 'application/json'},
-                json={'model': 'gpt-4o-mini', 'messages': [{'role': 'user', 'content': prompt_call}],
-                      'max_tokens': 900, 'temperature': 0.75},
-                timeout=25,
-            )
-            call_script = r2.json()['choices'][0]['message']['content']
-
-        except Exception as e:
-            email_result, call_script = _build_template_pitch(firm, areas, city, has_web, gmb_status)
-    else:
-        email_result, call_script = _build_template_pitch(firm, areas, city, has_web, gmb_status)
+    from utils.ai import generate_firm_pitch
+    email_result, call_script = generate_firm_pitch(firm)
 
     firm.ai_pitch_email = f"Subject: {email_result.get('subject','')}\n\n{email_result.get('body','')}"
     firm.ai_call_script = call_script
@@ -1321,7 +1216,12 @@ Keep each section practical. Use [PAUSE], [LISTEN], [SMILE] stage directions whe
 
 
 def _build_template_pitch(firm, areas, city, has_web, gmb_status):
-    """Fallback template pitch when OpenAI is not configured."""
+    """Legacy shim — delegates to utils/ai template fallback."""
+    from utils.ai import generate_firm_pitch
+    return generate_firm_pitch(firm)
+
+def _build_template_pitch_old(firm, areas, city, has_web, gmb_status):
+    """Kept for reference only — use utils/ai instead."""
     name = firm.name
     no_web_line = (
         "\n\nI also noticed your firm doesn't yet have a dedicated website — LAWCOLAB "
@@ -1475,6 +1375,25 @@ def robot_run():
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)})
+
+    # Create admin notification if new firms were found
+    if added > 0:
+        try:
+            from models import AdminNotification
+            notif = AdminNotification(
+                title=f"🤖 Robot found {added} new law firms",
+                message=(
+                    f"The Discovery Robot completed a crawl and added {added} new law firm listings "
+                    f"to the directory ({skipped} already existed). "
+                    f"Review and enrich the new leads in the CRM."
+                ),
+                notification_type="new_firms_crawled",
+                link_url="/superadmin/directory/external",
+            )
+            db.session.add(notif)
+            db.session.commit()
+        except Exception:
+            pass
 
     return jsonify({
         'success': True,

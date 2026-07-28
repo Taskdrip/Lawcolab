@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+{% block title %}Message Templates — LAWCOLAB CRM{% endblock %}
+
+{% block content %}
+<style>
+.tpl-card{background:#fff;border-radius:14px;border:1.5px solid #e8ecf0;padding:1.5rem;transition:border-color .2s;}
+.tpl-card:hover{border-color:#0d1b4b30;}
+.tpl-badge{font-size:.72rem;font-weight:700;padding:.2rem .6rem;border-radius:50px;}
+.channel-email{background:#e3f2fd;color:#0d47a1;}
+.channel-whatsapp{background:#e8f5e9;color:#1b5e20;}
+.channel-linkedin{background:#e1f0fb;color:#0077b5;}
+.channel-sms{background:#fff3e0;color:#e65100;}
+.channel-post{background:#f3e5f5;color:#4a148c;}
+.channel-dm{background:#fce4ec;color:#880e4f;}
+.field-label{font-size:.8rem;font-weight:700;color:#0d1b4b;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.35rem;}
+</style>
+
+<div class="container-fluid py-4" style="max-width:1100px;">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h3 class="mb-0 fw-bold" style="color:#0d1b4b;font-family:'Playfair Display',serif;">
+        <i class="fas fa-file-alt me-2" style="color:#FFD700;"></i>Message Templates
+      </h3>
+      <p class="text-muted mb-0 small">Edit the outreach templates used by the AI robot. The AI uses these as the foundation, then personalises them with Llama 3.3.</p>
+    </div>
+    <button class="btn btn-warning fw-bold" style="border-radius:10px;color:#0d1b4b;" data-bs-toggle="modal" data-bs-target="#newTemplateModal">
+      <i class="fas fa-plus me-2"></i>New Template
+    </button>
+  </div>
+
+  <!-- AI Status Banner -->
+  <div style="background:linear-gradient(135deg,#0d1b4b,#1a3a6b);border-radius:14px;padding:1.25rem 1.5rem;color:#fff;margin-bottom:2rem;display:flex;align-items:center;gap:1rem;">
+    <div style="width:44px;height:44px;background:rgba(255,215,0,.15);border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid rgba(255,215,0,.3);">
+      <i class="fas fa-brain" style="color:#FFD700;font-size:1.2rem;"></i>
+    </div>
+    <div class="flex-grow-1">
+      <div style="font-weight:700;font-size:.95rem;">Free AI Engine: Groq × Llama 3.3 70B</div>
+      <div style="font-size:.83rem;color:rgba(255,255,255,.75);margin-top:.2rem;">
+        LAWCOLAB uses the open-source <strong>Llama 3.3 70B</strong> model via Groq's free API — the world's fastest open-source LLM.
+        Set <code style="background:rgba(255,255,255,.15);padding:.1rem .35rem;border-radius:4px;">GROQ_API_KEY</code> in your environment secrets to enable AI generation.
+        Without it, these templates are used directly.
+        <a href="https://console.groq.com" target="_blank" style="color:#FFD700;font-weight:700;margin-left:.5rem;"><i class="fas fa-external-link-alt me-1"></i>Get Free Key</a>
+      </div>
+    </div>
+  </div>
+
+  {% if not templates %}
+  <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:3rem;text-align:center;">
+    <i class="fas fa-file-alt" style="font-size:3rem;color:#dee2e6;margin-bottom:1rem;display:block;"></i>
+    <h5 style="color:#6c757d;font-weight:600;">No custom templates yet</h5>
+    <p class="text-muted small mb-3">Create a template to customise the messages the AI uses when crafting outreach to law firms and communities.</p>
+    <button class="btn btn-warning fw-bold" style="border-radius:10px;color:#0d1b4b;" data-bs-toggle="modal" data-bs-target="#newTemplateModal">
+      <i class="fas fa-plus me-2"></i>Create First Template
+    </button>
+  </div>
+  {% else %}
+
+  <!-- Templates grid -->
+  <div class="row g-3">
+    {% for t in templates %}
+    <div class="col-lg-6">
+      <div class="tpl-card" id="tpl-{{ t.id }}">
+        <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+          <div>
+            <div style="font-weight:700;color:#0d1b4b;font-size:.97rem;">{{ t.name }}</div>
+            <div class="d-flex gap-2 flex-wrap mt-1">
+              <span class="tpl-badge channel-{{ t.channel }}">{{ t.channel }}</span>
+              <span class="tpl-badge" style="background:#f0f4ff;color:#0d1b4b;">{{ t.template_type.replace('_',' ').title() }}</span>
+              {% if t.message_subtype %}<span class="tpl-badge" style="background:#fff3cd;color:#856404;">{{ t.message_subtype.replace('_',' ') }}</span>{% endif %}
+              {% if not t.is_active %}<span class="tpl-badge" style="background:#f8d7da;color:#721c24;">Inactive</span>{% endif %}
+            </div>
+          </div>
+          <div class="d-flex gap-1">
+            <button class="btn btn-sm btn-outline-primary edit-tpl-btn" data-id="{{ t.id }}"
+                    data-name="{{ t.name }}" data-type="{{ t.template_type }}"
+                    data-channel="{{ t.channel }}" data-subtype="{{ t.message_subtype or '' }}"
+                    data-subject="{{ t.subject_template or '' }}"
+                    data-body="{{ t.body_template | e }}"
+                    data-notes="{{ t.notes or '' }}"
+                    style="border-radius:8px;font-size:.78rem;padding:.3rem .6rem;"
+                    title="Edit"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-sm btn-outline-danger del-tpl-btn" data-id="{{ t.id }}"
+                    style="border-radius:8px;font-size:.78rem;padding:.3rem .6rem;"
+                    title="Delete"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+        {% if t.subject_template %}
+        <div class="mb-2">
+          <div class="field-label">Subject</div>
+          <div style="font-size:.87rem;color:#444;background:#f8f9ff;padding:.5rem .75rem;border-radius:8px;">{{ t.subject_template }}</div>
+        </div>
+        {% endif %}
+        <div>
+          <div class="field-label">Body Preview</div>
+          <div style="font-size:.83rem;color:#555;background:#f8f9ff;padding:.75rem;border-radius:8px;max-height:100px;overflow:hidden;white-space:pre-wrap;line-height:1.5;">{{ t.body_template[:300] }}{% if t.body_template|length > 300 %}…{% endif %}</div>
+        </div>
+        {% if t.notes %}
+        <div class="mt-2 text-muted small"><i class="fas fa-sticky-note me-1"></i>{{ t.notes }}</div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+<!-- New Template Modal -->
+<div class="modal fade" id="newTemplateModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" style="border-radius:16px;">
+      <div class="modal-header" style="background:#0d1b4b;border-radius:16px 16px 0 0;">
+        <h5 class="modal-title text-white fw-bold"><i class="fas fa-plus me-2" style="color:#FFD700;"></i>New Message Template</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="newTplForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-body p-4">
+          <div class="row g-3">
+            <div class="col-12">
+              <div class="field-label">Template Name</div>
+              <input type="text" name="name" class="form-control" placeholder="e.g. Cold Email — Corporate Law Firms" required>
+            </div>
+            <div class="col-md-4">
+              <div class="field-label">Type</div>
+              <select name="template_type" class="form-select">
+                <option value="firm_outreach">Firm Outreach</option>
+                <option value="community_outreach">Community Outreach</option>
+                <option value="pitch_email">Pitch Email</option>
+                <option value="call_script">Call Script</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <div class="field-label">Channel</div>
+              <select name="channel" class="form-select">
+                <option value="email">Email</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="linkedin">LinkedIn</option>
+                <option value="sms">SMS</option>
+                <option value="post">Community Post</option>
+                <option value="dm">Direct Message</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <div class="field-label">Message Subtype</div>
+              <select name="message_subtype" class="form-select">
+                <option value="">— any —</option>
+                <option value="cold_outreach">Cold Outreach</option>
+                <option value="follow_up">Follow-up</option>
+                <option value="second_followup">2nd Follow-up</option>
+                <option value="meeting_invite">Meeting Invite</option>
+                <option value="re_engagement">Re-engagement</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <div class="field-label">Email Subject <span class="text-muted" style="font-weight:normal;text-transform:none;">(leave blank for non-email channels)</span></div>
+              <input type="text" name="subject_template" class="form-control" placeholder="e.g. Helping {firm_name} Run Like a World-Class Firm">
+            </div>
+            <div class="col-12">
+              <div class="field-label">Message Body <span class="text-danger">*</span></div>
+              <textarea name="body_template" class="form-control" rows="10"
+                        placeholder="Write your template here. Use {firm_name}, {city}, {practice_areas}, {country} as placeholders."
+                        required></textarea>
+              <div class="form-text">Available placeholders: <code>{firm_name}</code>, <code>{city}</code>, <code>{country}</code>, <code>{practice_areas}</code>, <code>{tagline}</code></div>
+            </div>
+            <div class="col-12">
+              <div class="field-label">Notes (internal)</div>
+              <input type="text" name="notes" class="form-control" placeholder="When to use this template…">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius:8px;">Cancel</button>
+          <button type="submit" class="btn btn-warning fw-bold" style="border-radius:8px;color:#0d1b4b;">
+            <i class="fas fa-save me-2"></i>Save Template
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Template Modal -->
+<div class="modal fade" id="editTemplateModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" style="border-radius:16px;">
+      <div class="modal-header" style="background:#0d1b4b;border-radius:16px 16px 0 0;">
+        <h5 class="modal-title text-white fw-bold"><i class="fas fa-edit me-2" style="color:#FFD700;"></i>Edit Template</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="editTplForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" id="editTplId">
+        <div class="modal-body p-4">
+          <div class="row g-3">
+            <div class="col-12">
+              <div class="field-label">Template Name</div>
+              <input type="text" id="editName" class="form-control" required>
+            </div>
+            <div class="col-12">
+              <div class="field-label">Email Subject</div>
+              <input type="text" id="editSubject" class="form-control">
+            </div>
+            <div class="col-12">
+              <div class="field-label">Message Body <span class="text-danger">*</span></div>
+              <textarea id="editBody" class="form-control" rows="12" required></textarea>
+            </div>
+            <div class="col-12">
+              <div class="field-label">Notes</div>
+              <input type="text" id="editNotes" class="form-control">
+            </div>
+            <div class="col-12">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="editActive">
+                <label class="form-check-label" for="editActive">Active (available for use)</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius:8px;">Cancel</button>
+          <button type="submit" class="btn btn-warning fw-bold" style="border-radius:8px;color:#0d1b4b;">
+            <i class="fas fa-save me-2"></i>Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// New template
+document.getElementById('newTplForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const data = Object.fromEntries(fd.entries());
+  const r = await fetch('{{ url_for("crm.create_template") }}', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  });
+  if ((await r.json()).success) location.reload();
+});
+
+// Edit template — populate modal
+document.querySelectorAll('.edit-tpl-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.getElementById('editTplId').value = btn.dataset.id;
+    document.getElementById('editName').value = btn.dataset.name;
+    document.getElementById('editSubject').value = btn.dataset.subject;
+    document.getElementById('editBody').value = btn.dataset.body;
+    document.getElementById('editNotes').value = btn.dataset.notes;
+    document.getElementById('editActive').checked = true;
+    new bootstrap.Modal(document.getElementById('editTemplateModal')).show();
+  });
+});
+
+document.getElementById('editTplForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const id = document.getElementById('editTplId').value;
+  const r = await fetch(`/superadmin/crm/message-templates/${id}/update`, {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      name: document.getElementById('editName').value,
+      subject_template: document.getElementById('editSubject').value,
+      body_template: document.getElementById('editBody').value,
+      notes: document.getElementById('editNotes').value,
+      is_active: document.getElementById('editActive').checked,
+    })
+  });
+  if ((await r.json()).success) location.reload();
+});
+
+// Delete
+document.querySelectorAll('.del-tpl-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    if (!confirm('Delete this template?')) return;
+    const r = await fetch(`/superadmin/crm/message-templates/${btn.dataset.id}/delete`, {method:'POST'});
+    if ((await r.json()).success) document.getElementById(`tpl-${btn.dataset.id}`).closest('.col-lg-6').remove();
+  });
+});
+</script>
+{% endblock %}

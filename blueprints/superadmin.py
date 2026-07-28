@@ -1061,3 +1061,47 @@ def database_overview():
 
     return render_template('superadmin/database_overview.html',
                            table_stats=table_stats, health=health)
+
+
+# ─── Admin Notifications ──────────────────────────────────────────────────────
+
+@superadmin_bp.route('/notifications')
+@require_super_admin
+def admin_notifications():
+    """Super admin notifications: robot discoveries, claim requests, etc."""
+    from models import AdminNotification
+    notifications = AdminNotification.query.order_by(
+        AdminNotification.is_read.asc(),
+        AdminNotification.created_at.desc()
+    ).limit(100).all()
+    unread_count = AdminNotification.query.filter_by(is_read=False).count()
+    return render_template('superadmin/admin_notifications.html',
+                           notifications=notifications,
+                           unread_count=unread_count)
+
+
+@superadmin_bp.route('/notifications/read/<int:notif_id>', methods=['POST'])
+@require_super_admin
+def mark_notification_read(notif_id):
+    from models import AdminNotification
+    notif = AdminNotification.query.get_or_404(notif_id)
+    notif.is_read = True
+    db.session.commit()
+    return jsonify({'success': True})
+
+
+@superadmin_bp.route('/notifications/read-all', methods=['POST'])
+@require_super_admin
+def mark_all_notifications_read():
+    from models import AdminNotification
+    AdminNotification.query.filter_by(is_read=False).update({'is_read': True})
+    db.session.commit()
+    return jsonify({'success': True})
+
+
+@superadmin_bp.route('/notifications/count')
+@require_super_admin
+def notifications_count():
+    from models import AdminNotification
+    count = AdminNotification.query.filter_by(is_read=False).count()
+    return jsonify({'count': count})

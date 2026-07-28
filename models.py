@@ -1043,7 +1043,22 @@ class DirectoryLawFirm(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     is_claimed = db.Column(db.Boolean, default=False)  # True if firm has joined the platform
     claimed_firm_id = db.Column(db.Integer, db.ForeignKey('law_firms.id'), nullable=True)
-    
+
+    # Claim request fields (set when firm submits a claim)
+    claim_pending         = db.Column(db.Boolean, default=False)
+    claim_contact_name    = db.Column(db.String(200), nullable=True)
+    claim_contact_email   = db.Column(db.String(200), nullable=True)
+    claim_contact_phone   = db.Column(db.String(100), nullable=True)
+    claim_contact_role    = db.Column(db.String(100), nullable=True)
+    claim_description     = db.Column(db.Text, nullable=True)
+    claim_tagline         = db.Column(db.String(300), nullable=True)
+    claim_social_json     = db.Column(db.Text, nullable=True)
+    claim_logo_url        = db.Column(db.String(500), nullable=True)
+    claim_bg_url          = db.Column(db.String(500), nullable=True)
+    claim_website         = db.Column(db.String(500), nullable=True)
+    claim_address         = db.Column(db.Text, nullable=True)
+    claim_submitted_at    = db.Column(db.DateTime, nullable=True)
+
     # CRM metadata (super admin use)
     crm_status = db.Column(db.String(50), default='new')  # new, contacted, converted, inactive
     logo_url = db.Column(db.String(500), nullable=True)
@@ -1518,3 +1533,64 @@ class SocialCommunity(db.Model):
             'instagram': '#e4405f',
         }
         return colors.get((self.platform or '').lower(), '#6c757d')
+
+
+# ─── Admin Notifications ──────────────────────────────────────────────────────
+
+class AdminNotification(db.Model):
+    """Notifications for the super admin (robot discoveries, claims, etc.)
+    Distinct from PlatformNotification which goes to law firms."""
+    __tablename__ = 'admin_notifications'
+
+    id                = db.Column(db.Integer, primary_key=True)
+    title             = db.Column(db.String(300), nullable=False)
+    message           = db.Column(db.Text, nullable=False)
+    notification_type = db.Column(db.String(50), default='general')
+    # Types: new_claim, new_firms_crawled, new_communities_crawled, claim_approved, general
+    link_url          = db.Column(db.String(500), nullable=True)
+    firm_id           = db.Column(db.Integer, db.ForeignKey('directory_law_firms.id'), nullable=True)
+    is_read           = db.Column(db.Boolean, default=False)
+    created_at        = db.Column(db.DateTime, default=datetime.now)
+
+    firm = db.relationship('DirectoryLawFirm', foreign_keys=[firm_id])
+
+    @property
+    def type_icon(self):
+        icons = {
+            'new_claim':              'fas fa-hand-point-up',
+            'new_firms_crawled':      'fas fa-robot',
+            'new_communities_crawled':'fas fa-users',
+            'claim_approved':         'fas fa-check-circle',
+        }
+        return icons.get(self.notification_type, 'fas fa-bell')
+
+    @property
+    def type_color(self):
+        colors = {
+            'new_claim':              '#FFD700',
+            'new_firms_crawled':      '#0d6efd',
+            'new_communities_crawled':'#6610f2',
+            'claim_approved':         '#198754',
+        }
+        return colors.get(self.notification_type, '#6c757d')
+
+
+# ─── Message Templates ────────────────────────────────────────────────────────
+
+class MessageTemplate(db.Model):
+    """Admin-editable outreach message templates used by the AI robot as
+    starting points before AI enhancement, or as fallback when Groq is not set."""
+    __tablename__ = 'message_templates'
+
+    id               = db.Column(db.Integer, primary_key=True)
+    name             = db.Column(db.String(200), nullable=False)
+    template_type    = db.Column(db.String(50), nullable=False)   # firm_outreach, community_outreach, pitch_email, call_script
+    channel          = db.Column(db.String(50), nullable=False)   # email, whatsapp, linkedin, sms, post, dm
+    message_subtype  = db.Column(db.String(50), nullable=True)    # cold_outreach, follow_up, etc.
+    subject_template = db.Column(db.String(500), nullable=True)
+    body_template    = db.Column(db.Text, nullable=False)
+    is_active        = db.Column(db.Boolean, default=True)
+    is_default       = db.Column(db.Boolean, default=False)       # original built-in template
+    notes            = db.Column(db.Text, nullable=True)
+    created_at       = db.Column(db.DateTime, default=datetime.now)
+    updated_at       = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)

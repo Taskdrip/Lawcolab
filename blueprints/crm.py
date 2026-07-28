@@ -535,13 +535,8 @@ def generate_outreach():
     firms = DirectoryLawFirm.query.filter(DirectoryLawFirm.id.in_(firm_ids)).all()
     generated = []
 
-    openai_key = os.environ.get('OPENAI_API_KEY', '')
-
     for firm in firms:
-        if openai_key:
-            msg = _generate_with_openai(firm, channel, msg_type, openai_key)
-        else:
-            msg = _generate_template_message(firm, channel, msg_type)
+        msg = _generate_firm_message(firm, channel, msg_type)
 
         generated.append({
             'firm_id': firm.id,
@@ -595,115 +590,10 @@ def mark_sent(msg_id):
     return jsonify({'success': True})
 
 
-def _generate_template_message(firm, channel, msg_type):
-    """Template-based message when no OpenAI key is set."""
-    areas = ', '.join(firm.practice_areas[:3]) if firm.practice_areas else 'legal practice'
-    city = firm.city or firm.country or 'your area'
-    name = firm.name
-
-    if channel == 'email' and msg_type == 'cold_outreach':
-        return {
-            'subject': f"Helping {name} Modernize Client Management",
-            'body': f"""Dear {name} Team,
-
-I came across {name} while researching leading law firms in {city}.
-
-We recently built LAWCOLAB — a modern legal operating system that helps firms like yours manage clients, cases, billing, calendars, and secure communication in one unified platform.
-
-Considering your expertise in {areas}, I believe LAWCOLAB could save your team hours every week while significantly improving your client experience.
-
-I'd love to offer you a complimentary demo and a free trial — no commitment required.
-
-Would you be open to a 20-minute call this week?
-
-Best regards,
-LAWCOLAB Growth Team
-https://lawcolab.com"""
-        }
-    elif channel == 'whatsapp':
-        return {
-            'subject': '',
-            'body': f"Hi {name} Team! 👋 I came across your firm in {city} and wanted to share LAWCOLAB — a platform that helps law firms manage clients, cases, and billing in one place. Would you be open to a quick demo? 🙏"
-        }
-    elif msg_type == 'follow_up':
-        return {
-            'subject': f"Following up — LAWCOLAB for {name}",
-            'body': f"""Dear {name} Team,
-
-I wanted to follow up on my previous message about LAWCOLAB.
-
-Many {areas} firms in {city} are already using our platform to streamline their operations.
-
-I'd still love to show you what LAWCOLAB can do for {name} — it only takes 20 minutes.
-
-Best regards,
-LAWCOLAB Growth Team"""
-        }
-    else:
-        return {
-            'subject': f"LAWCOLAB — Built for {name}",
-            'body': f"Dear {name} Team,\n\nI'd love to show you how LAWCOLAB can help your firm in {city} manage cases, clients, and billing more efficiently.\n\nBest regards,\nLAWCOLAB Growth Team"
-        }
-
-
-def _generate_with_openai(firm, channel, msg_type, api_key):
-    """Generate message using OpenAI API."""
-    import requests as req_lib
-    areas = ', '.join(firm.practice_areas[:3]) if firm.practice_areas else 'general legal practice'
-    city = f"{firm.city or ''}, {firm.country or ''}".strip(', ')
-
-    type_label = {
-        'cold_outreach': 'cold outreach',
-        'follow_up': 'first follow-up',
-        'second_followup': 'second follow-up (softer tone)',
-        'meeting_invite': 'meeting invitation',
-        're_engagement': 're-engagement after silence',
-    }.get(msg_type, 'cold outreach')
-
-    channel_label = {
-        'email': 'professional email',
-        'whatsapp': 'short friendly WhatsApp message (max 3 lines)',
-        'linkedin': 'LinkedIn connection note (max 300 chars)',
-        'sms': 'brief SMS (max 160 chars)',
-    }.get(channel, 'email')
-
-    prompt = f"""You are a professional sales copywriter for LAWCOLAB, a modern legal practice management platform.
-
-Write a highly personalized {type_label} {channel_label} for this law firm:
-- Firm Name: {firm.name}
-- Location: {city}
-- Practice Areas: {areas}
-- Website: {firm.website or 'not available'}
-- Description: {(firm.description or '')[:200]}
-
-LAWCOLAB offers: client management, case tracking, billing, calendar, team collaboration, analytics.
-
-Rules:
-- Sound personal and research-based, NOT generic
-- Reference their specific practice areas and location
-- Keep it concise and professional
-- End with a clear, low-friction CTA
-- Do NOT use placeholder text like [Name]
-
-Return a JSON object with exactly two keys: "subject" (for email, empty string for others) and "body"."""
-
-    try:
-        r = req_lib.post(
-            'https://api.openai.com/v1/chat/completions',
-            headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
-            json={
-                'model': 'gpt-4o-mini',
-                'messages': [{'role': 'user', 'content': prompt}],
-                'response_format': {'type': 'json_object'},
-                'max_tokens': 600,
-                'temperature': 0.8,
-            },
-            timeout=20,
-        )
-        content = r.json()['choices'][0]['message']['content']
-        return json.loads(content)
-    except Exception:
-        return _generate_template_message(firm, channel, msg_type)
+def _generate_firm_message(firm, channel, msg_type):
+    """Generate outreach message using free Groq AI (Llama 3.3 70B) with template fallback."""
+    from utils.ai import generate_firm_outreach
+    return generate_firm_outreach(firm, channel, msg_type)
 
 
 # ── Campaigns ─────────────────────────────────────────────────────────────────
@@ -834,6 +724,69 @@ def analytics():
                            conversion_rate=conversion_rate,
                            won=won,
                            stage_meta=STAGE_META)
+
+
+# ── Message Templates Editor ──────────────────────────────────────────────────
+
+@crm_bp.route('/message-templates')
+@require_super_admin
+def message_templates():
+    """Admin-editable outreach message templates."""
+    from models import MessageTemplate
+    templates = MessageTemplate.query.order_by(
+        MessageTemplate.template_type, MessageTemplate.channel
+    ).all()
+    return render_template('crm/message_templates.html', templates=templates)
+
+
+@crm_bp.route('/message-templates/create', methods=['POST'])
+@require_super_admin
+def create_template():
+    """Create a new message template."""
+    from models import MessageTemplate
+    t = MessageTemplate(
+        name=request.form.get('name', '').strip() or request.json.get('name', ''),
+        template_type=request.form.get('template_type') or request.json.get('template_type', 'firm_outreach'),
+        channel=request.form.get('channel') or request.json.get('channel', 'email'),
+        message_subtype=request.form.get('message_subtype') or request.json.get('message_subtype'),
+        subject_template=request.form.get('subject_template') or request.json.get('subject_template', ''),
+        body_template=request.form.get('body_template') or request.json.get('body_template', ''),
+        notes=request.form.get('notes') or request.json.get('notes', ''),
+        is_active=True,
+    )
+    db.session.add(t)
+    db.session.commit()
+    if request.is_json:
+        return jsonify({'success': True, 'id': t.id})
+    flash('Template created.', 'success')
+    return redirect(url_for('crm.message_templates'))
+
+
+@crm_bp.route('/message-templates/<int:template_id>/update', methods=['POST'])
+@require_super_admin
+def update_template(template_id):
+    """Update an existing message template."""
+    from models import MessageTemplate
+    t = MessageTemplate.query.get_or_404(template_id)
+    data = request.json or request.form
+    for field in ('name', 'subject_template', 'body_template', 'notes'):
+        if field in data and data[field] is not None:
+            setattr(t, field, data[field])
+    if 'is_active' in data:
+        t.is_active = bool(data['is_active'])
+    db.session.commit()
+    return jsonify({'success': True})
+
+
+@crm_bp.route('/message-templates/<int:template_id>/delete', methods=['POST'])
+@require_super_admin
+def delete_template(template_id):
+    """Delete a message template."""
+    from models import MessageTemplate
+    t = MessageTemplate.query.get_or_404(template_id)
+    db.session.delete(t)
+    db.session.commit()
+    return jsonify({'success': True})
 
 
 # ── Score All Leads (batch) ───────────────────────────────────────────────────

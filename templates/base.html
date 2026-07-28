@@ -568,6 +568,24 @@
                             <li><a class="dropdown-item" href="{{ url_for('dir_admin.index') }}">
                                 <i class="fas fa-globe me-2" style="color:#FFD700;"></i>Directory CRM
                             </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('dir_admin.robot_dashboard') }}">
+                                <i class="fas fa-robot me-2" style="color:#6610f2;"></i>Discovery Robot
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('crm.outreach') }}">
+                                <i class="fas fa-paper-plane me-2" style="color:#0d6efd;"></i>Outreach CRM
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('social_communities.index') }}">
+                                <i class="fas fa-users me-2" style="color:#198754;"></i>Communities CRM
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                              <a class="dropdown-item d-flex align-items-center justify-content-between" href="{{ url_for('superadmin.admin_notifications') }}">
+                                <span><i class="fas fa-bell me-2" style="color:#FFD700;"></i>Notifications</span>
+                                {% if admin_notif_count and admin_notif_count > 0 %}
+                                <span id="adminNotifBadge" style="background:#FFD700;color:#0d1b4b;font-size:.65rem;font-weight:800;padding:.15rem .45rem;border-radius:50px;min-width:18px;text-align:center;">{{ admin_notif_count }}</span>
+                                {% endif %}
+                              </a>
+                            </li>
                         </ul>
                     </li>
                     {% endif %}
