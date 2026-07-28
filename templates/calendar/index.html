@@ -18,17 +18,19 @@
 /* ── Hero ──────────────────────────────────────────────────────────────── */
 .cal-hero {
   background:
-    linear-gradient(135deg, rgba(8,18,60,0.91) 0%, rgba(20,55,130,0.82) 100%),
+    linear-gradient(135deg, rgba(5,12,45,0.96) 0%, rgba(8,20,65,0.90) 50%, rgba(5,12,45,0.84) 100%),
     url("{{ url_for('static', filename='images/Modern_law_office_interior_98a5776a.png') }}")
-    center / cover no-repeat;
-  padding: 2.25rem 2rem 1.75rem;
+    center top / cover no-repeat;
+  padding: 2.75rem 2rem 2.25rem;
   position: relative;
   overflow: hidden;
+  border-bottom: 3px solid rgba(255,215,0,.6);
 }
 .cal-hero::before {
   content: '';
   position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 80% 50%, rgba(29,78,216,0.25) 0%, transparent 70%);
+  background: radial-gradient(ellipse at 80% 50%, rgba(29,78,216,0.18) 0%, transparent 65%),
+              radial-gradient(ellipse at 20% 80%, rgba(255,215,0,0.04) 0%, transparent 50%);
   pointer-events: none;
 }
 .cal-hero-inner {
@@ -37,15 +39,17 @@
   flex-wrap: wrap; gap: 1rem;
 }
 .cal-hero-title {
-  font-size: 1.65rem; font-weight: 900; color: #fff !important;
-  margin: 0; letter-spacing: -.02em;
-  text-shadow: 0 1px 10px rgba(0,0,0,.7);
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.85rem; font-weight: 700; color: #fff !important;
+  margin: 0; letter-spacing: -.025em; line-height: 1.15;
+  text-shadow: 0 2px 12px rgba(0,0,0,.45);
 }
 .cal-hero-title i { color: var(--cal-gold); margin-right: .5rem; }
 .cal-hero-sub {
-  color: #fff !important; font-size: .85rem; margin: .25rem 0 0;
-  text-shadow: 0 1px 6px rgba(0,0,0,.6);
-  opacity: .92;
+  font-family: 'Inter', -apple-system, sans-serif;
+  color: rgba(255,255,255,.85) !important; font-size: .875rem; margin: .45rem 0 0;
+  text-shadow: 0 1px 6px rgba(0,0,0,.5);
+  line-height: 1.55; font-weight: 400;
 }
 .cal-hero-pill {
   display: inline-flex; align-items: center; gap: .3rem;

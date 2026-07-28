@@ -16,21 +16,22 @@
   background:
     linear-gradient({{ tc[0] }}),
     url("{{ url_for('static', filename='images/Legal_team_meeting_867b2fc9.png') }}")
-    center / cover no-repeat;
-  padding: 2.25rem 2rem 2rem;
+    center 40% / cover no-repeat;
+  padding: 2.75rem 2rem 2.25rem;
   position: relative; overflow: hidden;
+  border-bottom: 3px solid rgba(255,215,0,.5);
 }
 .ev-hero::before {
   content: '';
   position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 80% 30%, rgba(255,255,255,.08) 0%, transparent 65%);
+  background: radial-gradient(ellipse at 80% 30%, rgba(255,255,255,.07) 0%, transparent 65%);
   pointer-events: none;
 }
 .ev-hero-inner { position: relative; z-index: 1; max-width: 900px; }
 .ev-breadcrumb { display: flex; align-items: center; gap: .4rem; margin-bottom: .65rem; }
-.ev-breadcrumb a { color: rgba(255,255,255,.65); font-size: .78rem; text-decoration: none; }
+.ev-breadcrumb a { color: rgba(255,255,255,.55); font-size: .775rem; text-decoration: none; font-family: 'Inter', sans-serif; }
 .ev-breadcrumb a:hover { color: #fff; }
-.ev-breadcrumb span { color: rgba(255,255,255,.35); font-size: .75rem; }
+.ev-breadcrumb span { color: rgba(255,255,255,.3); font-size: .75rem; }
 .ev-type-badge {
   display: inline-flex; align-items: center; gap: .35rem;
   background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.28);

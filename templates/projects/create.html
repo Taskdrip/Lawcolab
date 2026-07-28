@@ -3,18 +3,30 @@
 {% block title %}Create Project - LAWCOLAB{% endblock %}
 
 {% block content %}
+
+<!-- Page Header -->
+<div class="lc-page-header lc-ph-bg-projects">
+    <div class="container-fluid px-3 px-lg-4">
+        <div class="lc-ph-inner d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="lc-ph-icon"><i class="fas fa-folder-plus"></i></div>
+                <div>
+                    <h1>Create New Project</h1>
+                    <p class="lc-ph-sub mb-0">Define the scope, team, and timeline for a new matter</p>
+                </div>
+            </div>
+            <div class="lc-ph-actions">
+                <a href="{{ url_for('projects.list_projects') }}" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Projects
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="container py-4">
     <div class="row">
         <div class="col-lg-8 mx-auto">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h2 text-gradient">
-                    <i class="fas fa-plus me-2"></i>Create New Project
-                </h1>
-                <a href="{{ url_for('projects.list_projects') }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Back to Projects
-                </a>
-            </div>
-
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">
                     <form method="POST">

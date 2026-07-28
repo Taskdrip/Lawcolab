@@ -3,6 +3,28 @@
 {% block title %}{{ client.full_name }} - Client Profile{% endblock %}
 
 {% block content %}
+
+<!-- Page Header -->
+<div class="lc-page-header lc-ph-bg-consultation">
+    <div class="container-fluid px-3 px-lg-4">
+        <div class="lc-ph-inner d-flex align-items-center gap-3">
+            <div class="lc-ph-icon"><i class="fas fa-user-tie"></i></div>
+            <div>
+                <h1>{{ client.full_name }}</h1>
+                <p class="lc-ph-sub mb-0">Client profile — cases, invoices & communication history</p>
+            </div>
+        </div>
+        <div class="lc-ph-breadcrumb">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('clients.list_clients') }}">Clients</a></li>
+                    <li class="breadcrumb-item active">{{ client.full_name }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+
 <div class="container py-4">
     <div class="row">
         <div class="col-lg-8">

@@ -3,10 +3,34 @@
 {% block title %}{{ project.title }} - Project Details{% endblock %}
 
 {% block content %}
+
+<!-- Page Header -->
+<div class="lc-page-header lc-ph-bg-projects">
+    <div class="container-fluid px-3 px-lg-4">
+        <div class="lc-ph-inner d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="lc-ph-icon"><i class="fas fa-folder-open"></i></div>
+                <div>
+                    <h1>{{ project.title }}</h1>
+                    <p class="lc-ph-sub mb-0">
+                        <span class="badge bg-{{ 'success' if project.status == 'active' else 'warning' if project.status == 'on_hold' else 'secondary' }} me-2">{{ project.status.replace('_',' ').title() }}</span>
+                        Created by {{ project.created_by.full_name }}
+                    </p>
+                </div>
+            </div>
+            <div class="lc-ph-actions d-flex gap-2">
+                <a href="{{ url_for('projects.list_projects') }}" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i>All Projects
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="container py-4">
     <div class="row">
         <div class="col-lg-8">
-            <!-- Project Header -->
+            <!-- Project Details -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start mb-3">
