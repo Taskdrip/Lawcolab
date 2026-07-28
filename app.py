@@ -154,7 +154,22 @@ with app.app_context():
             db.session.commit()
             logger.info("Super admin created: %s", _sa_email)
         else:
-            logger.info("Super admin already exists: %s", _sa_email)
+            # Always sync role + password so Railway re-deploys pick up changes
+            needs_save = False
+            if existing.role != ROLE_SUPER_ADMIN:
+                existing.role = ROLE_SUPER_ADMIN
+                needs_save = True
+            if not existing.active:
+                existing.active = True
+                needs_save = True
+            # Update password if env var changed (re-hashes on every startup — cheap)
+            if not existing.check_password(_sa_password):
+                existing.set_password(_sa_password)
+                needs_save = True
+                logger.info("Super admin password updated from env var: %s", _sa_email)
+            if needs_save:
+                db.session.commit()
+            logger.info("Super admin verified: %s", _sa_email)
     else:
         logger.warning(
             "SUPER_ADMIN_EMAIL / SUPER_ADMIN_PASSWORD not set — "
@@ -190,6 +205,41 @@ with app.app_context():
             _zb.is_primary = True
             _zb.is_active = True
             db.session.commit()
+
+    # ── Auto-seed directory firms if table is empty ───────────────────────────
+    try:
+        from models import DirectoryLawFirm as _DLF
+        if _DLF.query.count() == 0:
+            from blueprints.directory_admin import _SEED_FIRMS as _sf
+            import json as _json
+            _added = 0
+            for _data in _sf:
+                try:
+                    _firm = _DLF(
+                        name=_data['name'],
+                        city=_data.get('city'),
+                        state=_data.get('state'),
+                        country=_data.get('country', 'Nigeria'),
+                        address=_data.get('address'),
+                        phone=_data.get('phone'),
+                        website=_data.get('website'),
+                        practice_areas_json=_json.dumps(_data.get('practice_areas', [])),
+                        google_rating=_data.get('google_rating'),
+                        google_reviews_count=_data.get('google_reviews_count', 0),
+                        google_maps_url=_data.get('google_maps_url'),
+                        source=_data.get('source', 'google_maps'),
+                        has_website=bool((_data.get('website') or '').strip()),
+                        crm_status='new',
+                        is_active=True,
+                    )
+                    db.session.add(_firm)
+                    _added += 1
+                except Exception:
+                    pass
+            db.session.commit()
+            logger.info("Auto-seeded %d directory firms", _added)
+    except Exception as _e:
+        logger.warning("Directory auto-seed skipped: %s", _e)
 
     # ── Disable the sales popup (use direct checkout from home page instead) ──
     from models import PopupSettings as _PS

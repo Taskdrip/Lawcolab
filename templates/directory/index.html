@@ -3,13 +3,13 @@
 
 {% block additional_css %}
 <style>
-/* ── Directory Hero ── */
+/* ─── Directory Hero ─────────────────────────────────────────────────────── */
 .dir-hero {
     position: relative;
-    min-height: 460px;
+    min-height: 500px;
     display: flex;
     align-items: center;
-    background: linear-gradient(135deg, #0d1b4b 0%, #1a3a6b 40%, #0d2d5b 100%);
+    background: linear-gradient(135deg, #0a1628 0%, #0d1b4b 45%, #0f2d5a 100%);
     overflow: hidden;
 }
 .dir-hero::before {
@@ -17,162 +17,324 @@
     position: absolute;
     inset: 0;
     background: url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1600&q=80') center/cover no-repeat;
-    opacity: 0.12;
+    opacity: 0.10;
+}
+.dir-hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 120px;
+    background: linear-gradient(to bottom, transparent, #f0f4f8);
+    pointer-events: none;
 }
 .dir-hero-content { position: relative; z-index: 2; }
 .dir-hero-badge {
-    display: inline-flex; align-items: center; gap: .45rem;
-    background: rgba(255,215,0,.15); border: 1px solid rgba(255,215,0,.35);
-    color: #FFD700; font-size: .78rem; font-weight: 600;
-    padding: .35rem .85rem; border-radius: 50px; letter-spacing: .05em;
-    margin-bottom: 1.25rem;
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: rgba(255,215,0,.2); border: 1.5px solid rgba(255,215,0,.5);
+    color: #FFD700; font-size: .82rem; font-weight: 700;
+    padding: .4rem 1rem; border-radius: 50px; letter-spacing: .04em;
+    margin-bottom: 1.4rem; text-shadow: none;
 }
-.dir-hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem,5vw,3.2rem); color: #fff; font-weight: 800; line-height: 1.15; }
-.dir-hero p { color: rgba(255,255,255,.75); font-size: 1.1rem; max-width: 600px; }
+.dir-hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    color: #fff; font-weight: 800; line-height: 1.13;
+    text-shadow: 0 2px 20px rgba(0,0,0,.4);
+}
+.dir-hero h1 span { color: #FFD700; }
+.dir-hero .hero-sub {
+    color: rgba(255,255,255,.88);
+    font-size: 1.08rem;
+    max-width: 620px;
+    text-shadow: 0 1px 6px rgba(0,0,0,.5);
+}
 
-/* Search bar */
-.dir-search-bar {
-    background: rgba(255,255,255,.07);
-    border: 1px solid rgba(255,255,255,.18);
-    border-radius: 14px;
-    padding: 1.25rem 1.5rem;
-    backdrop-filter: blur(12px);
-    margin-top: 2rem;
+/* ─── Search Box ─────────────────────────────────────────────────────────── */
+.dir-search-box {
+    background: rgba(255,255,255,.1);
+    border: 1.5px solid rgba(255,255,255,.22);
+    border-radius: 18px;
+    padding: 1.5rem 1.75rem 1.25rem;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    margin-top: 2.5rem;
+    box-shadow: 0 8px 40px rgba(0,0,0,.25);
 }
-.dir-search-bar .form-control,
-.dir-search-bar .form-select {
-    background: rgba(255,255,255,.12);
-    border: 1px solid rgba(255,255,255,.22);
+.dir-search-box .form-label {
+    color: #fff;
+    font-size: .8rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+    margin-bottom: .4rem;
+    display: block;
+    text-transform: uppercase;
+    text-shadow: 0 1px 4px rgba(0,0,0,.6);
+}
+.dir-search-box .form-control,
+.dir-search-box .form-select {
+    background: rgba(255,255,255,.15);
+    border: 1.5px solid rgba(255,255,255,.3);
     color: #fff;
     border-radius: 10px;
+    height: 46px;
+    font-weight: 500;
 }
-.dir-search-bar .form-control::placeholder { color: rgba(255,255,255,.5); }
-.dir-search-bar .form-control:focus,
-.dir-search-bar .form-select:focus {
-    background: rgba(255,255,255,.2);
+.dir-search-box .form-control::placeholder { color: rgba(255,255,255,.55); }
+.dir-search-box .form-select option { background: #0d1b4b; color: #fff; }
+.dir-search-box .form-control:focus,
+.dir-search-box .form-select:focus {
+    background: rgba(255,255,255,.22);
     border-color: #FFD700;
     color: #fff;
-    box-shadow: 0 0 0 3px rgba(255,215,0,.2);
+    box-shadow: 0 0 0 3px rgba(255,215,0,.25);
+    outline: none;
 }
-.dir-search-bar .form-select option { background: #0d1b4b; color: #fff; }
-.btn-search {
+.dir-search-box .form-check-label {
+    color: rgba(255,255,255,.9);
+    font-size: .85rem;
+    font-weight: 500;
+}
+.btn-search-hero {
     background: linear-gradient(135deg, #FFD700, #FFA500);
     color: #0d1b4b;
     border: none;
-    font-weight: 700;
+    font-weight: 800;
     border-radius: 10px;
-    padding: .75rem 2rem;
+    padding: .85rem 1.75rem;
+    font-size: 1rem;
+    height: 46px;
+    display: flex; align-items: center; justify-content: center; gap: .5rem;
     transition: all .25s;
+    white-space: nowrap;
 }
-.btn-search:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,215,0,.4); }
+.btn-search-hero:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(255,165,0,.45);
+    color: #0d1b4b;
+}
 
-/* Stats bar */
-.dir-stats {
+/* ─── Stats Bar ──────────────────────────────────────────────────────────── */
+.dir-stats-bar {
     background: #0d1b4b;
-    padding: .85rem 0;
-    border-bottom: 1px solid rgba(255,255,255,.08);
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255,255,255,.07);
 }
-.dir-stat-item { color: rgba(255,255,255,.7); font-size: .88rem; }
-.dir-stat-item strong { color: #FFD700; font-size: 1.1rem; margin-right: .3rem; }
+.dir-stat { display: flex; align-items: center; gap: .5rem; }
+.dir-stat-num { color: #FFD700; font-size: 1.25rem; font-weight: 800; line-height: 1; }
+.dir-stat-lbl { color: rgba(255,255,255,.7); font-size: .82rem; font-weight: 500; }
 
-/* Spotlight Slider */
-.spotlight-section { background: #f8fafc; padding: 3.5rem 0; }
-.spotlight-title { font-family: 'Playfair Display', serif; font-size: 1.9rem; color: #0d1b4b; font-weight: 700; }
-.spotlight-title span { color: #FFD700; }
-.spotlight-track { display: flex; gap: 1.5rem; overflow-x: auto; padding-bottom: 1rem; scroll-snap-type: x mandatory; scrollbar-width: none; }
+/* ─── Spotlight ──────────────────────────────────────────────────────────── */
+.spotlight-section { background: #f0f4f8; padding: 4rem 0 3rem; }
+.section-eyebrow { font-size: .75rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: #FFD700; margin-bottom: .5rem; }
+.section-title { font-family: 'Playfair Display', serif; font-size: 1.85rem; color: #0d1b4b; font-weight: 700; }
+
+.spotlight-track {
+    display: flex; gap: 1.5rem;
+    overflow-x: auto; padding-bottom: 1rem;
+    scroll-snap-type: x mandatory; scrollbar-width: none;
+}
 .spotlight-track::-webkit-scrollbar { display: none; }
-.spotlight-card {
-    flex: 0 0 300px;
-    scroll-snap-align: start;
-    background: #fff;
-    border-radius: 18px;
-    overflow: hidden;
-    box-shadow: 0 6px 24px rgba(0,0,0,.09);
-    transition: all .3s;
-    cursor: pointer;
-    text-decoration: none;
-    color: inherit;
+.sp-card {
+    flex: 0 0 290px; scroll-snap-align: start;
+    background: #fff; border-radius: 20px;
+    overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,.08);
+    transition: all .3s; text-decoration: none; color: inherit;
 }
-.spotlight-card:hover { transform: translateY(-6px); box-shadow: 0 16px 48px rgba(0,0,0,.16); }
-.spotlight-card-hero {
-    height: 160px;
-    background: linear-gradient(135deg, #0d1b4b, #1a3a6b);
-    position: relative;
-    overflow: hidden;
-}
-.spotlight-card-hero img { width:100%;height:100%;object-fit:cover; }
-.spotlight-card-logo {
-    position: absolute; bottom: -20px; left: 20px;
-    width: 52px; height: 52px; border-radius: 10px;
+.sp-card:hover { transform: translateY(-7px); box-shadow: 0 16px 50px rgba(0,0,0,.15); }
+.sp-hero { height: 155px; background: linear-gradient(135deg, #0d1b4b, #1a3a6b); position: relative; }
+.sp-hero img { width:100%;height:100%;object-fit:cover; }
+.sp-logo {
+    position: absolute; bottom: -22px; left: 18px;
+    width: 54px; height: 54px; border-radius: 12px;
     background: #fff; border: 3px solid #fff;
-    box-shadow: 0 4px 12px rgba(0,0,0,.2);
+    box-shadow: 0 4px 14px rgba(0,0,0,.2);
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.sp-body { padding: 1.85rem 1.25rem 1.1rem; }
+.sp-name { font-weight: 800; font-size: .98rem; color: #1a1a2e; margin-bottom: .2rem; }
+.sp-loc { color: #777; font-size: .79rem; margin-bottom: .65rem; }
+.badge-verified {
+    display: inline-flex; align-items: center; gap: .25rem;
+    background: #e8f5e9; color: #2e7d32; font-size: .68rem;
+    font-weight: 700; padding: .2rem .6rem; border-radius: 50px;
+}
+.badge-featured {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(255,215,0,.95); color: #0d1b4b;
+    font-size: .65rem; font-weight: 900; padding: .25rem .65rem;
+    border-radius: 50px; text-transform: uppercase; letter-spacing: .04em;
+}
+.stars { color: #ffc107; font-size: .75rem; }
+
+/* ─── Main Body ──────────────────────────────────────────────────────────── */
+.dir-body { background: #f0f4f8; padding: 3rem 0 5rem; }
+
+/* Sidebar */
+.dir-sidebar {
+    background: #fff; border-radius: 18px;
+    border: 1px solid #e2e8f0; padding: 1.6rem;
+    position: sticky; top: 82px;
+}
+.filter-head {
+    font-size: .72rem; font-weight: 800; color: #0d1b4b;
+    text-transform: uppercase; letter-spacing: .09em;
+    margin-bottom: .8rem; padding-bottom: .5rem;
+    border-bottom: 2px solid #f0f4f8;
+    display: flex; align-items: center; justify-content: space-between;
+}
+.filter-group { margin-bottom: 1.5rem; }
+.filter-group-label {
+    font-size: .72rem; font-weight: 700; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: .08em; margin-bottom: .65rem;
+}
+.filter-radio .form-check { margin-bottom: .3rem; }
+.filter-radio .form-check-input { cursor: pointer; }
+.filter-radio .form-check-label { font-size: .83rem; color: #374151; cursor: pointer; }
+.filter-radio .form-check-input:checked ~ .form-check-label { color: #0d1b4b; font-weight: 600; }
+.filter-scroll { max-height: 220px; overflow-y: auto; scrollbar-width: thin; }
+.filter-scroll::-webkit-scrollbar { width: 4px; }
+.filter-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
+.btn-clear-all {
+    display: block; width: 100%; text-align: center;
+    background: #f8fafc; border: 1px solid #e2e8f0;
+    color: #64748b; font-size: .82rem; font-weight: 600;
+    padding: .55rem; border-radius: 9px; text-decoration: none;
+    transition: all .2s;
+}
+.btn-clear-all:hover { background: #0d1b4b; color: #fff; border-color: #0d1b4b; }
+
+/* Results */
+.results-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.25rem; flex-wrap: wrap; gap: .75rem;
+}
+.results-count { font-size: .88rem; color: #64748b; font-weight: 500; }
+.results-count strong { color: #0d1b4b; }
+
+/* Firm Cards */
+.firm-card {
+    background: #fff; border-radius: 18px;
+    border: 1.5px solid #e8eef4; overflow: hidden;
+    transition: all .3s; text-decoration: none; color: inherit;
+    display: flex; flex-direction: column; height: 100%;
+}
+.firm-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 50px rgba(13,27,75,.12);
+    border-color: #0d1b4b22;
+}
+.firm-card-banner {
+    height: 130px;
+    background: linear-gradient(135deg, #0d1b4b 0%, #1a4d7a 100%);
+    position: relative; overflow: hidden;
+}
+.firm-card-banner img { width:100%;height:100%;object-fit:cover; }
+.firm-card-logo {
+    position: absolute; bottom: -20px; left: 16px;
+    width: 50px; height: 50px; border-radius: 12px;
+    background: #fff; border: 3px solid #fff;
+    box-shadow: 0 3px 12px rgba(0,0,0,.15);
     display: flex; align-items: center; justify-content: center;
     overflow: hidden;
 }
-.spotlight-card-body { padding: 1.75rem 1.25rem 1.25rem; }
-.spotlight-card-name { font-weight: 700; font-size: 1rem; color: #1a1a2e; margin-bottom: .25rem; }
-.spotlight-badge-verified {
-    display: inline-flex; align-items: center; gap: .25rem;
-    background: #e8f5e9; color: #2e7d32; font-size: .7rem;
-    font-weight: 600; padding: .2rem .6rem; border-radius: 50px;
-    margin-left: .4rem;
+.firm-card-body { padding: 1.5rem 1.1rem .9rem; flex: 1; }
+.firm-card-name {
+    font-weight: 800; color: #0f172a; font-size: .97rem;
+    margin-bottom: .25rem; line-height: 1.3;
+    display: flex; align-items: center; gap: .4rem; flex-wrap: wrap;
 }
-.spotlight-rating { color: #ffc107; font-size: .8rem; }
-
-/* Filter sidebar */
-.dir-filters {
-    background: #fff;
-    border-radius: 16px;
-    border: 1px solid #e8ecf0;
-    padding: 1.5rem;
-    position: sticky;
-    top: 80px;
+.firm-card-location { color: #64748b; font-size: .8rem; margin-bottom: .75rem; }
+.firm-card-location i { color: #0d1b4b; }
+.area-pill {
+    background: #eef2ff; color: #3730a3;
+    font-size: .7rem; font-weight: 700;
+    padding: .2rem .6rem; border-radius: 50px;
 }
-.filter-section-title { font-size: .78rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: .08em; margin-bottom: .75rem; }
-
-/* Firm cards */
-.firm-card {
-    background: #fff;
-    border-radius: 16px;
-    border: 1px solid #e8ecf0;
-    overflow: hidden;
-    transition: all .3s;
-    text-decoration: none;
-    color: inherit;
-    display: block;
+.firm-card-footer {
+    padding: .8rem 1.1rem; border-top: 1px solid #f1f5f9;
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fafbfc;
 }
-.firm-card:hover { transform: translateY(-5px); box-shadow: 0 16px 48px rgba(0,0,0,.12); border-color: transparent; }
-.firm-card-hero { height: 140px; background: linear-gradient(135deg, #0d1b4b, #1a6b9b); position: relative; }
-.firm-card-hero img { width:100%;height:100%;object-fit:cover; }
-.firm-card-logo {
-    position: absolute; bottom: -18px; left: 16px;
-    width: 48px; height: 48px; border-radius: 10px;
-    background: #fff; border: 3px solid #fff;
-    box-shadow: 0 3px 10px rgba(0,0,0,.15);
-    display: flex; align-items: center; justify-content: center; overflow: hidden;
+.btn-view-profile {
+    font-size: .78rem; font-weight: 700; color: #0d1b4b;
+    display: flex; align-items: center; gap: .3rem;
 }
-.firm-card-body { padding: 1.5rem 1.1rem 1rem; }
-.firm-card-name { font-weight: 700; color: #1a1a2e; font-size: .98rem; margin-bottom: .2rem; display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
-.firm-card-location { color: #888; font-size: .82rem; margin-bottom: .7rem; }
-.firm-card-areas { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .9rem; }
-.area-chip { background: #f0f4ff; color: #0d1b4b; font-size: .72rem; font-weight: 600; padding: .2rem .65rem; border-radius: 50px; }
-.firm-card-footer { padding: .85rem 1.1rem; border-top: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; }
 
-/* External firms strip */
-.ext-strip { background: #fff; border: 1px solid #e8ecf0; border-radius: 14px; padding: 1.25rem 1.5rem; margin-bottom: .85rem; display: flex; align-items: center; gap: 1.25rem; transition: all .25s; }
-.ext-strip:hover { border-color: #0d1b4b; box-shadow: 0 4px 16px rgba(13,27,75,.08); }
-.ext-icon { width: 48px; height: 48px; border-radius: 10px; background: #f0f4ff; display: flex; align-items: center; justify-content: center; color: #0d1b4b; font-size: 1.3rem; flex-shrink: 0; }
-.ext-badge { background: #fff3cd; color: #856404; font-size: .68rem; font-weight: 700; padding: .15rem .55rem; border-radius: 50px; }
-.source-chip { background: #e8f5e9; color: #2e7d32; font-size: .7rem; font-weight: 700; padding: .15rem .55rem; border-radius: 50px; }
+/* External firm rows */
+.ext-row {
+    background: #fff; border: 1.5px solid #e8eef4;
+    border-radius: 14px; padding: 1.1rem 1.4rem;
+    margin-bottom: .7rem; display: flex;
+    align-items: center; gap: 1.1rem;
+    transition: all .25s; text-decoration: none; color: inherit;
+}
+.ext-row:hover { border-color: #0d1b4b; box-shadow: 0 4px 18px rgba(13,27,75,.1); }
+.ext-icon {
+    width: 46px; height: 46px; border-radius: 12px;
+    background: #eef2ff; display: flex; align-items: center;
+    justify-content: center; color: #0d1b4b; font-size: 1.2rem; flex-shrink: 0;
+}
+.ext-name { font-weight: 700; color: #0f172a; font-size: .93rem; }
+.ext-location { color: #64748b; font-size: .78rem; }
+.tag-maps { background: #fff3e0; color: #e65100; font-size: .67rem; font-weight: 700; padding: .15rem .5rem; border-radius: 50px; }
+.tag-manual { background: #e8f5e9; color: #1b5e20; font-size: .67rem; font-weight: 700; padding: .15rem .5rem; border-radius: 50px; }
+.tag-no-site { background: #fff8e1; color: #f57f17; font-size: .67rem; font-weight: 700; padding: .15rem .5rem; border-radius: 50px; }
 
-/* Pagination */
-.page-link { color: #0d1b4b; border-radius: 8px !important; }
-.page-item.active .page-link { background: #0d1b4b; border-color: #0d1b4b; }
+/* Section dividers */
+.section-divider {
+    display: flex; align-items: center; gap: 1rem; margin: 1.75rem 0 1.25rem;
+}
+.section-divider-label {
+    font-size: .78rem; font-weight: 800; color: #0d1b4b;
+    text-transform: uppercase; letter-spacing: .08em; white-space: nowrap;
+}
+.section-divider-line { flex: 1; height: 1px; background: #e2e8f0; }
 
+/* Active filter chips */
+.filter-chip {
+    display: inline-flex; align-items: center; gap: .35rem;
+    background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe;
+    font-size: .78rem; font-weight: 600; padding: .3rem .75rem; border-radius: 50px;
+}
+.filter-chip a { color: #6366f1; text-decoration: none; font-weight: 700; }
+.filter-chip a:hover { color: #dc2626; }
+
+/* Empty state */
+.empty-state { text-align: center; padding: 5rem 2rem; }
+.empty-icon { font-size: 4rem; color: #cbd5e1; margin-bottom: 1.25rem; }
+.empty-title { font-size: 1.5rem; font-weight: 700; color: #334155; margin-bottom: .75rem; }
+.empty-sub { color: #64748b; max-width: 400px; margin: 0 auto 2rem; font-size: .95rem; }
+
+/* CTA banner */
+.cta-banner {
+    background: linear-gradient(135deg, #0d1b4b 0%, #163060 50%, #0f2d5a 100%);
+    padding: 5rem 0;
+    position: relative; overflow: hidden;
+}
+.cta-banner::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1400&q=70') center/cover;
+    opacity: .05;
+}
+.cta-banner-content { position: relative; z-index: 2; }
+
+/* Mobile search sheet */
+.mobile-filter-btn {
+    display: none;
+    background: #0d1b4b; color: #fff; border: none;
+    padding: .7rem 1.5rem; border-radius: 50px; font-weight: 700;
+    font-size: .88rem; align-items: center; gap: .5rem;
+}
+
+@media (max-width: 991px) {
+    .mobile-filter-btn { display: inline-flex; }
+    .dir-hero { min-height: 420px; }
+    .dir-hero::after { display: none; }
+    .dir-search-box .row > div { margin-bottom: .6rem; }
+}
 @media (max-width: 768px) {
-    .dir-hero { min-height: 360px; }
-    .dir-search-bar .row > div { margin-bottom: .75rem; }
-    .spotlight-card { flex: 0 0 260px; }
+    .sp-card { flex: 0 0 260px; }
 }
 </style>
 {% endblock %}
@@ -181,127 +343,194 @@
 
 <!-- ── Hero ──────────────────────────────────────────────────────────────── -->
 <section class="dir-hero">
-  <div class="container dir-hero-content">
-    <div class="row justify-content-center text-center">
-      <div class="col-lg-10">
-        <div class="dir-hero-badge"><i class="fas fa-globe-africa"></i> Africa's #1 Legal Directory</div>
-        <h1>Find the Right<br>Law Firm, <span style="color:#FFD700">Anywhere</span></h1>
-        <p class="mx-auto">Search verified law firms across Nigeria and beyond. Filter by practice area, location, and more — powered by LAWCOLAB's smart directory.</p>
+  <div class="container dir-hero-content py-5">
+    <div class="row justify-content-center">
+      <div class="col-xl-10 col-lg-11 text-center">
 
-        <!-- Search Bar -->
-        <form method="GET" action="{{ url_for('directory.index') }}" class="dir-search-bar text-start mt-4">
-          <div class="row g-2 align-items-end">
-            <div class="col-md-4">
-              <label class="form-label text-white-50 small mb-1">Search firm or keyword</label>
-              <input type="text" name="q" class="form-control" placeholder="e.g. Corporate law, IP..." value="{{ filters.q }}">
+        <div class="dir-hero-badge">
+          <i class="fas fa-globe-africa"></i>
+          Africa's #1 Legal Directory &nbsp;·&nbsp; Global Reach
+        </div>
+
+        <h1 class="mb-3">
+          Find the Right Law Firm,<br>
+          <span>Anywhere in the World</span>
+        </h1>
+
+        <p class="hero-sub mx-auto mb-0">
+          Search verified law firms across Nigeria, Ghana, the US, UK and beyond.
+          Filter by practice area, country, state and more — powered by LAWCOLAB's smart directory.
+        </p>
+
+        <!-- ── Advanced Search Box ── -->
+        <form method="GET" action="{{ url_for('directory.index') }}" class="dir-search-box text-start mt-4" id="heroSearchForm">
+          <div class="row g-2 align-items-end mb-2">
+
+            <!-- Keyword -->
+            <div class="col-md-4 col-12">
+              <label class="form-label">🔍 Search firm or keyword</label>
+              <input type="text" name="q" class="form-control"
+                     placeholder="e.g. Corporate law, Aluko &amp; Oyebode…"
+                     value="{{ filters.q }}" autocomplete="off">
             </div>
-            <div class="col-md-3">
-              <label class="form-label text-white-50 small mb-1">State</label>
-              <select name="state" class="form-select">
-                <option value="">All States</option>
-                {% for s in states %}
-                <option value="{{ s }}" {% if filters.state == s %}selected{% endif %}>{{ s }}</option>
+
+            <!-- Country -->
+            <div class="col-md-3 col-6">
+              <label class="form-label">🌍 Country</label>
+              <select name="country" class="form-select" id="heroCountry" onchange="syncHeroState(this.value)">
+                <option value="">All Countries</option>
+                {% for c in countries %}
+                <option value="{{ c }}" {% if filters.country == c %}selected{% endif %}>{{ c }}</option>
                 {% endfor %}
               </select>
             </div>
-            <div class="col-md-3">
-              <label class="form-label text-white-50 small mb-1">Practice Area</label>
-              <select name="practice" class="form-select">
-                <option value="">All Areas</option>
+
+            <!-- State / Region -->
+            <div class="col-md-3 col-6">
+              <label class="form-label">📍 State / Region</label>
+              <select name="state" class="form-select" id="heroState">
+                <option value="">All Regions</option>
+                {% for c, regions in country_regions.items() %}
+                  {% for s in regions %}
+                  <option value="{{ s }}"
+                          data-country="{{ c }}"
+                          {% if filters.state == s %}selected{% endif %}>{{ s }}</option>
+                  {% endfor %}
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Search button -->
+            <div class="col-md-2 col-12">
+              <button type="submit" class="btn btn-search-hero w-100">
+                <i class="fas fa-search"></i> Search
+              </button>
+            </div>
+          </div>
+
+          <!-- Row 2: Practice area + filters -->
+          <div class="row g-2 align-items-center">
+            <div class="col-md-4 col-sm-6">
+              <select name="practice" class="form-select" style="height:40px;font-size:.85rem;">
+                <option value="">All Practice Areas</option>
                 {% for p in practice_areas %}
                 <option value="{{ p }}" {% if filters.practice == p %}selected{% endif %}>{{ p }}</option>
                 {% endfor %}
               </select>
             </div>
-            <div class="col-md-2">
-              <button type="submit" class="btn btn-search w-100">
-                <i class="fas fa-search me-1"></i> Search
-              </button>
-            </div>
-          </div>
-          <div class="mt-2">
-            <div class="form-check form-check-inline">
-              <input class="form-check-input" type="checkbox" name="verified" value="1" id="verifiedOnly" {% if filters.verified %}checked{% endif %}>
-              <label class="form-check-label text-white-50 small" for="verifiedOnly"><i class="fas fa-check-circle text-success me-1"></i>Verified firms only</label>
+            <div class="col-auto">
+              <div class="form-check mb-0 d-flex align-items-center gap-2">
+                <input class="form-check-input" type="checkbox" name="verified" value="1"
+                       id="verifiedHero" {% if filters.verified %}checked{% endif %}>
+                <label class="form-check-label" for="verifiedHero" style="font-size:.83rem;">
+                  <i class="fas fa-check-circle" style="color:#4ade80;"></i>
+                  Verified firms only
+                </label>
+              </div>
             </div>
           </div>
         </form>
+
       </div>
     </div>
   </div>
 </section>
 
-<!-- Stats Bar -->
-<div class="dir-stats">
+<!-- ── Stats Bar ──────────────────────────────────────────────────────────── -->
+<div class="dir-stats-bar">
   <div class="container">
-    <div class="d-flex flex-wrap gap-4 justify-content-center">
-      <div class="dir-stat-item"><strong>{{ total_platform + total_external }}</strong> Law Firms Listed</div>
-      <div class="dir-stat-item"><strong>{{ total_platform }}</strong> Verified Platform Members</div>
-      <div class="dir-stat-item"><strong>{{ total_external }}</strong> Directory Firms</div>
-      <div class="dir-stat-item"><strong>37</strong> States Covered</div>
-      <div class="dir-stat-item"><i class="fas fa-robot text-warning me-1"></i> Powered by LAWCOLAB AI Robot</div>
+    <div class="row g-0 justify-content-center text-center">
+      <div class="col-6 col-md-3 py-2 border-end border-white border-opacity-10">
+        <div class="dir-stat justify-content-center">
+          <div>
+            <div class="dir-stat-num">{{ (total_platform + total_external) or '150+' }}</div>
+            <div class="dir-stat-lbl">Law Firms Listed</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3 py-2 border-end border-white border-opacity-10">
+        <div class="dir-stat justify-content-center">
+          <div>
+            <div class="dir-stat-num">{{ total_platform }}</div>
+            <div class="dir-stat-lbl">Platform Members</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3 py-2 border-end border-white border-opacity-10">
+        <div class="dir-stat justify-content-center">
+          <div>
+            <div class="dir-stat-num">{{ countries_covered or '6' }}+</div>
+            <div class="dir-stat-lbl">Countries</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3 py-2">
+        <div class="dir-stat justify-content-center">
+          <div>
+            <div class="dir-stat-num" style="font-size:.95rem;"><i class="fas fa-robot" style="color:#FFD700;"></i> AI</div>
+            <div class="dir-stat-lbl">Powered Robot</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ── Spotlight Slider ───────────────────────────────────────────────────── -->
+<!-- ── Spotlight Slider ────────────────────────────────────────────────────── -->
 {% if spotlight %}
 <section class="spotlight-section">
   <div class="container">
-    <div class="d-flex align-items-center justify-content-between mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
       <div>
-        <div class="spotlight-title">🌟 Firms in the <span>Spotlight</span></div>
-        <p class="text-muted mb-0 mt-1" style="font-size:.9rem">Featured & verified members of the LAWCOLAB directory</p>
+        <div class="section-eyebrow"><i class="fas fa-star"></i> Featured</div>
+        <div class="section-title">Firms in the Spotlight</div>
+        <p class="text-muted mb-0 mt-1" style="font-size:.88rem;">Verified flagship members of the LAWCOLAB directory</p>
       </div>
       <div class="d-flex gap-2">
-        <button class="btn btn-outline-secondary btn-sm rounded-circle" id="sliderPrev" style="width:36px;height:36px;padding:0;"><i class="fas fa-chevron-left"></i></button>
-        <button class="btn btn-outline-secondary btn-sm rounded-circle" id="sliderNext" style="width:36px;height:36px;padding:0;"><i class="fas fa-chevron-right"></i></button>
+        <button class="btn btn-outline-secondary btn-sm rounded-circle" id="spPrev"
+                style="width:38px;height:38px;padding:0;"><i class="fas fa-chevron-left fa-sm"></i></button>
+        <button class="btn btn-outline-secondary btn-sm rounded-circle" id="spNext"
+                style="width:38px;height:38px;padding:0;"><i class="fas fa-chevron-right fa-sm"></i></button>
       </div>
     </div>
-    <div class="spotlight-track" id="spotlightTrack">
+    <div class="spotlight-track" id="spTrack">
       {% for sc in spotlight %}
-      <a href="{{ url_for('directory.firm_profile', showcase_id=sc.id) }}" class="spotlight-card">
-        <div class="spotlight-card-hero">
-          {% if sc.hero_image_url %}<img src="{{ sc.hero_image_url }}" alt="{{ sc.public_title }}">{% endif %}
-          <div class="spotlight-card-logo">
+      <a href="{{ url_for('directory.firm_profile', showcase_id=sc.id) }}" class="sp-card">
+        <div class="sp-hero">
+          {% if sc.hero_image_url %}<img src="{{ sc.hero_image_url }}" alt="">{% endif %}
+          <div class="sp-logo">
             {% if sc.logo_image_url %}
               <img src="{{ sc.logo_image_url }}" alt="" style="width:100%;height:100%;object-fit:cover;">
             {% else %}
-              <i class="fas fa-balance-scale" style="color:#0d1b4b;font-size:1.3rem;"></i>
+              <i class="fas fa-balance-scale" style="color:#0d1b4b;font-size:1.2rem;"></i>
             {% endif %}
           </div>
-          {% if sc.is_featured %}
-          <div style="position:absolute;top:10px;right:10px;background:rgba(255,215,0,.9);color:#0d1b4b;font-size:.68rem;font-weight:800;padding:.25rem .65rem;border-radius:50px;">FEATURED</div>
-          {% endif %}
+          {% if sc.is_featured %}<div class="badge-featured">Featured</div>{% endif %}
         </div>
-        <div class="spotlight-card-body">
-          <div class="spotlight-card-name">
+        <div class="sp-body">
+          <div class="sp-name">
             {{ sc.public_title or sc.law_firm.name }}
-            {% if sc.is_verified %}<span class="spotlight-badge-verified"><i class="fas fa-check-circle"></i>Verified</span>{% endif %}
+            {% if sc.is_verified %}<span class="badge-verified"><i class="fas fa-check-circle fa-xs"></i></span>{% endif %}
           </div>
-          <div class="text-muted" style="font-size:.8rem;margin-bottom:.6rem;">
-            <i class="fas fa-map-marker-alt me-1" style="color:#0d1b4b;"></i>
+          <div class="sp-loc">
+            <i class="fas fa-map-marker-alt me-1" style="color:#0d1b4b;font-size:.7rem;"></i>
             {% if sc.primary_location %}
               {{ sc.primary_location.get('city','') }}{% if sc.primary_location.get('state') %}, {{ sc.primary_location.get('state') }}{% endif %}
-            {% elif sc.law_firm.address %}
-              {{ sc.law_firm.address.split(',')[0] }}
-            {% endif %}
+            {% elif sc.law_firm.address %}{{ sc.law_firm.address.split(',')[0] }}{% endif %}
           </div>
           {% if sc.practice_areas %}
           <div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.7rem;">
             {% for area in sc.practice_areas[:2] %}
-            <span style="background:#f0f4ff;color:#0d1b4b;font-size:.68rem;font-weight:600;padding:.15rem .55rem;border-radius:50px;">{{ area }}</span>
+            <span class="area-pill">{{ area }}</span>
             {% endfor %}
           </div>
           {% endif %}
           <div class="d-flex align-items-center justify-content-between">
-            <div class="spotlight-rating">
-              {% for i in range(1,6) %}
-              <i class="fas fa-star{% if i > sc.average_rating|int %} text-muted{% endif %}" style="font-size:.75rem;"></i>
-              {% endfor %}
-              <span class="text-muted ms-1" style="font-size:.78rem;">{{ "%.1f"|format(sc.average_rating|float) }} ({{ sc.total_reviews }})</span>
+            <div class="stars">
+              {% for i in range(1,6) %}<i class="fas fa-star{% if i > sc.average_rating|int %} text-muted{% endif %}" style="font-size:.7rem;"></i>{% endfor %}
+              <span class="text-muted ms-1" style="font-size:.75rem;">{{ "%.1f"|format(sc.average_rating|float) }}</span>
             </div>
-            <span style="color:#0d1b4b;font-size:.78rem;font-weight:600;">View <i class="fas fa-arrow-right ms-1"></i></span>
+            <span style="color:#0d1b4b;font-size:.76rem;font-weight:700;">View <i class="fas fa-arrow-right fa-xs ms-1"></i></span>
           </div>
         </div>
       </a>
@@ -312,194 +541,376 @@
 {% endif %}
 
 <!-- ── Main Directory ─────────────────────────────────────────────────────── -->
-<section class="py-5" style="background:#f8fafc;">
+<section class="dir-body">
   <div class="container">
+
+    <!-- Mobile filter button -->
+    <div class="d-lg-none mb-3">
+      <button class="mobile-filter-btn" data-bs-toggle="offcanvas" data-bs-target="#filterOffcanvas">
+        <i class="fas fa-sliders-h"></i> Filters
+        {% if filters.state or filters.country or filters.practice or filters.verified %}
+        <span class="badge bg-warning text-dark ms-1" style="font-size:.7rem;">Active</span>
+        {% endif %}
+      </button>
+    </div>
+
     <div class="row g-4">
 
-      <!-- Sidebar Filters -->
+      <!-- ── Sidebar (Desktop) ── -->
       <div class="col-lg-3 d-none d-lg-block">
-        <div class="dir-filters">
-          <div class="filter-section-title">Filters</div>
-          <form method="GET" action="{{ url_for('directory.index') }}" id="sidebarFilterForm">
+        <div class="dir-sidebar">
+          <form method="GET" action="{{ url_for('directory.index') }}" id="sidebarForm">
             <input type="hidden" name="q" value="{{ filters.q }}">
-            <div class="mb-4">
-              <div class="filter-section-title">State</div>
-              {% for s in states %}
-              <div class="form-check mb-1">
-                <input class="form-check-input" type="radio" name="state" value="{{ s }}" id="st_{{ loop.index }}"
-                  {% if filters.state == s %}checked{% endif %} onchange="this.form.submit()">
-                <label class="form-check-label small" for="st_{{ loop.index }}">{{ s }}</label>
+
+            <div class="filter-head">
+              <span><i class="fas fa-sliders-h me-1"></i> Filters</span>
+              <a href="{{ url_for('directory.index') }}" class="text-muted" style="font-size:.72rem;text-decoration:none;">Clear all</a>
+            </div>
+
+            <!-- Country filter -->
+            <div class="filter-group">
+              <div class="filter-group-label">Country</div>
+              <select name="country" class="form-select form-select-sm" id="sidebarCountry"
+                      onchange="syncSidebarState(this.value); this.form.submit()">
+                <option value="">All Countries</option>
+                {% for c in countries %}
+                <option value="{{ c }}" {% if filters.country == c %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- State/Region filter -->
+            <div class="filter-group">
+              <div class="filter-group-label">State / Region</div>
+              <select name="state" class="form-select form-select-sm" id="sidebarState"
+                      onchange="this.form.submit()">
+                <option value="">All Regions</option>
+                {% for c, regions in country_regions.items() %}
+                  {% for s in regions %}
+                  <option value="{{ s }}" data-country="{{ c }}"
+                          {% if filters.state == s %}selected{% endif %}>{{ s }}</option>
+                  {% endfor %}
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Practice Area -->
+            <div class="filter-group">
+              <div class="filter-group-label">Practice Area</div>
+              <div class="filter-scroll filter-radio">
+                <div class="form-check mb-1">
+                  <input class="form-check-input" type="radio" name="practice" value=""
+                         id="pa_all" {% if not filters.practice %}checked{% endif %}
+                         onchange="this.form.submit()">
+                  <label class="form-check-label" for="pa_all">All Areas</label>
+                </div>
+                {% for p in practice_areas %}
+                <div class="form-check mb-1">
+                  <input class="form-check-input" type="radio" name="practice" value="{{ p }}"
+                         id="pa_{{ loop.index }}" {% if filters.practice == p %}checked{% endif %}
+                         onchange="this.form.submit()">
+                  <label class="form-check-label" for="pa_{{ loop.index }}">{{ p }}</label>
+                </div>
+                {% endfor %}
               </div>
-              {% endfor %}
-              {% if filters.state %}
-              <a href="?{{ request.query_string.decode().replace('state='+filters.state,'') }}" class="text-danger small">Clear state</a>
-              {% endif %}
             </div>
-            <div class="mb-4">
-              <div class="filter-section-title">Practice Area</div>
-              {% for p in practice_areas %}
-              <div class="form-check mb-1">
-                <input class="form-check-input" type="radio" name="practice" value="{{ p }}" id="pa_{{ loop.index }}"
-                  {% if filters.practice == p %}checked{% endif %} onchange="this.form.submit()">
-                <label class="form-check-label small" for="pa_{{ loop.index }}">{{ p }}</label>
+
+            <!-- Verified only -->
+            <div class="filter-group">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="verified" value="1"
+                       id="verSidebar" {% if filters.verified %}checked{% endif %}
+                       onchange="this.form.submit()">
+                <label class="form-check-label" style="font-size:.83rem;color:#374151;" for="verSidebar">
+                  <i class="fas fa-check-circle" style="color:#16a34a;"></i>
+                  Verified firms only
+                </label>
               </div>
-              {% endfor %}
             </div>
-            <div class="form-check mb-3">
-              <input class="form-check-input" type="checkbox" name="verified" value="1" id="verSidebar"
-                {% if filters.verified %}checked{% endif %} onchange="this.form.submit()">
-              <label class="form-check-label small" for="verSidebar"><i class="fas fa-check-circle text-success me-1"></i>Verified only</label>
-            </div>
-            <a href="{{ url_for('directory.index') }}" class="btn btn-sm btn-outline-secondary w-100">Clear All</a>
+
+            <a href="{{ url_for('directory.index') }}" class="btn-clear-all mt-2">
+              <i class="fas fa-times me-1"></i>Clear All Filters
+            </a>
           </form>
         </div>
       </div>
 
-      <!-- Results -->
+      <!-- ── Results ── -->
       <div class="col-lg-9">
 
-        <!-- Active filters display -->
-        {% if filters.q or filters.state or filters.practice or filters.verified %}
+        <!-- Active filter chips -->
+        {% if filters.q or filters.state or filters.country or filters.practice or filters.verified %}
         <div class="d-flex flex-wrap gap-2 mb-3">
-          {% if filters.q %}<span class="badge bg-primary">{{ filters.q }} <a href="#" class="text-white ms-1" onclick="removeFilter('q')">×</a></span>{% endif %}
-          {% if filters.state %}<span class="badge" style="background:#0d1b4b">{{ filters.state }} <a href="{{ url_for('directory.index', q=filters.q, practice=filters.practice) }}" class="text-white ms-1">×</a></span>{% endif %}
-          {% if filters.practice %}<span class="badge bg-secondary">{{ filters.practice }} <a href="{{ url_for('directory.index', q=filters.q, state=filters.state) }}" class="text-white ms-1">×</a></span>{% endif %}
-          {% if filters.verified %}<span class="badge bg-success">Verified Only <a href="{{ url_for('directory.index', q=filters.q, state=filters.state, practice=filters.practice) }}" class="text-white ms-1">×</a></span>{% endif %}
+          {% if filters.q %}
+          <span class="filter-chip">
+            <i class="fas fa-search fa-xs"></i> "{{ filters.q }}"
+            <a href="{{ url_for('directory.index', state=filters.state, country=filters.country, practice=filters.practice) }}">×</a>
+          </span>
+          {% endif %}
+          {% if filters.country %}
+          <span class="filter-chip">
+            <i class="fas fa-globe fa-xs"></i> {{ filters.country }}
+            <a href="{{ url_for('directory.index', q=filters.q, state=filters.state, practice=filters.practice) }}">×</a>
+          </span>
+          {% endif %}
+          {% if filters.state %}
+          <span class="filter-chip">
+            <i class="fas fa-map-marker-alt fa-xs"></i> {{ filters.state }}
+            <a href="{{ url_for('directory.index', q=filters.q, country=filters.country, practice=filters.practice) }}">×</a>
+          </span>
+          {% endif %}
+          {% if filters.practice %}
+          <span class="filter-chip">
+            <i class="fas fa-briefcase fa-xs"></i> {{ filters.practice }}
+            <a href="{{ url_for('directory.index', q=filters.q, country=filters.country, state=filters.state) }}">×</a>
+          </span>
+          {% endif %}
+          {% if filters.verified %}
+          <span class="filter-chip" style="background:#e8f5e9;color:#15803d;border-color:#86efac;">
+            <i class="fas fa-check-circle fa-xs"></i> Verified Only
+            <a href="{{ url_for('directory.index', q=filters.q, country=filters.country, state=filters.state, practice=filters.practice) }}" style="color:#15803d;">×</a>
+          </span>
+          {% endif %}
         </div>
         {% endif %}
 
-        <!-- Platform Showcase Cards -->
+        <!-- Results header -->
+        <div class="results-header">
+          <span class="results-count">
+            Showing <strong>{{ showcases.total + ext_firms|length }}</strong> firms
+            {% if filters.country or filters.state %}in <strong>{{ filters.state or filters.country }}</strong>{% endif %}
+          </span>
+        </div>
+
+        <!-- ── Platform Members ── -->
         {% if showcases.items %}
-        <h6 class="text-muted mb-3" style="font-size:.85rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">
-          <i class="fas fa-star text-warning me-1"></i>LAWCOLAB Members
-          <span class="ms-2 badge bg-warning text-dark">{{ showcases.total }}</span>
-        </h6>
-        <div class="row g-3 mb-5">
+        <div class="section-divider">
+          <div class="section-divider-line"></div>
+          <div class="section-divider-label">
+            <i class="fas fa-star text-warning me-1"></i>LAWCOLAB Members
+            <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem;">{{ showcases.total }}</span>
+          </div>
+          <div class="section-divider-line"></div>
+        </div>
+
+        <div class="row g-3 mb-4">
           {% for sc in showcases.items %}
           <div class="col-md-6 col-xl-4">
-            <a href="{{ url_for('directory.firm_profile', showcase_id=sc.id) }}" class="firm-card h-100">
-              <div class="firm-card-hero">
+            <a href="{{ url_for('directory.firm_profile', showcase_id=sc.id) }}" class="firm-card">
+              <div class="firm-card-banner">
                 {% if sc.hero_image_url %}<img src="{{ sc.hero_image_url }}" alt="">{% endif %}
                 <div class="firm-card-logo">
-                  {% if sc.logo_image_url %}<img src="{{ sc.logo_image_url }}" alt="" style="width:100%;height:100%;object-fit:cover;">
-                  {% else %}<i class="fas fa-balance-scale" style="color:#0d1b4b;"></i>{% endif %}
+                  {% if sc.logo_image_url %}
+                    <img src="{{ sc.logo_image_url }}" alt="" style="width:100%;height:100%;object-fit:cover;">
+                  {% else %}
+                    <i class="fas fa-balance-scale" style="color:#0d1b4b;font-size:1.1rem;"></i>
+                  {% endif %}
                 </div>
-                {% if sc.is_featured %}
-                <div style="position:absolute;top:8px;right:8px;background:#FFD700;color:#0d1b4b;font-size:.65rem;font-weight:800;padding:.2rem .55rem;border-radius:50px;">FEATURED</div>
-                {% endif %}
+                {% if sc.is_featured %}<div class="badge-featured" style="top:8px;right:8px;">Featured</div>{% endif %}
               </div>
               <div class="firm-card-body">
                 <div class="firm-card-name">
                   {{ sc.public_title or sc.law_firm.name }}
-                  {% if sc.is_verified %}<span class="spotlight-badge-verified" style="font-size:.65rem;"><i class="fas fa-check-circle"></i></span>{% endif %}
+                  {% if sc.is_verified %}<span class="badge-verified" style="font-size:.65rem;"><i class="fas fa-check-circle fa-xs"></i></span>{% endif %}
                 </div>
                 <div class="firm-card-location">
                   <i class="fas fa-map-marker-alt me-1"></i>
-                  {% if sc.primary_location %}{{ sc.primary_location.get('city','') }}{% if sc.primary_location.get('state') %}, {{ sc.primary_location.get('state') }}{% endif %}
+                  {% if sc.primary_location %}
+                    {{ sc.primary_location.get('city','') }}{% if sc.primary_location.get('state') %}, {{ sc.primary_location.get('state') }}{% endif %}
                   {% elif sc.law_firm.address %}{{ sc.law_firm.address.split(',')[0] }}
                   {% else %}Nigeria{% endif %}
                 </div>
                 {% if sc.practice_areas %}
-                <div class="firm-card-areas">
+                <div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.75rem;">
                   {% for area in sc.practice_areas[:3] %}
-                  <span class="area-chip">{{ area }}</span>
+                  <span class="area-pill">{{ area }}</span>
                   {% endfor %}
-                  {% if sc.practice_areas|length > 3 %}<span class="area-chip">+{{ sc.practice_areas|length - 3 }}</span>{% endif %}
+                  {% if sc.practice_areas|length > 3 %}
+                  <span class="area-pill" style="background:#f8f9fa;color:#6c757d;">+{{ sc.practice_areas|length - 3 }}</span>
+                  {% endif %}
                 </div>
                 {% endif %}
-                <p class="text-muted" style="font-size:.82rem;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:0;">
-                  {{ sc.public_description or sc.law_firm.description or 'Professional legal services' }}
+                <p class="text-muted mb-0" style="font-size:.81rem;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                  {{ sc.public_description or sc.law_firm.description or 'Professional legal services firm' }}
                 </p>
               </div>
               <div class="firm-card-footer">
-                <div style="color:#ffc107;font-size:.78rem;">
+                <div class="stars" style="font-size:.76rem;">
                   {% for i in range(1,6) %}<i class="fas fa-star{% if i > sc.average_rating|int %} text-muted{% endif %}"></i>{% endfor %}
                   <span class="text-muted ms-1">{{ "%.1f"|format(sc.average_rating|float) }}</span>
                 </div>
-                <span style="color:#0d1b4b;font-size:.8rem;font-weight:600;">View Profile →</span>
+                <span class="btn-view-profile">View Profile <i class="fas fa-arrow-right fa-xs"></i></span>
               </div>
             </a>
           </div>
           {% endfor %}
         </div>
 
-        <!-- Pagination -->
         {% if showcases.pages > 1 %}
-        <nav class="mb-5">
-          <ul class="pagination justify-content-center">
-            {% if showcases.has_prev %}<li class="page-item"><a class="page-link" href="?{{ request.query_string.decode() }}&page={{ showcases.prev_num }}">‹</a></li>{% endif %}
+        <nav class="mb-4">
+          <ul class="pagination pagination-sm justify-content-center gap-1">
+            {% if showcases.has_prev %}
+            <li class="page-item"><a class="page-link rounded-3" href="?{{ request.query_string.decode() }}&page={{ showcases.prev_num }}"><i class="fas fa-chevron-left fa-xs"></i></a></li>
+            {% endif %}
             {% for p in showcases.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
-              {% if p %}<li class="page-item {% if p == showcases.page %}active{% endif %}"><a class="page-link" href="?{{ request.query_string.decode() | replace('page='+showcases.page|string,'') }}&page={{ p }}">{{ p }}</a></li>
-              {% else %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}
+              {% if p %}
+              <li class="page-item {% if p == showcases.page %}active{% endif %}">
+                <a class="page-link rounded-3" href="?{{ request.query_string.decode()|replace('page='+showcases.page|string,'') }}&page={{ p }}">{{ p }}</a>
+              </li>
+              {% else %}
+              <li class="page-item disabled"><span class="page-link rounded-3">…</span></li>
+              {% endif %}
             {% endfor %}
-            {% if showcases.has_next %}<li class="page-item"><a class="page-link" href="?{{ request.query_string.decode() }}&page={{ showcases.next_num }}">›</a></li>{% endif %}
+            {% if showcases.has_next %}
+            <li class="page-item"><a class="page-link rounded-3" href="?{{ request.query_string.decode() }}&page={{ showcases.next_num }}"><i class="fas fa-chevron-right fa-xs"></i></a></li>
+            {% endif %}
           </ul>
         </nav>
         {% endif %}
         {% endif %}
 
-        <!-- External Directory Firms -->
+        <!-- ── External / Robot-discovered firms ── -->
         {% if ext_firms %}
-        <h6 class="text-muted mb-3" style="font-size:.85rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">
-          <i class="fas fa-robot text-secondary me-1"></i>Also in Our Directory
-          <span class="ms-2 badge bg-secondary">{{ ext_firms|length }}+</span>
-        </h6>
+        <div class="section-divider">
+          <div class="section-divider-line"></div>
+          <div class="section-divider-label">
+            <i class="fas fa-robot me-1"></i>Directory Firms
+            <span class="badge bg-secondary ms-1" style="font-size:.65rem;">{{ ext_firms|length }}</span>
+          </div>
+          <div class="section-divider-line"></div>
+        </div>
+
         {% for firm in ext_firms %}
-        <a href="{{ url_for('directory.external_firm', firm_id=firm.id) }}" style="text-decoration:none;color:inherit;">
-          <div class="ext-strip">
-            <div class="ext-icon"><i class="fas fa-balance-scale"></i></div>
-            <div class="flex-grow-1">
-              <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
-                <strong style="font-size:.95rem;color:#1a1a2e;">{{ firm.name }}</strong>
-                {% if firm.source == 'google_maps' %}<span class="source-chip"><i class="fab fa-google me-1"></i>Maps</span>{% endif %}
-                {% if not firm.has_website %}<span class="ext-badge"><i class="fas fa-exclamation-triangle me-1"></i>No Website</span>{% endif %}
-              </div>
-              <div class="text-muted" style="font-size:.8rem;">
-                <i class="fas fa-map-marker-alt me-1"></i>{{ firm.city }}{% if firm.state %}, {{ firm.state }}{% endif %}, {{ firm.country }}
-                {% if firm.phone %} · <i class="fas fa-phone me-1"></i>{{ firm.phone }}{% endif %}
-              </div>
-              {% if firm.practice_areas %}
-              <div class="d-flex flex-wrap gap-1 mt-1">
-                {% for a in firm.practice_areas[:3] %}<span style="background:#f0f4ff;color:#0d1b4b;font-size:.68rem;font-weight:600;padding:.1rem .5rem;border-radius:50px;">{{ a }}</span>{% endfor %}
-              </div>
-              {% endif %}
+        <a href="{{ url_for('directory.external_firm', firm_id=firm.id) }}" class="ext-row d-flex">
+          <div class="ext-icon"><i class="fas fa-balance-scale"></i></div>
+          <div class="flex-grow-1 min-w-0">
+            <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+              <span class="ext-name">{{ firm.name }}</span>
+              {% if firm.source == 'google_maps' %}<span class="tag-maps"><i class="fab fa-google me-1"></i>Maps</span>{% endif %}
+              {% if firm.source == 'manual' %}<span class="tag-manual">Manual</span>{% endif %}
+              {% if not firm.has_website %}<span class="tag-no-site">No Website</span>{% endif %}
             </div>
-            {% if firm.google_rating %}
-            <div class="text-end" style="white-space:nowrap;flex-shrink:0;">
-              <div style="color:#ffc107;font-size:.75rem;"><i class="fas fa-star"></i> {{ firm.google_rating }}</div>
-              <div class="text-muted" style="font-size:.7rem;">{{ firm.google_reviews_count }} reviews</div>
+            <div class="ext-location">
+              <i class="fas fa-map-marker-alt me-1" style="color:#0d1b4b;font-size:.7rem;"></i>
+              {{ firm.city or '' }}{% if firm.state and firm.city %}, {% endif %}{{ firm.state or '' }}{% if firm.country and (firm.city or firm.state) %}, {% endif %}{{ firm.country or '' }}
+              {% if firm.phone %}<span class="ms-2"><i class="fas fa-phone me-1" style="font-size:.7rem;color:#94a3b8;"></i>{{ firm.phone }}</span>{% endif %}
+            </div>
+            {% if firm.practice_areas %}
+            <div class="d-flex flex-wrap gap-1 mt-1">
+              {% for a in firm.practice_areas[:4] %}
+              <span class="area-pill" style="background:#f0fdf4;color:#166534;">{{ a }}</span>
+              {% endfor %}
             </div>
             {% endif %}
-            <div style="color:#0d1b4b;font-size:.8rem;flex-shrink:0;"><i class="fas fa-chevron-right"></i></div>
           </div>
+          {% if firm.google_rating %}
+          <div class="text-end flex-shrink-0 ps-2">
+            <div style="color:#ffc107;font-size:.78rem;font-weight:700;"><i class="fas fa-star fa-xs"></i> {{ firm.google_rating }}</div>
+            <div style="color:#94a3b8;font-size:.7rem;">{{ firm.google_reviews_count }} reviews</div>
+          </div>
+          {% endif %}
+          <div style="color:#94a3b8;font-size:.8rem;flex-shrink:0;align-self:center;padding-left:.75rem;"><i class="fas fa-chevron-right fa-xs"></i></div>
         </a>
         {% endfor %}
         {% endif %}
 
+        <!-- ── Empty State ── -->
         {% if not showcases.items and not ext_firms %}
-        <div class="text-center py-5">
-          <div style="font-size:4rem;color:#ddd;margin-bottom:1rem;"><i class="fas fa-search"></i></div>
-          <h5 style="color:#666;">No firms found</h5>
-          <p class="text-muted">Try adjusting your search filters.</p>
-          <a href="{{ url_for('directory.index') }}" class="btn btn-primary">Clear filters</a>
+        <div class="empty-state">
+          <div class="empty-icon"><i class="fas fa-search"></i></div>
+          <div class="empty-title">No firms found</div>
+          <p class="empty-sub">
+            No law firms match your current filters.
+            Try a different country, region or practice area.
+          </p>
+          <a href="{{ url_for('directory.index') }}" class="btn btn-primary px-4" style="border-radius:10px;">
+            <i class="fas fa-times me-2"></i>Clear all filters
+          </a>
         </div>
         {% endif %}
 
-      </div>
-    </div>
-  </div>
+      </div><!-- /results col -->
+    </div><!-- /row -->
+  </div><!-- /container -->
 </section>
 
-<!-- CTA Banner -->
-<section style="background:linear-gradient(135deg,#0d1b4b 0%,#1a3a6b 100%);padding:4rem 0;">
-  <div class="container text-center">
-    <h2 style="font-family:'Playfair Display',serif;color:#fff;font-weight:800;margin-bottom:.75rem;">Is Your Firm in the Directory?</h2>
-    <p style="color:rgba(255,255,255,.75);max-width:560px;margin:0 auto 2rem;">List your firm for free. Get discovered by clients, corporates, and global brands searching for legal expertise.</p>
+<!-- ── Mobile Filters Offcanvas ────────────────────────────────────────────── -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="filterOffcanvas">
+  <div class="offcanvas-header" style="background:#0d1b4b;color:#fff;">
+    <h5 class="offcanvas-title fw-bold"><i class="fas fa-sliders-h me-2"></i>Filters</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body p-0">
+    <form method="GET" action="{{ url_for('directory.index') }}" class="p-4" id="mobileForm">
+      <input type="hidden" name="q" value="{{ filters.q }}">
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold small text-uppercase text-muted">Country</label>
+        <select name="country" class="form-select" onchange="syncMobileState(this.value)">
+          <option value="">All Countries</option>
+          {% for c in countries %}
+          <option value="{{ c }}" {% if filters.country == c %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold small text-uppercase text-muted">State / Region</label>
+        <select name="state" class="form-select" id="mobileState">
+          <option value="">All Regions</option>
+          {% for c, regions in country_regions.items() %}
+            {% for s in regions %}
+            <option value="{{ s }}" data-country="{{ c }}"
+                    {% if filters.state == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold small text-uppercase text-muted">Practice Area</label>
+        <select name="practice" class="form-select">
+          <option value="">All Practice Areas</option>
+          {% for p in practice_areas %}
+          <option value="{{ p }}" {% if filters.practice == p %}selected{% endif %}>{{ p }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-check mb-4">
+        <input class="form-check-input" type="checkbox" name="verified" value="1"
+               id="verMobile" {% if filters.verified %}checked{% endif %}>
+        <label class="form-check-label" for="verMobile">Verified firms only</label>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100 fw-bold mb-2" style="border-radius:10px;">
+        <i class="fas fa-search me-2"></i>Apply Filters
+      </button>
+      <a href="{{ url_for('directory.index') }}" class="btn btn-outline-secondary w-100" style="border-radius:10px;">Clear All</a>
+    </form>
+  </div>
+</div>
+
+<!-- ── CTA Banner ──────────────────────────────────────────────────────────── -->
+<section class="cta-banner">
+  <div class="container text-center cta-banner-content">
+    <div class="section-eyebrow" style="color:#FFD700;margin-bottom:.75rem;">JOIN THE DIRECTORY</div>
+    <h2 style="font-family:'Playfair Display',serif;color:#fff;font-weight:800;font-size:2.5rem;margin-bottom:.85rem;">
+      Is Your Firm in the Directory?
+    </h2>
+    <p style="color:rgba(255,255,255,.82);max-width:560px;margin:0 auto 2.5rem;font-size:1.05rem;">
+      List your firm for free. Get discovered by clients, corporates, and global brands
+      searching for legal expertise across Africa and beyond.
+    </p>
     <div class="d-flex gap-3 justify-content-center flex-wrap">
-      <a href="{{ url_for('auth.signup') }}" class="btn btn-warning btn-lg fw-bold" style="border-radius:10px;padding:.85rem 2rem;">
+      <a href="{{ url_for('auth.signup') }}"
+         class="btn btn-warning btn-lg fw-bold px-5"
+         style="border-radius:12px;padding:.9rem 2.5rem;font-size:1.05rem;">
         <i class="fas fa-plus me-2"></i>List Your Firm Free
       </a>
-      <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg" style="border-radius:10px;padding:.85rem 2rem;">
+      <a href="{{ url_for('auth.login') }}"
+         class="btn btn-outline-light btn-lg px-5"
+         style="border-radius:12px;padding:.9rem 2.5rem;font-size:1.05rem;">
         Already a Member? Sign In
       </a>
     </div>
@@ -509,9 +920,49 @@
 
 {% block scripts %}
 <script>
-// Spotlight slider controls
-const track = document.getElementById('spotlightTrack');
-document.getElementById('sliderNext')?.addEventListener('click', () => { track.scrollBy({ left: 320, behavior: 'smooth' }); });
-document.getElementById('sliderPrev')?.addEventListener('click', () => { track.scrollBy({ left: -320, behavior: 'smooth' }); });
+// ─── Country → State sync ─────────────────────────────────────────────────
+function filterStateOptions(selectEl, country) {
+    const opts = selectEl.querySelectorAll('option');
+    opts.forEach(opt => {
+        if (!opt.value) { opt.style.display = ''; return; }
+        if (!country || opt.dataset.country === country) {
+            opt.style.display = '';
+        } else {
+            opt.style.display = 'none';
+        }
+    });
+    // Reset if current selection no longer valid
+    const cur = selectEl.value;
+    if (cur) {
+        const curOpt = selectEl.querySelector(`option[value="${cur}"]`);
+        if (curOpt && curOpt.style.display === 'none') {
+            selectEl.value = '';
+        }
+    }
+}
+
+function syncHeroState(country) {
+    filterStateOptions(document.getElementById('heroState'), country);
+}
+function syncSidebarState(country) {
+    filterStateOptions(document.getElementById('sidebarState'), country);
+}
+function syncMobileState(country) {
+    filterStateOptions(document.getElementById('mobileState'), country);
+}
+
+// Init on page load — show only regions for currently-selected country
+document.addEventListener('DOMContentLoaded', () => {
+    const heroCountry = document.getElementById('heroCountry');
+    if (heroCountry && heroCountry.value) syncHeroState(heroCountry.value);
+
+    const sidebarCountry = document.getElementById('sidebarCountry');
+    if (sidebarCountry && sidebarCountry.value) syncSidebarState(sidebarCountry.value);
+
+    // Spotlight slider
+    const track = document.getElementById('spTrack');
+    document.getElementById('spNext')?.addEventListener('click', () => track.scrollBy({ left: 310, behavior: 'smooth' }));
+    document.getElementById('spPrev')?.addEventListener('click', () => track.scrollBy({ left: -310, behavior: 'smooth' }));
+});
 </script>
 {% endblock %}

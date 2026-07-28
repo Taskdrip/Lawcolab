@@ -21,13 +21,59 @@ NIGERIAN_STATES = [
     'Osun', 'Oyo', 'Plateau', 'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara'
 ]
 
+# Supported countries with their states/regions for the directory filter
+COUNTRY_REGIONS = {
+    'Nigeria': NIGERIAN_STATES,
+    'Ghana': [
+        'Ahafo', 'Ashanti', 'Bono', 'Bono East', 'Central',
+        'Eastern', 'Greater Accra', 'North East', 'Northern', 'Oti',
+        'Savannah', 'Upper East', 'Upper West', 'Volta', 'Western', 'Western North'
+    ],
+    'United States': [
+        'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado',
+        'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho',
+        'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana',
+        'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota',
+        'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada',
+        'New Hampshire', 'New Jersey', 'New Mexico', 'New York',
+        'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon',
+        'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota',
+        'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington',
+        'West Virginia', 'Wisconsin', 'Wyoming', 'Washington D.C.'
+    ],
+    'United Kingdom': [
+        'England', 'Scotland', 'Wales', 'Northern Ireland',
+        'London', 'South East', 'South West', 'East of England',
+        'East Midlands', 'West Midlands', 'Yorkshire', 'North West', 'North East'
+    ],
+    'South Africa': [
+        'Eastern Cape', 'Free State', 'Gauteng', 'KwaZulu-Natal',
+        'Limpopo', 'Mpumalanga', 'Northern Cape', 'North West', 'Western Cape'
+    ],
+    'Kenya': [
+        'Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret',
+        'Central', 'Coast', 'Eastern', 'North Eastern', 'Nyanza',
+        'Rift Valley', 'Western'
+    ],
+}
+
+ALL_COUNTRIES = list(COUNTRY_REGIONS.keys())
+
 PRACTICE_AREA_LIST = [
     'Corporate & Commercial', 'Criminal Law', 'Family Law', 'Real Estate',
     'Employment & Labour', 'Intellectual Property', 'Tax Law', 'Immigration',
     'Banking & Finance', 'Oil & Gas', 'Maritime Law', 'Litigation',
     'Alternative Dispute Resolution', 'Human Rights', 'Technology Law',
     'Environmental Law', 'Healthcare Law', 'Aviation Law', 'Insurance Law',
-    'Mergers & Acquisitions'
+    'Mergers & Acquisitions', 'Mining Law', 'Arbitration'
+]
+
+FIRM_SIZE_OPTIONS = [
+    ('solo', 'Solo Practitioner'),
+    ('small', 'Small (2–10 lawyers)'),
+    ('mid', 'Mid-size (11–50 lawyers)'),
+    ('large', 'Large (51–200 lawyers)'),
+    ('biglaw', 'Big Law (200+ lawyers)'),
 ]
 
 def _get_showcase_location_text(showcase):
@@ -127,6 +173,11 @@ def index():
         submission_status='approved', is_active=True).count()
     total_external = DirectoryLawFirm.query.filter_by(is_active=True).count()
 
+    # Count countries covered
+    countries_covered = db.session.query(
+        DirectoryLawFirm.country
+    ).filter(DirectoryLawFirm.is_active == True).distinct().count()
+
     return render_template(
         'directory/index.html',
         showcases=showcases_paginated,
@@ -134,8 +185,12 @@ def index():
         ext_firms=ext_firms,
         total_platform=total_platform,
         total_external=total_external,
+        countries_covered=countries_covered,
         states=NIGERIAN_STATES,
+        country_regions=COUNTRY_REGIONS,
+        countries=ALL_COUNTRIES,
         practice_areas=PRACTICE_AREA_LIST,
+        firm_sizes=FIRM_SIZE_OPTIONS,
         filters={
             'q': search,
             'state': state_filter,
