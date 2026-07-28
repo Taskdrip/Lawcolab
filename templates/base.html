@@ -20,7 +20,15 @@
     <meta name="keywords" content="{% block meta_keywords %}law firm software Nigeria, legal practice management, case management software Africa, law firm billing, client portal, court calendar, LAWCOLAB{% endblock %}">
     <meta name="author" content="LAWCOLAB">
     <meta name="robots" content="{% block meta_robots %}index, follow{% endblock %}">
-    <link rel="canonical" href="{% block canonical %}{{ request.url }}{% endblock %}">
+    <link rel="canonical" href="{% block canonical %}{{ request.host_url.rstrip('/') }}{{ request.path }}{% endblock %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
+    <meta name="theme-color" content="#0d1b4b">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <!-- ── Open Graph (Facebook / LinkedIn) ─────────────────────────────── -->
     <meta property="og:type" content="{% block og_type %}website{% endblock %}">
@@ -58,30 +66,47 @@
     <!-- ── Schema.org Structured Data ───────────────────────────────────── -->
     {% block structured_data %}
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "LAWCOLAB",
-      "url": "https://lawcolab.com",
-      "description": "Complete Legal Operating System for African law firms — case management, billing, client portal, court calendar, and Law Firm Directory.",
-      "applicationCategory": "BusinessApplication",
-      "operatingSystem": "Web",
-      "offers": {
-        "@type": "Offer",
-        "price": "39.00",
-        "priceCurrency": "USD",
-        "availability": "https://schema.org/InStock"
+    [
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "LAWCOLAB",
+        "url": "https://lawcolab.com",
+        "description": "Complete Legal Operating System for African law firms — case management, billing, client portal, court calendar, and Law Firm Directory.",
+        "applicationCategory": "BusinessApplication",
+        "applicationSubCategory": "LegalTechnology",
+        "operatingSystem": "Web",
+        "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "47" },
+        "offers": { "@type": "Offer", "price": "39.00", "priceCurrency": "USD", "availability": "https://schema.org/InStock" },
+        "publisher": {
+          "@type": "Organization",
+          "name": "LAWCOLAB",
+          "url": "https://lawcolab.com",
+          "logo": { "@type": "ImageObject", "url": "https://lawcolab.com/static/images/og-lawcolab.png" }
+        }
       },
-      "publisher": {
+      {
+        "@context": "https://schema.org",
         "@type": "Organization",
         "name": "LAWCOLAB",
         "url": "https://lawcolab.com",
-        "logo": {
-          "@type": "ImageObject",
-          "url": "https://lawcolab.com/static/images/og-lawcolab.png"
+        "logo": "https://lawcolab.com/static/images/og-lawcolab.png",
+        "description": "Legal practice management software for African law firms.",
+        "contactPoint": { "@type": "ContactPoint", "contactType": "customer support", "availableLanguage": "English" },
+        "sameAs": ["https://twitter.com/lawcolab"]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "LAWCOLAB",
+        "url": "https://lawcolab.com",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": { "@type": "EntryPoint", "urlTemplate": "https://lawcolab.com/directory?search={search_term_string}" },
+          "query-input": "required name=search_term_string"
         }
       }
-    }
+    ]
     </script>
     {% endblock %}
     

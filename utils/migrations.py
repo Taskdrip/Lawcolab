@@ -427,6 +427,14 @@ def run_migrations(db):
         "CREATE INDEX IF NOT EXISTS idx_pa_created ON page_analytics(created_at)",
         "CREATE INDEX IF NOT EXISTS idx_pa_device ON page_analytics(device_type)",
         "CREATE INDEX IF NOT EXISTS idx_pa_country ON page_analytics(country)",
+        # ── site_settings (key-value store for Google/SEO config) ─────────────
+        """
+        CREATE TABLE IF NOT EXISTS site_settings (
+            key VARCHAR(100) PRIMARY KEY,
+            value TEXT,
+            updated_at TIMESTAMP DEFAULT NOW()
+        )
+        """,
     ]
 
     with db.engine.connect() as conn:

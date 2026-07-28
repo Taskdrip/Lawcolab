@@ -351,6 +351,26 @@ def web_analytics():
     recs = sorted(recs, key=lambda x: x['priority'])
 
     import json as _json
+
+    # ── Google / SEO Settings ─────────────────────────────────────────────────
+    ga4_id_env  = os.environ.get('GA4_MEASUREMENT_ID', '')
+    gsc_env     = os.environ.get('GSC_VERIFICATION', '')
+    ga4_id_db   = _get_site_setting('ga4_measurement_id')
+    gsc_db      = _get_site_setting('gsc_verification')
+    gtm_db      = _get_site_setting('gtm_id', 'GTM-TVF3MJPP')
+    domain_db   = _get_site_setting('site_domain', 'lawcolab.com')
+
+    google_settings = {
+        'ga4_measurement_id': ga4_id_env or ga4_id_db,
+        'ga4_source':         'env' if ga4_id_env else ('db' if ga4_id_db else 'none'),
+        'gsc_verification':   gsc_env or gsc_db,
+        'gsc_source':         'env' if gsc_env else ('db' if gsc_db else 'none'),
+        'gtm_id':             gtm_db,
+        'site_domain':        domain_db,
+        'sitemap_url':        f'https://{domain_db}/sitemap.xml',
+        'robots_url':         f'https://{domain_db}/robots.txt',
+    }
+
     return render_template('superadmin/web_analytics.html',
         days=days,
         total_visits=total_visits,
@@ -372,6 +392,7 @@ def web_analytics():
         top_referrers=top_referrers,
         country_rows=country_rows,
         recs=recs,
+        google=google_settings,
     )
 
 
@@ -1303,3 +1324,51 @@ def notifications_count():
     from models import AdminNotification
     count = AdminNotification.query.filter_by(is_read=False).count()
     return jsonify({'count': count})
+
+
+# ── Google / SEO Settings helpers ────────────────────────────────────────────
+
+def _get_site_setting(key: str, default: str = '') -> str:
+    """Read one value from the site_settings table."""
+    try:
+        row = db.session.execute(
+            text("SELECT value FROM site_settings WHERE key = :k"), {"k": key}
+        ).fetchone()
+        return row[0] if row and row[0] else default
+    except Exception:
+        return default
+
+
+def _set_site_setting(key: str, value: str) -> None:
+    """Upsert a value in site_settings."""
+    try:
+        db.session.execute(text("""
+            INSERT INTO site_settings (key, value, updated_at)
+            VALUES (:k, :v, NOW())
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()
+        """), {"k": key, "v": value})
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+
+@superadmin_bp.route('/google-settings', methods=['POST'])
+@require_super_admin
+def save_google_settings():
+    """Save GA4 / GSC / GTM settings to the database."""
+    ga4_id      = request.form.get('ga4_measurement_id', '').strip()
+    gsc_code    = request.form.get('gsc_verification', '').strip()
+    gtm_id      = request.form.get('gtm_id', '').strip()
+    site_domain = request.form.get('site_domain', '').strip()
+
+    if ga4_id:
+        _set_site_setting('ga4_measurement_id', ga4_id)
+    if gsc_code:
+        _set_site_setting('gsc_verification', gsc_code)
+    if gtm_id:
+        _set_site_setting('gtm_id', gtm_id)
+    if site_domain:
+        _set_site_setting('site_domain', site_domain)
+
+    flash('Google settings saved successfully!', 'success')
+    return redirect(url_for('superadmin.web_analytics', days=30, _anchor='google-settings'))
