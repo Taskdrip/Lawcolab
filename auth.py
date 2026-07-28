@@ -161,8 +161,8 @@ def signup():
         )
         new_firm.email = form.email.data.lower() if form.email.data else None
         new_firm.admin_access_granted = True
-        new_firm.admin_access_expires = datetime.now() + timedelta(days=3)
-        new_firm.subscription_period = '3days'
+        new_firm.admin_access_expires = datetime.now() + timedelta(days=30)
+        new_firm.subscription_period = '30days'
 
         user = User()
         user.id = str(uuid.uuid4())
@@ -182,7 +182,7 @@ def signup():
             db.session.add(user)
             db.session.commit()
             login_user(user)
-            flash('Registration successful! Welcome to your 3-day free trial of LawColab.', 'success')
+            flash('Registration successful! Welcome to your 30-day free trial of LawColab.', 'success')
             return redirect(url_for('registration_success'))
         except Exception:
             db.session.rollback()
