@@ -421,7 +421,7 @@
 </div>
 {% endblock %}
 
-{% block extra_js %}
+{% block javascript %}
 <script>
 function toggleLike(){
   fetch('{{ url_for("blog.like_post", slug=post.slug) }}', {method:'POST',headers:{'X-CSRFToken':'{{ csrf_token() }}'}})
