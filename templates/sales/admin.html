@@ -53,7 +53,7 @@
                         <input type="hidden" name="popup_delay_seconds" value="{{ settings.popup_delay_seconds or 15 }}">
                         <input type="hidden" name="welcome_video_url" value="{{ settings.welcome_video_url or '' }}">
                         <input type="hidden" name="thankyou_video_url" value="{{ settings.thankyou_video_url or '' }}">
-                        <input type="hidden" name="trial_duration_days" value="{{ settings.trial_duration_days or 3 }}">
+                        <input type="hidden" name="trial_duration_days" value="{{ settings.trial_duration_days or 30 }}">
                         <input type="hidden" name="starter_price" value="{{ settings.starter_price or 39 }}">
                         <input type="hidden" name="growth_price" value="{{ settings.growth_price or 90 }}">
                         <input type="hidden" name="enterprise_price" value="{{ settings.enterprise_price or 350 }}">
@@ -189,7 +189,7 @@
                                 <div class="mb-3">
                                     <label class="form-label">🆓 Free Trial Duration (days)</label>
                                     <input type="number" class="form-control" name="trial_duration_days" 
-                                           value="{{ settings.trial_duration_days or 3 }}" step="1" min="1" max="30">
+                                           value="{{ settings.trial_duration_days or 30 }}" step="1" min="1" max="365">
                                 </div>
                             </div>
                             <div class="col-md-3">
