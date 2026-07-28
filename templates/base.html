@@ -793,6 +793,20 @@
                         </a>
                     </li>
                     {% endif %}
+
+                    <li class="nav-item">
+                        <a class="nav-link lc-link{% if request.blueprint == 'blog' %} active{% endif %}"
+                           href="{{ url_for('blog.index') }}">
+                            <i class="fas fa-pen-nib"></i><span>Blog</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link lc-link{% if 'directory' in (request.endpoint or '') %} active{% endif %}"
+                           href="{{ url_for('directory.index') }}">
+                            <i class="fas fa-globe"></i><span>Directory</span>
+                        </a>
+                    </li>
                 </ul>
 
                 <!-- User menu -->
@@ -945,6 +959,12 @@
                         </li>
                         <li class="mb-2">
                             <a href="{{ url_for('pricing') }}" style="color: #6c757d; text-decoration: none; transition: color 0.3s;">Pricing</a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{{ url_for('blog.index') }}" style="color: #6c757d; text-decoration: none; transition: color 0.3s;">Blog</a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{{ url_for('directory.index') }}" style="color: #6c757d; text-decoration: none; transition: color 0.3s;">Directory</a>
                         </li>
                     </ul>
                 </div>
