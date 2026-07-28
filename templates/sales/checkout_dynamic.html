@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             background: #f6f9fc;
@@ -16,7 +16,7 @@
             min-height: 100vh;
         }
 
-        /* ── Top bar ────────────────────────────────── */
+        /* ── Top bar ─────────────────────────────────────────── */
         .checkout-topbar {
             background: #fff;
             border-bottom: 1px solid #e6ebf1;
@@ -25,15 +25,14 @@
             top: 0;
             z-index: 100;
         }
-        .checkout-topbar .brand {
-            font-size: 1.15rem;
+        .brand {
+            font-size: 1.18rem;
             font-weight: 700;
             color: #0a2540;
             letter-spacing: -0.3px;
+            text-decoration: none;
         }
-        .checkout-topbar .brand span {
-            color: #635bff;
-        }
+        .brand span { color: #635bff; }
         .secure-badge {
             font-size: 0.78rem;
             color: #6b7385;
@@ -43,38 +42,71 @@
         }
         .secure-badge i { color: #00c16e; }
 
-        /* ── Layout ─────────────────────────────────── */
+        /* ── Step progress ───────────────────────────────────── */
+        .step-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            padding: 16px 0 0;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: #8792a2;
+        }
+        .step.done { color: #00a36c; }
+        .step.active { color: #635bff; font-weight: 700; }
+        .step-dot {
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            border: 2px solid #c5cad3;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.68rem; font-weight: 700;
+            flex-shrink: 0;
+        }
+        .step.done .step-dot { background: #00a36c; border-color: #00a36c; color: #fff; }
+        .step.active .step-dot { background: #635bff; border-color: #635bff; color: #fff; }
+        .step-line {
+            width: 40px; height: 2px;
+            background: #e6ebf1;
+            margin: 0 4px;
+        }
+        .step.done + .step-line { background: #00a36c; }
+
+        /* ── Layout ──────────────────────────────────────────── */
         .checkout-layout {
             display: grid;
-            grid-template-columns: 1fr 420px;
+            grid-template-columns: 1fr 400px;
             gap: 0;
-            min-height: calc(100vh - 57px);
+            min-height: calc(100vh - 120px);
         }
-
         .checkout-left {
-            padding: 40px 48px 40px 60px;
+            padding: 40px 56px 40px 60px;
             background: #fff;
             border-right: 1px solid #e6ebf1;
         }
-
         .checkout-right {
-            padding: 40px 40px 40px 36px;
+            padding: 40px 36px 40px 36px;
             background: #f6f9fc;
         }
 
-        /* ── Section titles ─────────────────────────── */
-        .section-title {
-            font-size: 0.72rem;
-            font-weight: 600;
-            letter-spacing: 0.8px;
+        /* ── Section label ───────────────────────────────────── */
+        .section-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.9px;
             text-transform: uppercase;
             color: #8792a2;
             margin-bottom: 16px;
         }
 
-        /* ── August discount banner ─────────────────── */
+        /* ── August discount banner ──────────────────────────── */
         .discount-banner {
-            background: linear-gradient(135deg, #fff3cd 0%, #ffe8a1 100%);
+            background: linear-gradient(135deg, #fff8e6 0%, #fff0c2 100%);
             border: 1.5px solid #ffc107;
             border-radius: 12px;
             padding: 14px 18px;
@@ -83,137 +115,156 @@
             align-items: center;
             gap: 12px;
         }
-        .discount-banner .badge-pill {
+        .discount-banner .emoji { font-size: 1.4rem; flex-shrink: 0; }
+        .discount-banner p { margin: 0; font-size: 0.86rem; color: #7a4f00; line-height: 1.5; }
+        .discount-banner strong { color: #5a3700; }
+        .discount-pill {
             background: #e65c00;
             color: #fff;
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             font-weight: 800;
             padding: 4px 10px;
             border-radius: 20px;
             white-space: nowrap;
             letter-spacing: 0.5px;
+            flex-shrink: 0;
         }
-        .discount-banner p {
-            margin: 0;
-            font-size: 0.88rem;
-            color: #7a4f00;
-            line-height: 1.4;
-        }
-        .discount-banner strong { color: #5a3700; }
 
-        /* ── Payment method cards ───────────────────── */
-        .payment-card {
-            border: 1.5px solid #e6ebf1;
+        /* ── Customer info ───────────────────────────────────── */
+        .customer-card {
+            background: #f6f9fc;
+            border: 1px solid #e6ebf1;
             border-radius: 12px;
             padding: 18px 20px;
-            margin-bottom: 12px;
-            cursor: pointer;
-            transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
-            background: #fff;
-        }
-        .payment-card:hover {
-            border-color: #635bff;
-            box-shadow: 0 0 0 3px rgba(99,91,255,0.08);
-        }
-        .payment-card.selected {
-            border-color: #635bff;
-            background: #fafafe;
-            box-shadow: 0 0 0 3px rgba(99,91,255,0.1);
-        }
-        .payment-card .card-header-row {
+            margin-bottom: 28px;
             display: flex;
             align-items: center;
             gap: 14px;
         }
-        .method-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
+        .customer-avatar {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #635bff, #8b84ff);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
             flex-shrink: 0;
         }
-        .method-icon.bank  { background: #e8f4ff; }
-        .method-icon.crypto { background: #fff3e0; }
-        .method-label strong {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #0a2540;
+        .customer-meta strong {
             display: block;
-        }
-        .method-label small { color: #8792a2; font-size: 0.8rem; }
-
-        /* Radio dot */
-        .radio-dot {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            border: 2px solid #c5cad3;
-            margin-left: auto;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: border-color 0.18s;
-        }
-        .payment-card.selected .radio-dot {
-            border-color: #635bff;
-        }
-        .radio-dot-inner {
-            width: 10px;
-            height: 10px;
-            background: #635bff;
-            border-radius: 50%;
-            display: none;
-        }
-        .payment-card.selected .radio-dot-inner { display: block; }
-
-        /* ── Expandable payment details ─────────────── */
-        .payment-details-panel {
-            display: none;
-            margin-top: 18px;
-            padding-top: 18px;
-            border-top: 1px solid #e6ebf1;
-        }
-        .payment-card.selected .payment-details-panel { display: block; }
-
-        .detail-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 14px;
-        }
-        .detail-item label {
-            display: block;
-            font-size: 0.72rem;
-            color: #8792a2;
-            font-weight: 500;
-            margin-bottom: 3px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .detail-item .val {
             font-size: 0.9rem;
             font-weight: 600;
             color: #0a2540;
         }
-        .detail-item .val.mono { font-family: 'SF Mono', 'Fira Mono', monospace; color: #635bff; }
-        .detail-item .val.price { color: #00a36c; font-size: 1rem; }
+        .customer-meta span { font-size: 0.8rem; color: #8792a2; }
+        .customer-meta .firm { font-size: 0.78rem; color: #635bff; }
+
+        /* ── Bank transfer card ──────────────────────────────── */
+        .bank-card {
+            border: 2px solid #635bff;
+            border-radius: 14px;
+            background: #fafafe;
+            box-shadow: 0 0 0 4px rgba(99,91,255,0.07);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .bank-card-header {
+            padding: 18px 22px 16px;
+            border-bottom: 1px solid #ede9ff;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .bank-icon {
+            width: 46px; height: 46px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #635bff, #8b84ff);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .bank-card-header .info strong {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #0a2540;
+        }
+        .bank-card-header .info span {
+            font-size: 0.78rem;
+            color: #635bff;
+        }
+        .selected-badge {
+            margin-left: auto;
+            background: #e6fff4;
+            color: #00a36c;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid #b6f0d4;
+        }
+
+        .bank-card-body {
+            padding: 20px 22px;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+        .detail-item label {
+            display: block;
+            font-size: 0.68rem;
+            color: #8792a2;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 4px;
+        }
+        .detail-item .val {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: #0a2540;
+        }
+        .detail-item .val.mono {
+            font-family: 'SF Mono', 'Fira Mono', 'Cascadia Code', monospace;
+            color: #635bff;
+            letter-spacing: 1px;
+        }
+        .detail-item .val.amount {
+            color: #00a36c;
+            font-size: 1.15rem;
+            font-weight: 800;
+        }
+        .copy-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0 4px;
+            color: #c5cad3;
+            font-size: 0.75rem;
+            vertical-align: middle;
+            transition: color 0.15s;
+        }
+        .copy-btn:hover { color: #635bff; }
 
         .ref-box {
-            background: #f6f9fc;
-            border: 1px solid #e6ebf1;
+            background: #f0f4ff;
+            border: 1px solid #d0d8ff;
             border-radius: 8px;
-            padding: 10px 14px;
+            padding: 10px 16px;
+            font-family: monospace;
             font-size: 0.82rem;
             color: #5469d4;
-            font-family: monospace;
             letter-spacing: 0.5px;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
-        .ref-box span { color: #8792a2; font-family: inherit; }
+        .ref-box .ref-label { font-size: 0.68rem; color: #8792a2; font-family: inherit; margin-right: 6px; }
 
         .info-note {
             background: #f0f4ff;
@@ -227,55 +278,88 @@
         }
         .info-note i { color: #635bff; margin-top: 2px; flex-shrink: 0; }
 
-        .crypto-addr {
-            background: #f6f9fc;
-            border: 1px dashed #c5cad3;
-            border-radius: 8px;
-            padding: 10px 14px;
-            font-family: monospace;
-            font-size: 0.78rem;
-            word-break: break-all;
-            color: #425466;
-            margin-bottom: 4px;
+        /* Crypto options (collapsed, less prominent) */
+        .crypto-section {
+            margin-bottom: 20px;
         }
+        .crypto-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.82rem;
+            color: #8792a2;
+            cursor: pointer;
+            padding: 12px 16px;
+            border: 1.5px dashed #e6ebf1;
+            border-radius: 10px;
+            transition: border-color 0.18s;
+        }
+        .crypto-toggle:hover { border-color: #c5cad3; }
+        .crypto-toggle i { font-size: 0.75rem; }
 
-        /* ── Submit button ──────────────────────────── */
+        .crypto-cards { margin-top: 10px; }
+        .payment-card-mini {
+            border: 1.5px solid #e6ebf1;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: border-color 0.18s;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .payment-card-mini:hover { border-color: #635bff; }
+        .payment-card-mini.selected { border-color: #635bff; background: #fafafe; }
+        .payment-card-mini .radio-dot {
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            border: 2px solid #c5cad3;
+            margin-left: auto;
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .payment-card-mini.selected .radio-dot { border-color: #635bff; }
+        .radio-inner {
+            width: 9px; height: 9px;
+            background: #635bff;
+            border-radius: 50%;
+            display: none;
+        }
+        .payment-card-mini.selected .radio-inner { display: block; }
+
+        /* ── Pay button ──────────────────────────────────────── */
         .pay-btn {
             width: 100%;
-            background: #635bff;
+            background: linear-gradient(135deg, #635bff, #4f49e0);
             color: #fff;
             border: none;
-            border-radius: 10px;
-            padding: 15px 24px;
+            border-radius: 12px;
+            padding: 16px 24px;
             font-size: 1rem;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             margin-top: 24px;
-            transition: background 0.18s, transform 0.1s, box-shadow 0.18s;
+            transition: opacity 0.18s, transform 0.1s, box-shadow 0.18s;
             letter-spacing: 0.1px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
+            box-shadow: 0 4px 18px rgba(99,91,255,0.28);
         }
-        .pay-btn:hover:not(:disabled) {
-            background: #4f49e0;
-            box-shadow: 0 4px 18px rgba(99,91,255,0.35);
-        }
-        .pay-btn:active:not(:disabled) { transform: scale(0.99); }
-        .pay-btn:disabled {
-            background: #c5cad3;
-            cursor: not-allowed;
-        }
-        .pay-btn .arrow { font-size: 1.1rem; }
+        .pay-btn:hover { opacity: 0.93; box-shadow: 0 6px 24px rgba(99,91,255,0.38); }
+        .pay-btn:active { transform: scale(0.99); }
+        .lock-icon { font-size: 0.82rem; opacity: 0.8; }
 
-        /* ── Order summary (right panel) ────────────── */
+        /* ── Right panel — summary ───────────────────────────── */
         .summary-card {
             background: #fff;
             border: 1px solid #e6ebf1;
             border-radius: 14px;
-            padding: 28px;
-            margin-bottom: 18px;
+            padding: 26px;
+            margin-bottom: 16px;
         }
         .plan-badge {
             display: inline-flex;
@@ -283,98 +367,103 @@
             gap: 6px;
             background: linear-gradient(135deg, #635bff, #8b84ff);
             color: #fff;
-            font-size: 0.72rem;
-            font-weight: 700;
+            font-size: 0.7rem;
+            font-weight: 800;
             padding: 4px 12px;
             border-radius: 20px;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.6px;
             text-transform: uppercase;
             margin-bottom: 14px;
         }
-        .plan-name-summary {
-            font-size: 1.2rem;
+        .plan-name {
+            font-size: 1.18rem;
             font-weight: 700;
             color: #0a2540;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
-        .plan-period { font-size: 0.82rem; color: #8792a2; margin-bottom: 20px; }
+        .plan-period { font-size: 0.8rem; color: #8792a2; margin-bottom: 22px; }
 
         .price-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 0;
-            font-size: 0.88rem;
+            padding: 7px 0;
+            font-size: 0.86rem;
             color: #425466;
+            border-bottom: 1px solid #f0f3f7;
         }
-        .price-row .amount { font-weight: 500; }
-        .price-row.strike .amount { text-decoration: line-through; color: #8792a2; }
-        .price-row.discount-row { color: #00a36c; font-weight: 600; }
-        .price-row.total-row {
-            border-top: 1.5px solid #e6ebf1;
-            margin-top: 8px;
-            padding-top: 14px;
-            font-size: 1rem;
-            font-weight: 700;
-            color: #0a2540;
-        }
-        .price-row.total-row .amount { color: #00a36c; font-size: 1.15rem; }
-
-        .discount-tag {
+        .price-row:last-child { border-bottom: none; }
+        .price-row .amt { font-weight: 500; }
+        .price-row.strike .amt { text-decoration: line-through; color: #b0b9c5; }
+        .price-row.saving { color: #00a36c; font-weight: 600; }
+        .saving-tag {
             background: #e6fff4;
             color: #00a36c;
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             font-weight: 700;
             padding: 2px 8px;
             border-radius: 10px;
             margin-left: 6px;
         }
+        .price-row.total {
+            border-top: 2px solid #e6ebf1;
+            border-bottom: none;
+            margin-top: 6px;
+            padding-top: 14px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #0a2540;
+        }
+        .price-row.total .amt { color: #00a36c; font-size: 1.2rem; }
 
-        /* Customer info */
-        .customer-info {
+        .what-you-get {
             background: #f6f9fc;
             border-radius: 10px;
             padding: 14px 16px;
-            font-size: 0.83rem;
-            color: #425466;
             margin-top: 16px;
+            font-size: 0.8rem;
+            color: #425466;
         }
-        .customer-info strong { color: #0a2540; display: block; margin-bottom: 2px; }
+        .what-you-get ul {
+            list-style: none;
+            padding: 0; margin: 8px 0 0;
+        }
+        .what-you-get ul li {
+            padding: 4px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .what-you-get ul li i { color: #00a36c; font-size: 0.72rem; }
 
-        /* Trust badges */
-        .trust-badges {
+        .trust-row {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-top: 20px;
+            margin-top: 16px;
         }
-        .trust-badge {
+        .trust-item {
             display: flex;
             align-items: center;
             gap: 5px;
-            font-size: 0.75rem;
+            font-size: 0.73rem;
             color: #6b7385;
             background: #fff;
             border: 1px solid #e6ebf1;
             border-radius: 20px;
             padding: 5px 12px;
         }
-        .trust-badge i { font-size: 0.7rem; }
+        .trust-item i { font-size: 0.68rem; }
 
-        /* Countdown */
-        .countdown-bar {
-            background: linear-gradient(135deg, #ff4c4c, #ff6b35);
-            color: #fff;
-            border-radius: 10px;
-            padding: 12px 16px;
-            margin-top: 16px;
-            display: none;
-            text-align: center;
+        .legal-note {
+            font-size: 0.73rem;
+            color: #8792a2;
+            line-height: 1.6;
+            margin-top: 18px;
         }
-        .countdown-bar .timer { font-size: 1.5rem; font-weight: 800; font-family: monospace; }
-        .countdown-bar small { display: block; font-size: 0.75rem; opacity: 0.9; margin-top: 2px; }
+        .legal-note a { color: #635bff; text-decoration: none; }
 
-        /* ── Flash messages ─────────────────────────── */
+        /* ── Flash messages ──────────────────────────────────── */
         .flash-msg {
             border-radius: 10px;
             padding: 12px 16px;
@@ -382,11 +471,9 @@
             font-size: 0.88rem;
         }
 
-        /* ── Responsive ─────────────────────────────── */
-        @media (max-width: 900px) {
-            .checkout-layout {
-                grid-template-columns: 1fr;
-            }
+        /* ── Responsive ──────────────────────────────────────── */
+        @media (max-width: 960px) {
+            .checkout-layout { grid-template-columns: 1fr; }
             .checkout-left { padding: 28px 20px; border-right: none; border-bottom: 1px solid #e6ebf1; }
             .checkout-right { padding: 28px 20px; }
         }
@@ -399,69 +486,94 @@
 
 <!-- Top bar -->
 <div class="checkout-topbar">
-    <div class="container">
+    <div class="container-lg">
         <div class="d-flex align-items-center justify-content-between">
-            <div class="brand">Law<span>Colab</span></div>
+            <a href="/" class="brand">Law<span>Colab</span></a>
             <div class="secure-badge">
-                <i class="fas fa-lock"></i> Secure Checkout
+                <i class="fas fa-lock"></i> Secure Checkout · 256-bit SSL
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Step progress -->
+<div class="container-lg">
+    <div class="step-bar">
+        <div class="step done">
+            <div class="step-dot"><i class="fas fa-check" style="font-size:0.55rem"></i></div>
+            <span>Select Plan</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step active">
+            <div class="step-dot">2</div>
+            <span>Review &amp; Pay</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+            <div class="step-dot">3</div>
+            <span>Transfer &amp; Confirm</span>
         </div>
     </div>
 </div>
 
 <div class="checkout-layout">
 
-    <!-- ════════════════════ LEFT — Payment ════════════════════ -->
+    <!-- ══════════════ LEFT — Payment form ══════════════ -->
     <div class="checkout-left">
 
         <!-- Flash messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash-msg alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
+            {% if messages %}{% for cat, msg in messages %}
+                <div class="flash-msg alert alert-{{ 'danger' if cat == 'error' else 'success' }} alert-dismissible fade show">
+                    {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}{% endif %}
         {% endwith %}
 
-        <!-- August discount banner (NGN only) -->
+        <!-- August discount banner (Nigerian IPs only) -->
         {% if august_discount %}
         <div class="discount-banner">
-            <div>🎉</div>
+            <div class="emoji">🎉</div>
             <div>
                 <p><strong>August Special — 40% off for Nigerian Law Firms!</strong><br>
-                This exclusive discount applies automatically this month. Prices shown already include your savings.</p>
+                This exclusive discount is applied automatically this month.</p>
             </div>
-            <div class="badge-pill">40% OFF</div>
+            <div class="discount-pill">40% OFF</div>
         </div>
         {% endif %}
 
-        <div class="section-title">Payment Method</div>
+        <!-- Customer info -->
+        {% if lead_data %}
+        <div class="section-label">Your Details</div>
+        <div class="customer-card">
+            <div class="customer-avatar">{{ (lead_data.name or 'U')[0].upper() }}</div>
+            <div class="customer-meta">
+                <strong>{{ lead_data.name or '' }}</strong>
+                <span>{{ lead_data.email or '' }}</span>
+                {% if lead_data.firm_name %}<div class="firm">{{ lead_data.firm_name }}</div>{% endif %}
+            </div>
+        </div>
+        {% endif %}
 
+        <!-- Payment form -->
         <form action="{{ url_for('sales.complete_checkout') }}" method="POST" id="checkoutForm">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-            <input type="hidden" name="selected_plan" value="{{ selected_plan }}"/>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="selected_plan" value="{{ selected_plan }}">
+            <input type="hidden" name="payment_method" value="bank_transfer">
 
-            <!-- ── Bank Transfer (Zenith / NGN) ── -->
-            {% set has_bank = false %}
-            {% for gateway in payment_gateways %}{% if gateway.name == 'bank_transfer' %}{% set has_bank = true %}{% endif %}{% endfor %}
+            <div class="section-label">Payment Method</div>
 
-            <!-- Always show Zenith Bank for NGN users; also show from gateway if configured -->
-            {% if active_currency == 'NGN' or not payment_gateways %}
-            <div class="payment-card" id="card-bank_transfer" onclick="selectPayment('bank_transfer')">
-                <div class="card-header-row">
-                    <div class="method-icon bank">🏦</div>
-                    <div class="method-label">
+            <!-- Primary: Naira Bank Transfer -->
+            <div class="bank-card">
+                <div class="bank-card-header">
+                    <div class="bank-icon">🏦</div>
+                    <div class="info">
                         <strong>Naira Bank Transfer</strong>
-                        <small>Zenith Bank · Instant activation after confirmation</small>
+                        <span>Zenith Bank · Account verified &amp; secure</span>
                     </div>
-                    <div class="radio-dot"><div class="radio-dot-inner"></div></div>
+                    <div class="selected-badge">✓ Selected</div>
                 </div>
-                <input type="radio" name="payment_method" value="bank_transfer" id="pm-bank" style="display:none">
-
-                <div class="payment-details-panel">
+                <div class="bank-card-body">
                     <div class="detail-grid">
                         <div class="detail-item">
                             <label>Bank Name</label>
@@ -473,8 +585,11 @@
                         </div>
                         <div class="detail-item">
                             <label>Account Number</label>
-                            <div class="val mono" id="acct-num" style="cursor:pointer" onclick="copyText('1310505179', 'acct-num')" title="Click to copy">
-                                1310505179 <i class="fas fa-copy" style="font-size:0.7rem;opacity:0.6"></i>
+                            <div class="val mono" id="acct-num">
+                                1310505179
+                                <button type="button" class="copy-btn" onclick="copyVal('1310505179','acct-num')" title="Copy">
+                                    <i class="fas fa-copy"></i>
+                                </button>
                             </div>
                         </div>
                         <div class="detail-item">
@@ -483,320 +598,214 @@
                         </div>
                         <div class="detail-item" style="grid-column:1/-1">
                             <label>Amount to Transfer</label>
-                            <div class="val price" id="bank-amount">—</div>
+                            <div class="val amount" id="pay-amount">{{ currency_symbol }}{{ "{:,.0f}".format(plan_prices.get((selected_plan if selected_plan not in ['founder','lifetime'] else 'founders'), 0)) }}</div>
                         </div>
                     </div>
+
+                    <!-- Reference -->
                     <div class="ref-box">
-                        <span>Reference: </span>LAWCOLAB-{{ selected_plan.upper() if selected_plan else 'PLAN' }}-{{ lead_data.email[:6].upper() if lead_data and lead_data.email else 'REF' }}
+                        <span>
+                            <span class="ref-label">Reference: </span>
+                            <span id="ref-val">LAWCOLAB-{{ selected_plan.upper() if selected_plan else 'PLAN' }}-{{ lead_data.email[:6].upper() if lead_data and lead_data.email else 'REF' }}</span>
+                        </span>
+                        <button type="button" class="copy-btn" style="color:#8792a2"
+                            onclick="copyVal(document.getElementById('ref-val').textContent.trim(), 'ref-val')" title="Copy reference">
+                            <i class="fas fa-copy"></i>
+                        </button>
                     </div>
+
                     <div class="info-note">
                         <i class="fas fa-info-circle"></i>
-                        <span>Include the reference above in your transfer narration. Email your receipt to <strong>payments@lawcolab.com</strong> to activate your account within 2 hours.</span>
+                        <span>After paying, you'll be shown a confirmation page to upload your receipt. Your account is activated within <strong>2 hours</strong> of verification.</span>
                     </div>
+                </div>
+            </div>
+
+            <!-- Optional crypto (if configured) -->
+            {% if crypto_wallets %}
+            <div class="crypto-section">
+                <div class="crypto-toggle" onclick="toggleCrypto()" id="crypto-toggle">
+                    <i class="fas fa-chevron-right" id="crypto-arrow"></i>
+                    <span>Pay with Cryptocurrency instead</span>
+                </div>
+                <div class="crypto-cards" id="crypto-cards" style="display:none">
+                    {% for wallet in crypto_wallets %}
+                    <div class="payment-card-mini" id="card-crypto_{{ wallet.id }}" onclick="selectCrypto('crypto_{{ wallet.id }}')">
+                        <div style="font-size:1.2rem">
+                            {% if wallet.network.lower() == 'tron' %}₮
+                            {% elif wallet.network.lower() == 'ton' %}💎
+                            {% elif wallet.network.lower() in ['bsc','binance'] %}🔗
+                            {% elif wallet.network.lower() == 'solana' %}☀️
+                            {% else %}💳{% endif %}
+                        </div>
+                        <div>
+                            <div style="font-size:0.88rem;font-weight:600;color:#0a2540">{{ wallet.currency }} — {{ wallet.network }}</div>
+                            <div style="font-size:0.75rem;color:#8792a2">{{ wallet.network }} network</div>
+                        </div>
+                        <div class="radio-dot" style="margin-left:auto"><div class="radio-inner"></div></div>
+                        <input type="radio" name="payment_method" value="crypto_{{ wallet.id }}" style="display:none">
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
             {% endif %}
 
-            <!-- Gateway-configured bank (non-NGN or if admin configured it separately) -->
-            {% for gateway in payment_gateways %}
-            {% if gateway.name == 'bank_transfer' and active_currency != 'NGN' %}
-            <div class="payment-card" id="card-{{ gateway.name }}" onclick="selectPayment('{{ gateway.name }}')">
-                <div class="card-header-row">
-                    <div class="method-icon bank">🏦</div>
-                    <div class="method-label">
-                        <strong>{{ gateway.display_name }}</strong>
-                        <small>Direct bank transfer · Most secure method</small>
-                    </div>
-                    <div class="radio-dot"><div class="radio-dot-inner"></div></div>
-                </div>
-                <input type="radio" name="payment_method" value="{{ gateway.name }}" style="display:none">
-                <div class="payment-details-panel">
-                    {% set config = gateway.get_config() %}
-                    <div class="detail-grid">
-                        <div class="detail-item">
-                            <label>Bank</label>
-                            <div class="val">{{ config.bank_name or 'Zenith Bank' }}</div>
-                        </div>
-                        <div class="detail-item">
-                            <label>Account Name</label>
-                            <div class="val">{{ config.account_name or 'Lawcolab Global' }}</div>
-                        </div>
-                        <div class="detail-item">
-                            <label>Account Number</label>
-                            <div class="val mono">{{ config.account_number or '1310505179' }}</div>
-                        </div>
-                        <div class="detail-item">
-                            <label>Amount</label>
-                            <div class="val price" id="bank-amount-gw">—</div>
-                        </div>
-                    </div>
-                    <div class="info-note">
-                        <i class="fas fa-info-circle"></i>
-                        <span>Email payment proof to <strong>payments@lawcolab.com</strong></span>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-            {% endfor %}
-
-            <!-- ── Crypto wallets ── -->
-            {% for wallet in crypto_wallets %}
-            <div class="payment-card" id="card-crypto_{{ wallet.id }}" onclick="selectPayment('crypto_{{ wallet.id }}')">
-                <div class="card-header-row">
-                    <div class="method-icon crypto">
-                        {% if wallet.network.lower() == 'tron' %}₮
-                        {% elif wallet.network.lower() == 'ton' %}💎
-                        {% elif wallet.network.lower() in ['bsc','binance'] %}🔗
-                        {% elif wallet.network.lower() == 'solana' %}☀️
-                        {% elif wallet.network.lower() == 'avalanche' %}🏔️
-                        {% else %}💳{% endif %}
-                    </div>
-                    <div class="method-label">
-                        <strong>{{ wallet.currency }} — {{ wallet.network }} Network</strong>
-                        <small>
-                            {% if wallet.network.lower() == 'tron' %}Low fees · TRC-20
-                            {% elif wallet.network.lower() == 'ton' %}Ultra-fast · TON blockchain
-                            {% elif wallet.network.lower() in ['bsc','binance'] %}Fast · BEP-20
-                            {% elif wallet.network.lower() == 'solana' %}Lightning speed · SPL
-                            {% elif wallet.network.lower() == 'avalanche' %}High-speed · C-Chain
-                            {% else %}Secure crypto payment{% endif %}
-                        </small>
-                    </div>
-                    <div class="radio-dot"><div class="radio-dot-inner"></div></div>
-                </div>
-                <input type="radio" name="payment_method" value="crypto_{{ wallet.id }}" style="display:none">
-
-                <div class="payment-details-panel">
-                    <div class="detail-item" style="margin-bottom:12px">
-                        <label>Wallet Address ({{ wallet.network }})</label>
-                        <div class="crypto-addr" onclick="copyText('{{ wallet.wallet_address }}', 'addr-{{ wallet.id }}')" style="cursor:pointer" title="Click to copy" id="addr-{{ wallet.id }}">
-                            {{ wallet.wallet_address }}
-                            <i class="fas fa-copy" style="float:right;opacity:0.5;margin-left:6px"></i>
-                        </div>
-                    </div>
-                    <div class="detail-item" style="margin-bottom:12px">
-                        <label>Amount to Send</label>
-                        <div class="val price" id="crypto-amount-{{ wallet.id }}">—</div>
-                    </div>
-                    <div class="info-note">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <span><strong>{{ wallet.network }} Network only.</strong> Send to the exact address above, then email the transaction hash to <strong>payments@lawcolab.com</strong>.</span>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-
-            <!-- If NO payment methods configured, show Zenith Bank as fallback -->
-            {% if not payment_gateways and not crypto_wallets and active_currency != 'NGN' %}
-            <div class="payment-card" id="card-bank_transfer_fb" onclick="selectPayment('bank_transfer')">
-                <div class="card-header-row">
-                    <div class="method-icon bank">🏦</div>
-                    <div class="method-label">
-                        <strong>Bank Transfer — Zenith Bank</strong>
-                        <small>Naira transfer · Account: 1310505179</small>
-                    </div>
-                    <div class="radio-dot"><div class="radio-dot-inner"></div></div>
-                </div>
-                <input type="radio" name="payment_method" value="bank_transfer" style="display:none">
-            </div>
-            {% endif %}
-
-            <!-- Countdown (crypto) -->
-            <div class="countdown-bar" id="payment-countdown">
-                <div style="font-size:0.75rem;margin-bottom:4px">⏰ Complete crypto payment within</div>
-                <div class="timer" id="countdown-timer">30:00</div>
-                <small>Window closes automatically</small>
-            </div>
-
-            <!-- Submit -->
-            <button type="submit" class="pay-btn" id="completeBtn" disabled>
-                <span id="btn-text">Select a payment method to continue</span>
-                <span class="arrow" id="btn-arrow" style="display:none">→</span>
+            <!-- Pay button -->
+            <button type="submit" class="pay-btn" id="payBtn">
+                <i class="fas fa-lock lock-icon"></i>
+                <span>Proceed to Payment Instructions — {{ currency_symbol }}{{ "{:,.0f}".format(plan_prices.get((selected_plan if selected_plan not in ['founder','lifetime'] else 'founders'), 0)) }}</span>
             </button>
 
-            <div style="text-align:center;margin-top:14px;font-size:0.75rem;color:#8792a2">
-                <i class="fas fa-shield-alt me-1" style="color:#635bff"></i>
-                256-bit SSL encryption · Your data is protected
+            <div class="legal-note" style="text-align:center;margin-top:14px">
+                By completing your purchase you agree to the
+                <a href="/legal/terms">Terms of Service</a>.
+                Questions? <a href="mailto:support@lawcolab.com">support@lawcolab.com</a>
             </div>
         </form>
     </div>
 
-    <!-- ════════════════════ RIGHT — Summary ════════════════════ -->
+    <!-- ══════════════ RIGHT — Order summary ══════════════ -->
     <div class="checkout-right">
 
-        <div class="section-title">Order Summary</div>
+        <div class="section-label">Order Summary</div>
 
         <div class="summary-card">
             <div class="plan-badge">
-                {% if selected_plan == 'founders' or selected_plan == 'founder' %}👑 White-Label License
+                {% if selected_plan in ['founders','founder'] %}👑 White-Label
                 {% elif selected_plan == 'enterprise' %}🏢 Enterprise
                 {% elif selected_plan == 'growth' %}🚀 Growth
                 {% elif selected_plan == 'starter' %}✨ Starter
-                {% elif selected_plan == 'trial' %}🆓 Trial
                 {% else %}📋 {{ selected_plan.title() if selected_plan else 'Plan' }}{% endif %}
             </div>
-            <div class="plan-name-summary">
-                {% if selected_plan == 'founders' or selected_plan == 'founder' %}White-Label SaaS Forever License
+            <div class="plan-name">
+                {% if selected_plan in ['founders','founder'] %}White-Label SaaS Forever License
                 {% elif selected_plan == 'enterprise' %}Enterprise Plan
                 {% elif selected_plan == 'growth' %}Growth Plan
                 {% elif selected_plan == 'starter' %}Starter Plan
-                {% elif selected_plan == 'trial' %}30-Day Free Trial
-                {% else %}{{ selected_plan.title() if selected_plan else 'Plan' }}{% endif %}
+                {% else %}{{ selected_plan.title() if selected_plan else 'LawColab Plan' }}{% endif %}
             </div>
             <div class="plan-period">
-                {% if selected_plan == 'founders' or selected_plan == 'founder' %}One-time · Forever license + 6-month support
+                {% if selected_plan in ['founders','founder'] %}One-time · Forever license + 6-month support
                 {% elif selected_plan == 'enterprise' %}Annual subscription
                 {% elif selected_plan == 'growth' %}3-month subscription
                 {% elif selected_plan == 'starter' %}Monthly subscription
-                {% elif selected_plan == 'trial' %}30 days · No payment required
                 {% endif %}
             </div>
 
             <!-- Price breakdown -->
             {% set plan_key = selected_plan if selected_plan not in ['founder','lifetime'] else 'founders' %}
             {% set curr_price = plan_prices.get(plan_key, 0) %}
-            {% set orig_price = original_prices.get(plan_key, curr_price) if original_prices else curr_price %}
-            {% set csym = currency_symbol if currency_symbol else '$' %}
+            {% set orig_price = (original_prices.get(plan_key, curr_price) if original_prices else curr_price) %}
+            {% set csym = currency_symbol if currency_symbol else '₦' %}
 
             {% if august_discount %}
             <div class="price-row strike">
                 <span>Original price</span>
-                <span class="amount">{{ csym }}{{ "%.0f"|format(orig_price) }}</span>
+                <span class="amt">{{ csym }}{{ "{:,.0f}".format(orig_price) }}</span>
             </div>
-            <div class="price-row discount-row">
-                <span>August discount <span class="discount-tag">40% OFF</span></span>
-                <span class="amount">−{{ csym }}{{ "%.0f"|format(orig_price - curr_price) }}</span>
+            <div class="price-row saving">
+                <span>August discount <span class="saving-tag">40% OFF</span></span>
+                <span class="amt">−{{ csym }}{{ "{:,.0f}".format(orig_price - curr_price) }}</span>
             </div>
             {% else %}
             <div class="price-row">
                 <span>Subtotal</span>
-                <span class="amount">{{ csym }}{{ "%.0f"|format(curr_price) }}</span>
+                <span class="amt">{{ csym }}{{ "{:,.0f}".format(curr_price) }}</span>
             </div>
             {% endif %}
-
-            <div class="price-row total-row">
-                <span>Total due today</span>
-                <span class="amount">{{ csym }}{{ "%.0f"|format(curr_price) }}</span>
+            <div class="price-row">
+                <span>Bank transfer fee</span>
+                <span class="amt" style="color:#00a36c">Free</span>
+            </div>
+            <div class="price-row total">
+                <span>Total due</span>
+                <span class="amt">{{ csym }}{{ "{:,.0f}".format(curr_price) }}</span>
             </div>
 
-            <!-- Customer -->
-            {% if lead_data %}
-            <div class="customer-info">
-                <strong>{{ lead_data.name or '' }}</strong>
-                {% if lead_data.firm_name %}<span>{{ lead_data.firm_name }}</span><br>{% endif %}
-                <span style="color:#8792a2">{{ lead_data.email or '' }}</span>
+            <!-- What's included -->
+            <div class="what-you-get">
+                <div style="font-size:0.72rem;font-weight:700;color:#8792a2;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:4px">What's included</div>
+                <ul>
+                    {% if selected_plan in ['founders','founder'] %}
+                    <li><i class="fas fa-check-circle"></i> Full platform source code</li>
+                    <li><i class="fas fa-check-circle"></i> White-label branding rights</li>
+                    <li><i class="fas fa-check-circle"></i> 6 months priority support</li>
+                    <li><i class="fas fa-check-circle"></i> Hosting &amp; deployment guide</li>
+                    {% elif selected_plan == 'enterprise' %}
+                    <li><i class="fas fa-check-circle"></i> Unlimited users &amp; clients</li>
+                    <li><i class="fas fa-check-circle"></i> Advanced analytics</li>
+                    <li><i class="fas fa-check-circle"></i> Priority &amp; dedicated support</li>
+                    <li><i class="fas fa-check-circle"></i> Custom integrations</li>
+                    {% elif selected_plan == 'growth' %}
+                    <li><i class="fas fa-check-circle"></i> Up to 20 users + unlimited clients</li>
+                    <li><i class="fas fa-check-circle"></i> Advanced team collaboration</li>
+                    <li><i class="fas fa-check-circle"></i> Priority support &amp; training</li>
+                    <li><i class="fas fa-check-circle"></i> 100GB secure storage</li>
+                    {% else %}
+                    <li><i class="fas fa-check-circle"></i> Up to 5 users + unlimited clients</li>
+                    <li><i class="fas fa-check-circle"></i> Complete case management</li>
+                    <li><i class="fas fa-check-circle"></i> Client portal access</li>
+                    <li><i class="fas fa-check-circle"></i> Email &amp; chat support</li>
+                    {% endif %}
+                </ul>
             </div>
-            {% endif %}
         </div>
 
-        <!-- Trust badges -->
-        <div class="trust-badges">
-            <div class="trust-badge"><i class="fas fa-lock" style="color:#635bff"></i> SSL Secured</div>
-            <div class="trust-badge"><i class="fas fa-shield-alt" style="color:#00a36c"></i> Verified Business</div>
-            <div class="trust-badge"><i class="fas fa-headset" style="color:#0a2540"></i> Priority Support</div>
-            <div class="trust-badge"><i class="fas fa-undo" style="color:#8792a2"></i> Cancel Anytime</div>
+        <!-- Trust -->
+        <div class="trust-row">
+            <div class="trust-item"><i class="fas fa-lock" style="color:#635bff"></i> SSL Secured</div>
+            <div class="trust-item"><i class="fas fa-shield-alt" style="color:#00a36c"></i> Verified Business</div>
+            <div class="trust-item"><i class="fas fa-headset" style="color:#0a2540"></i> Priority Support</div>
+            <div class="trust-item"><i class="fas fa-undo" style="color:#8792a2"></i> Cancel Anytime</div>
         </div>
 
-        <div style="margin-top:20px;font-size:0.75rem;color:#8792a2;line-height:1.6">
-            By completing your purchase you agree to the LawColab 
-            <a href="/legal/terms" style="color:#635bff">Terms of Service</a>.
-            Questions? <a href="mailto:support@lawcolab.com" style="color:#635bff">support@lawcolab.com</a>
+        <div class="legal-note" style="margin-top:16px">
+            <i class="fas fa-university me-1" style="color:#635bff"></i>
+            Payment is processed via Zenith Bank. Account activated within 2 hours after transfer confirmation.
         </div>
     </div>
-</div>
+
+</div><!-- /.checkout-layout -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // ── Price data from server ────────────────────────────────
-    const PLAN_KEY   = "{{ plan_key if plan_key else (selected_plan or '') }}";
-    const CURR_SYM   = "{{ csym }}";
-    const CURR_CODE  = "{{ active_currency }}";
-    const PLAN_PRICE = {{ curr_price | default(0) }};
+    // Copy to clipboard helper
+    function copyVal(text, elId) {
+        navigator.clipboard.writeText(text.trim()).then(() => {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            const orig = el.innerHTML;
+            const icon = el.querySelector('i');
+            if (icon) { icon.className = 'fas fa-check'; icon.style.color = '#00a36c'; }
+            setTimeout(() => { el.innerHTML = orig; }, 1800);
+        }).catch(() => {});
+    }
 
-    const PRICE_DISPLAY = CURR_SYM + new Intl.NumberFormat().format(PLAN_PRICE);
+    // Crypto section toggle
+    let cryptoOpen = false;
+    function toggleCrypto() {
+        cryptoOpen = !cryptoOpen;
+        document.getElementById('crypto-cards').style.display = cryptoOpen ? 'block' : 'none';
+        document.getElementById('crypto-arrow').className = cryptoOpen ? 'fas fa-chevron-down' : 'fas fa-chevron-right';
+        if (!cryptoOpen) {
+            // Reset to bank transfer if crypto was selected
+            document.getElementById('checkoutForm').querySelector('input[name="payment_method"]').value = 'bank_transfer';
+            document.querySelectorAll('.payment-card-mini').forEach(c => c.classList.remove('selected'));
+        }
+    }
 
-    // ── Payment selection ─────────────────────────────────────
-    let selectedMethod = null;
-    let countdownTimer = null;
-    let timeLeft = 30 * 60;
-
-    function selectPayment(method) {
-        // Deselect all
-        document.querySelectorAll('.payment-card').forEach(el => el.classList.remove('selected'));
-        // Select target
-        const card = document.getElementById('card-' + method) || 
-                     document.querySelector(`.payment-card[id*="${method}"]`);
+    function selectCrypto(method) {
+        document.querySelectorAll('.payment-card-mini').forEach(c => c.classList.remove('selected'));
+        const card = document.getElementById('card-' + method);
         if (card) {
             card.classList.add('selected');
             const radio = card.querySelector('input[type="radio"]');
             if (radio) radio.checked = true;
         }
-
-        // Update amount fields
-        document.querySelectorAll('[id^="bank-amount"]').forEach(el => el.textContent = PRICE_DISPLAY);
-        document.querySelectorAll('[id^="crypto-amount-"]').forEach(el => el.textContent = PRICE_DISPLAY + ' USDT');
-
-        selectedMethod = method;
-
-        // Update button
-        const btn = document.getElementById('completeBtn');
-        const txt = document.getElementById('btn-text');
-        const arr = document.getElementById('btn-arrow');
-        btn.disabled = false;
-        txt.textContent = 'Pay ' + PRICE_DISPLAY + ' ' + CURR_CODE;
-        arr.style.display = 'inline';
-
-        // Countdown for crypto
-        if (method.startsWith('crypto_') || method === 'crypto') {
-            startCountdown();
-        } else {
-            stopCountdown();
-        }
+        // Override hidden bank_transfer field
+        const form = document.getElementById('checkoutForm');
+        form.querySelector('input[name="payment_method"]').value = method;
     }
-
-    function startCountdown() {
-        const bar = document.getElementById('payment-countdown');
-        bar.style.display = 'block';
-        if (countdownTimer) clearInterval(countdownTimer);
-        countdownTimer = setInterval(() => {
-            const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-            const s = (timeLeft % 60).toString().padStart(2, '0');
-            document.getElementById('countdown-timer').textContent = m + ':' + s;
-            if (timeLeft <= 0) {
-                clearInterval(countdownTimer);
-                alert('Payment window expired. Please start over.');
-                window.location.reload();
-            }
-            timeLeft--;
-        }, 1000);
-    }
-
-    function stopCountdown() {
-        if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
-        document.getElementById('payment-countdown').style.display = 'none';
-        timeLeft = 30 * 60;
-    }
-
-    // ── Copy to clipboard ─────────────────────────────────────
-    function copyText(text, elId) {
-        navigator.clipboard.writeText(text).then(() => {
-            const el = document.getElementById(elId);
-            if (el) {
-                const orig = el.innerHTML;
-                el.innerHTML = el.innerHTML.replace(/<i.*<\/i>/, '') + ' <i class="fas fa-check" style="float:right;opacity:0.8;color:#00a36c"></i>';
-                setTimeout(() => { el.innerHTML = orig; }, 1800);
-            }
-        }).catch(() => {});
-    }
-
-    // ── Auto-select if only one method ───────────────────────
-    document.addEventListener('DOMContentLoaded', function() {
-        const cards = document.querySelectorAll('.payment-card');
-        if (cards.length === 1) {
-            const radio = cards[0].querySelector('input[type="radio"]');
-            if (radio) selectPayment(radio.value);
-        }
-    });
 </script>
 </body>
 </html>

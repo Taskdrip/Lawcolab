@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Your Transfer — LawColab</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #f6f9fc;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #30313d;
+            min-height: 100vh;
+        }
+
+        /* ── Top bar ─────────────────────────────────────────── */
+        .topbar {
+            background: #fff;
+            border-bottom: 1px solid #e6ebf1;
+            padding: 14px 0;
+        }
+        .brand { font-size: 1.18rem; font-weight: 700; color: #0a2540; text-decoration: none; }
+        .brand span { color: #635bff; }
+        .secure-tag { font-size: 0.78rem; color: #6b7385; display: flex; align-items: center; gap: 5px; }
+        .secure-tag i { color: #00c16e; }
+
+        /* ── Step bar ────────────────────────────────────────── */
+        .step-bar { display: flex; align-items: center; justify-content: center; gap: 0; padding: 18px 0 0; }
+        .step { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 500; color: #8792a2; }
+        .step.done { color: #00a36c; }
+        .step.active { color: #635bff; font-weight: 700; }
+        .step-dot {
+            width: 24px; height: 24px; border-radius: 50%;
+            border: 2px solid #c5cad3;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.68rem; font-weight: 700; flex-shrink: 0;
+        }
+        .step.done .step-dot { background: #00a36c; border-color: #00a36c; color: #fff; }
+        .step.active .step-dot { background: #635bff; border-color: #635bff; color: #fff; }
+        .step-line { width: 40px; height: 2px; background: #e6ebf1; margin: 0 4px; }
+        .step.done + .step-line { background: #00a36c; }
+
+        /* ── Main layout ─────────────────────────────────────── */
+        .page-wrap { max-width: 760px; margin: 36px auto; padding: 0 16px 60px; }
+
+        /* ── Header ─────────────────────────────────────────── */
+        .page-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .page-header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #0a2540;
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
+        }
+        .page-header p { font-size: 0.9rem; color: #6b7385; }
+
+        /* ── Amount hero ─────────────────────────────────────── */
+        .amount-hero {
+            background: linear-gradient(135deg, #0a2540 0%, #1a3a5c 100%);
+            border-radius: 16px;
+            padding: 28px 32px;
+            margin-bottom: 24px;
+            text-align: center;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+        .amount-hero::before {
+            content: '';
+            position: absolute;
+            top: -50px; right: -50px;
+            width: 180px; height: 180px;
+            border-radius: 50%;
+            background: rgba(99,91,255,0.15);
+        }
+        .amount-hero .label {
+            font-size: 0.72rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            opacity: 0.7;
+            margin-bottom: 6px;
+        }
+        .amount-hero .amount {
+            font-size: 2.8rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            color: #a8f0d0;
+            margin-bottom: 4px;
+        }
+        .amount-hero .plan-tag {
+            font-size: 0.82rem;
+            opacity: 0.8;
+        }
+        .copy-amount-btn {
+            margin-top: 12px;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: #fff;
+            font-size: 0.78rem;
+            padding: 6px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.18s;
+        }
+        .copy-amount-btn:hover { background: rgba(255,255,255,0.25); }
+
+        /* ── Bank details card ───────────────────────────────── */
+        .bank-details-card {
+            background: #fff;
+            border: 1px solid #e6ebf1;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        .bank-details-header {
+            padding: 18px 24px;
+            background: linear-gradient(135deg, #f6f9fc, #eef2ff);
+            border-bottom: 1px solid #e6ebf1;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .bank-logo {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #c00, #e00);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .bank-details-header h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #0a2540;
+            margin: 0 0 2px;
+        }
+        .bank-details-header span { font-size: 0.78rem; color: #8792a2; }
+
+        .bank-details-body { padding: 24px; }
+        .bank-detail-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid #f0f3f7;
+        }
+        .bank-detail-row:last-child { border-bottom: none; }
+        .bank-detail-row .key {
+            font-size: 0.78rem;
+            color: #8792a2;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .bank-detail-row .val {
+            font-size: 0.94rem;
+            font-weight: 700;
+            color: #0a2540;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .bank-detail-row .val.mono {
+            font-family: 'SF Mono', 'Cascadia Code', monospace;
+            color: #635bff;
+            font-size: 1rem;
+            letter-spacing: 1.5px;
+        }
+        .copy-btn {
+            background: #f0f4ff;
+            border: 1px solid #d0d8ff;
+            color: #635bff;
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem;
+            transition: background 0.15s;
+            flex-shrink: 0;
+        }
+        .copy-btn:hover { background: #635bff; color: #fff; }
+
+        /* ── Reference box ───────────────────────────────────── */
+        .ref-card {
+            background: #f0f4ff;
+            border: 1.5px dashed #8b84ff;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .ref-card .ref-label {
+            font-size: 0.72rem;
+            color: #8792a2;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .ref-card .ref-val {
+            font-family: monospace;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #5469d4;
+            letter-spacing: 0.5px;
+        }
+        .ref-copy-btn {
+            background: #635bff;
+            border: none;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: background 0.15s;
+        }
+        .ref-copy-btn:hover { background: #4f49e0; }
+
+        /* ── Important note ──────────────────────────────────── */
+        .important-note {
+            background: #fff8e6;
+            border: 1.5px solid #ffc107;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            font-size: 0.84rem;
+            color: #7a4f00;
+        }
+        .important-note strong { color: #5a3700; display: block; margin-bottom: 6px; font-size: 0.88rem; }
+        .important-note ul { padding-left: 18px; margin: 0; }
+        .important-note ul li { padding: 3px 0; }
+
+        /* ── Receipt upload ──────────────────────────────────── */
+        .upload-card {
+            background: #fff;
+            border: 1px solid #e6ebf1;
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+        .upload-card h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #0a2540;
+            margin-bottom: 4px;
+        }
+        .upload-card .subtitle { font-size: 0.82rem; color: #8792a2; margin-bottom: 22px; }
+
+        .form-group { margin-bottom: 18px; }
+        .form-label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #0a2540;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-control-clean {
+            width: 100%;
+            border: 1.5px solid #e6ebf1;
+            border-radius: 10px;
+            padding: 11px 14px;
+            font-size: 0.88rem;
+            color: #0a2540;
+            background: #fff;
+            transition: border-color 0.18s, box-shadow 0.18s;
+            outline: none;
+        }
+        .form-control-clean:focus {
+            border-color: #635bff;
+            box-shadow: 0 0 0 3px rgba(99,91,255,0.1);
+        }
+
+        .upload-zone {
+            border: 2px dashed #c5cad3;
+            border-radius: 12px;
+            padding: 28px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.18s, background 0.18s;
+            position: relative;
+        }
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: #635bff;
+            background: #fafafe;
+        }
+        .upload-zone input[type="file"] {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+        }
+        .upload-zone i { font-size: 2rem; color: #c5cad3; margin-bottom: 10px; }
+        .upload-zone .upload-text { font-size: 0.88rem; color: #6b7385; }
+        .upload-zone .upload-hint { font-size: 0.75rem; color: #b0b9c5; margin-top: 4px; }
+        .file-preview { display: none; align-items: center; gap: 10px; padding: 10px; background: #f6f9fc; border-radius: 8px; margin-top: 10px; }
+        .file-preview i { color: #635bff; }
+        .file-preview span { font-size: 0.82rem; color: #0a2540; font-weight: 500; }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #00a36c, #007a52);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 16px 24px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: opacity 0.18s, box-shadow 0.18s;
+            box-shadow: 0 4px 18px rgba(0,163,108,0.28);
+        }
+        .submit-btn:hover { opacity: 0.93; box-shadow: 0 6px 24px rgba(0,163,108,0.38); }
+
+        .skip-btn {
+            width: 100%;
+            background: transparent;
+            border: 1.5px solid #e6ebf1;
+            border-radius: 12px;
+            padding: 13px 24px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #6b7385;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: border-color 0.18s, color 0.18s;
+        }
+        .skip-btn:hover { border-color: #c5cad3; color: #425466; }
+
+        /* ── Support bar ─────────────────────────────────────── */
+        .support-bar {
+            background: #fff;
+            border: 1px solid #e6ebf1;
+            border-radius: 14px;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .support-bar .support-text strong {
+            display: block;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #0a2540;
+        }
+        .support-bar .support-text span { font-size: 0.78rem; color: #8792a2; }
+        .whatsapp-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 18px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: opacity 0.18s;
+        }
+        .whatsapp-btn:hover { opacity: 0.9; color: #fff; }
+
+        /* ── Timeline ────────────────────────────────────────── */
+        .timeline-card {
+            background: #fff;
+            border: 1px solid #e6ebf1;
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 20px;
+        }
+        .timeline-card h4 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #0a2540;
+            margin-bottom: 18px;
+        }
+        .tl-item {
+            display: flex;
+            gap: 14px;
+            padding-bottom: 20px;
+            position: relative;
+        }
+        .tl-item:last-child { padding-bottom: 0; }
+        .tl-item::before {
+            content: '';
+            position: absolute;
+            left: 15px; top: 30px;
+            width: 2px; bottom: 0;
+            background: #e6ebf1;
+        }
+        .tl-item:last-child::before { display: none; }
+        .tl-dot {
+            width: 32px; height: 32px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; flex-shrink: 0; z-index: 1;
+        }
+        .tl-dot.done { background: #e6fff4; color: #00a36c; }
+        .tl-dot.active { background: #ede9ff; color: #635bff; }
+        .tl-dot.pending { background: #f6f9fc; color: #c5cad3; border: 1.5px solid #e6ebf1; }
+        .tl-content strong {
+            display: block;
+            font-size: 0.86rem;
+            font-weight: 600;
+            color: #0a2540;
+            margin-bottom: 2px;
+        }
+        .tl-content span { font-size: 0.78rem; color: #8792a2; }
+
+        @media (max-width: 600px) {
+            .amount-hero .amount { font-size: 2rem; }
+            .bank-detail-row { flex-direction: column; align-items: flex-start; gap: 6px; }
+            .support-bar { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+    <div class="container-lg">
+        <div class="d-flex align-items-center justify-content-between">
+            <a href="/" class="brand">Law<span>Colab</span></a>
+            <div class="secure-tag"><i class="fas fa-lock"></i> Secure Payment</div>
+        </div>
+    </div>
+</div>
+
+<!-- Steps -->
+<div class="container-lg">
+    <div class="step-bar">
+        <div class="step done">
+            <div class="step-dot"><i class="fas fa-check" style="font-size:0.55rem"></i></div>
+            <span>Select Plan</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step done">
+            <div class="step-dot"><i class="fas fa-check" style="font-size:0.55rem"></i></div>
+            <span>Review &amp; Pay</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step active">
+            <div class="step-dot">3</div>
+            <span>Transfer &amp; Confirm</span>
+        </div>
+    </div>
+</div>
+
+<div class="page-wrap">
+
+    <!-- Header -->
+    <div class="page-header">
+        <h1>Complete Your Transfer</h1>
+        <p>Send the exact amount below to our Zenith Bank account, then upload your receipt.</p>
+    </div>
+
+    <!-- Amount hero -->
+    <div class="amount-hero">
+        <div class="label">Amount to Transfer</div>
+        <div class="amount" id="hero-amount">{{ currency_symbol }}{{ "{:,.0f}".format(amount) }}</div>
+        <div class="plan-tag">
+            {% if selected_plan in ['founders','founder'] %}White-Label SaaS Forever License
+            {% elif selected_plan == 'enterprise' %}Enterprise Plan — Annual
+            {% elif selected_plan == 'growth' %}Growth Plan — 3 months
+            {% elif selected_plan == 'starter' %}Starter Plan — Monthly
+            {% else %}{{ selected_plan.title() if selected_plan else 'LawColab Plan' }}{% endif %}
+        </div>
+        <button class="copy-amount-btn" onclick="copyText('{{ "{:,.0f}".format(amount) }}')">
+            <i class="fas fa-copy me-1"></i> Copy Amount
+        </button>
+    </div>
+
+    <!-- Bank details card -->
+    <div class="bank-details-card">
+        <div class="bank-details-header">
+            <div class="bank-logo">🏦</div>
+            <div>
+                <h3>Zenith Bank</h3>
+                <span>Nigeria · NGN Account · Transfer to this account</span>
+            </div>
+        </div>
+        <div class="bank-details-body">
+
+            <div class="bank-detail-row">
+                <span class="key">Bank Name</span>
+                <span class="val">Zenith Bank</span>
+            </div>
+
+            <div class="bank-detail-row">
+                <span class="key">Account Name</span>
+                <div class="val">
+                    Lawcolab Global
+                    <button class="copy-btn" onclick="copyText('Lawcolab Global')" title="Copy">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="bank-detail-row">
+                <span class="key">Account Number</span>
+                <div class="val mono" id="acct-display">
+                    {% if bank_account %}{{ bank_account.account_number }}{% else %}1310505179{% endif %}
+                    <button class="copy-btn" id="acct-copy-btn"
+                        onclick="copyText('{% if bank_account %}{{ bank_account.account_number }}{% else %}1310505179{% endif %}', 'acct-copy-btn')"
+                        title="Copy account number">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="bank-detail-row">
+                <span class="key">Account Type</span>
+                <span class="val">Naira (NGN) — Current Account</span>
+            </div>
+
+            <div class="bank-detail-row">
+                <span class="key">Amount</span>
+                <div class="val" style="color:#00a36c;font-size:1.1rem">
+                    {{ currency_symbol }}{{ "{:,.0f}".format(amount) }}
+                    <button class="copy-btn" onclick="copyText('{{ "{:,.0f}".format(amount) }}')" title="Copy amount">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reference card -->
+    <div class="ref-card">
+        <div>
+            <span class="ref-label">Transfer Narration / Reference</span>
+            <span class="ref-val" id="ref-display">{{ payment_reference or 'LAWCOLAB-' + (selected_plan or 'PLAN').upper() }}</span>
+        </div>
+        <button class="ref-copy-btn" onclick="copyText(document.getElementById('ref-display').textContent.trim())">
+            <i class="fas fa-copy me-1"></i> Copy
+        </button>
+    </div>
+
+    <!-- Important note -->
+    <div class="important-note">
+        <strong>⚠️ Important — Please read before transferring:</strong>
+        <ul>
+            <li>Transfer the <strong>exact amount</strong> shown above — ₦{{ "{:,.0f}".format(amount) }}</li>
+            <li>Include the <strong>reference code</strong> in your transfer narration/description</li>
+            <li>Use your bank app, USSD, or walk into any Zenith Bank branch</li>
+            <li>Upload your receipt below to speed up activation (optional but recommended)</li>
+            <li>Account will be activated within <strong>2 hours</strong> of payment confirmation</li>
+        </ul>
+    </div>
+
+    <!-- Receipt upload form -->
+    <div class="upload-card">
+        <h3>Upload Payment Receipt <span style="font-size:0.8rem;font-weight:400;color:#8792a2">(Recommended)</span></h3>
+        <p class="subtitle">Uploading your receipt helps us activate your account faster. Skip if you'll send it by email.</p>
+
+        <form action="{{ url_for('sales.submit_bank_proof') }}" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="payment_reference" value="{{ payment_reference or '' }}">
+
+            <div class="form-group">
+                <label class="form-label">Your Bank's Transfer Reference / Debit Alert Number</label>
+                <input type="text" name="bank_reference" class="form-control-clean"
+                    placeholder="e.g. 006823471234 or FT123456789" autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Receipt / Screenshot <span style="color:#c5cad3;font-weight:400;text-transform:none">(PNG, JPG or PDF — max 10 MB)</span></label>
+                <div class="upload-zone" id="uploadZone">
+                    <input type="file" name="receipt_file" id="receiptFile" accept=".png,.jpg,.jpeg,.pdf"
+                        onchange="previewFile(this)">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <div class="upload-text">Click or drag &amp; drop your receipt here</div>
+                    <div class="upload-hint">PNG, JPG, JPEG or PDF · Max 10 MB</div>
+                </div>
+                <div class="file-preview" id="filePreview">
+                    <i class="fas fa-file-check"></i>
+                    <span id="fileName"></span>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-paper-plane"></i>
+                I've Made the Transfer — Submit
+            </button>
+
+            <button type="submit" class="skip-btn" formnovalidate>
+                I'll send my receipt to payments@lawcolab.com instead
+            </button>
+        </form>
+    </div>
+
+    <!-- Support bar -->
+    <div class="support-bar">
+        <div class="support-text">
+            <strong>Need help with your transfer?</strong>
+            <span>Our team responds within 1–4 hours on business days</span>
+        </div>
+        <a href="https://wa.me/2348036622568?text=Hi%2C%20I%20just%20transferred%20payment%20for%20LAWCOLAB%20{{ (selected_plan or 'plan').upper() }}%20plan.%20My%20reference%3A%20{{ payment_reference or '' }}"
+           target="_blank" class="whatsapp-btn">
+            <i class="fab fa-whatsapp"></i> WhatsApp Support
+        </a>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline-card">
+        <h4>What happens after you transfer?</h4>
+        <div class="tl-item">
+            <div class="tl-dot done"><i class="fas fa-check"></i></div>
+            <div class="tl-content">
+                <strong>Plan Selected &amp; Order Placed</strong>
+                <span>You chose the {{ selected_plan.title() if selected_plan else 'LawColab' }} plan — order confirmed</span>
+            </div>
+        </div>
+        <div class="tl-item">
+            <div class="tl-dot active"><i class="fas fa-university"></i></div>
+            <div class="tl-content">
+                <strong>Make Your Bank Transfer</strong>
+                <span>Transfer ₦{{ "{:,.0f}".format(amount) }} to Lawcolab Global at Zenith Bank</span>
+            </div>
+        </div>
+        <div class="tl-item">
+            <div class="tl-dot pending"><i class="fas fa-search"></i></div>
+            <div class="tl-content">
+                <strong>Payment Verification</strong>
+                <span>Our team confirms your payment — takes up to 2 hours</span>
+            </div>
+        </div>
+        <div class="tl-item">
+            <div class="tl-dot pending"><i class="fas fa-rocket"></i></div>
+            <div class="tl-content">
+                <strong>Account Activated</strong>
+                <span>You receive login credentials via email + onboarding call from our team</span>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /.page-wrap -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Copy any text to clipboard with visual feedback
+    function copyText(text, btnId) {
+        navigator.clipboard.writeText(String(text).trim()).then(() => {
+            const btn = btnId ? document.getElementById(btnId) : null;
+            if (btn) {
+                const origHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                btn.style.background = '#00a36c';
+                btn.style.borderColor = '#00a36c';
+                btn.style.color = '#fff';
+                setTimeout(() => {
+                    btn.innerHTML = origHTML;
+                    btn.style.background = '';
+                    btn.style.borderColor = '';
+                    btn.style.color = '';
+                }, 1800);
+            }
+            // General toast
+            showToast('Copied!');
+        }).catch(() => {});
+    }
+
+    // Simple toast
+    function showToast(msg) {
+        let t = document.getElementById('toast-el');
+        if (!t) {
+            t = document.createElement('div');
+            t.id = 'toast-el';
+            t.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#0a2540;color:#fff;padding:10px 22px;border-radius:30px;font-size:0.82rem;font-weight:600;z-index:9999;opacity:0;transition:opacity 0.2s';
+            document.body.appendChild(t);
+        }
+        t.textContent = msg;
+        t.style.opacity = '1';
+        setTimeout(() => { t.style.opacity = '0'; }, 1800);
+    }
+
+    // File preview
+    function previewFile(input) {
+        const preview = document.getElementById('filePreview');
+        const fileName = document.getElementById('fileName');
+        if (input.files && input.files[0]) {
+            fileName.textContent = input.files[0].name;
+            preview.style.display = 'flex';
+            document.getElementById('uploadZone').style.borderColor = '#635bff';
+        }
+    }
+
+    // Drag & drop
+    const zone = document.getElementById('uploadZone');
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop', e => {
+        e.preventDefault();
+        zone.classList.remove('dragover');
+        const input = document.getElementById('receiptFile');
+        input.files = e.dataTransfer.files;
+        previewFile(input);
+    });
+</script>
+</body>
+</html>

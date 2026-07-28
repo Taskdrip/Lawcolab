@@ -232,13 +232,12 @@ def complete_checkout():
             session['payment_amount']   = get_plan_amount(selected_plan)
             session['payment_currency'] = 'USD'
         
-        # For crypto payments, redirect to evidence upload
+        # Route to correct next step
         if payment_method.startswith('crypto_') or payment_method == 'crypto':
             return redirect(url_for('sales.payment_evidence'))
         else:
-            # For bank transfers, redirect to congratulations
-            flash('Payment instructions sent! Please complete your bank transfer and await verification.', 'success')
-            return redirect(url_for('sales.congratulations'))
+            # Bank transfer → show dedicated instructions + receipt upload page
+            return redirect(url_for('sales.bank_instructions'))
         
     except Exception as e:
         db.session.rollback()
@@ -248,19 +247,21 @@ def complete_checkout():
 def _resolve_checkout_pricing(settings=None):
     """Return (active_currency, currency_symbol, plan_prices, original_prices, august_discount, discount_rate).
 
-    This is the single source of truth for geo-detection, NGN/USD selection, and
-    August 40% discount.  Called by both checkout_page() (rendering) and
-    complete_checkout() (amount persistence) so they always agree.
+    All payments are in Nigerian Naira (NGN) via Zenith Bank transfer.
+    August 40% discount applies only to Nigerian law firms (geo-detected).
     """
     if settings is None:
         settings = PopupSettings.query.first()
         if not settings:
             settings = PopupSettings()
 
-    auto_geo     = bool(getattr(settings, 'auto_geo_currency', True))
-    default_curr = settings.checkout_currency or 'USD'
+    # Always NGN — the only payment method is Naira bank transfer
+    active_currency = 'NGN'
+    currency_symbol = '₦'
 
+    # Geo-detect country for August discount eligibility only
     detected_country = 'unknown'
+    auto_geo = bool(getattr(settings, 'auto_geo_currency', True))
     if auto_geo:
         try:
             import requests as _req
@@ -274,32 +275,19 @@ def _resolve_checkout_pricing(settings=None):
         except Exception:
             pass
 
-    active_currency = 'NGN' if (auto_geo and detected_country == 'NG') else default_curr
+    # NGN base prices (admin-configurable, sensible defaults)
+    base_prices = {
+        'starter':    float(getattr(settings, 'starter_price_ngn',    None) or 60000),
+        'growth':     float(getattr(settings, 'growth_price_ngn',     None) or 140000),
+        'enterprise': float(getattr(settings, 'enterprise_price_ngn', None) or 550000),
+        'founders':   float(getattr(settings, 'founders_price_ngn',   None) or 2750000),
+    }
 
-    sym_map = {'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£',
-               'CAD': 'C$', 'GHS': '₵', 'KES': 'KSh', 'ZAR': 'R'}
-    currency_symbol = sym_map.get(active_currency, '$')
-
-    if active_currency == 'NGN':
-        base_prices = {
-            'starter':    float(getattr(settings, 'starter_price_ngn',    None) or 60000),
-            'growth':     float(getattr(settings, 'growth_price_ngn',     None) or 140000),
-            'enterprise': float(getattr(settings, 'enterprise_price_ngn', None) or 550000),
-            'founders':   float(getattr(settings, 'founders_price_ngn',   None) or 2750000),
-        }
-    else:
-        base_prices = {
-            'starter':    float(settings.starter_price    or 39),
-            'growth':     float(settings.growth_price     or 90),
-            'enterprise': float(settings.enterprise_price or 350),
-            'founders':   float(settings.founders_price   or 1745),
-        }
-
-    # August 40 % discount — NGN / Nigerian users only
+    # August 40% discount — Nigerian law firms only (IP-detected)
     august_discount = False
     discount_rate   = 0.0
     original_prices = dict(base_prices)
-    if active_currency == 'NGN' and datetime.now().month == 8:
+    if detected_country == 'NG' and datetime.now().month == 8:
         august_discount = True
         discount_rate   = 0.40
         plan_prices = {k: round(v * (1 - discount_rate)) for k, v in base_prices.items()}
@@ -322,6 +310,93 @@ def get_plan_amount(plan, active_currency=None, plan_prices=None):
     # Fallback: resolve fresh (used by legacy callers)
     _, _, resolved_prices, _, _, _ = _resolve_checkout_pricing()
     return resolved_prices.get(plan_key, 0)
+
+@sales_bp.route('/bank-instructions')
+def bank_instructions():
+    """Dedicated bank transfer instructions page with receipt upload"""
+    lead_data = session.get('lead_data')
+    if not lead_data:
+        flash('Session expired. Please start over.', 'error')
+        return redirect(url_for('sales.popup_page'))
+
+    selected_plan    = session.get('selected_plan', '')
+    payment_amount   = session.get('payment_amount', 0)
+    payment_currency = session.get('payment_currency', 'NGN')
+    payment_reference = session.get('payment_reference', '')
+
+    try:
+        amount_numeric = float(payment_amount) if payment_amount else 0
+    except (ValueError, TypeError):
+        amount_numeric = 0
+
+    currency_symbol = '₦' if payment_currency == 'NGN' else '$'
+
+    # Get admin-configured bank account if available, else fall back to Zenith Bank defaults
+    from models_payment_custom import PaymentBankAccount
+    bank_account = PaymentBankAccount.query.filter_by(is_active=True, is_primary=True).first()
+    if not bank_account:
+        bank_account = PaymentBankAccount.query.filter_by(is_active=True).first()
+
+    return render_template('sales/payment_instructions.html',
+                           lead_data=lead_data,
+                           selected_plan=selected_plan,
+                           amount=amount_numeric,
+                           currency_symbol=currency_symbol,
+                           payment_reference=payment_reference,
+                           bank_account=bank_account)
+
+
+@sales_bp.route('/submit-bank-proof', methods=['POST'])
+def submit_bank_proof():
+    """Handle bank transfer receipt upload"""
+    try:
+        validate_csrf(request.form.get('csrf_token'))
+
+        payment_reference = request.form.get('payment_reference') or session.get('payment_reference', '')
+        bank_reference    = request.form.get('bank_reference', '').strip()
+
+        # Handle optional receipt upload
+        receipt_file = request.files.get('receipt_file')
+        proof_url = None
+        if receipt_file and receipt_file.filename:
+            allowed_extensions = {'png', 'jpg', 'jpeg', 'pdf'}
+            ext = receipt_file.filename.rsplit('.', 1)[-1].lower() if '.' in receipt_file.filename else ''
+            if ext not in allowed_extensions:
+                flash('Please upload PNG, JPG, or PDF files only.', 'error')
+                return redirect(url_for('sales.bank_instructions'))
+
+            receipt_file.seek(0, 2)
+            file_size = receipt_file.tell()
+            receipt_file.seek(0)
+            if file_size > 10 * 1024 * 1024:
+                flash('File too large (max 10 MB). Please try again.', 'error')
+                return redirect(url_for('sales.bank_instructions'))
+
+            upload_folder = os.path.join('static', 'payment_proofs')
+            os.makedirs(upload_folder, exist_ok=True)
+            filename = secure_filename(f"{payment_reference}_{receipt_file.filename}")
+            receipt_file.save(os.path.join(upload_folder, filename))
+            proof_url = f"/static/payment_proofs/{filename}"
+
+        # Update lead record
+        lead_id = session.get('lead_id')
+        if lead_id:
+            lead = SalesLead.query.get(lead_id)
+            if lead:
+                lead.status = 'payment_evidence_submitted'
+                notes = f"Bank Reference: {bank_reference or 'Not provided'}"
+                if proof_url:
+                    notes += f"\nReceipt: {proof_url}"
+                lead.notes = notes
+                db.session.commit()
+
+        return redirect(url_for('sales.congratulations'))
+
+    except Exception as e:
+        db.session.rollback()
+        flash('An error occurred. Please try again.', 'error')
+        return redirect(url_for('sales.bank_instructions'))
+
 
 @sales_bp.route('/payment-evidence')
 def payment_evidence():
@@ -475,11 +550,16 @@ def congratulations():
     except (ValueError, TypeError):
         amount_numeric = None
     
+    payment_currency = session.get('payment_currency', 'NGN')
+    sym_map = {'USD': '$', 'NGN': '₦', 'EUR': '€', 'GBP': '£', 'CAD': 'C$'}
+    currency_symbol = sym_map.get(payment_currency, '₦')
+
     return render_template('sales/congratulations.html',
                          customer_name=lead_data.get('name'),
                          customer_email=lead_data.get('email'),
                          plan_name=selected_plan.title() if selected_plan else 'Plan',
                          amount=amount_numeric,
+                         currency_symbol=currency_symbol,
                          payment_reference=payment_reference)
 
 @sales_bp.route('/thankyou')
