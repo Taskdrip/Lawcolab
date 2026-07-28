@@ -265,9 +265,9 @@
                 <del id="orig-founders" style="font-size:.5em;color:rgba(255,255,255,.4);display:none;margin-left:4px;"></del>
               </div>
               <div class="plan-period plan-period-light">one-time payment · own it forever</div>
-              <a href="/sales/popup" class="plan-btn plan-btn-gold mt-2" id="btn-founders">
+              <button onclick="selectPlan('founders', document.getElementById('val-founders').textContent)" class="plan-btn plan-btn-gold mt-2" id="btn-founders">
                 👑 Secure White-Label License
-              </a>
+              </button>
             </div>
             <div class="col-lg-5 mt-4 mt-lg-0">
               <hr class="plan-divider plan-divider-light d-lg-none">
@@ -399,11 +399,15 @@
 </section>
 {% endblock %}
 
-{% block scripts %}
+{% block javascript %}
 <script>
-// Scroll reveal
+// Scroll reveal — immediately show anything already in viewport, animate the rest
 const io = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('visible'); }), { threshold: 0.1 });
-document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+document.querySelectorAll('.reveal').forEach(el => {
+  const r = el.getBoundingClientRect();
+  if (r.top < window.innerHeight && r.bottom > 0) { el.classList.add('visible'); }
+  else { io.observe(el); }
+});
 
 // FAQ toggle
 function toggleFaq(btn) {
@@ -413,7 +417,12 @@ function toggleFaq(btn) {
   if (!wasOpen) item.classList.add('open');
 }
 
-// Geo-aware pricing (NGN/August discount — same as before)
+// Route plan selection to direct checkout
+function selectPlan(plan, price) {
+  window.location.href = '/sales/direct-checkout?plan=' + encodeURIComponent(plan);
+}
+
+// Geo-aware pricing (NGN/August discount)
 (function () {
   function fmt(n) { return new Intl.NumberFormat().format(Math.round(n)); }
   fetch('/sales/api/currency-settings')
