@@ -8,7 +8,7 @@ from utils.trial_access import require_active_subscription, trial_warning_contex
 from forms import ClientForm, TeamMemberForm
 import uuid
 import os
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from werkzeug.utils import secure_filename
 
 admin_bp = Blueprint('admin', __name__)
@@ -144,6 +144,7 @@ def admin_dashboard():
                          recent_projects=recent_projects,
                          trial_notification=trial_notification,
                          smart_notifications=smart_notifications,
+                         now=datetime.now(),
                          **context)
 
 @admin_bp.route('/add-client', methods=['GET', 'POST'])

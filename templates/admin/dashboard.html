@@ -21,19 +21,90 @@
     background-image: url('/static/images/sections/hero_lobby.jpg');
     background-size: cover;
     background-position: center top;
-    opacity: .18;
+    opacity: .42;
+    transform: scale(1.04);
+    animation: heroImgDrift 18s ease-in-out infinite alternate;
+}
+@keyframes heroImgDrift {
+    from { transform: scale(1.04) translateX(0); }
+    to   { transform: scale(1.08) translateX(-1.5%); }
 }
 .adm-hero::after {
     content: '';
     position: absolute; inset: 0;
     background: linear-gradient(
         160deg,
-        rgba(6,15,46,.97) 0%,
-        rgba(13,27,75,.90) 55%,
-        rgba(6,15,46,.80) 100%
+        rgba(6,15,46,.78) 0%,
+        rgba(13,27,75,.65) 50%,
+        rgba(6,15,46,.50) 100%
     );
 }
+/* gold accent bottom line */
+.adm-hero-accent {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 2px; z-index: 3;
+    background: linear-gradient(90deg, transparent 0%, #FFD700 40%, #f5c800 60%, transparent 100%);
+}
 .adm-hero-inner { position: relative; z-index: 2; }
+
+/* ── Floating legal icon decorations ────────────────────────── */
+.adm-hero-deco {
+    position: absolute; inset: 0; z-index: 1;
+    pointer-events: none; overflow: hidden;
+}
+.adm-deco {
+    position: absolute;
+    color: rgba(255, 215, 0, 0.08);
+    font-size: 5rem;
+    animation: decoFloat 8s ease-in-out infinite;
+}
+.adm-deco:nth-child(1) { top: 8%;  right: 6%;  font-size: 4.5rem; animation-delay: 0s;    animation-duration: 9s; }
+.adm-deco:nth-child(2) { top: 55%; right: 18%; font-size: 3.5rem; animation-delay: 2s;    animation-duration: 11s; color: rgba(255,215,0,.06); }
+.adm-deco:nth-child(3) { top: 20%; right: 32%; font-size: 2.5rem; animation-delay: 4s;    animation-duration: 7s; color: rgba(255,255,255,.05); }
+.adm-deco:nth-child(4) { top: 65%; right: 3%;  font-size: 5.5rem; animation-delay: 1s;    animation-duration: 13s; color: rgba(255,215,0,.05); }
+@media(max-width:768px) { .adm-deco { display: none; } }
+@keyframes decoFloat {
+    0%,100% { transform: translateY(0) rotate(-5deg); opacity: 1; }
+    50%      { transform: translateY(-18px) rotate(5deg); opacity: .7; }
+}
+
+/* ── Greeting entrance animation ─────────────────────────────── */
+.adm-hero-inner .adm-greeting,
+.adm-hero-inner .adm-hero-actions,
+.adm-hero-chips {
+    animation: heroSlideUp .55s cubic-bezier(.22,.68,0,1.2) both;
+}
+.adm-hero-inner .col-md-4.adm-greeting { animation-delay: .12s; }
+.adm-hero-chips { animation-delay: .22s; }
+@keyframes heroSlideUp {
+    from { opacity: 0; transform: translateY(22px); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* ── Name shimmer ────────────────────────────────────────────── */
+.adm-greeting-name {
+    background: linear-gradient(90deg, #ffffff 0%, #FFD700 45%, #ffffff 65%, #fff 100%);
+    background-size: 250% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: nameShimmer 4s ease-in-out 0.8s 1 forwards;
+}
+@keyframes nameShimmer {
+    0%   { background-position: 200% center; }
+    100% { background-position: -50% center; }
+}
+/* fallback after shimmer settles — solid white */
+.adm-greeting-name.shimmer-done {
+    background: none;
+    -webkit-text-fill-color: #fff;
+    color: #fff;
+}
+
+/* ── Chip counter pulse ───────────────────────────────────────── */
+.adm-chip-num.counting {
+    animation: chipCount .1s ease;
+}
+@keyframes chipCount { from { transform: scale(1.15); } to { transform: scale(1); } }
 
 /* greeting row */
 .adm-greeting { margin-bottom: 2rem; }
@@ -409,6 +480,15 @@
 
 <!-- ═══════════════════  HERO HEADER  ═══════════════════ -->
 <div class="adm-hero">
+    <!-- Floating legal icon decorations -->
+    <div class="adm-hero-deco" aria-hidden="true">
+        <i class="fas fa-gavel adm-deco"></i>
+        <i class="fas fa-balance-scale adm-deco"></i>
+        <i class="fas fa-scroll adm-deco"></i>
+        <i class="fas fa-landmark adm-deco"></i>
+    </div>
+    <!-- Gold accent line at bottom of hero -->
+    <div class="adm-hero-accent"></div>
     <!-- Subscription / Access banner (above all) -->
     {% if current_user.is_authenticated and current_user.law_firm %}
         {% set firm = current_user.law_firm %}
@@ -770,4 +850,47 @@
 </div><!-- /container -->
 </div><!-- /adm-body -->
 
+{% block javascript %}
+<script>
+/* ── Animated number counters ───────────────────────────────── */
+(function () {
+    function animateCount(el) {
+        const target = parseInt(el.textContent.replace(/\D/g, ''), 10);
+        if (isNaN(target) || target === 0) return;
+        const duration = 900;
+        let startTime = null;
+        function step(ts) {
+            if (!startTime) startTime = ts;
+            const pct = Math.min((ts - startTime) / duration, 1);
+            // ease out cubic
+            const ease = 1 - Math.pow(1 - pct, 3);
+            el.textContent = Math.round(ease * target);
+            if (pct < 1) requestAnimationFrame(step);
+            else el.textContent = target;
+        }
+        requestAnimationFrame(step);
+    }
+
+    // Run when element enters viewport
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                animateCount(e.target);
+                observer.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.2 });
+
+    document.querySelectorAll('.adm-chip-num, .adm-stat-num').forEach(el => observer.observe(el));
+})();
+
+/* ── Shimmer: switch to solid white after animation completes ── */
+(function () {
+    const name = document.querySelector('.adm-greeting-name');
+    if (!name) return;
+    // animation delay 0.8s + duration ~4s → done at ~4.8s
+    setTimeout(() => name.classList.add('shimmer-done'), 5000);
+})();
+</script>
+{% endblock %}
 {% endblock %}
