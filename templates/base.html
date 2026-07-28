@@ -692,6 +692,13 @@
                             <li><a class="dropdown-item" href="{{ url_for('seo_analytics.dashboard') }}">
                                 <i class="fas fa-chart-area me-2" style="color:#FFD700;"></i>Analytics Reports
                             </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('superadmin.contact_inbox') }}">
+                                <i class="fas fa-inbox me-2" style="color:#16a34a;"></i>Contact Inbox
+                                {%- set _ci_new = namespace(count=0) %}
+                                {%- if current_user.is_authenticated and current_user.is_super_admin() %}
+                                  {%- set _ci_new.count = [] %}
+                                {%- endif %}
+                            </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                               <a class="dropdown-item d-flex align-items-center justify-content-between" href="{{ url_for('superadmin.admin_notifications') }}">

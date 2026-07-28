@@ -1,243 +1,323 @@
 {% extends "base.html" %}
 {% block title %}Contact LAWCOLAB — Talk to Our Team{% endblock %}
+{% block meta_description %}Contact the LAWCOLAB team for demos, pricing, partnerships, or support. We respond within 24 hours.{% endblock %}
 
 {% block additional_css %}
 <style>
-.page-hero {
-  position:relative; min-height:460px; display:flex; align-items:center;
-  background:#0a1628; overflow:hidden;
+/* ── Animations ── */
+@keyframes fadeUp   { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeLeft { from{opacity:0;transform:translateX(-30px)} to{opacity:1;transform:translateX(0)} }
+
+.ani { opacity:0; }
+.ani.visible { animation-fill-mode:both; animation-duration:.65s; animation-timing-function:cubic-bezier(.22,.68,0,1.15); }
+.ani-up.visible   { animation-name:fadeUp; }
+.ani-left.visible { animation-name:fadeLeft; }
+.d1.visible{animation-delay:.07s} .d2.visible{animation-delay:.14s} .d3.visible{animation-delay:.21s}
+
+/* ── Hero ── */
+.ct-hero {
+  position:relative; min-height:480px; display:flex; align-items:center;
+  background:#06101f; overflow:hidden;
 }
-.page-hero .hero-bg {
+.ct-hero-bg {
   position:absolute; inset:0;
-  background:url('https://images.unsplash.com/photo-1423666639041-f56000c27a9a?w=1600&q=80') center/cover no-repeat;
+  background:url('https://images.unsplash.com/photo-1423666639041-f56000c27a9a?w=1600&q=80') center/cover;
   opacity:.13;
 }
-.page-hero .hero-overlay {
+.ct-hero-overlay {
   position:absolute; inset:0;
-  background:linear-gradient(135deg,rgba(10,22,40,.95) 0%,rgba(13,27,75,.84) 60%,rgba(15,45,90,.72) 100%);
+  background:linear-gradient(135deg,rgba(6,16,31,.97) 0%,rgba(13,27,75,.88) 55%,rgba(20,50,100,.75) 100%);
   z-index:1;
 }
-.page-hero .hero-content { position:relative; z-index:2; }
-.hero-eyebrow {
+.ct-hero-content { position:relative; z-index:2; }
+.ct-eyebrow {
   display:inline-flex; align-items:center; gap:.5rem;
-  background:rgba(255,215,0,.15); border:1.5px solid rgba(255,215,0,.4);
-  color:#FFD700; font-size:.8rem; font-weight:700;
-  padding:.4rem 1rem; border-radius:50px; letter-spacing:.06em; margin-bottom:1.5rem;
+  background:rgba(255,215,0,.12); border:1.5px solid rgba(255,215,0,.35);
+  color:#FFD700; font-size:.78rem; font-weight:800;
+  padding:.35rem 1rem; border-radius:50px; letter-spacing:.07em; margin-bottom:1.5rem;
 }
-.hero-title { font-family:'Playfair Display',serif; font-size:clamp(2.2rem,5vw,3.6rem); color:#fff; font-weight:800; line-height:1.1; }
-.hero-title span { color:#FFD700; }
-.hero-sub { color:rgba(255,255,255,.85); font-size:1.05rem; line-height:1.7; }
+.ct-hero-title {
+  font-family:'Playfair Display',Georgia,serif;
+  font-size:clamp(2.4rem,5.5vw,3.8rem); color:#fff; font-weight:800; line-height:1.1;
+}
+.ct-hero-title span { color:#FFD700; }
+.ct-hero-sub { color:rgba(255,255,255,.82); font-size:1.05rem; line-height:1.75; max-width:560px; }
+.ct-promise { display:flex; align-items:center; gap:.5rem; color:rgba(255,255,255,.88); font-size:.87rem; font-weight:600; }
+.ct-promise i { color:#4ade80; }
 
-@keyframes fadeInUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
-.reveal { opacity:0; transform:translateY(28px); transition:opacity .7s ease,transform .7s ease; }
-.reveal.visible { opacity:1; transform:translateY(0); }
-.delay-1{transition-delay:.1s !important} .delay-2{transition-delay:.2s !important} .delay-3{transition-delay:.3s !important}
+/* ── Section helpers ── */
+.ct-eyebrow-sm { font-size:.72rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#FFD700; margin-bottom:.5rem; }
+.ct-section-title { font-family:'Playfair Display',Georgia,serif; font-size:clamp(1.8rem,3.5vw,2.4rem); color:#0d1b4b; font-weight:800; line-height:1.2; }
 
-.section-eyebrow { font-size:.75rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#FFD700; margin-bottom:.5rem; }
-.section-title { font-family:'Playfair Display',serif; font-size:clamp(1.9rem,3.5vw,2.4rem); color:#0d1b4b; font-weight:800; line-height:1.2; }
+/* ── Contact form card ── */
+.ct-form-card {
+  background:#fff; border-radius:24px; border:1.5px solid #e8eef4;
+  box-shadow:0 12px 52px rgba(13,27,75,.1); overflow:hidden;
+}
+.ct-form-header {
+  background:linear-gradient(135deg,#0d1b4b,#1a3a6b);
+  padding:2rem 2.5rem;
+}
+.ct-form-header h2 { color:#fff; font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:800; margin:0 0 .4rem; }
+.ct-form-header p  { color:rgba(255,255,255,.72); font-size:.87rem; margin:0; }
+.ct-form-body { padding:2.25rem 2.5rem; }
 
-/* Contact form card */
-.contact-form-card {
-  background:#fff; border-radius:22px; border:1.5px solid #e8eef4;
-  box-shadow:0 12px 50px rgba(13,27,75,.1);
-  padding:2.75rem;
+.ct-form-body .form-control,
+.ct-form-body .form-select {
+  border-radius:11px; border:1.5px solid #e2e8f0;
+  padding:.75rem 1rem; font-size:.91rem;
+  transition:border-color .2s,box-shadow .2s;
+  background:#fff;
 }
-.contact-form-card .form-control, .contact-form-card .form-select {
-  border-radius:10px; border:1.5px solid #e2e8f0; padding:.75rem 1rem;
-  font-size:.92rem; transition:border-color .2s, box-shadow .2s;
+.ct-form-body .form-control:focus,
+.ct-form-body .form-select:focus {
+  border-color:#0d1b4b; box-shadow:0 0 0 3px rgba(13,27,75,.09); outline:none;
 }
-.contact-form-card .form-control:focus, .contact-form-card .form-select:focus {
-  border-color:#0d1b4b; box-shadow:0 0 0 3px rgba(13,27,75,.1);
+.ct-form-body .form-label {
+  font-weight:800; font-size:.76rem; color:#374151;
+  text-transform:uppercase; letter-spacing:.05em; margin-bottom:.4rem;
 }
-.contact-form-card .form-label { font-weight:700; font-size:.82rem; color:#374151; text-transform:uppercase; letter-spacing:.04em; margin-bottom:.4rem; }
-.submit-btn {
+.ct-form-body .form-label .req { color:#dc2626; }
+
+.ct-submit {
   background:linear-gradient(135deg,#0d1b4b,#1a3a6b); color:#fff;
   border:none; border-radius:12px; padding:.9rem 2rem;
   font-weight:800; font-size:1rem; width:100%; cursor:pointer;
   transition:all .25s; position:relative; overflow:hidden;
+  display:flex; align-items:center; justify-content:center; gap:.5rem;
 }
-.submit-btn:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(13,27,75,.3); }
-.submit-btn .btn-shine {
+.ct-submit:hover { transform:translateY(-2px); box-shadow:0 10px 32px rgba(13,27,75,.32); background:linear-gradient(135deg,#0f2d5a,#1a3a6b); }
+.ct-submit .shine {
   position:absolute; top:0; left:-100%; width:100%; height:100%;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);
-  transition:left .4s;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);
+  transition:left .45s;
 }
-.submit-btn:hover .btn-shine { left:100%; }
+.ct-submit:hover .shine { left:100%; }
 
-/* Contact sidebar cards */
-.contact-info-card {
+/* ── Sidebar info cards ── */
+.ct-info-card {
   background:#fff; border-radius:18px; border:1.5px solid #e8eef4;
-  padding:1.75rem; margin-bottom:1.25rem;
-  box-shadow:0 4px 20px rgba(0,0,0,.05);
-  display:flex; align-items:flex-start; gap:1.1rem;
-  transition:all .25s;
+  padding:1.6rem; margin-bottom:1.1rem;
+  display:flex; align-items:flex-start; gap:1rem;
+  box-shadow:0 4px 18px rgba(0,0,0,.05); transition:.25s;
 }
-.contact-info-card:hover { transform:translateY(-3px); box-shadow:0 12px 36px rgba(13,27,75,.1); }
-.contact-icon-box {
-  width:52px; height:52px; border-radius:14px; flex-shrink:0;
-  display:flex; align-items:center; justify-content:center; font-size:1.25rem;
+.ct-info-card:hover { transform:translateY(-3px); box-shadow:0 12px 36px rgba(13,27,75,.1); border-color:#0d1b4b22; }
+.ct-info-icon { width:50px; height:50px; border-radius:14px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:1.2rem; }
+.ct-info-card h6 { font-weight:800; color:#0d1b4b; margin:0 0 .2rem; font-size:.93rem; }
+.ct-info-card p  { color:#64748b; font-size:.82rem; margin:0 0 .3rem; line-height:1.5; }
+.ct-info-card a  { color:#0d1b4b; font-weight:700; font-size:.85rem; }
+
+/* ── Social connect ── */
+.ct-social-card { background:#fff; border-radius:18px; border:1.5px solid #e8eef4; padding:1.6rem; box-shadow:0 4px 18px rgba(0,0,0,.05); }
+.ct-social-link {
+  display:flex; align-items:center; gap:.75rem;
+  padding:.6rem .85rem; border-radius:10px; border:1.5px solid #e8eef4;
+  color:#374151; font-size:.86rem; font-weight:700; text-decoration:none; transition:.2s; margin-bottom:.5rem;
 }
-.contact-info-card h6 { font-weight:800; color:#0d1b4b; margin-bottom:.25rem; font-size:.95rem; }
-.contact-info-card p { color:#64748b; font-size:.84rem; margin:0; line-height:1.55; }
-.contact-info-card a { color:#0d1b4b; font-weight:600; font-size:.87rem; }
+.ct-social-link:hover { border-color:#0d1b4b; background:#f8faff; color:#0d1b4b; }
+.ct-social-link:last-child { margin-bottom:0; }
 
-/* Partnership cards */
-.partner-card {
-  background:#fff; border-radius:18px; border:1.5px solid #e8eef4;
-  padding:2rem 1.5rem; text-align:center;
-  box-shadow:0 4px 18px rgba(0,0,0,.05); transition:all .3s;
+/* ── Partner cards ── */
+.ct-partner-card {
+  background:#fff; border-radius:20px; border:1.5px solid #e8eef4;
+  padding:2.25rem 1.75rem; text-align:center;
+  box-shadow:0 4px 18px rgba(0,0,0,.05); transition:.3s;
 }
-.partner-card:hover { transform:translateY(-5px); box-shadow:0 16px 42px rgba(13,27,75,.1); }
-.partner-icon { width:64px; height:64px; border-radius:18px; margin:0 auto 1.1rem; display:flex; align-items:center; justify-content:center; font-size:1.5rem; }
+.ct-partner-card:hover { transform:translateY(-6px); box-shadow:0 18px 44px rgba(13,27,75,.1); border-color:#0d1b4b22; }
+.ct-partner-icon { width:68px; height:68px; border-radius:18px; margin:0 auto 1.1rem; display:flex; align-items:center; justify-content:center; font-size:1.5rem; }
 
-/* CTA */
-.cta-section { background:linear-gradient(135deg,#0d1b4b,#163060); padding:5rem 0; position:relative; overflow:hidden; }
-.cta-section::before { content:''; position:absolute; inset:0; background:url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1400&q=60') center/cover; opacity:.05; }
-.cta-section .container { position:relative; z-index:2; }
+/* ── FAQ ── */
+.ct-faq { background:#fff; border-radius:18px; border:1.5px solid #e8eef4; overflow:hidden; }
+.ct-faq-item { border-bottom:1px solid #f1f5f9; }
+.ct-faq-item:last-child { border-bottom:none; }
+.ct-faq-q {
+  width:100%; text-align:left; background:none; border:none; cursor:pointer;
+  padding:1.1rem 1.5rem; font-weight:700; color:#0d1b4b; font-size:.92rem;
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  transition:background .15s;
+}
+.ct-faq-q:hover { background:#f8faff; }
+.ct-faq-q i { color:#FFD700; flex-shrink:0; transition:transform .25s; }
+.ct-faq-q.open i { transform:rotate(45deg); }
+.ct-faq-a { padding:0 1.5rem 1.1rem; color:#64748b; font-size:.88rem; line-height:1.72; display:none; }
 
-/* Progress indicator */
-.form-step-dot { width:10px; height:10px; border-radius:50%; background:#e2e8f0; transition:background .25s; }
-.form-step-dot.active { background:#0d1b4b; }
-.form-step-dot.done { background:#16a34a; }
+/* ── CTA ── */
+.ct-cta { background:linear-gradient(135deg,#0d1b4b,#163060); padding:5.5rem 0; position:relative; overflow:hidden; }
+.ct-cta::before { content:''; position:absolute; inset:0; background:url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1400&q=60') center/cover; opacity:.05; }
+.ct-cta .container { position:relative; z-index:2; }
+
+/* ── Divider ── */
+.ct-divider { height:4px; background:linear-gradient(90deg,#0d1b4b,#FFD700,#0d1b4b); border:none; opacity:1; }
+
+/* ── Response time badge ── */
+.response-badge {
+  display:inline-flex; align-items:center; gap:.5rem;
+  background:rgba(74,222,128,.12); border:1px solid rgba(74,222,128,.3);
+  color:#4ade80; font-size:.75rem; font-weight:700; padding:.3rem .85rem;
+  border-radius:50px;
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<script>
-  if (typeof preventRedirect === 'undefined') { var preventRedirect = true; }
-</script>
 
 <!-- ── Hero ── -->
-<section class="page-hero">
-  <div class="hero-bg"></div>
-  <div class="hero-overlay"></div>
-  <div class="container hero-content py-5">
+<section class="ct-hero">
+  <div class="ct-hero-bg"></div>
+  <div class="ct-hero-overlay"></div>
+  <div class="container ct-hero-content py-5">
     <div class="row align-items-center g-5">
       <div class="col-lg-7">
-        <div class="hero-eyebrow"><i class="fas fa-envelope"></i> We're Here to Help</div>
-        <h1 class="hero-title mb-4">Talk to the<br><span>LAWCOLAB Team</span></h1>
-        <p class="hero-sub mb-4">Whether you're ready to get started, exploring a partnership, or need help with your account — our team responds within 24 hours. We love hearing from legal professionals.</p>
-        <div class="d-flex gap-4 flex-wrap">
-          <div style="color:rgba(255,255,255,.9);font-size:.9rem;display:flex;align-items:center;gap:.5rem;">
-            <i class="fas fa-check-circle" style="color:#4ade80;"></i> Response within 24 hours
-          </div>
-          <div style="color:rgba(255,255,255,.9);font-size:.9rem;display:flex;align-items:center;gap:.5rem;">
-            <i class="fas fa-check-circle" style="color:#4ade80;"></i> Dedicated account support
-          </div>
-          <div style="color:rgba(255,255,255,.9);font-size:.9rem;display:flex;align-items:center;gap:.5rem;">
-            <i class="fas fa-check-circle" style="color:#4ade80;"></i> Live WhatsApp available
-          </div>
+        <div class="ct-eyebrow"><i class="fas fa-envelope"></i>&nbsp;We're Here to Help</div>
+        <h1 class="ct-hero-title mb-4">
+          Talk to the<br><span>LAWCOLAB Team</span>
+        </h1>
+        <p class="ct-hero-sub mb-4">
+          Whether you're ready to get started, exploring a partnership, or need help with your account —
+          our team responds within 24 hours. We love hearing from legal professionals.
+        </p>
+        <div class="d-flex gap-3 flex-wrap">
+          <div class="ct-promise"><i class="fas fa-check-circle"></i>Reply within 24 hours</div>
+          <div class="ct-promise"><i class="fas fa-check-circle"></i>Dedicated account support</div>
+          <div class="ct-promise"><i class="fas fa-check-circle"></i>WhatsApp available</div>
+        </div>
+      </div>
+      <div class="col-lg-5 d-none d-lg-flex justify-content-center">
+        <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.13);border-radius:22px;padding:2rem;max-width:320px;width:100%;">
+          <div class="response-badge mb-3"><span style="width:7px;height:7px;border-radius:50%;background:#4ade80;flex-shrink:0;"></span>Team is online</div>
+          <div style="color:#fff;font-weight:800;font-size:1rem;margin-bottom:1.25rem;">Quick links</div>
+          {% for icon, label, url in [
+            ('fas fa-calendar-check','Schedule a Demo', url_for('contact')),
+            ('fas fa-tag','Pricing & Plans', url_for('contact')),
+            ('fas fa-handshake','Partnership Enquiry', url_for('contact')),
+            ('fas fa-headset','Technical Support', url_for('enhanced_chat.support_chat')),
+          ] %}
+          <a href="{{ url }}" style="display:flex;align-items:center;gap:.65rem;padding:.65rem .9rem;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.85);font-size:.84rem;font-weight:600;text-decoration:none;margin-bottom:.5rem;transition:.2s;" onmouseover="this.style.background='rgba(255,215,0,.12)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">
+            <i class="{{ icon }}" style="color:#FFD700;width:16px;flex-shrink:0;"></i>{{ label }}
+          </a>
+          {% endfor %}
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── Main Section ── -->
+<hr class="ct-divider m-0">
+
+<!-- ── Main Contact Section ── -->
 <section style="background:#f0f4f8;padding:5rem 0;">
   <div class="container">
     <div class="row g-5">
 
-      <!-- Form -->
-      <div class="col-lg-8 reveal">
-        <div class="contact-form-card">
-          <div class="mb-4">
-            <div class="section-eyebrow"><i class="fas fa-paper-plane me-1"></i> Send a Message</div>
-            <h2 class="section-title">How Can We Help You?</h2>
-            <p style="color:#64748b;font-size:.93rem;margin-top:.5rem;">Fill in the form below — your enquiry is delivered straight to our team and logged for fast follow-up.</p>
+      <!-- Contact Form -->
+      <div class="col-lg-8 ani ani-up">
+        <div class="ct-form-card">
+          <div class="ct-form-header">
+            <h2><i class="fas fa-paper-plane me-2" style="color:#FFD700;"></i>Send a Message</h2>
+            <p>Your enquiry is stored securely and delivered to our team for fast follow-up.</p>
           </div>
+          <div class="ct-form-body">
 
-          {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-              {% for category, message in messages %}
-                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'warning' }} alert-dismissible fade show mb-4" role="alert" style="border-radius:12px;">
-                  <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }} me-2"></i>{{ message }}
-                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'warning' }} alert-dismissible fade show mb-4" role="alert" style="border-radius:12px;">
+                    <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }} me-2"></i>{{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <form action="{{ url_for('contact') }}" method="post" id="contactForm" novalidate>
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+              <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                  <label class="form-label">First Name <span class="req">*</span></label>
+                  <input type="text" name="firstName" class="form-control" placeholder="e.g. Abraham" required>
                 </div>
-              {% endfor %}
-            {% endif %}
-          {% endwith %}
+                <div class="col-sm-6">
+                  <label class="form-label">Last Name <span class="req">*</span></label>
+                  <input type="text" name="lastName" class="form-control" placeholder="e.g. Okafor" required>
+                </div>
+              </div>
 
-          <form action="{{ url_for('contact') }}" method="post" id="contactForm">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                  <label class="form-label">Email Address <span class="req">*</span></label>
+                  <input type="email" name="email" class="form-control" placeholder="you@lawfirm.com" required>
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label">Phone / WhatsApp</label>
+                  <input type="tel" name="phone" class="form-control" placeholder="+234 812 345 6789">
+                </div>
+              </div>
 
-            <!-- Step 1: Personal Info -->
-            <div class="row g-3 mb-3">
-              <div class="col-md-6">
-                <label class="form-label">First Name <span style="color:#dc2626">*</span></label>
-                <input type="text" name="firstName" class="form-control" placeholder="e.g. Abraham" required>
+              <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                  <label class="form-label">Law Firm / Company</label>
+                  <input type="text" name="company" class="form-control" placeholder="Your law firm name">
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label">Country <span class="req">*</span></label>
+                  <select name="country" class="form-select" required>
+                    <option value="">Select your country…</option>
+                    {% for c in ['Nigeria','Ghana','United States','United Kingdom','South Africa','Kenya','Canada','Australia','India','Other'] %}
+                    <option value="{{ c }}">{{ c }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
               </div>
-              <div class="col-md-6">
-                <label class="form-label">Last Name <span style="color:#dc2626">*</span></label>
-                <input type="text" name="lastName" class="form-control" placeholder="e.g. Okafor" required>
-              </div>
-            </div>
-            <div class="row g-3 mb-3">
-              <div class="col-md-6">
-                <label class="form-label">Email Address <span style="color:#dc2626">*</span></label>
-                <input type="email" name="email" class="form-control" placeholder="you@lawfirm.com" required>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Phone / WhatsApp</label>
-                <input type="tel" name="phone" class="form-control" placeholder="+234 812 345 6789">
-              </div>
-            </div>
-            <div class="row g-3 mb-3">
-              <div class="col-md-6">
-                <label class="form-label">Law Firm / Company</label>
-                <input type="text" name="company" class="form-control" placeholder="Your law firm name">
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Country <span style="color:#dc2626">*</span></label>
-                <select name="country" class="form-select" required>
-                  <option value="">Select your country…</option>
-                  {% for c in ['Nigeria','Ghana','United States','United Kingdom','South Africa','Kenya','Canada','Australia','India','Other'] %}
-                  <option value="{{ c }}">{{ c }}</option>
-                  {% endfor %}
+
+              <div class="mb-3">
+                <label class="form-label">Type of Enquiry <span class="req">*</span></label>
+                <select name="inquiryType" class="form-select" required>
+                  <option value="">Select enquiry type…</option>
+                  <option value="Demo">📅 Schedule a Demo</option>
+                  <option value="Partnership">🤝 Partnership Opportunities</option>
+                  <option value="Pricing">💰 Pricing &amp; Plans</option>
+                  <option value="WhiteLabel">🏷️ White-Label License</option>
+                  <option value="Technical">🛠️ Technical Support</option>
+                  <option value="Integration">🔌 Integration Services</option>
+                  <option value="General">💬 General Questions</option>
+                  <option value="Other">📝 Other</option>
                 </select>
               </div>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Type of Enquiry <span style="color:#dc2626">*</span></label>
-              <select name="inquiryType" class="form-select" required>
-                <option value="">Select enquiry type…</option>
-                <option value="Demo">📅 Schedule a Demo</option>
-                <option value="Partnership">🤝 Partnership Opportunities</option>
-                <option value="Pricing">💰 Pricing & Plans</option>
-                <option value="WhiteLabel">🏷️ White-Label License</option>
-                <option value="Technical">🛠️ Technical Support</option>
-                <option value="Integration">🔌 Integration Services</option>
-                <option value="General">💬 General Questions</option>
-                <option value="Other">📝 Other</option>
-              </select>
-            </div>
-            <div class="mb-4">
-              <label class="form-label">Your Message <span style="color:#dc2626">*</span></label>
-              <textarea name="message" class="form-control" rows="6" placeholder="Tell us about your needs, your law firm size, and how we can help you…" required></textarea>
-            </div>
-            <div class="mb-4">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="newsletter" id="newsletter">
-                <label class="form-check-label" for="newsletter" style="font-size:.83rem;color:#64748b;font-weight:400;text-transform:none;letter-spacing:0;">
-                  I'd like to receive LAWCOLAB product updates, legal technology insights, and exclusive offers
-                </label>
+
+              <div class="mb-4">
+                <label class="form-label">Your Message <span class="req">*</span></label>
+                <textarea name="message" class="form-control" rows="6"
+                  placeholder="Tell us about your needs, your law firm size, and how we can help you…" required></textarea>
               </div>
-            </div>
-            <button type="submit" class="submit-btn">
-              <div class="btn-shine"></div>
-              <i class="fas fa-paper-plane me-2"></i>Send Message — We'll Reply Within 24 Hours
-            </button>
-          </form>
+
+              <div class="mb-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="newsletter" id="newsletter">
+                  <label class="form-check-label" for="newsletter" style="font-size:.83rem;color:#64748b;font-weight:400;text-transform:none;letter-spacing:0;">
+                    I'd like to receive LAWCOLAB product updates, legal technology insights, and exclusive offers
+                  </label>
+                </div>
+              </div>
+
+              <button type="submit" class="ct-submit" id="submitBtn">
+                <div class="shine"></div>
+                <i class="fas fa-paper-plane"></i>
+                <span>Send Message — We'll Reply Within 24 Hours</span>
+              </button>
+            </form>
+
+          </div>
         </div>
       </div>
 
       <!-- Sidebar -->
       <div class="col-lg-4">
-        <div class="reveal delay-1">
+        <div class="ani ani-up d1">
 
-          <!-- Contact options -->
-          <div class="contact-info-card">
-            <div class="contact-icon-box" style="background:#eef2ff;color:#3730a3;"><i class="fas fa-envelope"></i></div>
+          <!-- Contact channels -->
+          <div class="ct-info-card">
+            <div class="ct-info-icon" style="background:#eef2ff;color:#3730a3;"><i class="fas fa-envelope"></i></div>
             <div>
               <h6>Email Us</h6>
               <p>For all general enquiries and support</p>
@@ -245,66 +325,77 @@
             </div>
           </div>
 
-          <div class="contact-info-card">
-            <div class="contact-icon-box" style="background:#dcfce7;color:#16a34a;"><i class="fab fa-whatsapp"></i></div>
+          <div class="ct-info-card">
+            <div class="ct-info-icon" style="background:#dcfce7;color:#16a34a;"><i class="fab fa-whatsapp"></i></div>
             <div>
               <h6>WhatsApp</h6>
-              <p>Quick support — active business hours</p>
-              <a href="https://wa.me/2348036622568?text=Hello%20LAWCOLAB!%20I%27d%20like%20to%20learn%20more%20about%20your%20platform." target="_blank">+234 803 662 2568</a>
+              <p>Quick support during business hours</p>
+              <a href="https://wa.me/2348036622568?text=Hello%20LAWCOLAB!%20I'd%20like%20to%20learn%20more." target="_blank">+234 803 662 2568</a>
             </div>
           </div>
 
-          <div class="contact-info-card">
-            <div class="contact-icon-box" style="background:#fff7ed;color:#c2410c;"><i class="fas fa-comments"></i></div>
+          <div class="ct-info-card">
+            <div class="ct-info-icon" style="background:#fff7ed;color:#c2410c;"><i class="fas fa-comments"></i></div>
             <div>
-              <h6>Live Chat Support</h6>
+              <h6>Live Chat</h6>
               <p>Chat with our team in real-time</p>
               <a href="{{ url_for('enhanced_chat.support_chat') }}">Open Live Chat →</a>
             </div>
           </div>
 
           <!-- Social -->
-          <div style="background:#fff;border-radius:18px;border:1.5px solid #e8eef4;padding:1.75rem;box-shadow:0 4px 18px rgba(0,0,0,.05);">
-            <h6 style="font-weight:800;color:#0d1b4b;margin-bottom:1rem;font-size:.93rem;">Connect With Us</h6>
-            <div class="d-grid gap-2">
-              {% for icon, label, url in [
-                ('fab fa-telegram-plane','Telegram','https://t.me/taskdrip'),
-                ('fab fa-instagram','Instagram','https://www.instagram.com/taskdrip'),
-                ('fab fa-youtube','YouTube','https://www.youtube.com/@Taskdriper'),
-                ('fab fa-tiktok','TikTok','https://www.tiktok.com/@taskdrip'),
-              ] %}
-              <a href="{{ url }}" target="_blank" style="display:flex;align-items:center;gap:.75rem;padding:.6rem .85rem;border-radius:10px;border:1.5px solid #e8eef4;color:#374151;font-size:.87rem;font-weight:600;text-decoration:none;transition:all .2s;" onmouseover="this.style.borderColor='#0d1b4b';this.style.background='#f8faff'" onmouseout="this.style.borderColor='#e8eef4';this.style.background=''">
-                <i class="{{ icon }}" style="color:#0d1b4b;width:16px;text-align:center;"></i>{{ label }}
-              </a>
-              {% endfor %}
-            </div>
+          <div class="ct-social-card mb-4">
+            <h6 style="font-weight:800;color:#0d1b4b;margin-bottom:1rem;font-size:.9rem;"><i class="fas fa-share-alt me-2" style="color:#FFD700;"></i>Connect With Us</h6>
+            {% for icon, label, url in [
+              ('fab fa-telegram-plane','Telegram','https://t.me/taskdrip'),
+              ('fab fa-instagram','Instagram','https://www.instagram.com/taskdrip'),
+              ('fab fa-youtube','YouTube','https://www.youtube.com/@Taskdriper'),
+              ('fab fa-tiktok','TikTok','https://www.tiktok.com/@taskdrip'),
+            ] %}
+            <a href="{{ url }}" target="_blank" class="ct-social-link">
+              <i class="{{ icon }}" style="color:#0d1b4b;width:16px;text-align:center;"></i>{{ label }}
+              <i class="fas fa-external-link-alt ms-auto" style="font-size:.65rem;color:#cbd5e1;"></i>
+            </a>
+            {% endfor %}
           </div>
+
+          <!-- Response time widget -->
+          <div style="background:linear-gradient(135deg,#0d1b4b,#1a3a6b);border-radius:18px;padding:1.6rem;text-align:center;">
+            <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,215,0,.15);border:2px solid rgba(255,215,0,.4);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:1.25rem;color:#FFD700;">
+              <i class="fas fa-clock"></i>
+            </div>
+            <div style="color:#fff;font-weight:800;font-size:1rem;margin-bottom:.35rem;">Avg. Response Time</div>
+            <div style="color:#FFD700;font-size:2rem;font-weight:900;line-height:1;">≤ 4hrs</div>
+            <div style="color:rgba(255,255,255,.6);font-size:.78rem;margin-top:.35rem;">During business hours</div>
+          </div>
+
         </div>
       </div>
+
     </div>
   </div>
 </section>
 
 <!-- ── Partnership Section ── -->
-<section style="background:#fff;padding:5rem 0;">
+<section style="background:#fff;padding:5.5rem 0;">
   <div class="container">
-    <div class="text-center mb-5 reveal">
-      <div class="section-eyebrow"><i class="fas fa-handshake me-1"></i> Partnerships</div>
-      <h2 class="section-title">Partnership Opportunities</h2>
-      <p style="color:#64748b;max-width:560px;margin:.75rem auto 0;font-size:.97rem;">Join our growing network of legal technology partners and help bring LAWCOLAB to more legal professionals worldwide.</p>
+    <div class="text-center mb-5 ani ani-up">
+      <div class="ct-eyebrow-sm"><i class="fas fa-handshake me-1"></i>Partnerships</div>
+      <h2 class="ct-section-title">Partnership Opportunities</h2>
+      <p class="text-muted mt-2" style="max-width:540px;margin:0 auto;font-size:1rem;">Join our growing network of legal technology partners and help bring LAWCOLAB to more legal professionals worldwide.</p>
     </div>
     <div class="row g-4 justify-content-center">
-      {% for icon, bg, color, title, desc in [
-        ('fas fa-handshake','#eef2ff','#3730a3','Law Firm Partners','Refer fellow legal professionals and earn commissions while helping them transform their practice.'),
-        ('fas fa-plug','#ecfdf5','#15803d','Integration Partners','Build integrations with LAWCOLAB to expand your reach in the legal technology market.'),
-        ('fas fa-graduation-cap','#fff7ed','#c2410c','Educational Partners','Collaborate with law schools and CLE providers to train the next generation of tech-savvy lawyers.'),
+      {% for icon, bg, fg, title, desc, d in [
+        ('fas fa-handshake','#eef2ff','#3730a3','Law Firm Partners',    'Refer fellow legal professionals and earn commissions while helping them transform their practice.','d1'),
+        ('fas fa-plug',     '#ecfdf5','#15803d','Integration Partners', 'Build integrations with LAWCOLAB to expand your reach in the legal technology market.',                  'd2'),
+        ('fas fa-graduation-cap','#fff7ed','#c2410c','Educational Partners','Collaborate with law schools and CLE providers to train the next generation of tech-savvy lawyers.','d3'),
       ] %}
-      <div class="col-lg-4 col-md-6 reveal delay-{{ loop.index }}">
-        <div class="partner-card h-100">
-          <div class="partner-icon" style="background:{{ bg }};color:{{ color }};"><i class="{{ icon }}"></i></div>
+      <div class="col-lg-4 col-md-6 ani ani-up {{ d }}">
+        <div class="ct-partner-card h-100">
+          <div class="ct-partner-icon" style="background:{{ bg }};color:{{ fg }};"><i class="{{ icon }}"></i></div>
           <h5 style="font-weight:800;color:#0d1b4b;margin-bottom:.6rem;">{{ title }}</h5>
-          <p style="color:#64748b;font-size:.88rem;line-height:1.65;margin-bottom:1.25rem;">{{ desc }}</p>
-          <a href="{{ url_for('contact') }}" class="btn btn-outline-primary btn-sm" style="border-radius:8px;font-weight:700;">Learn More</a>
+          <p style="color:#64748b;font-size:.88rem;line-height:1.68;margin-bottom:1.25rem;">{{ desc }}</p>
+          <a href="{{ url_for('contact') }}" class="btn btn-outline-primary btn-sm" style="border-radius:8px;font-weight:700;">Learn More →</a>
         </div>
       </div>
       {% endfor %}
@@ -312,12 +403,46 @@
   </div>
 </section>
 
+<!-- ── FAQ ── -->
+<section style="background:#f0f4f8;padding:5.5rem 0;">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="text-center mb-5 ani ani-up">
+          <div class="ct-eyebrow-sm"><i class="fas fa-question-circle me-1"></i>FAQ</div>
+          <h2 class="ct-section-title">Common Questions</h2>
+        </div>
+        <div class="ct-faq ani ani-up d1">
+          {% for q, a in [
+            ('How quickly will you respond to my enquiry?','Our team typically replies within 4 hours during business hours (WAT/GMT). For urgent technical issues, WhatsApp is the fastest option.'),
+            ('Can I schedule a live demo before signing up?','Absolutely. Select "Schedule a Demo" in the enquiry type above and we will arrange a personalised walkthrough of the platform for your team.'),
+            ('Is LAWCOLAB suitable for small solo practices?','Yes. LAWCOLAB scales from solo practitioners right up to large multi-partner firms. Pricing is flexible to match your firm size.'),
+            ('Do you offer a white-label or reseller license?','Yes — we offer a full white-label SaaS license that lets you run LAWCOLAB under your own brand and domain, with unlimited client firms.'),
+            ('What countries do you currently support?','We currently serve firms in Nigeria, Ghana, the United States, United Kingdom, South Africa, Kenya, and Canada — with more regions launching soon.'),
+          ] %}
+          <div class="ct-faq-item">
+            <button class="ct-faq-q" onclick="toggleFaq(this)">
+              {{ q }} <i class="fas fa-plus"></i>
+            </button>
+            <div class="ct-faq-a">{{ a }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ── CTA ── -->
-<section class="cta-section lc-dark">
+<section class="ct-cta lc-dark">
   <div class="container text-center">
-    <div class="reveal">
-      <h2 style="font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:800;color:#fff;margin-bottom:1rem;">Ready to Get Started?</h2>
-      <p style="color:rgba(255,255,255,.82);font-size:1.05rem;max-width:520px;margin:0 auto 2rem;">Join thousands of legal professionals who trust LAWCOLAB to run their practice efficiently and securely — every single day.</p>
+    <div class="ani ani-up">
+      <h2 style="font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3rem);font-weight:800;color:#fff;margin-bottom:1rem;">
+        Ready to Get Started?
+      </h2>
+      <p style="color:rgba(255,255,255,.8);font-size:1.05rem;max-width:520px;margin:0 auto 2.5rem;">
+        Join thousands of legal professionals who trust LAWCOLAB to run their practice efficiently and securely — every single day.
+      </p>
       <div class="d-flex gap-3 justify-content-center flex-wrap">
         <a href="{{ url_for('auth.signup') }}" class="btn btn-warning btn-lg fw-bold px-5" style="border-radius:12px;padding:.9rem 2.5rem;">
           <i class="fas fa-rocket me-2"></i>Start Free Trial
@@ -329,11 +454,49 @@
     </div>
   </div>
 </section>
+
 {% endblock %}
 
 {% block scripts %}
 <script>
-const io = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('visible'); }), {threshold:.1});
-document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+(function(){
+  function initAni(){
+    var els = document.querySelectorAll('.ani');
+    if(!els.length) return;
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); }
+      });
+    },{ threshold:0.05, rootMargin:'0px 0px 80px 0px' });
+    els.forEach(function(el){
+      var r = el.getBoundingClientRect();
+      if(r.top < window.innerHeight + 80){ el.classList.add('visible'); }
+      else{ io.observe(el); }
+    });
+  }
+  document.addEventListener('DOMContentLoaded', initAni);
+  setTimeout(initAni, 100);
+
+  // FAQ toggle
+  window.toggleFaq = function(btn){
+    var isOpen = btn.classList.contains('open');
+    document.querySelectorAll('.ct-faq-q.open').forEach(function(b){
+      b.classList.remove('open');
+      b.nextElementSibling.style.display='none';
+    });
+    if(!isOpen){
+      btn.classList.add('open');
+      btn.nextElementSibling.style.display='block';
+    }
+  };
+
+  // Submit loading state
+  document.getElementById('contactForm').addEventListener('submit', function(){
+    var btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.querySelector('span').textContent = 'Sending…';
+    btn.querySelector('i').className = 'fas fa-spinner fa-spin';
+  });
+})();
 </script>
 {% endblock %}

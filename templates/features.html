@@ -1,107 +1,148 @@
 {% extends "base.html" %}
 {% block title %}Features — LAWCOLAB Legal Practice Platform{% endblock %}
+{% block meta_description %}Explore all LAWCOLAB features: case management, client portals, billing, court calendar, document vault, analytics, global directory, and white-label licensing.{% endblock %}
 
 {% block additional_css %}
 <style>
-.page-hero {
-  position:relative; min-height:520px; display:flex; align-items:center;
-  background:#0a1628; overflow:hidden;
+/* ── Animations ── */
+@keyframes fadeUp   { from{opacity:0;transform:translateY(32px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeLeft { from{opacity:0;transform:translateX(-32px)} to{opacity:1;transform:translateX(0)} }
+
+.ani { opacity:0; }
+.ani.visible { animation-fill-mode:both; animation-duration:.65s; animation-timing-function:cubic-bezier(.22,.68,0,1.15); }
+.ani-up.visible   { animation-name:fadeUp; }
+.ani-left.visible { animation-name:fadeLeft; }
+.d1.visible{animation-delay:.07s} .d2.visible{animation-delay:.14s}
+.d3.visible{animation-delay:.21s} .d4.visible{animation-delay:.28s}
+.d5.visible{animation-delay:.35s} .d6.visible{animation-delay:.42s}
+
+/* ── Hero ── */
+.ft-hero {
+  position:relative; min-height:540px; display:flex; align-items:center;
+  background:#06101f; overflow:hidden;
 }
-.page-hero .hero-bg {
+.ft-hero-bg {
   position:absolute; inset:0;
-  background:url('https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=1600&q=80') center/cover no-repeat;
-  opacity:.12;
+  background:url('https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=1600&q=80') center/cover;
+  opacity:.11;
 }
-.page-hero .hero-overlay {
+.ft-hero-overlay {
   position:absolute; inset:0;
-  background:linear-gradient(135deg,rgba(10,22,40,.95) 0%,rgba(13,27,75,.82) 60%,rgba(15,45,90,.7) 100%);
+  background:linear-gradient(135deg,rgba(6,16,31,.97) 0%,rgba(13,27,75,.88) 55%,rgba(20,50,100,.75) 100%);
   z-index:1;
 }
-.page-hero .hero-content { position:relative; z-index:2; }
-.hero-eyebrow {
+.ft-hero-content { position:relative; z-index:2; }
+.ft-eyebrow {
   display:inline-flex; align-items:center; gap:.5rem;
-  background:rgba(255,215,0,.15); border:1.5px solid rgba(255,215,0,.4);
-  color:#FFD700; font-size:.8rem; font-weight:700;
-  padding:.4rem 1rem; border-radius:50px; letter-spacing:.06em; margin-bottom:1.5rem;
+  background:rgba(255,215,0,.12); border:1.5px solid rgba(255,215,0,.35);
+  color:#FFD700; font-size:.78rem; font-weight:800;
+  padding:.35rem 1rem; border-radius:50px; letter-spacing:.07em; margin-bottom:1.5rem;
 }
-.hero-title { font-family:'Playfair Display',serif; font-size:clamp(2.4rem,5vw,3.8rem); color:#fff; font-weight:800; line-height:1.1; text-shadow:0 2px 24px rgba(0,0,0,.4); }
-.hero-title span { color:#FFD700; }
-.hero-sub { color:rgba(255,255,255,.85); font-size:1.1rem; line-height:1.7; }
-
-@keyframes fadeInUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
-.reveal { opacity:0; transform:translateY(28px); transition:opacity .7s ease,transform .7s ease; }
-.reveal.visible { opacity:1; transform:translateY(0); }
-.reveal-left { opacity:0; transform:translateX(-30px); transition:opacity .7s ease,transform .7s ease; }
-.reveal-left.visible { opacity:1; transform:translateX(0); }
-.delay-1 { transition-delay:.1s !important; }
-.delay-2 { transition-delay:.2s !important; }
-.delay-3 { transition-delay:.3s !important; }
-.delay-4 { transition-delay:.4s !important; }
-.delay-5 { transition-delay:.5s !important; }
-
-.section-eyebrow { font-size:.75rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#FFD700; margin-bottom:.5rem; }
-.section-title { font-family:'Playfair Display',serif; font-size:clamp(1.9rem,3.5vw,2.6rem); color:#0d1b4b; font-weight:800; line-height:1.2; }
-
-/* Feature Cards */
-.feature-card {
-  background:#fff; border-radius:20px; border:1.5px solid #e8eef4;
-  padding:2rem 1.75rem; height:100%;
-  transition:all .3s; box-shadow:0 4px 20px rgba(0,0,0,.06);
+.ft-hero-title {
+  font-family:'Playfair Display',Georgia,serif;
+  font-size:clamp(2.6rem,5.5vw,4rem); color:#fff; font-weight:800; line-height:1.08;
 }
-.feature-card:hover { transform:translateY(-7px); box-shadow:0 20px 50px rgba(13,27,75,.13); border-color:#0d1b4b22; }
-.feature-icon {
-  width:68px; height:68px; border-radius:18px;
-  display:flex; align-items:center; justify-content:center;
-  font-size:1.7rem; margin-bottom:1.25rem;
+.ft-hero-title span { color:#FFD700; }
+.ft-hero-sub { color:rgba(255,255,255,.82); font-size:1.08rem; line-height:1.75; }
+
+/* ── Spec strip ── */
+.ft-spec-strip { background:#f0f4f8; padding:3rem 0; }
+.ft-spec-item {
+  background:#fff; border-radius:16px; border:1.5px solid #e8eef4;
+  padding:1.5rem; text-align:center; transition:.25s;
 }
-.feature-title { font-weight:800; color:#0d1b4b; font-size:1.1rem; margin-bottom:.6rem; }
-.feature-desc { color:#64748b; font-size:.9rem; line-height:1.65; margin-bottom:1rem; }
-.feature-check { list-style:none; padding:0; margin:0; }
-.feature-check li { font-size:.84rem; color:#374151; padding:.25rem 0; display:flex; align-items:center; gap:.5rem; }
-.feature-check li::before { content:'✓'; color:#16a34a; font-weight:800; font-size:.9rem; flex-shrink:0; }
+.ft-spec-item:hover { border-color:#0d1b4b; box-shadow:0 8px 28px rgba(13,27,75,.1); transform:translateY(-3px); }
+.ft-spec-num { font-size:2.1rem; font-weight:900; color:#0d1b4b; line-height:1; }
+.ft-spec-lbl { font-size:.78rem; color:#64748b; font-weight:600; margin-top:.3rem; }
 
-/* Showcase / big feature rows */
-.showcase-row { padding: 5rem 0; }
-.showcase-img { border-radius:20px; box-shadow:0 12px 40px rgba(0,0,0,.12); width:100%; object-fit:cover; max-height:380px; }
-.showcase-badge { display:inline-flex; align-items:center; gap:.4rem; background:#eef2ff; color:#3730a3; font-size:.78rem; font-weight:700; padding:.3rem .85rem; border-radius:50px; margin-bottom:1rem; }
+/* ── Section helpers ── */
+.ft-eyebrow-sm { font-size:.72rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#FFD700; margin-bottom:.5rem; }
+.ft-section-title { font-family:'Playfair Display',Georgia,serif; font-size:clamp(1.9rem,3.5vw,2.65rem); color:#0d1b4b; font-weight:800; line-height:1.2; }
 
-/* Comparison / tech specs strip */
-.spec-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1.5rem; }
-.spec-item { background:#fff; border-radius:14px; border:1.5px solid #e8eef4; padding:1.5rem; text-align:center; transition:all .25s; }
-.spec-item:hover { border-color:#0d1b4b; box-shadow:0 8px 24px rgba(13,27,75,.1); }
-.spec-num { font-size:2rem; font-weight:900; color:#0d1b4b; line-height:1; }
-.spec-label { font-size:.8rem; color:#64748b; font-weight:500; margin-top:.3rem; }
+/* ── Feature cards ── */
+.ft-card {
+  background:#fff; border-radius:22px; border:1.5px solid #e8eef4;
+  padding:2.25rem 1.75rem; height:100%;
+  box-shadow:0 4px 20px rgba(0,0,0,.05); transition:all .3s;
+}
+.ft-card:hover { transform:translateY(-7px); box-shadow:0 20px 52px rgba(13,27,75,.13); border-color:#0d1b4b22; }
+.ft-icon { width:68px; height:68px; border-radius:18px; display:flex; align-items:center; justify-content:center; font-size:1.7rem; margin-bottom:1.3rem; }
+.ft-title { font-weight:800; color:#0d1b4b; font-size:1.05rem; margin-bottom:.6rem; }
+.ft-desc  { color:#64748b; font-size:.88rem; line-height:1.68; margin-bottom:1rem; }
+.ft-check { list-style:none; padding:0; margin:0; }
+.ft-check li {
+  font-size:.82rem; color:#374151; padding:.3rem 0; display:flex; align-items:center; gap:.55rem;
+  border-bottom:1px solid #f1f5f9;
+}
+.ft-check li:last-child { border-bottom:none; }
+.ft-check li::before { content:'✓'; color:#16a34a; font-weight:900; font-size:.85rem; flex-shrink:0; }
 
-/* CTA */
-.cta-section { background:linear-gradient(135deg,#0d1b4b 0%,#0f2d5a 50%,#163060 100%); padding:6rem 0; position:relative; overflow:hidden; }
-.cta-section::before { content:''; position:absolute; inset:0; background:url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1400&q=60') center/cover; opacity:.05; }
-.cta-section .container { position:relative; z-index:2; }
+/* ── Showcase rows ── */
+.ft-showcase { padding:5.5rem 0; }
+.ft-showcase-img { border-radius:22px; box-shadow:0 14px 44px rgba(0,0,0,.12); width:100%; object-fit:cover; max-height:400px; }
+.ft-badge { display:inline-flex; align-items:center; gap:.4rem; background:#eef2ff; color:#3730a3; font-size:.78rem; font-weight:700; padding:.3rem .9rem; border-radius:50px; margin-bottom:1rem; }
+
+/* ── Security checklist ── */
+.ft-sec-item { display:flex; align-items:center; gap:.75rem; margin-bottom:.85rem; }
+.ft-sec-icon { width:40px; height:40px; border-radius:11px; background:#0d1b4b; color:#FFD700; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:.9rem; }
+
+/* ── Comparison table ── */
+.ft-comp-table { width:100%; border-collapse:collapse; }
+.ft-comp-table th { background:#0d1b4b; color:#fff; padding:1rem 1.25rem; font-size:.82rem; font-weight:700; text-align:left; }
+.ft-comp-table th:not(:first-child) { text-align:center; }
+.ft-comp-table td { padding:.85rem 1.25rem; border-bottom:1px solid #f1f5f9; font-size:.87rem; color:#374151; }
+.ft-comp-table td:not(:first-child) { text-align:center; }
+.ft-comp-table tr:hover td { background:#f8faff; }
+.ft-comp-table .yes { color:#16a34a; font-weight:800; font-size:1.1rem; }
+.ft-comp-table .no  { color:#e2e8f0; font-size:1.1rem; }
+.ft-comp-table .col-lc { background:#fffbeb; }
+
+/* ── CTA ── */
+.ft-cta {
+  background:linear-gradient(135deg,#0d1b4b 0%,#0f2d5a 50%,#163060 100%);
+  padding:6rem 0; position:relative; overflow:hidden;
+}
+.ft-cta::before {
+  content:''; position:absolute; inset:0;
+  background:url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1400&q=60') center/cover;
+  opacity:.05;
+}
+.ft-cta .container { position:relative; z-index:2; }
+
+/* ── Divider ── */
+.ft-divider { height:4px; background:linear-gradient(90deg,#0d1b4b,#FFD700,#0d1b4b); border:none; opacity:1; }
 </style>
 {% endblock %}
 
 {% block content %}
 
 <!-- ── Hero ── -->
-<section class="page-hero">
-  <div class="hero-bg"></div>
-  <div class="hero-overlay"></div>
-  <div class="container hero-content py-5">
+<section class="ft-hero">
+  <div class="ft-hero-bg"></div>
+  <div class="ft-hero-overlay"></div>
+  <div class="container ft-hero-content py-5">
     <div class="row align-items-center g-5">
-      <div class="col-lg-8">
-        <div class="hero-eyebrow"><i class="fas fa-layer-group"></i> Full Platform Overview</div>
-        <h1 class="hero-title mb-4">Everything Your Law Firm<br>Needs, <span>In One Place</span></h1>
-        <p class="hero-sub mb-4">LAWCOLAB combines case management, client portals, team collaboration, billing, analytics, and a global law firm directory into a single, beautifully designed platform.</p>
+      <div class="col-lg-7">
+        <div class="ft-eyebrow"><i class="fas fa-layer-group"></i>&nbsp;Full Platform Overview</div>
+        <h1 class="ft-hero-title mb-4">
+          Everything Your Law Firm<br>Needs, <span>In One Place</span>
+        </h1>
+        <p class="ft-hero-sub mb-5">LAWCOLAB combines case management, client portals, team collaboration, billing, analytics, and a global law firm directory into a single, beautifully designed platform.</p>
         <div class="d-flex gap-3 flex-wrap">
-          <a href="{{ url_for('auth.signup') }}" class="btn btn-warning btn-lg fw-bold px-4" style="border-radius:10px;"><i class="fas fa-rocket me-2"></i>Start Free Trial</a>
-          <a href="{{ url_for('pricing') }}" class="btn btn-outline-light btn-lg px-4" style="border-radius:10px;"><i class="fas fa-tag me-2"></i>View Pricing</a>
+          <a href="{{ url_for('auth.signup') }}" class="btn btn-warning btn-lg fw-bold px-4" style="border-radius:12px;">
+            <i class="fas fa-rocket me-2"></i>Start Free Trial
+          </a>
+          <a href="{{ url_for('contact') }}" class="btn btn-outline-light btn-lg px-4" style="border-radius:12px;">
+            <i class="fas fa-calendar me-2"></i>Book a Demo
+          </a>
         </div>
       </div>
-      <div class="col-lg-4 d-none d-lg-block text-center">
-        <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:2rem;">
-          <div style="color:#FFD700;font-size:1rem;font-weight:700;margin-bottom:1rem;"><i class="fas fa-check-circle me-1"></i> Everything included</div>
-          {% for f in ['Case Management','Client Portal','Team Chat','Billing & Invoices','Court Calendar','Document Vault','Analytics','Law Firm Directory','White-Label License'] %}
-          <div style="color:rgba(255,255,255,.85);font-size:.85rem;padding:.35rem 0;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;display:flex;align-items:center;gap:.5rem;">
-            <i class="fas fa-check" style="color:#4ade80;font-size:.7rem;"></i>{{ f }}
+      <div class="col-lg-5 d-none d-lg-block">
+        <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:22px;padding:2rem;">
+          <div style="color:#FFD700;font-size:.9rem;font-weight:800;margin-bottom:1rem;"><i class="fas fa-check-circle me-1"></i>Everything included</div>
+          {% for f in ['Case Management','Client Portal','Team Chat','Billing & Invoices','Court Calendar','Document Vault','AI Analytics','Law Firm Directory','White-Label License'] %}
+          <div style="color:rgba(255,255,255,.82);font-size:.85rem;padding:.38rem 0;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:.55rem;">
+            <i class="fas fa-check" style="color:#4ade80;font-size:.7rem;flex-shrink:0;"></i>{{ f }}
           </div>
           {% endfor %}
         </div>
@@ -110,14 +151,18 @@
   </div>
 </section>
 
+<hr class="ft-divider m-0">
+
 <!-- ── Spec Numbers ── -->
-<div style="background:#f0f4f8;padding:3rem 0;">
+<div class="ft-spec-strip">
   <div class="container">
-    <div class="spec-grid">
-      {% for s in [('20+','Core Modules'),('99.9%','Uptime SLA'),('256-bit','Encryption'),('24/7','Support'),('5min','Setup Time'),('0','Hidden Fees')] %}
-      <div class="spec-item reveal">
-        <div class="spec-num">{{ s[0] }}</div>
-        <div class="spec-label">{{ s[1] }}</div>
+    <div class="row g-3">
+      {% for n, l, d in [('20+','Core Modules','d1'),('99.9%','Uptime SLA','d2'),('256-bit','Encryption','d3'),('24/7','Support','d4'),('5 min','Setup Time','d5'),('₦0','Hidden Fees','d6')] %}
+      <div class="col-6 col-md-2 ani ani-up {{ d }}">
+        <div class="ft-spec-item">
+          <div class="ft-spec-num">{{ n }}</div>
+          <div class="ft-spec-lbl">{{ l }}</div>
+        </div>
       </div>
       {% endfor %}
     </div>
@@ -125,42 +170,31 @@
 </div>
 
 <!-- ── Core Feature Cards ── -->
-<section style="background:#fff;padding:5rem 0;">
+<section style="background:#fff;padding:5.5rem 0;">
   <div class="container">
-    <div class="text-center mb-5 reveal">
-      <div class="section-eyebrow"><i class="fas fa-cubes me-1"></i> Core Modules</div>
-      <h2 class="section-title">Built for Every Workflow</h2>
-      <p style="color:#64748b;font-size:1.05rem;max-width:580px;margin:.75rem auto 0;">Every module is purpose-built for legal professionals — no generic SaaS, no clunky workarounds.</p>
+    <div class="text-center mb-5 ani ani-up">
+      <div class="ft-eyebrow-sm"><i class="fas fa-cubes me-1"></i>Core Modules</div>
+      <h2 class="ft-section-title">Built for Every Workflow</h2>
+      <p class="text-muted mt-2" style="max-width:560px;margin:0 auto;font-size:1rem;">Every module is purpose-built for legal professionals — no generic SaaS, no clunky workarounds.</p>
     </div>
     <div class="row g-4">
-      {% for card in [
-        ('fas fa-users',         '#eef2ff','#3730a3', 'Client Management',         'Complete client profiles with case history, communication logs, notes, and unlimited client onboarding.',
-         ['Secure client profiles','Full communication history','Case assignments & notes','Unlimited client records']),
-        ('fas fa-briefcase',     '#ecfdf5','#15803d', 'Case & Project Management', 'Full lifecycle case management with task boards, deadlines, milestones, and progress tracking.',
-         ['Kanban & list views','Deadline alerts','Task assignments','Milestone tracking']),
-        ('fas fa-comments',      '#eff6ff','#1d4ed8', 'Multi-Tier Communication',  'Project chat rooms, client portals, support channels, and real-time messaging — all in one inbox.',
-         ['Project-based chat rooms','Client communication portal','Support channels','Complete message history']),
-        ('fas fa-receipt',       '#faf5ff','#7c3aed', 'Billing & Invoicing',       'Time tracking, expense management, automated invoice generation, and multi-currency payment processing.',
-         ['Hourly & flat-fee billing','PDF invoice generation','Payment tracking','Multi-currency support (NGN/USD)']),
-        ('fas fa-calendar-alt',  '#fff7ed','#c2410c', 'Court & Event Calendar',    'Case-linked court calendars with jurisdiction tracking, judge details, and automated deadline alerts.',
-         ['Court date management','Jurisdiction & judge details','Conflict checking','Deadline reminders']),
-        ('fas fa-file-contract', '#fef2f2','#b91c1c', 'Document Vault',            'Secure document uploads with version control, access permissions, and instant sharing with clients.',
-         ['Encrypted file storage','Version control','Role-based access','Client document sharing']),
-        ('fas fa-chart-line',    '#ecfdf5','#15803d', 'Analytics & Reporting',     'Real-time dashboards showing case load, billing health, team performance, and client retention metrics.',
-         ['Revenue analytics','Case load reporting','Team performance','Client retention metrics']),
-        ('fas fa-globe',         '#eff6ff','#1d4ed8', 'Global Law Firm Directory', '3,000+ law firms across Nigeria, Ghana, US, UK and growing — searchable by country, state, and practice area.',
-         ['131+ firms indexed','Country & state filters','Practice area search','AI-powered robot crawl']),
-        ('fas fa-paint-brush',   '#faf5ff','#7c3aed', 'White-Label SaaS License',  'Buy the complete platform once and run it as your own SaaS business — forever. Full source rights included.',
-         ['Your domain & branding','Unlimited clients','Self-hosted or cloud','6-month setup support']),
+      {% for icon, bg, fg, title, desc, checks, d in [
+        ('fas fa-users',        '#eef2ff','#3730a3','Client Management',        'Complete client profiles with case history, communication logs, notes, and unlimited onboarding.',['Secure client profiles','Full communication history','Case assignments & notes','Unlimited client records'],'d1'),
+        ('fas fa-briefcase',    '#ecfdf5','#15803d','Case & Project Management','Full lifecycle case management with task boards, deadlines, milestones, and progress tracking.',['Kanban & list views','Deadline alerts','Task assignments','Milestone tracking'],'d2'),
+        ('fas fa-comments',     '#eff6ff','#1d4ed8','Multi-Tier Communication', 'Project chat rooms, client portals, support channels, and real-time messaging — all in one inbox.',['Project chat rooms','Client portal messaging','Support channels','Complete message history'],'d3'),
+        ('fas fa-receipt',      '#faf5ff','#7c3aed','Billing & Invoicing',      'Time tracking, expense management, automated invoice generation, and multi-currency payment processing.',['Hourly & flat-fee billing','PDF invoice generation','Payment tracking','Multi-currency (NGN/USD)'],'d1'),
+        ('fas fa-calendar-alt', '#fff7ed','#c2410c','Court & Event Calendar',   'Case-linked court calendars with jurisdiction tracking, judge details, and automated deadline alerts.',['Court date management','Jurisdiction & judge details','Conflict checking','Deadline reminders'],'d2'),
+        ('fas fa-file-contract','#fef2f2','#b91c1c','Document Vault',           'Secure document uploads with version control, access permissions, and instant client sharing.',['Encrypted file storage','Version control','Role-based access','Client document sharing'],'d3'),
+        ('fas fa-chart-line',   '#ecfdf5','#15803d','Analytics & Reporting',    'Real-time dashboards showing case load, billing health, team performance, and client retention.',['Revenue analytics','Case load reporting','Team performance','Client retention metrics'],'d1'),
+        ('fas fa-globe',        '#eff6ff','#1d4ed8','Global Law Firm Directory','3,000+ law firms across Nigeria, Ghana, US, UK and growing — searchable by country and practice area.',['131+ firms indexed','Country & state filters','Practice area search','AI-powered discovery'],'d2'),
+        ('fas fa-paint-brush',  '#faf5ff','#7c3aed','White-Label SaaS License', 'Buy the complete platform once and run it as your own SaaS business — forever. Full source rights.',['Your domain & branding','Unlimited clients','Self-hosted or cloud','6-month setup support'],'d3'),
       ] %}
-      <div class="col-lg-4 col-md-6 reveal delay-{{ loop.index % 3 + 1 }}">
-        <div class="feature-card">
-          <div class="feature-icon" style="background:{{ card[1] }};color:{{ card[2] }};"><i class="{{ card[0] }}"></i></div>
-          <div class="feature-title">{{ card[3] }}</div>
-          <div class="feature-desc">{{ card[4] }}</div>
-          <ul class="feature-check">
-            {% for item in card[5] %}<li>{{ item }}</li>{% endfor %}
-          </ul>
+      <div class="col-lg-4 col-md-6 ani ani-up {{ d }}">
+        <div class="ft-card">
+          <div class="ft-icon" style="background:{{ bg }};color:{{ fg }};"><i class="{{ icon }}"></i></div>
+          <div class="ft-title">{{ title }}</div>
+          <div class="ft-desc">{{ desc }}</div>
+          <ul class="ft-check">{% for c in checks %}<li>{{ c }}</li>{% endfor %}</ul>
         </div>
       </div>
       {% endfor %}
@@ -169,22 +203,22 @@
 </section>
 
 <!-- ── Showcase: Security ── -->
-<section class="showcase-row" style="background:#f0f4f8;">
+<section class="ft-showcase" style="background:#f0f4f8;">
   <div class="container">
     <div class="row g-5 align-items-center">
-      <div class="col-lg-6 reveal-left">
-        <img src="https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=800&q=80" alt="Security" class="showcase-img">
+      <div class="col-lg-6 ani ani-left">
+        <img src="https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=800&q=80" alt="Security" class="ft-showcase-img">
       </div>
-      <div class="col-lg-6 reveal">
-        <div class="showcase-badge"><i class="fas fa-shield-alt me-1"></i> Enterprise Security</div>
-        <h2 class="section-title mb-3">Your Data is Fort Knox—<br>Level Protected</h2>
-        <p style="color:#64748b;line-height:1.7;">LAWCOLAB is built with attorney-client privilege in mind. Every piece of data is isolated per law firm, encrypted in transit and at rest, and never shared with third parties.</p>
-        <div class="row g-3 mt-3">
-          {% for s in [('fas fa-lock','256-bit AES Encryption'),('fas fa-user-shield','Complete Firm Data Isolation'),('fas fa-eye-slash','Zero-Knowledge Architecture'),('fas fa-server','GDPR & NDPR Compliant')] %}
+      <div class="col-lg-6 ani ani-up d1">
+        <div class="ft-badge"><i class="fas fa-shield-alt me-1"></i>Enterprise Security</div>
+        <h2 class="ft-section-title mb-3">Your Data is Fort Knox–<br>Level Protected</h2>
+        <p class="text-muted" style="line-height:1.75;margin-bottom:1.75rem;">LAWCOLAB is built with attorney-client privilege in mind. Every piece of data is isolated per law firm, encrypted in transit and at rest, and never shared with third parties.</p>
+        <div class="row g-3">
+          {% for icon, text in [('fas fa-lock','256-bit AES Encryption'),('fas fa-user-shield','Complete Firm Data Isolation'),('fas fa-eye-slash','Zero-Knowledge Architecture'),('fas fa-server','GDPR & NDPR Compliant')] %}
           <div class="col-6">
-            <div style="display:flex;align-items:center;gap:.65rem;">
-              <div style="width:38px;height:38px;border-radius:10px;background:#0d1b4b;color:#FFD700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.9rem;"><i class="{{ s[0] }}"></i></div>
-              <span style="font-size:.88rem;font-weight:600;color:#374151;">{{ s[1] }}</span>
+            <div class="ft-sec-item">
+              <div class="ft-sec-icon"><i class="{{ icon }}"></i></div>
+              <span style="font-size:.87rem;font-weight:700;color:#374151;">{{ text }}</span>
             </div>
           </div>
           {% endfor %}
@@ -195,20 +229,20 @@
 </section>
 
 <!-- ── Showcase: Mobile ── -->
-<section class="showcase-row" style="background:#fff;">
+<section class="ft-showcase" style="background:#fff;">
   <div class="container">
     <div class="row g-5 align-items-center flex-row-reverse">
-      <div class="col-lg-6 reveal">
-        <img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&q=80" alt="Mobile" class="showcase-img">
+      <div class="col-lg-6 ani ani-up">
+        <img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&q=80" alt="Mobile" class="ft-showcase-img">
       </div>
-      <div class="col-lg-6 reveal-left">
-        <div class="showcase-badge"><i class="fas fa-mobile-alt me-1"></i> Mobile-First</div>
-        <h2 class="section-title mb-3">Manage Your Practice<br>From Anywhere</h2>
-        <p style="color:#64748b;line-height:1.7;">LAWCOLAB is fully responsive and optimised for smartphones and tablets. Lawyers in court, on client visits, or travelling have the full power of the platform at their fingertips.</p>
-        <ul style="list-style:none;padding:0;margin:1.5rem 0 0;">
-          {% for item in ['Responsive on all screen sizes','Offline-friendly design','Instant push notifications','Progressive Web App support'] %}
-          <li style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;font-size:.92rem;color:#374151;">
-            <i class="fas fa-check-circle" style="color:#16a34a;"></i>{{ item }}
+      <div class="col-lg-6 ani ani-left">
+        <div class="ft-badge"><i class="fas fa-mobile-alt me-1"></i>Mobile-First</div>
+        <h2 class="ft-section-title mb-3">Manage Your Practice<br>From Anywhere</h2>
+        <p class="text-muted" style="line-height:1.75;margin-bottom:1.75rem;">LAWCOLAB is fully responsive and optimised for smartphones and tablets. Lawyers in court, on client visits, or travelling have the full power of the platform at their fingertips.</p>
+        <ul style="list-style:none;padding:0;margin:0;">
+          {% for item in ['Responsive on all screen sizes','Offline-friendly design','Instant notifications','Progressive Web App ready'] %}
+          <li style="display:flex;align-items:center;gap:.65rem;margin-bottom:.75rem;font-size:.92rem;font-weight:600;color:#374151;">
+            <i class="fas fa-check-circle" style="color:#16a34a;flex-shrink:0;"></i>{{ item }}
           </li>
           {% endfor %}
         </ul>
@@ -217,25 +251,96 @@
   </div>
 </section>
 
-<!-- ── CTA ── -->
-<section class="cta-section lc-dark">
-  <div class="container text-center">
-    <div class="reveal">
-      <div class="section-eyebrow" style="color:#FFD700;"><i class="fas fa-rocket me-1"></i> Let's Go</div>
-      <h2 style="font-family:'Playfair Display',serif;font-size:2.8rem;font-weight:800;color:#fff;margin-bottom:1rem;">Ready to See It in Action?</h2>
-      <p style="color:rgba(255,255,255,.82);font-size:1.08rem;max-width:560px;margin:0 auto 2.5rem;">Start your free 30-day trial today — no credit card required. Full access to every feature from day one.</p>
-      <div class="d-flex gap-3 justify-content-center flex-wrap">
-        <a href="{{ url_for('auth.signup') }}" class="btn btn-warning btn-lg fw-bold px-5" style="border-radius:12px;padding:.9rem 2.5rem;"><i class="fas fa-rocket me-2"></i>Start Free Trial</a>
-        <a href="{{ url_for('contact') }}" class="btn btn-outline-light btn-lg px-5" style="border-radius:12px;padding:.9rem 2.5rem;"><i class="fas fa-calendar me-2"></i>Book a Demo</a>
+<!-- ── Comparison Table ── -->
+<section style="background:#f0f4f8;padding:5.5rem 0;">
+  <div class="container">
+    <div class="text-center mb-5 ani ani-up">
+      <div class="ft-eyebrow-sm"><i class="fas fa-balance-scale me-1"></i>Why LAWCOLAB</div>
+      <h2 class="ft-section-title">How We Compare</h2>
+      <p class="text-muted mt-2" style="max-width:520px;margin:0 auto;font-size:1rem;">See why legal professionals choose LAWCOLAB over generic SaaS tools.</p>
+    </div>
+    <div class="ani ani-up d1" style="background:#fff;border-radius:20px;overflow:hidden;border:1.5px solid #e8eef4;box-shadow:0 6px 28px rgba(0,0,0,.06);">
+      <div class="table-responsive">
+        <table class="ft-comp-table">
+          <thead>
+            <tr>
+              <th style="min-width:200px;">Feature</th>
+              <th style="min-width:120px;background:#FFD700;color:#0d1b4b;">LAWCOLAB ⭐</th>
+              <th style="min-width:120px;">Generic SaaS</th>
+              <th style="min-width:120px;">Spreadsheets</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for feat, lc, gen, sheet in [
+              ('Legal-specific workflow','✓','✗','✗'),
+              ('Client portal','✓','✓','✗'),
+              ('Court calendar','✓','✗','✗'),
+              ('Document vault','✓','✓','✗'),
+              ('Billing & invoicing','✓','Partial','✗'),
+              ('Global firm directory','✓','✗','✗'),
+              ('AI analytics','✓','Partial','✗'),
+              ('White-label license','✓','✗','✗'),
+              ('African market focus','✓','✗','✗'),
+              ('24/7 support','✓','Varies','✗'),
+            ] %}
+            <tr>
+              <td style="font-weight:600;color:#0d1b4b;">{{ feat }}</td>
+              <td class="col-lc"><span class="{{ 'yes' if lc=='✓' else '' }}">{{ lc }}</span></td>
+              <td><span class="{{ 'yes' if gen=='✓' else 'no' if gen=='✗' else '' }}" style="{{ 'color:#d97706;font-weight:700;' if gen=='Partial' else '' }}">{{ gen }}</span></td>
+              <td><span class="{{ 'yes' if sheet=='✓' else 'no' }}">{{ sheet }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
 </section>
+
+<!-- ── CTA ── -->
+<section class="ft-cta lc-dark">
+  <div class="container text-center">
+    <div class="ani ani-up">
+      <div class="ft-eyebrow-sm" style="color:#FFD700;"><i class="fas fa-rocket me-1"></i>Let's Go</div>
+      <h2 style="font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3rem);font-weight:800;color:#fff;margin:1rem 0;">
+        Ready to See It in Action?
+      </h2>
+      <p style="color:rgba(255,255,255,.8);font-size:1.05rem;max-width:520px;margin:0 auto 2.5rem;">
+        Start your free 30-day trial today — no credit card required. Full access to every feature from day one.
+      </p>
+      <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <a href="{{ url_for('auth.signup') }}" class="btn btn-warning btn-lg fw-bold px-5" style="border-radius:12px;padding:.9rem 2.5rem;">
+          <i class="fas fa-rocket me-2"></i>Start Free Trial
+        </a>
+        <a href="{{ url_for('contact') }}" class="btn btn-outline-light btn-lg px-5" style="border-radius:12px;padding:.9rem 2.5rem;">
+          <i class="fas fa-calendar me-2"></i>Book a Demo
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
 {% endblock %}
 
 {% block scripts %}
 <script>
-const io = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('visible'); }), { threshold: 0.12 });
-document.querySelectorAll('.reveal, .reveal-left').forEach(el => io.observe(el));
+(function(){
+  function initAni(){
+    var els = document.querySelectorAll('.ani');
+    if(!els.length) return;
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); }
+      });
+    },{ threshold:0.05, rootMargin:'0px 0px 80px 0px' });
+    els.forEach(function(el){
+      var r = el.getBoundingClientRect();
+      if(r.top < window.innerHeight + 80){ el.classList.add('visible'); }
+      else{ io.observe(el); }
+    });
+  }
+  document.addEventListener('DOMContentLoaded', initAni);
+  setTimeout(initAni, 100);
+})();
 </script>
 {% endblock %}

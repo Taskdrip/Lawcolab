@@ -1454,3 +1454,227 @@ def save_google_settings():
 
     flash('Google settings saved successfully!', 'success')
     return redirect(url_for('superadmin.web_analytics', days=30, _anchor='google-settings'))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Contact Inquiries Inbox
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _ci_row(row):
+    """Convert a RowMapping to a plain dict."""
+    return dict(row._mapping) if hasattr(row, '_mapping') else dict(row)
+
+
+@superadmin_bp.route('/contact-inbox')
+@require_super_admin
+def contact_inbox():
+    """Super admin contact inquiries inbox."""
+    status_filter = request.args.get('status', 'all')
+    search = request.args.get('q', '').strip()
+    page = int(request.args.get('page', 1))
+    per_page = 20
+
+    where_clauses = []
+    params = {}
+
+    if status_filter != 'all':
+        where_clauses.append("status = :status")
+        params['status'] = status_filter
+
+    if search:
+        where_clauses.append("""
+            (lower(first_name) LIKE :q OR lower(last_name) LIKE :q
+             OR lower(email) LIKE :q OR lower(company) LIKE :q
+             OR lower(inquiry_type) LIKE :q OR lower(message) LIKE :q)
+        """)
+        params['q'] = f'%{search.lower()}%'
+
+    where_sql = ('WHERE ' + ' AND '.join(where_clauses)) if where_clauses else ''
+
+    total = db.session.execute(
+        text(f"SELECT COUNT(*) FROM contact_inquiries {where_sql}"), params
+    ).scalar() or 0
+
+    offset = (page - 1) * per_page
+    rows = db.session.execute(
+        text(f"""
+            SELECT * FROM contact_inquiries {where_sql}
+            ORDER BY created_at DESC LIMIT :lim OFFSET :off
+        """), {**params, 'lim': per_page, 'off': offset}
+    ).fetchall()
+
+    inquiries = [_ci_row(r) for r in rows]
+
+    # Counts per status
+    counts = {}
+    for s in ('new', 'in_progress', 'resolved'):
+        counts[s] = db.session.execute(
+            text("SELECT COUNT(*) FROM contact_inquiries WHERE status = :s"), {'s': s}
+        ).scalar() or 0
+    counts['all'] = total if status_filter == 'all' else (
+        db.session.execute(text("SELECT COUNT(*) FROM contact_inquiries")).scalar() or 0
+    )
+
+    total_pages = max(1, (counts['all'] + per_page - 1) // per_page) if status_filter == 'all' else max(1, (total + per_page - 1) // per_page)
+
+    return render_template(
+        'superadmin/contact_inquiries.html',
+        inquiries=inquiries,
+        status_filter=status_filter,
+        search=search,
+        page=page,
+        total_pages=total_pages,
+        counts=counts,
+    )
+
+
+@superadmin_bp.route('/contact-inbox/<int:inquiry_id>')
+@require_super_admin
+def contact_inbox_detail(inquiry_id):
+    """View a single contact inquiry with email thread."""
+    row = db.session.execute(
+        text("SELECT * FROM contact_inquiries WHERE id = :id"), {'id': inquiry_id}
+    ).fetchone()
+    if not row:
+        flash('Inquiry not found.', 'error')
+        return redirect(url_for('superadmin.contact_inbox'))
+
+    inquiry = _ci_row(row)
+
+    # Mark as in_progress if still new
+    if inquiry['status'] == 'new':
+        db.session.execute(
+            text("UPDATE contact_inquiries SET status='in_progress', updated_at=NOW() WHERE id=:id"),
+            {'id': inquiry_id}
+        )
+        db.session.commit()
+        inquiry['status'] = 'in_progress'
+
+    emails = [_ci_row(r) for r in db.session.execute(
+        text("SELECT * FROM contact_inquiry_emails WHERE inquiry_id=:id ORDER BY sent_at ASC"),
+        {'id': inquiry_id}
+    ).fetchall()]
+
+    return render_template(
+        'superadmin/contact_inquiries.html',
+        detail_inquiry=inquiry,
+        detail_emails=emails,
+        inquiries=[],
+        status_filter='all',
+        search='',
+        page=1,
+        total_pages=1,
+        counts={'all': 0, 'new': 0, 'in_progress': 0, 'resolved': 0},
+    )
+
+
+@superadmin_bp.route('/contact-inbox/<int:inquiry_id>/send-email', methods=['POST'])
+@require_super_admin
+def contact_inbox_send_email(inquiry_id):
+    """Send an email reply to a contact inquiry submitter."""
+    from utils.email_sender import send_email
+
+    row = db.session.execute(
+        text("SELECT * FROM contact_inquiries WHERE id = :id"), {'id': inquiry_id}
+    ).fetchone()
+    if not row:
+        return jsonify({'success': False, 'error': 'Inquiry not found'}), 404
+
+    inquiry = _ci_row(row)
+    subject = request.form.get('subject', '').strip()
+    body_text = request.form.get('body_text', '').strip()
+
+    if not subject or not body_text:
+        flash('Subject and message body are required.', 'error')
+        return redirect(url_for('superadmin.contact_inbox_detail', inquiry_id=inquiry_id))
+
+    body_html = f"""
+    <div style="font-family:Inter,sans-serif;max-width:600px;margin:0 auto;color:#1a1a2e;">
+      <div style="background:#0d1b4b;padding:24px 32px;border-radius:12px 12px 0 0;">
+        <img src="https://lawcolab.com/static/img/logo-light.png" alt="LAWCOLAB" height="36"
+             onerror="this.style.display='none'" style="margin-bottom:8px;">
+        <p style="color:#FFD700;font-size:13px;margin:0;font-weight:700;">LAWCOLAB GLOBAL</p>
+      </div>
+      <div style="background:#ffffff;padding:32px;border:1px solid #e2e8f0;">
+        <p style="color:#374151;font-size:15px;line-height:1.7;white-space:pre-line;">{body_text}</p>
+      </div>
+      <div style="background:#f8faff;padding:16px 32px;border:1px solid #e2e8f0;border-top:none;
+                  border-radius:0 0 12px 12px;font-size:12px;color:#64748b;">
+        This email was sent from <strong>LAWCOLAB</strong> in reply to your enquiry.<br>
+        Contact us: <a href="mailto:info@lawcolab.com" style="color:#0d1b4b;">info@lawcolab.com</a>
+      </div>
+    </div>
+    """
+
+    result = send_email(
+        to_email=inquiry['email'],
+        subject=subject,
+        body_html=body_html,
+        body_text=body_text,
+        from_name='LAWCOLAB Team',
+    )
+
+    sent_by = f"{current_user.first_name or ''} {current_user.last_name or ''}".strip() or current_user.email
+
+    db.session.execute(text("""
+        INSERT INTO contact_inquiry_emails
+            (inquiry_id, direction, subject, body_html, body_text,
+             sent_by_name, provider, success, error_msg, sent_at)
+        VALUES (:iid, 'out', :sub, :bh, :bt, :sb, :prov, :ok, :err, NOW())
+    """), dict(
+        iid=inquiry_id, sub=subject, bh=body_html, bt=body_text,
+        sb=sent_by, prov=result.get('provider', 'unknown'),
+        ok=result.get('success', False),
+        err=result.get('error')
+    ))
+
+    # Update status + timestamp
+    db.session.execute(
+        text("UPDATE contact_inquiries SET updated_at=NOW() WHERE id=:id"),
+        {'id': inquiry_id}
+    )
+    db.session.commit()
+
+    if result.get('success'):
+        flash(f'Email sent to {inquiry["email"]} successfully!', 'success')
+    else:
+        flash(f'Email queued (provider: {result.get("provider")}). Error: {result.get("error") or "none"}', 'warning')
+
+    return redirect(url_for('superadmin.contact_inbox_detail', inquiry_id=inquiry_id))
+
+
+@superadmin_bp.route('/contact-inbox/<int:inquiry_id>/update-status', methods=['POST'])
+@require_super_admin
+def contact_inbox_update_status(inquiry_id):
+    """Update the status and/or notes of a contact inquiry."""
+    new_status = request.form.get('status', '').strip()
+    notes = request.form.get('notes', '').strip()
+
+    updates = {}
+    if new_status in ('new', 'in_progress', 'resolved'):
+        updates['status'] = new_status
+    if notes is not None:
+        updates['notes'] = notes or None
+
+    if updates:
+        set_parts = ', '.join(f"{k}=:{k}" for k in updates)
+        db.session.execute(
+            text(f"UPDATE contact_inquiries SET {set_parts}, updated_at=NOW() WHERE id=:id"),
+            {**updates, 'id': inquiry_id}
+        )
+        db.session.commit()
+        flash('Inquiry updated.', 'success')
+
+    return redirect(url_for('superadmin.contact_inbox_detail', inquiry_id=inquiry_id))
+
+
+@superadmin_bp.route('/contact-inbox/<int:inquiry_id>/delete', methods=['POST'])
+@require_super_admin
+def contact_inbox_delete(inquiry_id):
+    """Delete a contact inquiry."""
+    db.session.execute(
+        text("DELETE FROM contact_inquiries WHERE id=:id"), {'id': inquiry_id}
+    )
+    db.session.commit()
+    flash('Inquiry deleted.', 'success')
+    return redirect(url_for('superadmin.contact_inbox'))

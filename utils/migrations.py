@@ -435,6 +435,48 @@ def run_migrations(db):
             updated_at TIMESTAMP DEFAULT NOW()
         )
         """,
+
+        # ── contact_inquiries (public contact form submissions) ────────────────
+        """
+        CREATE TABLE IF NOT EXISTS contact_inquiries (
+            id SERIAL PRIMARY KEY,
+            first_name VARCHAR(100) NOT NULL,
+            last_name VARCHAR(100) NOT NULL,
+            email VARCHAR(255) NOT NULL,
+            phone VARCHAR(100),
+            company VARCHAR(200),
+            country VARCHAR(100),
+            inquiry_type VARCHAR(100),
+            message TEXT NOT NULL,
+            newsletter BOOLEAN DEFAULT FALSE,
+            status VARCHAR(50) DEFAULT 'new',
+            notes TEXT,
+            ip_address VARCHAR(45),
+            created_at TIMESTAMP DEFAULT NOW(),
+            updated_at TIMESTAMP DEFAULT NOW()
+        )
+        """,
+        "CREATE INDEX IF NOT EXISTS idx_ci_status ON contact_inquiries(status)",
+        "CREATE INDEX IF NOT EXISTS idx_ci_email ON contact_inquiries(email)",
+        "CREATE INDEX IF NOT EXISTS idx_ci_created ON contact_inquiries(created_at)",
+
+        # ── contact_inquiry_emails (email thread per inquiry) ─────────────────
+        """
+        CREATE TABLE IF NOT EXISTS contact_inquiry_emails (
+            id SERIAL PRIMARY KEY,
+            inquiry_id INTEGER NOT NULL REFERENCES contact_inquiries(id) ON DELETE CASCADE,
+            direction VARCHAR(10) DEFAULT 'out',
+            subject VARCHAR(500),
+            body_html TEXT,
+            body_text TEXT,
+            sent_by_name VARCHAR(200),
+            provider VARCHAR(50),
+            success BOOLEAN DEFAULT TRUE,
+            error_msg TEXT,
+            sent_at TIMESTAMP DEFAULT NOW()
+        )
+        """,
+        "CREATE INDEX IF NOT EXISTS idx_cie_inquiry ON contact_inquiry_emails(inquiry_id)",
     ]
 
     with db.engine.connect() as conn:

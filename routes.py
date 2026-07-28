@@ -435,121 +435,48 @@ def about():
 
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
-    """Contact Taskdrip page - handles form submissions via built-in chat"""
+    """Contact page - saves submissions to contact_inquiries table for super admin inbox."""
     if request.method == 'POST':
         try:
-            # Extract form data
-            first_name = request.form.get('firstName', '').strip()
-            last_name = request.form.get('lastName', '').strip()
-            email = request.form.get('email', '').strip()
-            phone = request.form.get('phone', '').strip()
-            company = request.form.get('company', '').strip()
+            first_name   = request.form.get('firstName', '').strip()
+            last_name    = request.form.get('lastName', '').strip()
+            email        = request.form.get('email', '').strip()
+            phone        = request.form.get('phone', '').strip()
+            company      = request.form.get('company', '').strip()
+            country      = request.form.get('country', '').strip()
             inquiry_type = request.form.get('inquiryType', '').strip()
-            message = request.form.get('message', '').strip()
-            
-            # Validate required fields
+            message      = request.form.get('message', '').strip()
+            newsletter   = bool(request.form.get('newsletter'))
+
             if not all([first_name, last_name, email, inquiry_type, message]):
                 flash('Please fill in all required fields.', 'error')
                 return redirect(url_for('contact'))
-            
-            # Format contact message for super admin
-            contact_message = f"""
-📧 NEW CONTACT FORM SUBMISSION 📧
 
-👤 Contact Details:
-• Name: {first_name} {last_name}
-• Email: {email}
-• Phone: {phone or 'Not provided'}
-• Company/Law Firm: {company or 'Not provided'}
+            ip_addr = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr or '')
+            if ip_addr and ',' in ip_addr:
+                ip_addr = ip_addr.split(',')[0].strip()
 
-📝 Inquiry Type: {inquiry_type}
+            db.session.execute(text("""
+                INSERT INTO contact_inquiries
+                    (first_name, last_name, email, phone, company, country,
+                     inquiry_type, message, newsletter, status, ip_address, created_at, updated_at)
+                VALUES
+                    (:fn, :ln, :em, :ph, :co, :ct, :it, :ms, :nl, 'new', :ip, NOW(), NOW())
+            """), dict(fn=first_name, ln=last_name, em=email, ph=phone or None,
+                       co=company or None, ct=country or None, it=inquiry_type,
+                       ms=message, nl=newsletter, ip=ip_addr[:45] if ip_addr else None))
+            db.session.commit()
 
-💬 Message:
-{message}
-
----
-Submitted via LAWCOLAB Contact Form
-Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-            """.strip()
-            
-            # Send to super admin via chat system
-            from models_chat import ChatRoom, ChatMessage, ChatParticipant
-            
-            # Get all super admins
-            super_admins = User.query.filter_by(role='super_admin', active=True).all()
-            
-            if super_admins:
-                # Create a support/contact room for this inquiry (reuse existing one if exists)
-                contact_room = ChatRoom.query.filter_by(
-                    name=f"Contact Form - General",
-                    room_type='support'
-                ).first()
-                
-                if not contact_room:
-                    # Create new contact room
-                    contact_room = ChatRoom(
-                        name="Contact Form - General",
-                        room_type='support', 
-                        created_by_id=super_admins[0].id,
-                        is_active=True
-                    )
-                    db.session.add(contact_room)
-                    db.session.flush()  # Get the room ID
-                
-                # Add message to the room
-                chat_message = ChatMessage(
-                    room_id=contact_room.id,
-                    sender_id=super_admins[0].id,  # Use super admin as sender for system messages
-                    message_content=contact_message,
-                    message_type='text'
-                )
-                db.session.add(chat_message)
-                
-                # Ensure all super admins are participants
-                for admin in super_admins:
-                    participant = ChatParticipant.query.filter_by(
-                        room_id=contact_room.id,
-                        user_id=admin.id
-                    ).first()
-                    
-                    if not participant:
-                        participant = ChatParticipant(
-                            room_id=contact_room.id,
-                            user_id=admin.id,
-                            joined_at=datetime.now(),
-                            last_read_at=datetime.now() - timedelta(hours=1),  # Show as unread
-                            is_active=True
-                        )
-                        db.session.add(participant)
-                
-                # Update room timestamp
-                contact_room.updated_at = datetime.now()
-                
-                db.session.commit()
-                
-                # Check if user is authenticated to redirect to chat
-                if current_user.is_authenticated:
-                    flash(f'Thank you {first_name}! Your message has been sent. You can also continue the conversation here.', 'success')
-                    return redirect(url_for('enhanced_chat.support_chat'))
-                
-                flash(f'Thank you {first_name}! Your message has been sent to our team. We\'ll get back to you within 24 hours.', 'success')
-            else:
-                flash('Message received, but there was an issue forwarding it to our team. Please try WhatsApp contact below.', 'warning')
-                
-        except Exception as e:
-            print(f"Contact form error: {e}")
+            flash(f"Thank you {first_name}! Your message has been received. We'll reply within 24 hours.", 'success')
+        except Exception as exc:
+            import traceback; traceback.print_exc()
             db.session.rollback()
-            flash('There was an error sending your message. Please try the WhatsApp option below or try again later.', 'error')
-        
+            flash('There was an error sending your message. Please try WhatsApp or email us directly.', 'error')
+
         return redirect(url_for('contact'))
-    
-    # GET request - show the form
-    response = render_template('contact.html')
-    # Add cache control headers to prevent caching issues
-    resp = make_response(response)
+
+    resp = make_response(render_template('contact.html'))
     resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-    resp.headers['Pragma'] = 'no-cache'
-    resp.headers['Expires'] = '0'
     return resp
 
 @app.route('/registration-success')

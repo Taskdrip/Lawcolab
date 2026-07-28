@@ -1,0 +1,456 @@
+{% extends "base.html" %}
+{% block title %}Contact Inbox — LAWCOLAB Super Admin{% endblock %}
+
+{% block additional_css %}
+<style>
+:root { --navy:#0d1b4b; --gold:#FFD700; --bg:#f0f4f8; }
+
+.ci-wrap { background:var(--bg); min-height:100vh; padding:2rem 0 4rem; }
+
+/* ── Page header ── */
+.ci-header { background:#fff; border-bottom:1px solid #e2e8f0; padding:1.5rem 0; margin-bottom:2rem; }
+.ci-header h1 { font-size:1.5rem; font-weight:800; color:var(--navy); margin:0; }
+.ci-header .sub { color:#64748b; font-size:.85rem; margin:0; }
+
+/* ── Stat pills ── */
+.ci-stat { background:#fff; border:1.5px solid #e2e8f0; border-radius:14px; padding:.9rem 1.4rem; text-align:center; transition:.2s; cursor:pointer; text-decoration:none; display:block; }
+.ci-stat:hover,.ci-stat.active { border-color:var(--navy); box-shadow:0 4px 16px rgba(13,27,75,.1); }
+.ci-stat.active { background:var(--navy); }
+.ci-stat .num { font-size:1.6rem; font-weight:900; color:var(--navy); line-height:1; }
+.ci-stat.active .num { color:var(--gold); }
+.ci-stat .lbl { font-size:.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.06em; margin-top:.25rem; }
+.ci-stat.active .lbl { color:rgba(255,255,255,.75); }
+
+/* ── Search bar ── */
+.ci-search { background:#fff; border:1.5px solid #e2e8f0; border-radius:12px; padding:.6rem 1rem; display:flex; align-items:center; gap:.6rem; }
+.ci-search input { border:none; outline:none; flex:1; font-size:.9rem; background:transparent; }
+.ci-search i { color:#94a3b8; }
+
+/* ── Table card ── */
+.ci-card { background:#fff; border-radius:18px; border:1.5px solid #e2e8f0; box-shadow:0 4px 20px rgba(0,0,0,.05); overflow:hidden; }
+.ci-table { width:100%; border-collapse:collapse; }
+.ci-table thead th { background:#f8faff; border-bottom:1.5px solid #e2e8f0; padding:.85rem 1rem; font-size:.72rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:.06em; white-space:nowrap; }
+.ci-table tbody tr { border-bottom:1px solid #f1f5f9; transition:background .15s; cursor:pointer; }
+.ci-table tbody tr:last-child { border-bottom:none; }
+.ci-table tbody tr:hover { background:#f8faff; }
+.ci-table td { padding:.9rem 1rem; font-size:.87rem; color:#374151; vertical-align:middle; }
+
+/* ── Status badges ── */
+.badge-new { background:#dbeafe; color:#1d4ed8; }
+.badge-in_progress { background:#fef3c7; color:#92400e; }
+.badge-resolved { background:#dcfce7; color:#15803d; }
+.status-badge { padding:.25rem .75rem; border-radius:50px; font-size:.7rem; font-weight:800; display:inline-block; }
+
+/* ── Inquiry type pills ── */
+.type-pill { background:#f1f5f9; color:#374151; padding:.2rem .6rem; border-radius:50px; font-size:.72rem; font-weight:600; }
+
+/* ── Detail panel ── */
+.ci-detail-card { background:#fff; border-radius:18px; border:1.5px solid #e2e8f0; box-shadow:0 4px 20px rgba(0,0,0,.05); overflow:hidden; }
+.ci-detail-header { background:linear-gradient(135deg,var(--navy),#1a3a6b); padding:2rem; }
+.ci-detail-header h2 { color:#fff; font-size:1.2rem; font-weight:800; margin:0 0 .4rem; }
+.ci-detail-header .meta { color:rgba(255,255,255,.7); font-size:.82rem; }
+.ci-detail-body { padding:2rem; }
+
+.ci-field-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; margin-bottom:1.5rem; }
+.ci-field { background:#f8faff; border-radius:12px; padding:1rem 1.2rem; border:1px solid #e2e8f0; }
+.ci-field .label { font-size:.7rem; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:.06em; margin-bottom:.25rem; }
+.ci-field .value { font-size:.9rem; font-weight:600; color:#1e293b; word-break:break-word; }
+
+.ci-message-box { background:#f8faff; border-radius:14px; border:1.5px solid #e2e8f0; padding:1.5rem; margin-bottom:2rem; }
+.ci-message-box .msg-label { font-size:.72rem; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:.06em; margin-bottom:.75rem; }
+.ci-message-box .msg-body { color:#374151; font-size:.93rem; line-height:1.75; white-space:pre-wrap; }
+
+/* ── Email thread ── */
+.email-thread { margin-top:2rem; }
+.email-thread h5 { font-size:.85rem; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:.06em; margin-bottom:1rem; }
+.email-item { background:#fff; border:1.5px solid #e2e8f0; border-radius:14px; padding:1.25rem 1.5rem; margin-bottom:1rem; position:relative; }
+.email-item.out { border-left:4px solid var(--navy); }
+.email-item .ei-meta { display:flex; align-items:center; gap:.75rem; margin-bottom:.75rem; flex-wrap:wrap; }
+.email-item .ei-dir { font-size:.68rem; font-weight:800; padding:.2rem .6rem; border-radius:50px; text-transform:uppercase; letter-spacing:.06em; }
+.email-item.out .ei-dir { background:#dbeafe; color:#1d4ed8; }
+.email-item .ei-subject { font-weight:700; color:var(--navy); font-size:.9rem; }
+.email-item .ei-when { font-size:.75rem; color:#94a3b8; margin-left:auto; }
+.email-item .ei-body { font-size:.87rem; color:#374151; line-height:1.65; white-space:pre-wrap; }
+.email-item .ei-sender { font-size:.75rem; color:#64748b; }
+
+/* ── Compose panel ── */
+.compose-panel { background:#fff; border:1.5px solid #e2e8f0; border-radius:16px; padding:1.5rem; margin-top:2rem; }
+.compose-panel h5 { font-size:.9rem; font-weight:800; color:var(--navy); margin-bottom:1.25rem; }
+.compose-panel .form-control { border-radius:10px; border:1.5px solid #e2e8f0; font-size:.88rem; }
+.compose-panel .form-control:focus { border-color:var(--navy); box-shadow:0 0 0 3px rgba(13,27,75,.08); }
+
+/* ── Action buttons ── */
+.btn-navy { background:var(--navy); color:#fff; border:none; border-radius:10px; padding:.6rem 1.4rem; font-weight:700; font-size:.85rem; transition:.2s; }
+.btn-navy:hover { background:#0f2d5a; color:#fff; transform:translateY(-1px); }
+.btn-gold { background:var(--gold); color:var(--navy); border:none; border-radius:10px; padding:.6rem 1.4rem; font-weight:800; font-size:.85rem; transition:.2s; }
+.btn-gold:hover { background:#e6b800; color:var(--navy); transform:translateY(-1px); }
+
+/* ── Sidebar ── */
+.ci-sidebar .status-form { background:#f8faff; border:1px solid #e2e8f0; border-radius:14px; padding:1.25rem; }
+.ci-sidebar .status-form label { font-size:.72rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:.05em; }
+.ci-sidebar .status-form select, .ci-sidebar .status-form textarea { border-radius:10px; border:1.5px solid #e2e8f0; font-size:.88rem; }
+.ci-sidebar .status-form select:focus, .ci-sidebar .status-form textarea:focus { border-color:var(--navy); box-shadow:none; }
+
+.ci-back-btn { display:inline-flex; align-items:center; gap:.5rem; color:#64748b; font-size:.85rem; font-weight:600; text-decoration:none; padding:.5rem .85rem; border-radius:8px; border:1.5px solid #e2e8f0; background:#fff; transition:.2s; margin-bottom:1.5rem; }
+.ci-back-btn:hover { border-color:var(--navy); color:var(--navy); }
+
+/* ── Empty state ── */
+.empty-state { text-align:center; padding:4rem 2rem; }
+.empty-state i { font-size:3rem; color:#e2e8f0; margin-bottom:1rem; }
+.empty-state h5 { color:#94a3b8; font-weight:600; }
+
+/* ── Pagination ── */
+.ci-pagination .page-link { border-radius:8px; border:1.5px solid #e2e8f0; color:var(--navy); font-weight:600; font-size:.83rem; margin:0 2px; }
+.ci-pagination .page-item.active .page-link { background:var(--navy); border-color:var(--navy); color:#fff; }
+
+/* Mobile responsive ── */
+@media(max-width:768px){
+  .ci-table thead { display:none; }
+  .ci-table tbody tr { display:block; padding:.75rem; border:1px solid #e2e8f0; border-radius:12px; margin-bottom:.75rem; }
+  .ci-table td { display:flex; justify-content:space-between; align-items:center; padding:.35rem .5rem; border:none; }
+  .ci-table td::before { content:attr(data-label); font-size:.7rem; font-weight:800; color:#94a3b8; text-transform:uppercase; }
+  .ci-field-grid { grid-template-columns:1fr 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ci-wrap">
+
+  <!-- Page Header -->
+  <div class="ci-header">
+    <div class="container">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+          <h1><i class="fas fa-inbox me-2" style="color:var(--gold);"></i>Contact Inbox</h1>
+          <p class="sub">All public contact form submissions — reply, track, and resolve</p>
+        </div>
+        <a href="{{ url_for('superadmin.dashboard') }}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;">
+          <i class="fas fa-arrow-left me-1"></i>Dashboard
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    {% if detail_inquiry is defined and detail_inquiry %}
+    {# ───────────── DETAIL VIEW ───────────── #}
+    <a href="{{ url_for('superadmin.contact_inbox') }}" class="ci-back-btn">
+      <i class="fas fa-arrow-left"></i> Back to Inbox
+    </a>
+
+    <div class="row g-4">
+      <div class="col-lg-8">
+
+        <!-- Inquiry Card -->
+        <div class="ci-detail-card mb-4">
+          <div class="ci-detail-header">
+            <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
+              <div>
+                <h2>{{ detail_inquiry.first_name }} {{ detail_inquiry.last_name }}</h2>
+                <div class="meta">
+                  <i class="fas fa-envelope me-1"></i>{{ detail_inquiry.email }}
+                  {% if detail_inquiry.phone %} &bull; <i class="fas fa-phone me-1"></i>{{ detail_inquiry.phone }}{% endif %}
+                </div>
+              </div>
+              <span class="status-badge badge-{{ detail_inquiry.status }}">
+                {{ detail_inquiry.status.replace('_',' ').title() }}
+              </span>
+            </div>
+          </div>
+
+          <div class="ci-detail-body">
+            <!-- Field grid -->
+            <div class="ci-field-grid">
+              {% if detail_inquiry.company %}
+              <div class="ci-field">
+                <div class="label"><i class="fas fa-building me-1"></i>Company</div>
+                <div class="value">{{ detail_inquiry.company }}</div>
+              </div>
+              {% endif %}
+              {% if detail_inquiry.country %}
+              <div class="ci-field">
+                <div class="label"><i class="fas fa-globe me-1"></i>Country</div>
+                <div class="value">{{ detail_inquiry.country }}</div>
+              </div>
+              {% endif %}
+              <div class="ci-field">
+                <div class="label"><i class="fas fa-tag me-1"></i>Enquiry Type</div>
+                <div class="value">{{ detail_inquiry.inquiry_type or '—' }}</div>
+              </div>
+              <div class="ci-field">
+                <div class="label"><i class="fas fa-clock me-1"></i>Received</div>
+                <div class="value">{{ detail_inquiry.created_at.strftime('%d %b %Y, %H:%M') if detail_inquiry.created_at else '—' }}</div>
+              </div>
+              <div class="ci-field">
+                <div class="label"><i class="fas fa-bell me-1"></i>Newsletter</div>
+                <div class="value">{{ '✅ Yes' if detail_inquiry.newsletter else 'No' }}</div>
+              </div>
+              {% if detail_inquiry.ip_address %}
+              <div class="ci-field">
+                <div class="label"><i class="fas fa-map-marker-alt me-1"></i>IP Address</div>
+                <div class="value">{{ detail_inquiry.ip_address }}</div>
+              </div>
+              {% endif %}
+            </div>
+
+            <!-- Message -->
+            <div class="ci-message-box">
+              <div class="msg-label"><i class="fas fa-comment-alt me-1"></i>Message</div>
+              <div class="msg-body">{{ detail_inquiry.message }}</div>
+            </div>
+
+            <!-- Email Thread -->
+            <div class="email-thread">
+              <h5><i class="fas fa-history me-1"></i>Email History ({{ detail_emails|length }})</h5>
+              {% if detail_emails %}
+                {% for em in detail_emails %}
+                <div class="email-item out">
+                  <div class="ei-meta">
+                    <span class="ei-dir">Sent</span>
+                    <span class="ei-subject">{{ em.subject }}</span>
+                    <span class="ei-when">{{ em.sent_at.strftime('%d %b, %H:%M') if em.sent_at else '' }}</span>
+                  </div>
+                  <div class="ei-sender mb-2">By: {{ em.sent_by_name or 'Admin' }} &bull; Provider: {{ em.provider or '—' }} &bull; {% if em.success %}<span style="color:#16a34a;">✓ Sent</span>{% else %}<span style="color:#dc2626;">✗ Failed</span>{% endif %}</div>
+                  <div class="ei-body">{{ em.body_text }}</div>
+                </div>
+                {% endfor %}
+              {% else %}
+                <div style="background:#f8faff;border-radius:12px;padding:1.5rem;text-align:center;color:#94a3b8;font-size:.88rem;">
+                  <i class="fas fa-inbox" style="font-size:1.5rem;margin-bottom:.5rem;display:block;"></i>
+                  No emails sent yet — compose a reply below.
+                </div>
+              {% endif %}
+            </div>
+
+            <!-- Compose -->
+            <div class="compose-panel">
+              <h5><i class="fas fa-paper-plane me-2" style="color:var(--navy);"></i>Send Reply Email</h5>
+              <form action="{{ url_for('superadmin.contact_inbox_send_email', inquiry_id=detail_inquiry.id) }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                  <label class="form-label" style="font-size:.78rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.04em;">
+                    To
+                  </label>
+                  <input type="text" class="form-control" value="{{ detail_inquiry.first_name }} {{ detail_inquiry.last_name }} &lt;{{ detail_inquiry.email }}&gt;" readonly style="background:#f8faff;color:#64748b;">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label" style="font-size:.78rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.04em;">
+                    Subject <span style="color:#dc2626;">*</span>
+                  </label>
+                  <input type="text" name="subject" class="form-control"
+                    value="Re: Your LAWCOLAB enquiry — {{ detail_inquiry.inquiry_type or 'General' }}" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label" style="font-size:.78rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.04em;">
+                    Message <span style="color:#dc2626;">*</span>
+                  </label>
+                  <textarea name="body_text" class="form-control" rows="8" required
+                    placeholder="Dear {{ detail_inquiry.first_name }},&#10;&#10;Thank you for reaching out to LAWCOLAB..."></textarea>
+                </div>
+                <div class="d-flex gap-2">
+                  <button type="submit" class="btn-navy">
+                    <i class="fas fa-paper-plane me-2"></i>Send Email
+                  </button>
+                </div>
+              </form>
+            </div>
+
+          </div><!-- /ci-detail-body -->
+        </div>
+
+      </div><!-- /col-lg-8 -->
+
+      <!-- Sidebar -->
+      <div class="col-lg-4 ci-sidebar">
+        <div class="ci-detail-card">
+          <div style="padding:1.5rem;border-bottom:1px solid #e2e8f0;">
+            <h6 style="font-weight:800;color:var(--navy);margin:0;"><i class="fas fa-sliders-h me-2"></i>Actions</h6>
+          </div>
+          <div style="padding:1.5rem;">
+
+            <!-- Status + Notes form -->
+            <form action="{{ url_for('superadmin.contact_inbox_update_status', inquiry_id=detail_inquiry.id) }}" method="post" class="status-form mb-4">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <div class="mb-3">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                  <option value="new" {{ 'selected' if detail_inquiry.status=='new' }}>🔵 New</option>
+                  <option value="in_progress" {{ 'selected' if detail_inquiry.status=='in_progress' }}>🟡 In Progress</option>
+                  <option value="resolved" {{ 'selected' if detail_inquiry.status=='resolved' }}>🟢 Resolved</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Internal Notes</label>
+                <textarea name="notes" class="form-control" rows="4"
+                  placeholder="Add internal notes about this inquiry…">{{ detail_inquiry.notes or '' }}</textarea>
+              </div>
+              <button type="submit" class="btn-gold w-100">
+                <i class="fas fa-save me-2"></i>Save Changes
+              </button>
+            </form>
+
+            <!-- Quick actions -->
+            <div style="border-top:1px solid #e2e8f0;padding-top:1.25rem;">
+              <a href="mailto:{{ detail_inquiry.email }}" class="btn btn-outline-secondary btn-sm w-100 mb-2" style="border-radius:8px;">
+                <i class="fas fa-external-link-alt me-1"></i>Open in Email Client
+              </a>
+              {% if detail_inquiry.phone %}
+              <a href="https://wa.me/{{ detail_inquiry.phone|replace(' ','')|replace('+','') }}?text=Hello%20{{ detail_inquiry.first_name }}%2C%20this%20is%20LAWCOLAB..."
+                 target="_blank" class="btn btn-sm w-100 mb-2" style="background:#25D366;color:#fff;border-radius:8px;font-weight:600;">
+                <i class="fab fa-whatsapp me-1"></i>WhatsApp
+              </a>
+              {% endif %}
+              <form action="{{ url_for('superadmin.contact_inbox_delete', inquiry_id=detail_inquiry.id) }}" method="post"
+                    onsubmit="return confirm('Delete this inquiry permanently?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-outline-danger btn-sm w-100" style="border-radius:8px;">
+                  <i class="fas fa-trash me-1"></i>Delete Inquiry
+                </button>
+              </form>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /row -->
+
+    {% else %}
+    {# ───────────── LIST VIEW ───────────── #}
+
+    <!-- Status Stats -->
+    <div class="row g-3 mb-4">
+      {% for key, label, icon in [('all','All','inbox'),('new','New','circle'),('in_progress','In Progress','spinner'),('resolved','Resolved','check-circle')] %}
+      <div class="col-6 col-md-3">
+        <a href="{{ url_for('superadmin.contact_inbox', status=key, q=search) }}"
+           class="ci-stat {% if status_filter == key %}active{% endif %}">
+          <div class="num">{{ counts[key] }}</div>
+          <div class="lbl"><i class="fas fa-{{ icon }} me-1"></i>{{ label }}</div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Search + Filter Bar -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-8">
+        <form action="{{ url_for('superadmin.contact_inbox') }}" method="get">
+          <input type="hidden" name="status" value="{{ status_filter }}">
+          <div class="ci-search">
+            <i class="fas fa-search"></i>
+            <input type="text" name="q" value="{{ search }}" placeholder="Search name, email, company, message…">
+            {% if search %}<a href="{{ url_for('superadmin.contact_inbox', status=status_filter) }}" style="color:#94a3b8;text-decoration:none;font-size:.8rem;">✕</a>{% endif %}
+            <button type="submit" class="btn-navy" style="padding:.35rem 1rem;">Search</button>
+          </div>
+        </form>
+      </div>
+      <div class="col-md-4 text-md-end">
+        <a href="{{ url_for('superadmin.contact_inbox') }}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;">
+          <i class="fas fa-sync-alt me-1"></i>Refresh
+        </a>
+      </div>
+    </div>
+
+    <!-- Inquiry Table -->
+    <div class="ci-card">
+      {% if inquiries %}
+      <div class="table-responsive">
+        <table class="ci-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Company</th>
+              <th>Type</th>
+              <th>Country</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for inq in inquiries %}
+            <tr onclick="window.location='{{ url_for('superadmin.contact_inbox_detail', inquiry_id=inq.id) }}'">
+              <td data-label="Name">
+                <div style="font-weight:700;color:var(--navy);">{{ inq.first_name }} {{ inq.last_name }}</div>
+                {% if inq.phone %}<div style="font-size:.75rem;color:#94a3b8;">{{ inq.phone }}</div>{% endif %}
+              </td>
+              <td data-label="Email"><a href="mailto:{{ inq.email }}" style="color:var(--navy);font-weight:600;" onclick="event.stopPropagation()">{{ inq.email }}</a></td>
+              <td data-label="Company"><span style="color:#64748b;">{{ inq.company or '—' }}</span></td>
+              <td data-label="Type"><span class="type-pill">{{ inq.inquiry_type or '—' }}</span></td>
+              <td data-label="Country"><span style="color:#64748b;font-size:.83rem;">{{ inq.country or '—' }}</span></td>
+              <td data-label="Status">
+                <span class="status-badge badge-{{ inq.status }}">{{ inq.status.replace('_',' ').title() }}</span>
+              </td>
+              <td data-label="Date" style="color:#94a3b8;font-size:.8rem;white-space:nowrap;">
+                {{ inq.created_at.strftime('%d %b %Y') if inq.created_at else '—' }}
+              </td>
+              <td>
+                <a href="{{ url_for('superadmin.contact_inbox_detail', inquiry_id=inq.id) }}"
+                   class="btn btn-sm btn-navy" onclick="event.stopPropagation()">Open</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if total_pages > 1 %}
+      <div class="p-3 border-top d-flex justify-content-center">
+        <nav>
+          <ul class="pagination ci-pagination mb-0">
+            {% if page > 1 %}
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('superadmin.contact_inbox', status=status_filter, q=search, page=page-1) }}">‹</a>
+            </li>
+            {% endif %}
+            {% for p in range([1, page-2]|max, [total_pages+1, page+3]|min) %}
+            <li class="page-item {% if p==page %}active{% endif %}">
+              <a class="page-link" href="{{ url_for('superadmin.contact_inbox', status=status_filter, q=search, page=p) }}">{{ p }}</a>
+            </li>
+            {% endfor %}
+            {% if page < total_pages %}
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('superadmin.contact_inbox', status=status_filter, q=search, page=page+1) }}">›</a>
+            </li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+      {% endif %}
+
+      {% else %}
+      <div class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <h5>No enquiries found</h5>
+        <p style="color:#94a3b8;font-size:.88rem;">
+          {% if search %}No results match "{{ search }}"{% elif status_filter != 'all' %}No {{ status_filter.replace('_',' ') }} inquiries{% else %}Contact form submissions will appear here{% endif %}
+        </p>
+        {% if search or status_filter != 'all' %}
+        <a href="{{ url_for('superadmin.contact_inbox') }}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;">Clear filters</a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+    {% endif %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;max-width:360px;">
+          {% for category, message in messages %}
+          <div class="alert alert-{{ 'success' if category=='success' else 'danger' if category=='error' else 'warning' }} alert-dismissible fade show shadow" role="alert" style="border-radius:14px;">
+            <i class="fas fa-{{ 'check-circle' if category=='success' else 'exclamation-circle' }} me-2"></i>{{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+  </div><!-- /container -->
+</div><!-- /ci-wrap -->
+{% endblock %}
