@@ -44,10 +44,10 @@
                    placeholder="recipient@lawfirm.com" required
                    value="{{ (reply_msg.recipient_email if reply_msg) or (firm.email if firm) or '' }}">
             <div class="position-relative">
-              <button type="button" class="btn btn-sm btn-light" style="border-radius:7px;font-size:.76rem;" onclick="document.getElementById('firmPickerDrop').classList.toggle('show')">
+              <button type="button" class="btn btn-sm btn-light" style="border-radius:7px;font-size:.76rem;" onclick="toggleFirmPicker()">
                 <i class="fas fa-address-book"></i> Firms
               </button>
-              <div id="firmPickerDrop" style="position:absolute;right:0;top:100%;margin-top:4px;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:500;width:300px;max-height:260px;overflow-y:auto;display:none;">
+              <div id="firmPickerDrop" style="position:absolute;right:0;top:100%;margin-top:4px;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:500;width:300px;max-height:260px;overflow-y:auto;display:none;" class="firm-picker-drop">
                 <div class="p-2">
                   <input type="text" id="firmSearch" class="form-control form-control-sm" placeholder="Search firms…" oninput="filterFirms(this.value)">
                 </div>
@@ -324,9 +324,14 @@ function filterFirms(q){
   });
 }
 
+function toggleFirmPicker(){
+  const d = document.getElementById('firmPickerDrop');
+  d.style.display = d.style.display === 'block' ? 'none' : 'block';
+}
+
 document.addEventListener('click', e=>{
-  if(!e.target.closest('#firmPickerDrop') && !e.target.closest('[onclick*="firmPickerDrop"]'))
-    document.getElementById('firmPickerDrop').classList.remove('show');
+  if(!e.target.closest('#firmPickerDrop') && !e.target.closest('[onclick*="toggleFirmPicker"]'))
+    document.getElementById('firmPickerDrop').style.display = 'none';
 });
 
 async function generateAI(){

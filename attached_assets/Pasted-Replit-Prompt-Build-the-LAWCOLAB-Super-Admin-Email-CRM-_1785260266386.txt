@@ -1,0 +1,720 @@
+Replit Prompt — Build the LAWCOLAB Super Admin Email CRM
+
+You are a senior SaaS architect and full-stack engineer. Upgrade the existing LAWCOLAB application by implementing a production-ready Email CRM for the Super Admin Dashboard. The system must feel comparable to HubSpot, Salesforce, and Pipedrive while maintaining LAWCOLAB's branding and clean user experience.
+
+Objective
+
+Create a centralized email communication hub that enables the LAWCOLAB Super Admin to send, receive, track, organize, and automate email communications with every law firm discovered by the crawler and every law firm registered on the platform.
+
+The email system must integrate seamlessly with the existing CRM, Law Firm Directory, AI Lead Discovery module, and user management system.
+
+---
+
+Existing Data Sources
+
+Use both existing datasets:
+
+• Registered LAWCOLAB customers
+
+• Crawled law firms from the Law Firm Directory
+
+Merge both into a unified CRM.
+
+If duplicates exist, merge intelligently using:
+
+- Email
+- Website
+- Phone number
+- Firm Name similarity
+
+Never create duplicate companies.
+
+---
+
+New CRM Email Module
+
+Create a new menu item:
+
+Communications
+
+Submenus:
+
+Inbox
+
+Sent
+
+Drafts
+
+Scheduled
+
+Campaigns
+
+Templates
+
+Automation
+
+Analytics
+
+Settings
+
+Trash
+
+---
+
+Law Firm Profile
+
+Each law firm profile should include:
+
+Overview
+
+Contacts
+
+Cases (if customer)
+
+Timeline
+
+Emails
+
+Notes
+
+Tasks
+
+Documents
+
+Campaign History
+
+Activities
+
+When opening a law firm's profile, display the complete communication history.
+
+---
+
+Email Composer
+
+Build a professional email composer similar to Gmail.
+
+Features:
+
+Rich Text Editor
+
+Bold
+
+Italic
+
+Underline
+
+Font Size
+
+Lists
+
+Tables
+
+Hyperlinks
+
+Images
+
+File Attachments
+
+Drag and Drop Upload
+
+HTML Support
+
+Responsive Preview
+
+Dark Mode Compatible
+
+Autosave Drafts
+
+Undo / Redo
+
+Spell Checking
+
+Signature Support
+
+Preview Before Sending
+
+---
+
+AI Email Writer
+
+Add an "Generate with AI" button.
+
+The AI should generate emails based on:
+
+Firm Name
+
+Practice Area
+
+Location
+
+Previous conversations
+
+Lead Score
+
+Pipeline Stage
+
+Campaign
+
+Generate:
+
+Cold Email
+
+Follow-up Email
+
+Meeting Request
+
+Demo Invitation
+
+Trial Reminder
+
+Renewal Reminder
+
+Invoice Reminder
+
+Thank-you Email
+
+Re-engagement Campaign
+
+Custom Email
+
+Allow:
+
+Regenerate
+
+Rewrite
+
+Shorten
+
+Expand
+
+Professional Tone
+
+Friendly Tone
+
+Persuasive Tone
+
+Formal Tone
+
+---
+
+Variables
+
+Support merge tags such as:
+
+{{FirmName}}
+
+{{ContactName}}
+
+{{City}}
+
+{{Country}}
+
+{{PracticeArea}}
+
+{{Website}}
+
+{{FreeTrialLink}}
+
+{{DemoBookingLink}}
+
+{{SalesRep}}
+
+{{CurrentDate}}
+
+Replace automatically before sending.
+
+---
+
+Email Templates
+
+Create editable template categories:
+
+Welcome
+
+Onboarding
+
+Trial
+
+Demo
+
+Sales
+
+Support
+
+Renewal
+
+Follow-up
+
+Newsletter
+
+Announcements
+
+Custom
+
+Super Admin can create unlimited templates.
+
+---
+
+Bulk Email
+
+Allow selecting:
+
+One firm
+
+Multiple firms
+
+Entire city
+
+Entire country
+
+Entire campaign
+
+Entire practice area
+
+Entire pipeline stage
+
+Then send personalized emails automatically.
+
+Each recipient should receive an individually personalized email.
+
+---
+
+Email Scheduling
+
+Allow:
+
+Send Now
+
+Schedule Later
+
+Recurring Emails
+
+Time Zone Selection
+
+Business Hours Only
+
+Delay Sending
+
+Queue Management
+
+---
+
+Delivery Tracking
+
+Track:
+
+Queued
+
+Sending
+
+Sent
+
+Delivered
+
+Opened
+
+Clicked
+
+Replied
+
+Forwarded (if available)
+
+Bounced
+
+Spam Complaint
+
+Failed
+
+Display live status badges.
+
+---
+
+Email Timeline
+
+Inside every firm profile display:
+
+Date
+
+Time
+
+Subject
+
+Sender
+
+Recipient
+
+Delivery Status
+
+Opened
+
+Replied
+
+Attachments
+
+Notes
+
+Everything in chronological order.
+
+---
+
+Internal Notes
+
+Every email should support internal notes.
+
+Example:
+
+"Managing Partner requested demo next week."
+
+"Call after July 15."
+
+These notes are never sent to recipients.
+
+---
+
+Email Analytics
+
+Dashboard widgets:
+
+Emails Sent Today
+
+Open Rate
+
+Click Rate
+
+Reply Rate
+
+Bounce Rate
+
+Campaign Performance
+
+Top Performing Template
+
+Best Performing Staff
+
+Most Active Region
+
+Conversion Rate
+
+Monthly Trends
+
+Use interactive charts.
+
+---
+
+Smart Search
+
+Search by:
+
+Firm Name
+
+Email Address
+
+City
+
+Country
+
+Practice Area
+
+Subject
+
+Keyword
+
+Template
+
+Campaign
+
+Date Range
+
+Status
+
+Results should update instantly.
+
+---
+
+Filters
+
+Unread
+
+Opened
+
+Replied
+
+Pending
+
+Scheduled
+
+Failed
+
+High Priority
+
+Hot Leads
+
+Customers
+
+Prospects
+
+---
+
+Contact Management
+
+Each law firm may have multiple contacts.
+
+Example:
+
+Managing Partner
+
+Senior Partner
+
+Associate
+
+Office Administrator
+
+Marketing Contact
+
+Each contact has:
+
+Photo
+
+Email
+
+Phone
+
+WhatsApp
+
+Job Title
+
+Department
+
+Preferred Language
+
+Last Contact Date
+
+Notes
+
+---
+
+Automation
+
+Create workflow automation.
+
+Example:
+
+User registers
+
+↓
+
+Send Welcome Email
+
+↓
+
+Wait 2 Days
+
+↓
+
+Send Product Guide
+
+↓
+
+Wait 5 Days
+
+↓
+
+Send Demo Invitation
+
+↓
+
+Wait 7 Days
+
+↓
+
+Send Case Study
+
+↓
+
+If no response
+
+↓
+
+Notify Sales Team
+
+Workflow Builder should support:
+
+Triggers
+
+Conditions
+
+Actions
+
+Delays
+
+Tags
+
+Goals
+
+---
+
+Notifications
+
+Notify Super Admin when:
+
+Email Opened
+
+Reply Received
+
+Meeting Requested
+
+Trial Started
+
+Bounce Detected
+
+Spam Complaint
+
+Large Campaign Finished
+
+Display notifications in real time.
+
+---
+
+Email Settings
+
+Create a settings page.
+
+Support:
+
+Sender Name
+
+Reply-To Address
+
+Company Signature
+
+Default Templates
+
+Footer
+
+Brand Colors
+
+Company Logo
+
+Tracking Settings
+
+Unsubscribe Footer
+
+SMTP/API configuration
+
+Bounce Settings
+
+Webhook configuration
+
+---
+
+Technical Integration
+
+Abstract the email service behind a provider interface so it can support providers such as Resend, Postmark, Mailgun, or Amazon SES without changing the CRM logic.
+
+Implement:
+
+Background job queue
+
+Webhook handlers
+
+Retry logic
+
+Rate limiting
+
+Delivery status synchronization
+
+Secure API key management via Railway environment variables
+
+HTML and plain-text multipart emails
+
+Responsive email templates
+
+---
+
+Security
+
+Role-based permissions.
+
+Only Super Admin can:
+
+Manage campaigns
+
+Edit templates
+
+View analytics
+
+Configure providers
+
+Send bulk emails
+
+All email actions must be recorded in an audit log including user, timestamp, IP address, and action.
+
+---
+
+Mobile Optimization
+
+The entire email CRM must be fully responsive.
+
+Support:
+
+Desktop
+
+Tablet
+
+Mobile
+
+Floating compose button
+
+Swipe actions
+
+Touch-friendly controls
+
+Fast loading
+
+Sticky filters
+
+Infinite scrolling
+
+---
+
+UI/UX
+
+The design must match LAWCOLAB.
+
+Use:
+
+Glassmorphism cards
+
+Professional typography
+
+Smooth animations
+
+Modern icons
+
+Skeleton loading states
+
+Empty-state illustrations
+
+Dark/Light mode
+
+Beautiful charts
+
+Split-pane inbox layout
+
+Collapsible folders
+
+Conversation threads
+
+Quick actions
+
+Keyboard shortcuts (desktop)
+
+---
+
+Deliverables
+
+Refactor the existing CRM to include this complete Email Communication Hub without breaking existing functionality.
+
+Write clean, modular, production-ready code with reusable components, scalable architecture, proper error handling, comprehensive comments, and documentation.
+
+The result should make LAWCOLAB's Super Admin Dashboard a complete communication center where every interaction with registered law firms and directory leads is managed, tracked, and automated from a single unified interface.

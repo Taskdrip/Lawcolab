@@ -227,9 +227,13 @@
 
   <div class="sidebar-section">Campaigns</div>
   <ul class="sidebar-nav">
+    <li><a href="{{ url_for('email_crm.campaigns') }}"
+           class="{% if request.endpoint=='email_crm.campaigns' or request.endpoint=='email_crm.create_campaign' %}active{% endif %}">
+      <i class="fas fa-bullhorn ni"></i> Campaigns
+    </a></li>
     <li><a href="{{ url_for('email_crm.bulk_send') }}"
            class="{% if request.endpoint=='email_crm.bulk_send' %}active{% endif %}">
-      <i class="fas fa-bullhorn ni"></i> Bulk Send
+      <i class="fas fa-paper-plane ni"></i> Bulk Send
     </a></li>
     <li><a href="{{ url_for('email_crm.templates_list') }}"
            class="{% if 'template' in request.endpoint %}active{% endif %}">

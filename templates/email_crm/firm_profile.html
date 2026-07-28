@@ -1,0 +1,338 @@
+{% extends 'email_crm/base.html' %}
+{% block title %}{{ firm.name }} — Email Timeline{% endblock %}
+{% block page_title %}{{ firm.name }}{% endblock %}
+
+{% block topbar_actions %}
+<div class="d-flex gap-2">
+  <a href="{{ url_for('crm.lead_detail', firm_id=firm.id) }}" class="btn-outline-ec" style="text-decoration:none;padding:.38rem .85rem;border-radius:9px;font-size:.8rem;font-weight:500;display:flex;align-items:center;gap:.4rem;">
+    <i class="fas fa-user"></i> CRM Profile
+  </a>
+  <a href="{{ url_for('email_crm.compose', firm_id=firm.id) }}" class="btn-gold" style="text-decoration:none;padding:.38rem .85rem;border-radius:9px;font-size:.8rem;font-weight:700;display:flex;align-items:center;gap:.4rem;">
+    <i class="fas fa-envelope"></i> Email Firm
+  </a>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.tab-nav{display:flex;gap:.25rem;border-bottom:2px solid var(--border);margin-bottom:1.2rem;overflow-x:auto;scrollbar-width:none;}
+.tab-nav::-webkit-scrollbar{display:none;}
+.tab-btn{background:none;border:none;padding:.55rem 1rem;font-size:.82rem;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;}
+.tab-btn.active{color:var(--navy);border-bottom-color:var(--navy);}
+.tab-btn:hover:not(.active){color:var(--text);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+.timeline-item{display:flex;gap:.85rem;padding:.85rem 1.1rem;border-bottom:1px solid #f1f5f9;transition:background .1s;}
+.timeline-item:hover{background:#fafbff;}
+.timeline-dot{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;}
+.firm-stat{background:#f8fafc;border-radius:12px;padding:.85rem 1rem;text-align:center;}
+.firm-stat-val{font-size:1.5rem;font-weight:800;color:var(--navy);}
+.firm-stat-label{font-size:.72rem;color:var(--muted);margin-top:.1rem;}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Firm header card -->
+<div class="ec-card mb-3" style="background:linear-gradient(135deg,var(--navy) 0%,#1a3a8f 100%);color:#fff;border:none;">
+  <div class="ec-card-body d-flex align-items-start gap-4 flex-wrap">
+    <div style="width:60px;height:60px;border-radius:14px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;flex-shrink:0;color:#FFD700;">
+      {{ firm.name[:2]|upper }}
+    </div>
+    <div style="flex:1;min-width:0;">
+      <h2 style="font-size:1.15rem;font-weight:800;margin:0 0 .3rem;color:#fff;">{{ firm.name }}</h2>
+      <div class="d-flex flex-wrap gap-3" style="font-size:.8rem;opacity:.85;">
+        {% if firm.city or firm.country %}
+        <span><i class="fas fa-map-marker-alt me-1"></i>{{ firm.city }}{% if firm.city and firm.country %}, {% endif %}{{ firm.country }}</span>
+        {% endif %}
+        {% if firm.email %}
+        <span><i class="fas fa-envelope me-1"></i>{{ firm.email }}</span>
+        {% endif %}
+        {% if firm.phone %}
+        <span><i class="fas fa-phone me-1"></i>{{ firm.phone }}</span>
+        {% endif %}
+        {% if firm.website %}
+        <a href="{{ firm.website }}" target="_blank" style="color:rgba(255,255,255,.8);"><i class="fas fa-globe me-1"></i>Website</a>
+        {% endif %}
+      </div>
+      {% if firm.practice_areas %}
+      <div class="mt-2 d-flex flex-wrap gap-1">
+        {% for area in (firm.practice_areas[:3] if firm.practice_areas else []) %}
+        <span style="background:rgba(255,215,0,.2);color:#FFD700;border-radius:6px;padding:.15rem .55rem;font-size:.72rem;font-weight:600;">{{ area }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    <div class="d-flex gap-3 flex-wrap">
+      <div class="firm-stat" style="background:rgba(255,255,255,.1);color:#fff;">
+        <div class="firm-stat-val" style="color:#FFD700;">{{ total_sent }}</div>
+        <div class="firm-stat-label" style="color:rgba(255,255,255,.65);">Emails Sent</div>
+      </div>
+      <div class="firm-stat" style="background:rgba(255,255,255,.1);color:#fff;">
+        <div class="firm-stat-val" style="color:#FFD700;">{{ open_rate }}%</div>
+        <div class="firm-stat-label" style="color:rgba(255,255,255,.65);">Open Rate</div>
+      </div>
+      <div class="firm-stat" style="background:rgba(255,255,255,.1);color:#fff;">
+        <div class="firm-stat-val" style="color:#FFD700;">{{ total_replied }}</div>
+        <div class="firm-stat-label" style="color:rgba(255,255,255,.65);">Replies</div>
+      </div>
+      <div class="firm-stat" style="background:rgba(255,255,255,.1);color:#fff;">
+        <div class="firm-stat-val" style="color:#FFD700;">{{ contacts|length }}</div>
+        <div class="firm-stat-label" style="color:rgba(255,255,255,.65);">Contacts</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tab navigation -->
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="showTab('timeline', this)"><i class="fas fa-history me-1"></i> Email Timeline</button>
+  <button class="tab-btn" onclick="showTab('contacts', this)"><i class="fas fa-users me-1"></i> Contacts ({{ contacts|length }})</button>
+  <button class="tab-btn" onclick="showTab('notes', this)"><i class="fas fa-sticky-note me-1"></i> Notes ({{ notes|length }})</button>
+  <button class="tab-btn" onclick="showTab('tasks', this)"><i class="fas fa-tasks me-1"></i> Tasks ({{ tasks|length }})</button>
+  <button class="tab-btn" onclick="showTab('overview', this)"><i class="fas fa-building me-1"></i> Overview</button>
+</div>
+
+<!-- ── Email Timeline Tab ── -->
+<div id="tab-timeline" class="tab-panel active">
+  {% if emails %}
+  <div class="ec-card" style="overflow:hidden;">
+    <div class="ec-card-header">
+      <span class="ec-card-title"><i class="fas fa-history me-2"></i>{{ emails|length }} Email{{ 's' if emails|length != 1 }} — Complete History</span>
+      <a href="{{ url_for('email_crm.compose', firm_id=firm.id) }}" class="btn-gold" style="text-decoration:none;padding:.3rem .8rem;border-radius:8px;font-size:.78rem;font-weight:700;display:inline-flex;align-items:center;gap:.35rem;">
+        <i class="fas fa-pen"></i> New Email
+      </a>
+    </div>
+    {% for msg in emails %}
+    {% set color_map = {'sent':'#3b82f6','delivered':'#6366f1','opened':'#10b981','clicked':'#f59e0b','replied':'#06b6d4','draft':'#94a3b8','scheduled':'#fbbf24','failed':'#ef4444','bounced':'#f87171'} %}
+    {% set dot_color = color_map.get(msg.status, '#94a3b8') %}
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:{{ dot_color }}22;color:{{ dot_color }};">
+        <i class="fas fa-{% if msg.status == 'replied' %}reply{% elif msg.status in ('opened','clicked') %}envelope-open{% elif msg.status in ('sent','delivered') %}paper-plane{% elif msg.status == 'scheduled' %}clock{% elif msg.status in ('failed','bounced') %}exclamation-triangle{% else %}file-alt{% endif %}"></i>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+          <a href="{{ url_for('email_crm.view_message', msg_id=msg.id) }}" style="font-size:.86rem;font-weight:600;color:var(--text);text-decoration:none;">
+            {{ msg.subject or '(no subject)' }}
+          </a>
+          <span class="status-badge badge-{{ msg.status }}" style="font-size:.68rem;">{{ msg.status|title }}</span>
+          {% if msg.ai_generated %}<span class="status-badge" style="background:#e8f5e9;color:#2e7d32;font-size:.65rem;"><i class="fas fa-robot me-1"></i>AI</span>{% endif %}
+          {% if msg.priority and msg.priority != 'normal' %}<span class="status-badge" style="background:#fff3cd;color:#856404;font-size:.65rem;">{{ msg.priority|title }}</span>{% endif %}
+        </div>
+        <div class="d-flex flex-wrap gap-3" style="font-size:.76rem;color:var(--muted);">
+          <span>To: {{ msg.recipient_email }}</span>
+          {% if msg.sent_at %}<span><i class="fas fa-paper-plane me-1"></i>Sent {{ msg.sent_at.strftime('%b %d, %Y %H:%M') }}</span>{% endif %}
+          {% if msg.opened_at %}<span style="color:#10b981;"><i class="fas fa-envelope-open me-1"></i>Opened {{ msg.opened_at.strftime('%b %d') }}</span>{% endif %}
+          {% if msg.replied_at %}<span style="color:#06b6d4;"><i class="fas fa-reply me-1"></i>Replied {{ msg.replied_at.strftime('%b %d') }}</span>{% endif %}
+          {% if msg.open_count %}<span>{{ msg.open_count }} open{{ 's' if msg.open_count != 1 }}</span>{% endif %}
+        </div>
+        {% if msg.internal_note %}
+        <div style="margin-top:.35rem;font-size:.75rem;color:#b8860b;background:#fffdf0;border-radius:6px;padding:.25rem .6rem;display:inline-block;">
+          <i class="fas fa-sticky-note me-1"></i>{{ msg.internal_note[:80] }}{% if msg.internal_note|length > 80 %}…{% endif %}
+        </div>
+        {% endif %}
+      </div>
+      <div style="font-size:.72rem;color:var(--muted);white-space:nowrap;flex-shrink:0;padding-top:.1rem;">
+        {{ msg.created_at.strftime('%b %d, %Y') if msg.created_at }}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="ec-card">
+    <div class="text-center py-5">
+      <i class="fas fa-inbox fa-3x mb-3" style="color:#cbd5e0;"></i>
+      <p style="color:var(--muted);font-size:.9rem;">No emails sent to {{ firm.name }} yet.</p>
+      <a href="{{ url_for('email_crm.compose', firm_id=firm.id) }}" class="btn-gold" style="text-decoration:none;padding:.45rem 1.2rem;border-radius:9px;font-size:.82rem;font-weight:700;display:inline-flex;align-items:center;gap:.4rem;">
+        <i class="fas fa-pen"></i> Send first email
+      </a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- ── Contacts Tab ── -->
+<div id="tab-contacts" class="tab-panel">
+  <div class="row g-3 mb-3">
+    <div class="col-12">
+      <div class="ec-card">
+        <div class="ec-card-header">
+          <span class="ec-card-title"><i class="fas fa-users me-2"></i>Contacts</span>
+          <a href="{{ url_for('email_crm.firm_contacts', firm_id=firm.id) }}" class="btn-navy" style="text-decoration:none;padding:.35rem .75rem;border-radius:8px;font-size:.78rem;display:inline-flex;align-items:center;gap:.35rem;">
+            <i class="fas fa-cog"></i> Manage
+          </a>
+        </div>
+        {% if contacts %}
+        <div>
+          {% for c in contacts %}
+          <div class="d-flex align-items-start gap-3 p-3 {% if not loop.last %}border-bottom{% endif %}" style="border-color:#f1f5f9;">
+            <div class="msg-avatar" style="width:42px;height:42px;font-size:.86rem;flex-shrink:0;">{{ c.name[:2]|upper }}</div>
+            <div style="flex:1;">
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span style="font-size:.88rem;font-weight:700;">{{ c.name }}</span>
+                {% if c.is_primary %}<span style="font-size:.68rem;background:#e8f0fe;color:#1a56db;border-radius:6px;padding:.1rem .4rem;font-weight:700;">Primary</span>{% endif %}
+              </div>
+              {% if c.job_title %}<div style="font-size:.78rem;color:var(--muted);">{{ c.job_title }}{% if c.department %} · {{ c.department }}{% endif %}</div>{% endif %}
+              <div class="d-flex flex-wrap gap-3 mt-1">
+                {% if c.email %}<span style="font-size:.78rem;color:var(--navy);"><i class="fas fa-envelope me-1"></i>{{ c.email }}</span>{% endif %}
+                {% if c.phone %}<span style="font-size:.78rem;color:var(--muted);"><i class="fas fa-phone me-1"></i>{{ c.phone }}</span>{% endif %}
+                {% if c.whatsapp %}<span style="font-size:.78rem;color:#25d366;"><i class="fab fa-whatsapp me-1"></i>{{ c.whatsapp }}</span>{% endif %}
+              </div>
+            </div>
+            {% if c.email %}
+            <a href="{{ url_for('email_crm.compose', firm_id=firm.id) }}" class="btn-outline-ec" style="text-decoration:none;padding:.3rem .65rem;border-radius:8px;font-size:.75rem;flex-shrink:0;">
+              <i class="fas fa-envelope"></i>
+            </a>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-4" style="color:var(--muted);font-size:.85rem;">
+          No contacts yet. <a href="{{ url_for('email_crm.firm_contacts', firm_id=firm.id) }}">Add one →</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Notes Tab ── -->
+<div id="tab-notes" class="tab-panel">
+  <div class="ec-card">
+    <div class="ec-card-header">
+      <span class="ec-card-title"><i class="fas fa-sticky-note me-2"></i>Notes</span>
+      <a href="{{ url_for('crm.lead_detail', firm_id=firm.id) }}" class="btn-outline-ec" style="text-decoration:none;padding:.2rem .6rem;font-size:.75rem;border-radius:8px;">Add Note in CRM</a>
+    </div>
+    {% if notes %}
+    <div>
+      {% for note in notes %}
+      <div class="d-flex gap-3 p-3 {% if not loop.last %}border-bottom{% endif %}" style="border-color:#f1f5f9;">
+        <div style="width:34px;height:34px;border-radius:8px;background:#fff8e1;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fas fa-sticky-note" style="color:#f57f17;font-size:.8rem;"></i>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:.84rem;line-height:1.65;color:var(--text);">{{ note.content }}</div>
+          <div style="font-size:.74rem;color:var(--muted);margin-top:.3rem;">
+            {{ note.created_at.strftime('%b %d, %Y at %H:%M') if note.created_at }}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-4" style="color:var(--muted);font-size:.85rem;">No notes yet.</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ── Tasks Tab ── -->
+<div id="tab-tasks" class="tab-panel">
+  <div class="ec-card">
+    <div class="ec-card-header">
+      <span class="ec-card-title"><i class="fas fa-tasks me-2"></i>Open Tasks</span>
+      <a href="{{ url_for('crm.lead_detail', firm_id=firm.id) }}" class="btn-outline-ec" style="text-decoration:none;padding:.2rem .6rem;font-size:.75rem;border-radius:8px;">Manage in CRM</a>
+    </div>
+    {% if tasks %}
+    <div>
+      {% for task in tasks %}
+      <div class="d-flex align-items-start gap-3 p-3 {% if not loop.last %}border-bottom{% endif %}" style="border-color:#f1f5f9;">
+        <div style="width:34px;height:34px;border-radius:8px;background:#f0fdf4;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fas fa-check-circle" style="color:#16a34a;font-size:.82rem;"></i>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:.85rem;font-weight:600;">{{ task.title }}</div>
+          {% if task.description %}<div style="font-size:.78rem;color:var(--muted);">{{ task.description[:80] }}</div>{% endif %}
+          {% if task.due_date %}<div style="font-size:.74rem;color:{{ '#ef4444' if task.due_date < now() else 'var(--muted)' }};margin-top:.2rem;"><i class="fas fa-calendar me-1"></i>Due {{ task.due_date.strftime('%b %d, %Y') }}</div>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-4" style="color:var(--muted);font-size:.85rem;">No open tasks.</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ── Overview Tab ── -->
+<div id="tab-overview" class="tab-panel">
+  <div class="row g-3">
+    <div class="col-md-6">
+      <div class="ec-card">
+        <div class="ec-card-header"><span class="ec-card-title"><i class="fas fa-building me-2"></i>Firm Details</span></div>
+        <div class="ec-card-body">
+          <table style="width:100%;font-size:.83rem;border-collapse:collapse;">
+            {% set details = [
+              ('Name', firm.name),
+              ('Email', firm.email or '—'),
+              ('Phone', firm.phone or '—'),
+              ('WhatsApp', firm.whatsapp or '—'),
+              ('City', firm.city or '—'),
+              ('Country', firm.country or '—'),
+              ('Website', firm.website or '—'),
+              ('Pipeline Stage', (firm.pipeline_stage or 'new')|replace('_',' ')|title),
+              ('Lead Score', firm.lead_score|string if firm.lead_score else '—'),
+              ('Verified', 'Yes' if firm.is_verified else 'No'),
+            ] %}
+            {% for label, val in details %}
+            <tr style="border-bottom:1px solid #f1f5f9;">
+              <td style="padding:.5rem .4rem;color:var(--muted);font-weight:600;width:38%;white-space:nowrap;">{{ label }}</td>
+              <td style="padding:.5rem .4rem;color:var(--text);">{{ val }}</td>
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="ec-card mb-3">
+        <div class="ec-card-header"><span class="ec-card-title"><i class="fas fa-chart-bar me-2"></i>Email Engagement</span></div>
+        <div class="ec-card-body">
+          {% set stats = [
+            ('Total Sent', total_sent, '#3b82f6'),
+            ('Opened', total_opened, '#10b981'),
+            ('Replied', total_replied, '#06b6d4'),
+            ('Open Rate', open_rate|string + '%', '#8b5cf6'),
+          ] %}
+          {% for label, val, color in stats %}
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div style="width:36px;height:36px;border-radius:9px;background:{{ color }}22;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fas fa-envelope" style="font-size:.78rem;color:{{ color }};"></i>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:.76rem;color:var(--muted);">{{ label }}</div>
+              <div style="font-size:1.1rem;font-weight:800;color:var(--text);">{{ val }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% if campaigns %}
+      <div class="ec-card">
+        <div class="ec-card-header"><span class="ec-card-title"><i class="fas fa-bullhorn me-2"></i>Campaigns</span></div>
+        <div class="ec-card-body p-0">
+          {% for c in campaigns if c %}
+          <div class="px-3 py-2">
+            <div style="font-size:.84rem;font-weight:600;">{{ c.name }}</div>
+            <div style="font-size:.76rem;color:var(--muted);">{{ c.status|title }} · {{ c.emails_sent or 0 }} emails sent</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showTab(name, btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+function now(){ return new Date(); }
+</script>
+{% endblock %}

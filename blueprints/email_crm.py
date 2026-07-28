@@ -1076,6 +1076,193 @@ def toggle_automation(auto_id):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+# ── Firm Profile / Email Timeline ─────────────────────────────────────────────
+
+@email_crm_bp.route('/firm/<int:firm_id>')
+@require_super_admin
+def firm_profile(firm_id):
+    """Full firm email timeline — all emails, contacts, notes, tasks for a firm."""
+    firm = DirectoryLawFirm.query.get_or_404(firm_id)
+    counts = _folder_counts()
+
+    # All emails for this firm (chronological, newest first)
+    emails = OutreachMessage.query.filter_by(
+        firm_id=firm_id, is_deleted=False
+    ).order_by(desc(OutreachMessage.created_at)).all()
+
+    # Email stats for this firm
+    total_sent    = sum(1 for m in emails if m.status in ('sent','delivered','opened','clicked','replied'))
+    total_opened  = sum(1 for m in emails if m.status in ('opened','clicked','replied'))
+    total_replied = sum(1 for m in emails if m.status == 'replied')
+    open_rate = round(total_opened / total_sent * 100 if total_sent else 0, 0)
+
+    # Contacts
+    contacts = []
+    try:
+        rows = db.session.execute(
+            text("SELECT * FROM firm_contacts WHERE firm_id=:fid ORDER BY is_primary DESC, name"),
+            {"fid": firm_id}
+        ).fetchall()
+        contacts = [dict(r._mapping) for r in rows]
+    except Exception:
+        pass
+
+    # Notes from DirectoryNote if available
+    notes = []
+    try:
+        from models import DirectoryNote
+        notes = DirectoryNote.query.filter_by(firm_id=firm_id).order_by(
+            desc(DirectoryNote.created_at)).limit(20).all()
+    except Exception:
+        pass
+
+    # Tasks for this firm
+    tasks = []
+    try:
+        from models import LeadTask
+        tasks = LeadTask.query.filter_by(
+            firm_id=firm_id, completed=False
+        ).order_by(LeadTask.due_date.asc()).limit(10).all()
+    except Exception:
+        pass
+
+    # Recent campaigns this firm is associated with
+    campaigns = []
+    if firm.campaign_id:
+        try:
+            campaigns = [CrmCampaign.query.get(firm.campaign_id)]
+        except Exception:
+            pass
+
+    return render_template('email_crm/firm_profile.html',
+                           firm=firm, emails=emails, contacts=contacts,
+                           notes=notes, tasks=tasks, campaigns=campaigns,
+                           counts=counts, total_sent=total_sent,
+                           total_opened=total_opened, total_replied=total_replied,
+                           open_rate=int(open_rate))
+
+
+# ── Campaigns in Email CRM ─────────────────────────────────────────────────────
+
+@email_crm_bp.route('/campaigns')
+@require_super_admin
+def campaigns():
+    """Campaigns management within the Email CRM."""
+    counts = _folder_counts()
+    all_campaigns = CrmCampaign.query.order_by(desc(CrmCampaign.created_at)).all()
+
+    # Enrich each campaign with email stats
+    campaign_data = []
+    for c in all_campaigns:
+        sent    = OutreachMessage.query.filter_by(campaign_id=c.id).filter(
+            OutreachMessage.status.in_(['sent','delivered','opened','clicked','replied'])
+        ).count()
+        opened  = OutreachMessage.query.filter_by(campaign_id=c.id).filter(
+            OutreachMessage.status.in_(['opened','clicked','replied'])
+        ).count()
+        replied = OutreachMessage.query.filter_by(campaign_id=c.id, status='replied').count()
+        campaign_data.append({
+            'campaign': c,
+            'sent': sent,
+            'opened': opened,
+            'replied': replied,
+            'open_rate': round(opened / sent * 100 if sent else 0, 1),
+        })
+
+    return render_template('email_crm/campaigns.html',
+                           counts=counts, campaign_data=campaign_data)
+
+
+@email_crm_bp.route('/campaigns/create', methods=['POST'])
+@require_super_admin
+def create_campaign():
+    data = request.form
+    name = data.get('name', '').strip()
+    if not name:
+        flash('Campaign name is required.', 'error')
+        return redirect(url_for('email_crm.campaigns'))
+    c = CrmCampaign(
+        name=name,
+        description=data.get('description', ''),
+        target_country=data.get('target_country', ''),
+        target_practice_area=data.get('target_practice_area', ''),
+        status=data.get('status', 'draft'),
+        created_by_id=current_user.id,
+    )
+    db.session.add(c)
+    db.session.commit()
+    flash(f'Campaign "{name}" created.', 'success')
+    return redirect(url_for('email_crm.campaigns'))
+
+
+@email_crm_bp.route('/campaigns/<int:campaign_id>/toggle', methods=['POST'])
+@require_super_admin
+def toggle_campaign(campaign_id):
+    c = CrmCampaign.query.get_or_404(campaign_id)
+    c.status = 'active' if c.status == 'draft' else 'draft'
+    db.session.commit()
+    return jsonify({'success': True, 'status': c.status})
+
+
+@email_crm_bp.route('/campaigns/<int:campaign_id>/delete', methods=['POST'])
+@require_super_admin
+def delete_campaign(campaign_id):
+    c = CrmCampaign.query.get_or_404(campaign_id)
+    db.session.delete(c)
+    db.session.commit()
+    flash('Campaign deleted.', 'success')
+    return redirect(url_for('email_crm.campaigns'))
+
+
+# ── Scheduled email processor ──────────────────────────────────────────────────
+
+@email_crm_bp.route('/process-scheduled', methods=['POST'])
+@require_super_admin
+def process_scheduled():
+    """
+    Process any scheduled emails whose scheduled_at <= now.
+    Can be triggered manually or by a cron/scheduler.
+    """
+    now = datetime.now()
+    due = OutreachMessage.query.filter(
+        OutreachMessage.status == 'scheduled',
+        OutreachMessage.scheduled_at <= now,
+        OutreachMessage.is_deleted == False  # noqa: E712
+    ).all()
+
+    sent_count = 0
+    failed_count = 0
+    for msg in due:
+        firm = msg.firm
+        result = send_email(
+            to_email=msg.recipient_email,
+            subject=msg.subject,
+            body_html=msg.body,
+            tracking_token=msg.tracking_token,
+            base_url=_get_base_url(),
+            message_id=msg.id,
+        )
+        if result['success']:
+            msg.status = 'sent'
+            msg.sent_at = datetime.now()
+            msg.provider = result.get('provider', 'simulate')
+            msg.provider_message_id = result.get('provider_message_id')
+            if firm and firm.pipeline_stage in ('new', 'discovered', 'verified'):
+                firm.pipeline_stage = 'email_sent'
+            sent_count += 1
+        else:
+            msg.status = 'failed'
+            failed_count += 1
+
+    db.session.commit()
+    return jsonify({
+        'success': True,
+        'processed': len(due),
+        'sent': sent_count,
+        'failed': failed_count,
+    })
+
+
 # ── Search ─────────────────────────────────────────────────────────────────────
 
 @email_crm_bp.route('/search')

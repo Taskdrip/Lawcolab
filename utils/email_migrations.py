@@ -160,4 +160,198 @@ def run_email_migrations(db):
             db.session.rollback()
             logger.debug("Email migration skipped (likely already applied): %s", str(e)[:120])
 
+    # ── Seed default email templates (idempotent) ──────────────────────────────
+    _seed_default_templates(db)
+
     logger.info("Email CRM schema migrations complete.")
+
+
+def _seed_default_templates(db):
+    """Seed built-in email templates if the table is empty."""
+    try:
+        count = db.session.execute(text("SELECT COUNT(*) FROM email_templates")).scalar()
+        if count and count > 0:
+            return  # Already seeded
+
+        DEFAULT_TEMPLATES = [
+            # Welcome
+            {
+                "name": "Welcome — New Registration",
+                "category": "welcome",
+                "subject": "Welcome to LAWCOLAB, {{FirmName}}! 🎉",
+                "body_html": """<p>Dear {{ContactName}},</p>
+<p>Welcome to <strong>LAWCOLAB</strong> — your complete Legal Operating System.</p>
+<p>We're thrilled to have <strong>{{FirmName}}</strong> join our growing community of forward-thinking law firms across {{Country}}.</p>
+<p>Here's what you can do right now:</p>
+<ul>
+  <li>🏛️ Set up your firm profile and case management</li>
+  <li>💼 Invite your team members</li>
+  <li>📅 Sync your court calendar</li>
+  <li>💳 Start generating professional invoices</li>
+</ul>
+<p>Need help getting started? Our team is always available via WhatsApp: <strong>+2348036622568</strong></p>
+<p>Log in now: <a href="{{FreeTrialLink}}">{{FreeTrialLink}}</a></p>
+<p>Best regards,<br><strong>Abraham Tahbat</strong><br>Lawyer & Founder, LAWCOLAB</p>""",
+            },
+            # Onboarding
+            {
+                "name": "Onboarding — Day 3 Check-in",
+                "category": "onboarding",
+                "subject": "How is {{FirmName}} settling in with LAWCOLAB?",
+                "body_html": """<p>Dear {{ContactName}},</p>
+<p>It's been 3 days since {{FirmName}} joined LAWCOLAB. We hope you're finding your way around!</p>
+<p>A few tips to help you get more from the platform:</p>
+<ul>
+  <li>📂 Add your first case in the Case Management module</li>
+  <li>👥 Invite team members from the Admin panel</li>
+  <li>📄 Generate your first invoice and see how easy billing can be</li>
+</ul>
+<p>Is there anything you need help with? Simply reply to this email or WhatsApp us: +2348036622568</p>
+<p>Warm regards,<br><strong>{{SalesRep}}</strong><br>LAWCOLAB</p>""",
+            },
+            # Trial
+            {
+                "name": "Trial — Start Your Free Trial",
+                "category": "trial",
+                "subject": "Your Free LAWCOLAB Trial is Ready, {{FirmName}}",
+                "body_html": """<p>Good day,</p>
+<p>Your free LAWCOLAB trial is ready and waiting for <strong>{{FirmName}}</strong>.</p>
+<p>No credit card required. No setup fees. Just log in and explore:</p>
+<ul>
+  <li>✅ Full case management</li>
+  <li>✅ Invoice generation and tracking</li>
+  <li>✅ Client portal access</li>
+  <li>✅ Court calendar with smart reminders</li>
+  <li>✅ Law Firm Directory listing</li>
+</ul>
+<p>Start your trial now: <a href="{{FreeTrialLink}}">{{FreeTrialLink}}</a></p>
+<p>Best,<br><strong>{{SalesRep}}</strong><br>LAWCOLAB</p>""",
+            },
+            # Demo
+            {
+                "name": "Demo Invitation",
+                "category": "demo",
+                "subject": "You're Invited: Live LAWCOLAB Demo for {{FirmName}}",
+                "body_html": """<p>Dear {{ContactName}},</p>
+<p>I'd love to give <strong>{{FirmName}}</strong> a personalised live demo of LAWCOLAB — just 20 minutes and you'll see exactly how it can transform your practice.</p>
+<p>We'll walk through:</p>
+<ul>
+  <li>📁 Case management tailored for {{PracticeArea}} firms</li>
+  <li>💳 Automatic invoice generation and payment tracking</li>
+  <li>🏛️ Your firm's public directory listing (like Google My Business for lawyers)</li>
+  <li>📊 Real-time analytics and team performance reports</li>
+</ul>
+<p>Book a time that works for you: <a href="{{DemoBookingLink}}">{{DemoBookingLink}}</a></p>
+<p>See you there!<br><strong>{{SalesRep}}</strong><br>LAWCOLAB</p>""",
+            },
+            # Cold outreach
+            {
+                "name": "Cold Outreach — Nigeria",
+                "category": "sales",
+                "subject": "Streamline {{FirmName}} with LAWCOLAB — Free Trial Inside",
+                "body_html": """<p>Good day,</p>
+<p>My name is Abraham Tahbat — a lawyer and software developer with 15+ years building technology for legal professionals.</p>
+<p>I came across <strong>{{FirmName}}</strong> while researching law firms in {{City}}, and I wanted to introduce LAWCOLAB — a complete Legal Operating System built specifically for Nigerian law firms.</p>
+<p>LAWCOLAB helps you:</p>
+<ul>
+  <li>🗂️ Manage all cases, clients, and documents in one organised hub</li>
+  <li>💰 Generate and track invoices — get paid faster</li>
+  <li>📅 Never miss a court date with smart calendar alerts</li>
+  <li>👤 Give clients 24/7 secure access to their case updates</li>
+  <li>🌐 Get your firm listed on our public law firm directory</li>
+</ul>
+<p>We'd like to give {{FirmName}} <strong>free access</strong> to test the platform for 30 days.</p>
+<p>Start here: <a href="{{FreeTrialLink}}">{{FreeTrialLink}}</a></p>
+<p>Best regards,<br><strong>Abraham Tahbat</strong><br>Lawyer & Software Developer, LAWCOLAB<br>WhatsApp: +2348036622568</p>""",
+            },
+            # Follow-up
+            {
+                "name": "Follow-up #1 — After Cold Email",
+                "category": "follow_up",
+                "subject": "Following Up — LAWCOLAB Free Trial for {{FirmName}}",
+                "body_html": """<p>Good day,</p>
+<p>I wanted to follow up on my earlier email about LAWCOLAB — I know inboxes get busy!</p>
+<p><strong>{{FirmName}}</strong> is exactly the type of firm that gets the most from our platform.</p>
+<p>Would you have 15 minutes this week for a quick demo? I can show you exactly how we help {{PracticeArea}} firms in {{City}} work more efficiently.</p>
+<p>Book directly: <a href="{{DemoBookingLink}}">{{DemoBookingLink}}</a></p>
+<p>Or simply reply with "YES" and I'll reach out to arrange a call.</p>
+<p>Warm regards,<br><strong>{{SalesRep}}</strong><br>LAWCOLAB</p>""",
+            },
+            # Follow-up 2
+            {
+                "name": "Follow-up #2 — Final Attempt",
+                "category": "follow_up",
+                "subject": "Last note — LAWCOLAB for {{FirmName}}",
+                "body_html": """<p>Good day,</p>
+<p>I'll keep this brief — this is my last email to you about LAWCOLAB unless you'd like to hear more.</p>
+<p>If now isn't the right time for {{FirmName}}, I completely understand. If you'd ever like to revisit, you can reach me anytime on WhatsApp: +2348036622568</p>
+<p>If you ARE interested, here's the link to get started for free: <a href="{{FreeTrialLink}}">{{FreeTrialLink}}</a></p>
+<p>Wishing {{FirmName}} continued success!</p>
+<p>Best,<br><strong>{{SalesRep}}</strong><br>LAWCOLAB</p>""",
+            },
+            # Support
+            {
+                "name": "Support — How Can We Help?",
+                "category": "support",
+                "subject": "How can we help {{FirmName}} today?",
+                "body_html": """<p>Dear {{ContactName}},</p>
+<p>I hope everything is going well at {{FirmName}}.</p>
+<p>I noticed you've been using LAWCOLAB for a while and I wanted to check in — is there anything we can help you with?</p>
+<p>Whether it's a technical question, a feature request, or anything else, our team is here for you:</p>
+<ul>
+  <li>📧 Email: support@lawcolab.com</li>
+  <li>💬 WhatsApp: +2348036622568</li>
+  <li>🌐 Help Center: {{FreeTrialLink}}</li>
+</ul>
+<p>We're committed to making sure {{FirmName}} gets the most out of LAWCOLAB.</p>
+<p>Best,<br><strong>{{SalesRep}}</strong><br>LAWCOLAB Support</p>""",
+            },
+            # Renewal
+            {
+                "name": "Renewal — Subscription Renewal Reminder",
+                "category": "renewal",
+                "subject": "Your LAWCOLAB subscription is coming up for renewal, {{FirmName}}",
+                "body_html": """<p>Dear {{ContactName}},</p>
+<p>Your LAWCOLAB subscription for <strong>{{FirmName}}</strong> is coming up for renewal.</p>
+<p>We value having you as part of our community. Renew now to continue uninterrupted access to:</p>
+<ul>
+  <li>✅ Full case and client management</li>
+  <li>✅ Invoicing and payment tracking</li>
+  <li>✅ Court calendar and deadline alerts</li>
+  <li>✅ Client portal and document sharing</li>
+  <li>✅ Law Firm Directory listing</li>
+</ul>
+<p>Renew here: <a href="{{FreeTrialLink}}">{{FreeTrialLink}}</a></p>
+<p>Any questions? WhatsApp us: +2348036622568</p>
+<p>Best,<br><strong>{{SalesRep}}</strong><br>LAWCOLAB</p>""",
+            },
+            # Re-engagement
+            {
+                "name": "Re-engagement — We Miss {{FirmName}}",
+                "category": "follow_up",
+                "subject": "We'd love to reconnect with {{FirmName}} — LAWCOLAB",
+                "body_html": """<p>Good day,</p>
+<p>We noticed it's been a while since we last connected with {{FirmName}}, and we wanted to reach out.</p>
+<p>Since we last spoke, LAWCOLAB has added some exciting features that are particularly useful for {{PracticeArea}} firms in {{City}}:</p>
+<ul>
+  <li>🆕 Enhanced Law Firm Directory with client reviews</li>
+  <li>🆕 AI-powered case analytics</li>
+  <li>🆕 Improved billing and payment tracking</li>
+  <li>🆕 Multi-team collaboration tools</li>
+</ul>
+<p>We'd love to show you what's new. Book a 15-minute demo: <a href="{{DemoBookingLink}}">{{DemoBookingLink}}</a></p>
+<p>Or explore the updates yourself: <a href="{{FreeTrialLink}}">{{FreeTrialLink}}</a></p>
+<p>Best,<br><strong>{{SalesRep}}</strong><br>LAWCOLAB</p>""",
+            },
+        ]
+
+        for t in DEFAULT_TEMPLATES:
+            db.session.execute(text("""
+                INSERT INTO email_templates (name, category, subject, body_html, is_active, use_count, created_at, updated_at)
+                VALUES (:name, :cat, :subj, :body, TRUE, 0, NOW(), NOW())
+            """), dict(name=t['name'], cat=t['category'], subj=t['subject'], body=t['body_html']))
+        db.session.commit()
+        logger.info("Email CRM: seeded %d default templates.", len(DEFAULT_TEMPLATES))
+    except Exception as e:
+        db.session.rollback()
+        logger.debug("Email template seed skipped: %s", str(e)[:120])
