@@ -1,42 +1,35 @@
-# LawFirmOS / LawColab
+# LawCoLab (LawFirmOS)
 
-A full-stack law firm management SaaS platform built with Python Flask.
+A full-stack web application for law firms — client management, case tracking, billing, team collaboration, calendar, and analytics.
 
 ## Stack
-- **Backend**: Flask + SQLAlchemy (PostgreSQL in production, falls back to SQLite for dev)
-- **Auth**: Flask-Login, Flask-Dance (OAuth)
-- **Payments**: Manual bank transfer (Zenith Bank NGN) + crypto (USDT multi-network)
-- **Run server**: Gunicorn (`gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app`)
+- **Backend:** Python / Flask
+- **Database:** SQLite (dev) / PostgreSQL (production via `DATABASE_URL`)
+- **Auth:** Flask-Login with session cookies; Flask-Dance for OAuth
+- **PDF generation:** WeasyPrint + ReportLab
+- **Frontend:** Jinja2 templates, Bootstrap
 
-## How to run
-The workflow `Start application` is configured and runs automatically.
-Requires `SESSION_SECRET` environment variable (already set).
-Optionally set `DATABASE_URL` for PostgreSQL (otherwise SQLite is used in dev).
+## Running the app
+```
+gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app
+```
+The workflow "Start application" is already configured.
 
-## Key routes
-- `/` — Landing page
-- `/pricing` — Subscription plans (geo-aware NGN pricing for Nigerian visitors)
-- `/sales/popup` — Sales funnel popup
-- `/sales/checkout` — Stripe-style checkout (requires session from lead form)
-- `/auth/login`, `/auth/signup` — Authentication
-- `/dashboard` — Main app dashboard (requires login)
+## Environment variables
+| Variable | Required | Notes |
+|---|---|---|
+| `SESSION_SECRET` | Yes (prod) | Flask session signing key |
+| `DATABASE_URL` | No | PostgreSQL URL; defaults to SQLite if unset |
+| `SUPER_ADMIN_EMAIL` | No | Auto-creates super admin on first deploy |
+| `SUPER_ADMIN_PASSWORD` | No | Paired with `SUPER_ADMIN_EMAIL` |
 
-## Payment setup
-- **Bank transfer**: Zenith Bank · Lawcolab Global · Account `1310505179` (NGN)
-- **Geo-detection**: Nigerian IPs automatically shown NGN prices via `/sales/api/currency-settings`
-- **August discount**: 40% off all NGN prices throughout August for Nigerian law firms (auto-applied)
-- Crypto wallets and additional payment gateways configurable by super admin
-
-## Project structure
-- `app.py` — Flask app factory, DB setup, context processors
-- `main.py` — Entry point
-- `routes.py` — Blueprint registration
-- `models.py` — Core models (User, LawFirm, Cases, PopupSettings…)
-- `models_payment.py` / `models_payment_custom.py` — Payment models
-- `blueprints/` — Feature blueprints (sales, auth, dashboard, admin, invoices…)
-- `templates/` — Jinja2 templates
+## Key entry points
+- `main.py` — WSGI entry; imports `app` and all routes
+- `app.py` — Flask app factory, DB setup, migrations
+- `routes/` — route blueprints
+- `models/` — SQLAlchemy models
+- `templates/` — Jinja2 HTML templates
+- `utils/` — decorators, forms, migrations helpers
 
 ## User preferences
-- Naira (NGN) bank transfer: Zenith Bank, Lawcolab Global, account 1310505179
-- 40% August discount for Nigerian law firms (month == 8, currency == NGN)
-- Checkout should look clean and minimal like Stripe
+<!-- Add user preferences here -->
