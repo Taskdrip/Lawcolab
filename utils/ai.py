@@ -57,6 +57,32 @@ def _call_groq(prompt: str, json_response: bool = True, max_tokens: int = 700, t
     return None
 
 
+# ─── Shared brand voice constants ────────────────────────────────────────────
+
+_SENDER = "Abraham Tahbat"
+_WA     = "+2348036622568"
+_URL    = "https://lawcolab.com"
+
+_FEATURES_BLOCK = """LAWCOLAB features:
+• Case & Matter Management — every case, document, and deadline in one organised hub
+• Client Portal — clients get 24/7 secure online access to their case updates & invoices
+• Billing & Invoicing — generate professional invoices instantly, track every payment
+• Court Calendar & Deadline Alerts — automated reminders so no hearing date is ever missed
+• Team Collaboration — task assignment, internal messaging, and document sharing
+• Analytics Dashboard — real-time revenue, case load, and performance insights at a glance
+• Client Acquisition Tools — digital intake forms, referral tracking, and lead management
+• Smart Business Directory — firm listed globally; clients search by practice area & location
+• Custom Feature Development — our in-house dev team builds features on request at no extra cost
+• Fully Mobile — works on any device, anywhere"""
+
+_BRAND_CONTEXT = f"""LAWCOLAB Brand Context:
+- Sender: {_SENDER} — a lawyer and web developer with 15+ years building SaaS platforms
+- Product: LAWCOLAB — a complete Legal Operating System for law firms and legal practitioners
+- Mission: Help African law firms run like world-class businesses
+- Web App: {_URL}  (free trial access provided)
+- WhatsApp: {_WA}"""
+
+
 # ─── Law Firm Outreach ────────────────────────────────────────────────────────
 
 def generate_firm_outreach(firm, channel: str, msg_type: str) -> dict:
@@ -78,32 +104,39 @@ def generate_firm_outreach(firm, channel: str, msg_type: str) -> dict:
 
     channel_label = {
         "email":    "professional email",
-        "whatsapp": "short friendly WhatsApp message (max 3 lines)",
+        "whatsapp": "short WhatsApp message (max 5 lines, warm and human)",
         "linkedin": "LinkedIn connection note (max 300 chars)",
         "sms":      "brief SMS (max 160 chars)",
     }.get(channel, "email")
 
-    prompt = f"""You are a professional sales copywriter for LAWCOLAB, a modern legal practice management platform for African law firms.
+    prompt = f"""You are writing on behalf of {_SENDER} for LAWCOLAB.
 
-Write a highly personalized {type_label} {channel_label} for this law firm:
+{_BRAND_CONTEXT}
+
+{_FEATURES_BLOCK}
+
+Write a {type_label} {channel_label} to this law firm:
 - Firm Name: {firm.name}
 - Location: {city}
 - Practice Areas: {areas}
-- Website: {firm.website or 'not available'}
+- Website: {firm.website or 'none'}
 - Description: {(firm.description or '')[:200]}
 
-LAWCOLAB offers: client management, case tracking, billing, court calendar, team collaboration, analytics, client portal, custom feature development.
+Strict rules:
+1. Open with "Good day" — warm, human, never robotic
+2. {_SENDER} introduces himself as a lawyer AND web developer with 15+ years of SaaS experience
+3. Mention specifically how we discovered their firm (Google Maps / public legal directory / online research in {city})
+4. Name 2-3 real pain points law firms and legal practitioners face daily
+5. Present LAWCOLAB as the solution — mention the Smart Business Directory (clients find them globally by practice area & location)
+6. Tell them we've granted them FREE access to test the platform at {_URL}
+7. Invite them to suggest any features they'd like — our dev team builds on request
+8. Close with WhatsApp: {_WA} and website: {_URL}
+9. Sign off as "{_SENDER} — Lawyer & Software Developer, LAWCOLAB"
+10. Be brief, captivating, personal — NOT generic or spammy. Max 300 words for email, 5 lines for WhatsApp.
 
-Rules:
-- Sound personal and research-based, NOT generic
-- Reference their specific practice areas and location naturally
-- Keep it concise and professional
-- End with a clear, low-friction CTA linking to https://lawcolab.com
-- Do NOT use placeholder text like [Name]
+Return JSON with exactly two keys: "subject" (for email, empty string for others) and "body"."""
 
-Return a JSON object with exactly two keys: "subject" (for email, empty string for others) and "body"."""
-
-    content = _call_groq(prompt, json_response=True, max_tokens=600, temperature=0.8)
+    content = _call_groq(prompt, json_response=True, max_tokens=700, temperature=0.8)
     if content:
         try:
             return json.loads(content)
@@ -114,63 +147,89 @@ Return a JSON object with exactly two keys: "subject" (for email, empty string f
 
 
 def _template_firm_message(firm, channel: str, msg_type: str) -> dict:
-    """Smart template fallback for firm outreach."""
+    """Fallback template — Abraham Tahbat's personal voice."""
     areas = ", ".join(firm.practice_areas[:3]) if firm.practice_areas else "legal practice"
     city  = firm.city or firm.country or "your area"
     name  = firm.name
 
-    if channel == "email" and msg_type == "cold_outreach":
-        return {
-            "subject": f"Helping {name} Run Like a World-Class Firm",
-            "body": f"""Dear {name} Team,
-
-I came across {name} while researching leading law firms in {city} — your expertise in {areas} caught our attention.
-
-My name is [Your Name] from LAWCOLAB — a Legal Operating System built specifically for law firms like yours.
-
-Here is what LAWCOLAB can do for {name}:
-• Case & Matter Management — every case, deadline, and document in one place
-• Client Portal — clients get 24/7 secure access to their case updates
-• Billing & Invoicing — instant invoice generation with payment tracking
-• Court Calendar — never miss a hearing with smart deadline alerts
-• Analytics Dashboard — firm performance and revenue at a glance
-
-Whether {name} already has existing tools or is starting fresh, LAWCOLAB integrates seamlessly with your current setup — no disruption to your practice.
-
-I'd love to offer you a free 20-minute demo. No commitment required.
-
-Would you be available for a quick call this week?
-
-Best regards,
-[Your Name]
-LAWCOLAB Growth Team
-https://lawcolab.com""",
-        }
-    elif channel == "whatsapp":
+    if channel == "whatsapp":
         return {
             "subject": "",
-            "body": f"Hi {name} Team! 👋 I came across your firm in {city} and wanted to share LAWCOLAB — a platform built for law firms to manage clients, cases, and billing in one place. Would you be open to a quick 20-min demo? 🙏 https://lawcolab.com",
+            "body": (
+                f"Good day {name} Team 👋\n\n"
+                f"I'm Abraham Tahbat — a lawyer & web developer. I came across your firm while researching {areas} practices in {city}.\n\n"
+                f"I built LAWCOLAB to solve the exact problems most law firms face — juggling cases, chasing payments, missing court dates, and losing clients to disorganisation.\n\n"
+                f"We've given your firm free access to test the platform → {_URL}\n\n"
+                f"It includes case management, billing, a client portal, court calendar, team tools, analytics, and a Smart Business Directory that puts your firm in front of clients searching by practice area globally.\n\n"
+                f"Try it and let me know what features you'd like added — our dev team builds on request.\n\n"
+                f"Reach me on WhatsApp: {_WA}"
+            ),
         }
-    elif msg_type == "follow_up":
+
+    if msg_type == "follow_up":
         return {
-            "subject": f"Following up — LAWCOLAB for {name}",
-            "body": f"""Dear {name} Team,
-
-I wanted to follow up on my previous message about LAWCOLAB.
-
-Many {areas} firms in {city} are already using our platform to streamline their operations and serve more clients.
-
-I'd still love to show you what LAWCOLAB can do for {name} — it only takes 20 minutes.
-
-Best regards,
-LAWCOLAB Growth Team
-https://lawcolab.com""",
+            "subject": f"Following up — Free LAWCOLAB Access for {name}",
+            "body": (
+                f"Good day {name} Team,\n\n"
+                f"I'm following up on my earlier message about LAWCOLAB.\n\n"
+                f"Your free access is still active at {_URL} — I'd love to hear your thoughts once you've had a chance to explore the platform.\n\n"
+                f"Most {areas} firms we've spoken with in {city} are dealing with the same three challenges: scattered case files, slow invoicing, and no system to track which clients are following up. LAWCOLAB solves all three in one place.\n\n"
+                f"If there's a feature you'd like to see built specifically for your firm, just let us know — our dev team handles that.\n\n"
+                f"WhatsApp: {_WA} | Web: {_URL}\n\n"
+                f"Best regards,\n{_SENDER}\nLawyer & Software Developer — LAWCOLAB"
+            ),
         }
-    else:
+
+    if msg_type == "second_followup":
         return {
-            "subject": f"LAWCOLAB — Built for {name}",
-            "body": f"Dear {name} Team,\n\nI'd love to show you how LAWCOLAB can help your firm in {city} manage cases, clients, and billing more efficiently.\n\nBest regards,\nLAWCOLAB Growth Team\nhttps://lawcolab.com",
+            "subject": f"Last note — LAWCOLAB for {name}",
+            "body": (
+                f"Good day {name} Team,\n\n"
+                f"I'll keep this brief — I've reached out a couple of times about LAWCOLAB and I don't want to intrude.\n\n"
+                f"If the timing hasn't been right, your free access is still live at {_URL} whenever you're ready.\n\n"
+                f"If there's something specific holding you back, I'm happy to address it directly — even if it's just a 5-minute WhatsApp chat.\n\n"
+                f"WhatsApp: {_WA}\n\n"
+                f"Either way, wishing {name} continued success.\n\n"
+                f"Warm regards,\n{_SENDER} — LAWCOLAB"
+            ),
         }
+
+    # Default: cold outreach email
+    web_note = (
+        f"I also noticed {name} doesn't yet have a dedicated website. "
+        f"LAWCOLAB includes a public firm profile and client portal — your professional digital presence, built in."
+        if not firm.has_website else ""
+    )
+
+    return {
+        "subject": f"Good day {name} — Free Access to LAWCOLAB for Your Firm",
+        "body": (
+            f"Good day {name} Team,\n\n"
+            f"My name is Abraham Tahbat — I am both a lawyer and a web developer with over 15 years of experience building SaaS platforms. "
+            f"I discovered {name} while researching {areas} firms in {city} through Google Maps and public legal directories, and I wanted to reach out personally.\n\n"
+            f"I've seen first-hand the challenges law firms and legal practitioners face every day: cases managed on spreadsheets, invoices sent on WhatsApp, court dates tracked in notebooks, and clients left wondering about their case status. "
+            f"These problems cost firms hours every week — and clients.\n\n"
+            f"That's exactly why I built LAWCOLAB — a complete Legal Operating System designed to help firms like {name} run like world-class businesses:\n\n"
+            f"• Case & Matter Management — every file, document, and deadline in one place\n"
+            f"• Client Portal — clients check case updates 24/7, reducing phone calls\n"
+            f"• Billing & Invoicing — generate and track invoices in seconds\n"
+            f"• Court Calendar — automated alerts so no hearing date is missed\n"
+            f"• Team Collaboration — tasks, messaging, and documents shared securely\n"
+            f"• Analytics Dashboard — revenue and performance insights at a glance\n"
+            f"• Smart Business Directory — your firm listed globally; clients find you by practice area and location\n"
+            f"• Custom Features — tell us what you need, our dev team builds it\n"
+            f"{('• ' + web_note + chr(10)) if web_note else ''}\n"
+            f"I've gone ahead and set up free access for {name} — you can log in and explore the full platform right now:\n"
+            f"👉 {_URL}\n\n"
+            f"Have a look, and tell us what additional features would make LAWCOLAB perfect for your firm. We integrate any suggestion.\n\n"
+            f"You can reach me directly on WhatsApp: {_WA}\n\n"
+            f"Looking forward to helping {name} serve more clients and grow.\n\n"
+            f"Warm regards,\n"
+            f"Abraham Tahbat\n"
+            f"Lawyer & Software Developer\n"
+            f"LAWCOLAB — {_URL}"
+        ),
+    }
 
 
 # ─── Law Firm AI Pitch & Call Script ─────────────────────────────────────────
@@ -180,198 +239,228 @@ def generate_firm_pitch(firm) -> tuple[dict, str]:
     Generate AI email pitch + phone call script for a directory firm.
     Returns (email_dict, call_script_str).
     """
-    areas     = ", ".join(firm.practice_areas[:4]) if firm.practice_areas else "legal practice"
-    city      = firm.city or firm.country or "your area"
-    has_web   = "Yes" if firm.has_website else "No (no existing website)"
-    gmb_status = "Verified GMB listing" if firm.gmb_verified else "Unverified GMB listing"
-    reviews   = (f"{firm.google_reviews_count} Google reviews, {firm.google_rating}★"
-                 if firm.google_rating else "no Google rating found")
-    no_web_line = (
-        "\n\nI also noticed your firm doesn't yet have a dedicated website — LAWCOLAB "
-        "includes a built-in client portal and public profile page, giving you a professional "
-        "digital presence from day one." if not firm.has_website else ""
+    areas      = ", ".join(firm.practice_areas[:4]) if firm.practice_areas else "legal practice"
+    city       = firm.city or firm.country or "your area"
+    state      = firm.state or ""
+    country    = firm.country or "Nigeria"
+    has_web    = firm.has_website
+    gmb_status = "Verified GMB" if firm.gmb_verified else "Unverified GMB"
+    reviews    = (f"{firm.google_reviews_count} Google reviews, {firm.google_rating}★"
+                  if firm.google_rating else "no Google reviews found")
+
+    no_web_note = (
+        "Note: this firm has NO website — emphasise that LAWCOLAB gives them an instant "
+        "professional public profile and client portal, their digital front door."
+        if not has_web else
+        "Note: this firm has a website — emphasise that LAWCOLAB works alongside it, not replacing it."
     )
-    unverified_line = (
-        "\n\nI noticed your Google Maps listing appears unverified — LAWCOLAB helps your firm "
-        "look polished and credible online, which directly impacts how potential clients find you."
+    gmb_note = (
+        "Note: Google Maps listing is UNVERIFIED — mention that LAWCOLAB's Smart Directory listing "
+        "boosts their online credibility and client discoverability."
         if not firm.gmb_verified else ""
     )
 
-    features = """LAWCOLAB features:
-• Case & Matter Management — track every case, deadline, and document
-• Client Portal — clients get 24/7 secure online access to their case updates
-• Billing & Invoicing — instant invoice generation, payment tracking, receipts
-• Court Calendar — deadline reminders, hearing alerts, court date history
-• Team Collaboration — task assignment, internal messaging, document sharing
-• Analytics Dashboard — firm performance, revenue, case statistics at a glance
-• Client Acquisition Tools — digital intake forms, referral tracking, leads
-• Custom Feature Development — our developer team builds features on request
-• Mobile-Friendly — works on any device, anywhere"""
+    # ── Email pitch ───────────────────────────────────────────────────
+    email_prompt = f"""You are writing on behalf of {_SENDER} for LAWCOLAB.
 
-    # Email pitch
-    email_prompt = f"""You are a top legal software sales writer for LAWCOLAB.
+{_BRAND_CONTEXT}
 
-Write a personalized cold-outreach email to this law firm to pitch LAWCOLAB:
+{_FEATURES_BLOCK}
+
+Write a highly personalized cold-outreach pitch EMAIL to this law firm:
 - Firm: {firm.name}
-- Location: {city}, {firm.state or ''}, {firm.country or 'Nigeria'}
+- Location: {city}, {state}, {country}
 - Practice Areas: {areas}
-- Website: {has_web}
-- Google Maps status: {gmb_status}
-- Google presence: {reviews}
+- Website: {"exists" if has_web else "NONE"}
+- Google Maps: {gmb_status} — {reviews}
+- {no_web_note}
+{gmb_note}
 
-{features}
-
-Email structure:
-1. Warm, specific greeting referencing how you found them (Google Maps / directory, mention their location/speciality)
-2. Brief intro of LAWCOLAB as a Legal Operating System
-3. List 4-5 features most relevant to their practice area
-4. Emphasize: works WITH or WITHOUT their existing website / current systems
-5. Highlight: our developer team readily adds new custom features for their firm
-6. Emphasize how LAWCOLAB helps them acquire more clients and grow revenue
-7. Clear CTA: free trial / 20-min demo call at https://lawcolab.com
-8. Professional sign-off from "LAWCOLAB Growth Team"
+Exact structure to follow:
+1. GREETING — "Good day [Firm Name] Team," — warm and human
+2. DISCOVERY — {_SENDER} explains he discovered them while researching {areas} firms in {city} via Google Maps & public legal directories
+3. INTRO — {_SENDER} introduces himself: lawyer AND web developer, 15+ years building SaaS platforms; built LAWCOLAB from lived experience of the legal industry
+4. PROBLEM — 2-3 specific daily pain points law firms and legal practitioners face (case chaos, invoice delays, missed court dates, zero online visibility, slow client communication)
+5. SOLUTION — LAWCOLAB solves all of this; list ALL features including the Smart Business Directory (clients find them globally by practice area & location)
+6. FREE ACCESS — tell them we've granted free access to test the full platform at {_URL}
+7. CUSTOM FEATURES — invite them to suggest any features they'd like built; our dev team delivers
+8. CTA — WhatsApp {_WA} and website {_URL}
+9. SIGN-OFF — "{_SENDER} | Lawyer & Software Developer — LAWCOLAB"
 
 Rules:
-- Sound personal and research-based, never generic or spammy
-- Concise and professional: 250-350 words max
+- Max 320 words. Brief, captivating, personal — never generic or corporate.
+- Use bullet points for the features section only
+- No placeholder text like [Name] — write it ready to send
 
 Return JSON: {{"subject": "...", "body": "..."}}"""
 
-    email_content = _call_groq(email_prompt, json_response=True, max_tokens=700, temperature=0.82)
+    email_content = _call_groq(email_prompt, json_response=True, max_tokens=800, temperature=0.8)
+    email_result = None
     if email_content:
         try:
             email_result = json.loads(email_content)
         except Exception:
-            email_result = None
-    else:
-        email_result = None
+            pass
 
-    # Call script
-    call_prompt = f"""You are a legal software sales trainer for LAWCOLAB.
+    # ── Call script ───────────────────────────────────────────────────
+    call_prompt = f"""You are writing a phone call script on behalf of {_SENDER} for LAWCOLAB.
 
-Write a complete phone call script for calling this law firm:
+{_BRAND_CONTEXT}
+
+{_FEATURES_BLOCK}
+
+Write a complete, ready-to-use phone call script for this law firm:
 - Firm: {firm.name}
-- Location: {city}, {firm.state or ''}, {firm.country or 'Nigeria'}
+- Location: {city}, {state}, {country}
 - Practice Areas: {areas}
-- Website: {has_web}
-- Google status: {gmb_status} — {reviews}
+- Website: {"exists" if has_web else "NONE — highlight free public profile"}
+- Google Maps: {gmb_status} — {reviews}
 
-{features}
+Script sections (use bold headers):
+1. OPENING — "Good day, may I speak with the managing partner or firm administrator?"
+   When connected: {_SENDER} introduces himself as a lawyer & web developer calling from LAWCOLAB; mentions he found their firm on Google Maps while researching {areas} firms in {city}
+2. PERMISSION — "Do you have just two minutes? I promise this is relevant to your firm."
+3. PROBLEM — 3 specific pains most {areas} firms in {city} deal with daily
+4. SOLUTION — LAWCOLAB as a Legal Operating System; highlight Smart Business Directory (clients find them globally)
+5. KEY FEATURES — 4 features most relevant to {areas}
+6. FREE ACCESS — "I've already set up free access for {firm.name} at {_URL} — please test it today"
+7. CUSTOM DEVELOPMENT — "Whatever feature you need, tell us — our dev team builds it at no extra cost"
+8. CTA — Invite them to WhatsApp {_WA} or visit {_URL}
+9. OBJECTION HANDLERS — 3 objections with sharp, confident responses
+10. CLOSING — Confirm next step, leave WhatsApp number {_WA}
 
-Script structure (use clear headers):
-1. OPENING — Warm greeting, introduce yourself as "from LAWCOLAB team"
-2. PERMISSION CHECK — Ask if they have 2 minutes
-3. PROBLEM STATEMENT — Pain most law firms in {city} face
-4. SOLUTION INTRO — LAWCOLAB as a legal operating system for African law firms
-5. KEY FEATURES — 3-4 features most relevant to {areas}
-6. WEBSITE BRIDGE — LAWCOLAB works with or without their current website
-7. CUSTOM DEVELOPMENT — Mention our developer team
-8. CTA — Offer a free 20-minute screen-share demo
-9. OBJECTION HANDLERS — 3 common objections with confident responses
-10. CLOSING — Thank them, confirm next step, share https://lawcolab.com
+Use [PAUSE], [LISTEN], [SMILE] stage directions. Ready-to-read script, professional tone."""
 
-Use [PAUSE], [LISTEN], [SMILE] stage directions where helpful."""
-
-    call_content = _call_groq(call_prompt, json_response=False, max_tokens=900, temperature=0.75)
+    call_content = _call_groq(call_prompt, json_response=False, max_tokens=1000, temperature=0.75)
 
     if not email_result:
-        email_result, fallback_call = _template_pitch(firm, areas, city, has_web, gmb_status, no_web_line, unverified_line)
+        email_result, fallback_call = _template_pitch(firm, areas, city, has_web, gmb_status)
         if not call_content:
             call_content = fallback_call
     elif not call_content:
-        _, fallback_call = _template_pitch(firm, areas, city, has_web, gmb_status, no_web_line, unverified_line)
+        _, fallback_call = _template_pitch(firm, areas, city, has_web, gmb_status)
         call_content = fallback_call
 
     return email_result, call_content
 
 
-def _template_pitch(firm, areas, city, has_web, gmb_status, no_web_line="", unverified_line=""):
-    """Fallback template pitch when Groq is not configured."""
+def _template_pitch(firm, areas, city, has_web, gmb_status):
+    """Fallback pitch template — Abraham Tahbat personal voice."""
     name = firm.name
-    if firm.has_website:
-        web_bridge = f"'Even though you already have a website — LAWCOLAB integrates alongside it, adding the backend systems your firm needs to operate efficiently.'"
-    else:
-        web_bridge = f"'I also noticed {name} doesn't yet have a dedicated website. LAWCOLAB includes a built-in public profile page and client portal — giving your firm a professional digital presence from day one.'"
-
-    email_body = f"""Dear {name} Team,
-
-I came across {name} while researching law firms in {city} on Google Maps and public directories — your reputation in {areas} caught my attention.
-
-My name is [Your Name] from the LAWCOLAB team. We've built LAWCOLAB — a modern Legal Operating System designed specifically for law firms like yours to run like world-class businesses.
-
-Here's what LAWCOLAB can do for {name}:
-• 📁 Case Management — track every matter, deadline, and document in one place
-• 👥 Client Portal — clients get 24/7 secure online access to their case updates
-• 💰 Billing & Invoicing — generate invoices instantly, track every payment
-• 📅 Court Calendar — never miss a hearing with smart deadline alerts
-• 📊 Analytics — know your firm's revenue and performance at a glance
-{no_web_line}{unverified_line}
-
-Whether {name} already has an existing website and tools or is starting fresh, LAWCOLAB integrates seamlessly with your current setup — no disruption to your practice.
-
-I'd love to offer you a free 20-minute demo. No commitment required.
-
-Would you be available for a quick call this week?
-
-Best regards,
-[Your Name]
-LAWCOLAB Growth Team
-https://lawcolab.com"""
-
     _div = "─" * 60
-    call_script = f"""LAWCOLAB CALL SCRIPT — {name}
-Location: {city} | Practice: {areas} | {gmb_status}
-{_div}
 
-1. OPENING
-"Good [morning/afternoon], may I please speak with the managing partner or firm administrator at {name}?"
-[When connected]
-"Hello, my name is [Your Name] calling from LAWCOLAB. I came across {name} on Google Maps while researching leading law firms in {city} — particularly in {areas}. I have a very quick question if you have two minutes?"
-[PAUSE] [LISTEN]
+    web_note = (
+        f"I also noticed {name} doesn't yet have a dedicated website. "
+        f"LAWCOLAB gives you an instant professional public profile and client portal — "
+        f"your digital front door, built in from day one."
+    ) if not has_web else (
+        f"LAWCOLAB works seamlessly alongside your existing website — "
+        f"adding the backend systems and Smart Directory listing your firm needs to grow."
+    )
 
-2. PERMISSION CHECK
-"I promise to be brief. Is now a good time for just two minutes?"
-[If YES → continue. If NO → "No problem at all — when would be a better time to call back?"]
+    email_body = (
+        f"Good day {name} Team,\n\n"
+        f"My name is Abraham Tahbat — I am both a lawyer and a web developer with over 15 years "
+        f"of experience building SaaS web applications. I came across {name} while researching "
+        f"{areas} firms in {city} through Google Maps and public legal directories, and I wanted "
+        f"to reach out personally.\n\n"
+        f"After years in legal practice, I understand the daily challenges law firms face: "
+        f"cases scattered across notebooks and WhatsApp threads, invoices delayed or forgotten, "
+        f"court dates missed, and potential clients unable to find you online. These problems "
+        f"don't just cost time — they cost revenue and reputation.\n\n"
+        f"I built LAWCOLAB to eliminate all of that:\n\n"
+        f"• 📁 Case & Matter Management — every file, deadline, and document in one hub\n"
+        f"• 👥 Client Portal — clients check case updates 24/7, reducing phone calls by 60%\n"
+        f"• 💰 Billing & Invoicing — generate professional invoices instantly, track every payment\n"
+        f"• 📅 Court Calendar & Alerts — automated reminders so no hearing is ever missed\n"
+        f"• 🤝 Team Collaboration — tasks, messaging, and documents shared securely\n"
+        f"• 📊 Analytics Dashboard — revenue, case load, and performance at a glance\n"
+        f"• 🌍 Smart Business Directory — your firm listed globally; clients find you by practice area & location\n"
+        f"• 🛠️ Custom Features — tell us what you need, our dev team builds it\n\n"
+        f"{web_note}\n\n"
+        f"I've gone ahead and set up FREE access for {name} — explore the full platform today:\n"
+        f"👉 {_URL}\n\n"
+        f"Try it and let me know what features would make LAWCOLAB perfect for your firm. "
+        f"Our development team integrates any suggestion.\n\n"
+        f"Reach me directly on WhatsApp: {_WA}\n\n"
+        f"Looking forward to helping {name} serve more clients and grow.\n\n"
+        f"Warm regards,\n"
+        f"Abraham Tahbat\n"
+        f"Lawyer & Software Developer\n"
+        f"LAWCOLAB — {_URL}"
+    )
 
-3. PROBLEM STATEMENT
-"I speak with law firms in {city} daily, and the most common challenge I hear is managing cases, client follow-ups, and billing across different tools — often spreadsheets, WhatsApp, and manual invoices — which costs the firm hours every week."
-[PAUSE] "Does that sound familiar at {name}?"
+    web_bridge = (
+        f'"I also noticed {name} doesn\'t yet have a dedicated website. '
+        f'LAWCOLAB gives you an instant public profile page and client portal — your professional digital presence, built in."'
+    ) if not has_web else (
+        f'"Even though {name} already has a website, LAWCOLAB works alongside it — '
+        f'adding case management, billing, and a Smart Directory listing that puts your firm in front of new clients globally."'
+    )
 
-4. SOLUTION INTRO
-"That's exactly why we built LAWCOLAB — a complete Legal Operating System for law firms. It brings case management, billing, client communication, and calendars into one platform designed specifically for firms like {name}."
+    call_script = (
+        f"LAWCOLAB CALL SCRIPT — {name}\n"
+        f"Location: {city} | Practice: {areas} | {gmb_status}\n"
+        f"{_div}\n\n"
+        f"1. OPENING\n"
+        f"\"Good day, may I please speak with the managing partner or firm administrator at {name}?\"\n"
+        f"[When connected]\n"
+        f"\"Good day! My name is Abraham Tahbat — I'm a lawyer and web developer calling from LAWCOLAB. "
+        f"I came across {name} on Google Maps while researching {areas} firms in {city} and I wanted to reach out personally. "
+        f"Do you have just two minutes? I promise it's relevant to your firm.\"\n"
+        f"[PAUSE] [LISTEN]\n\n"
+        f"2. PERMISSION CHECK\n"
+        f"\"Is now a good time for just two minutes?\"\n"
+        f"[If YES → continue. If NO → \"No problem — when would be a good time to call back? I'll be brief.\"]\n\n"
+        f"3. PROBLEM STATEMENT\n"
+        f"\"From speaking with law firms in {city} daily, the most common challenges I hear are: "
+        f"cases managed on spreadsheets or WhatsApp, invoices sent late and often forgotten, "
+        f"court dates tracked in notebooks — and potential clients who simply cannot find the firm online.\"\n"
+        f"[PAUSE] \"Does any of that sound familiar at {name}?\"\n"
+        f"[LISTEN]\n\n"
+        f"4. SOLUTION INTRO\n"
+        f"\"That's exactly why I built LAWCOLAB — a complete Legal Operating System that brings "
+        f"case management, billing, client communication, court calendars, and a Smart Business Directory "
+        f"into one platform. Clients can find {name} globally by searching your practice area and location.\"\n\n"
+        f"5. KEY FEATURES FOR {areas.upper()}\n"
+        f"\"For a firm specialising in {areas}, the features that make the biggest immediate impact are:\n"
+        f"— Case tracking so every matter, deadline, and document is organised\n"
+        f"— Instant invoice generation with automated payment follow-ups\n"
+        f"— A client portal so clients check their own case updates 24/7\n"
+        f"— Court deadline alerts — automated, so nothing is ever missed\n"
+        f"— Smart Directory listing — new clients find {name} by practice area and location\"\n\n"
+        f"6. WEBSITE BRIDGE\n"
+        f"{web_bridge}\n\n"
+        f"7. FREE ACCESS\n"
+        f"\"I've already set up free access for {name} at {_URL} — please log in and explore the "
+        f"full platform today. No credit card, no commitment.\"\n\n"
+        f"8. CUSTOM DEVELOPMENT\n"
+        f"\"Our in-house developer team is on standby to add features specific to {name}'s workflow — "
+        f"at no extra cost. Whatever you need built, we do it.\"\n\n"
+        f"9. CTA\n"
+        f"\"Please visit {_URL} to test the platform, and message me directly on WhatsApp: {_WA} — "
+        f"I personally respond to every message.\"\n"
+        f"[LISTEN — note their questions]\n\n"
+        f"10. OBJECTION HANDLERS\n\n"
+        f"Objection: \"We already have a system.\"\n"
+        f"Response: \"That's great — LAWCOLAB is designed to work alongside your existing tools, "
+        f"not replace them. Most firms find it fills the gaps their current setup doesn't cover, "
+        f"especially the Smart Directory for client acquisition.\"\n\n"
+        f"Objection: \"We're too busy right now.\"\n"
+        f"Response: \"That's actually the exact reason most firms reach out to us — LAWCOLAB is "
+        f"designed to save time, not add to it. The free access is already set up. "
+        f"Just log in when you have 10 minutes and see for yourself.\"\n\n"
+        f"Objection: \"How much does it cost?\"\n"
+        f"Response: \"Your free access is already active — test everything first, no cost. "
+        f"Once you see the value, plans are very affordable. Less than the cost of one missed invoice.\"\n\n"
+        f"11. CLOSING\n"
+        f"\"Thank you so much for your time. I'll send your free access link right now. "
+        f"You can also reach me on WhatsApp anytime: {_WA}. "
+        f"Have a wonderful day and I look forward to hearing from you!\"\n"
+        f"[Confirm WhatsApp / email for follow-up]"
+    )
 
-5. KEY FEATURES FOR {areas.upper()}
-"For a firm specialising in {areas}, the most valuable features are usually:
-— Case tracking so nothing falls through the cracks
-— Instant invoice generation with payment follow-ups built in
-— A client portal so clients can check their case status anytime
-— Court deadline alerts so you never miss a hearing date"
-
-6. WEBSITE BRIDGE
-{web_bridge}
-
-7. CUSTOM DEVELOPMENT
-"Our developer team is on standby to add features specific to {name}'s workflow at no extra charge."
-
-8. CTA
-"I'd love to show you a 20-minute screen-share demo — completely free, no commitment. When works best for you this week?"
-[LISTEN — book the time]
-
-9. OBJECTION HANDLERS
-Objection: "We already have a system."
-Response: "That's great — LAWCOLAB is designed to work alongside your existing tools, not replace them. Most firms find it fills in the gaps their current setup doesn't cover."
-
-Objection: "We're too busy right now."
-Response: "Completely understand — that's actually why most firms reach out. LAWCOLAB is designed to save time, not add to it. The demo is just 20 minutes and I can work around your schedule."
-
-Objection: "How much does it cost?"
-Response: "We have plans starting from as low as ₦39/month — less than the cost of a single client meeting. There's also a free trial so you can see the value before committing."
-
-10. CLOSING
-"Thank you so much for your time, [Name]. I'll send you a quick email with our website: https://lawcolab.com — you can also book a demo directly there. Have a great [day/week]!"
-[Confirm name, email, next step]"""
-
-    return {"subject": f"Helping {name} Run Like a World-Class Firm", "body": email_body}, call_script
+    return {"subject": f"Good day {name} — Free Access to LAWCOLAB for Your Firm", "body": email_body}, call_script
 
 
 # ─── Community Outreach ───────────────────────────────────────────────────────
@@ -388,38 +477,40 @@ def generate_community_message(community, channel: str) -> dict:
     country  = community.country_focus or "global"
 
     channel_instruction = {
-        "post":    f"a community post for a {platform} group/community ({size} members)",
-        "comment": f"a conversational comment to introduce LAWCOLAB in a {platform} thread",
-        "dm":      f"a short, warm direct message to the {platform} community admin",
+        "post":    f"a community post for a {platform} group ({size} members) — can use emojis, conversational",
+        "comment": f"a short conversational comment to introduce LAWCOLAB in a {platform} thread — max 5 lines",
+        "dm":      f"a short, warm direct message to the {platform} community admin — personal and human",
         "email":   f"a professional outreach email to the {platform} community admin",
     }.get(channel, "a social media post")
 
-    prompt = f"""You are a marketing copywriter for LAWCOLAB, a modern legal practice management SaaS platform for law firms.
+    prompt = f"""You are writing on behalf of {_SENDER} for LAWCOLAB.
+
+{_BRAND_CONTEXT}
+
+{_FEATURES_BLOCK}
 
 Write {channel_instruction} for the community: "{name}" ({category}, {country}, {size} members).
 
-LAWCOLAB features:
-- Case & client management
-- Billing, invoicing & payment tracking
-- Court calendar with deadline reminders
-- Team collaboration & secure messaging
-- Client portal with 24/7 case access
-- Analytics & reporting dashboard
-- Works with or without an existing firm website
-- Developer team available to add custom features
-- Helps law firms acquire more clients and grow revenue
+Exact structure to follow:
+1. GREETING — Warm human opener addressing the community by name. For DMs: "Good day [admin name / Sir/Ma]"
+2. INTRO — {_SENDER} introduces himself: a lawyer AND web developer with 15+ years of SaaS experience who discovered this community while researching {category} groups
+3. PROBLEM — 2-3 daily pains that members of this community face in managing their legal practice
+4. SOLUTION — LAWCOLAB as the answer; include the Smart Business Directory (members listed globally, found by clients based on practice area & location)
+5. ALL FEATURES — list all features concisely
+6. FREE ACCESS — members of "{name}" get free access to test at {_URL}
+7. CUSTOM FEATURES — invite community members to suggest any feature they'd like built
+8. CTA — WhatsApp {_WA} and {_URL}
+9. SIGN-OFF — "{_SENDER} | Lawyer & Software Developer — LAWCOLAB"
 
 Rules:
-- Be warm, human, and community-appropriate (not spammy or corporate)
-- Mention the community name naturally
-- Highlight 3-4 most relevant features for this community's focus area ({category})
-- Include the free trial CTA: https://lawcolab.com
-- For {platform}: use appropriate tone and formatting (emojis ok for Facebook/WhatsApp/Telegram)
-- End with an engaging question to spark discussion
+- Tone: warm, human, captivating — NOT corporate or spammy
+- For {platform}: use appropriate formatting (emojis welcome for Facebook/WhatsApp/Telegram; professional for LinkedIn/email)
+- Max 350 words for posts/emails, max 6 lines for DMs/comments
+- End with a genuine question to spark engagement (e.g. "What's the biggest challenge you face managing your practice right now?")
 
-Return JSON with keys "subject" (empty if not email) and "body"."""
+Return JSON with keys "subject" (email only, empty string for others) and "body"."""
 
-    content = _call_groq(prompt, json_response=True, max_tokens=700, temperature=0.85)
+    content = _call_groq(prompt, json_response=True, max_tokens=800, temperature=0.85)
     if content:
         try:
             result = json.loads(content)
@@ -432,30 +523,77 @@ Return JSON with keys "subject" (empty if not email) and "body"."""
 
 
 def _template_community_message(community, channel: str) -> dict:
-    """Smart template fallback for community outreach."""
+    """Fallback template — Abraham Tahbat personal voice for community outreach."""
     name     = community.community_name
     platform = community.platform.title()
     category = community.category or "legal professionals"
+    country  = community.country_focus or "global"
 
-    body = f"""👋 Hello {name} community!
+    use_emoji = community.platform.lower() in ("facebook", "whatsapp", "telegram", "instagram")
 
-We wanted to introduce ourselves — we're LAWCOLAB, a Legal Operating System built specifically for law firms and legal professionals.
+    if channel == "dm":
+        body = (
+            f"Good day Sir/Ma 👋\n\n"
+            f"My name is Abraham Tahbat — a lawyer and web developer. "
+            f"I came across the {name} community while researching {category} groups online and I'm genuinely impressed by what you've built.\n\n"
+            f"I'd love to introduce LAWCOLAB to your members — a Legal Operating System I built to help law firms manage cases, billing, court calendars, and client communication in one place. "
+            f"It also has a Smart Business Directory that puts members' firms in front of clients searching globally by practice area and location.\n\n"
+            f"We'd love to offer all {name} members free access to test it: {_URL}\n\n"
+            f"Would you be open to me sharing this with the community? Happy to chat on WhatsApp: {_WA}\n\n"
+            f"Thank you — Abraham Tahbat | LAWCOLAB"
+        )
+        subject = ""
 
-🎯 **What LAWCOLAB does for your practice:**
-✅ Case & Client Management — all your matters in one place
-✅ Billing & Invoicing — get paid faster with instant invoice generation
-✅ Court Calendar — smart deadline reminders so you never miss a hearing
-✅ Client Portal — clients get 24/7 secure access to their case updates
-✅ Team Collaboration — internal messaging and document sharing
+    elif channel == "email":
+        body = (
+            f"Good day {name} Admin,\n\n"
+            f"My name is Abraham Tahbat — I am a lawyer and web developer with over 15 years of experience "
+            f"building SaaS platforms. I came across the {name} community while researching {category} groups in {country} and wanted to reach out personally.\n\n"
+            f"I understand the daily struggles legal practitioners face: cases tracked on paper and WhatsApp, "
+            f"invoices delayed or lost, court dates missed, and being invisible online to potential clients. "
+            f"These aren't small problems — they cost firms clients, revenue, and reputation every single day.\n\n"
+            f"I built LAWCOLAB to solve all of this:\n\n"
+            f"• 📁 Case & Matter Management — every file, deadline, and document organised\n"
+            f"• 👥 Client Portal — clients check case updates 24/7, no more constant calls\n"
+            f"• 💰 Billing & Invoicing — generate professional invoices instantly, track every payment\n"
+            f"• 📅 Court Calendar & Alerts — automated reminders, no missed hearings\n"
+            f"• 🤝 Team Collaboration — tasks, messaging, and documents shared securely\n"
+            f"• 📊 Analytics Dashboard — revenue, caseload, and performance at a glance\n"
+            f"• 🌍 Smart Business Directory — members listed globally; clients find them by practice area & location\n"
+            f"• 🛠️ Custom Features — we build whatever your members need\n\n"
+            f"I'd love to offer every member of {name} free access to test the full platform:\n"
+            f"👉 {_URL}\n\n"
+            f"And I'd genuinely welcome any feature suggestions from your community — our dev team builds on request.\n\n"
+            f"Reach me on WhatsApp: {_WA}\n\n"
+            f"What's the biggest challenge your members currently face managing their practice?\n\n"
+            f"Warm regards,\n"
+            f"Abraham Tahbat\n"
+            f"Lawyer & Software Developer — LAWCOLAB\n"
+            f"{_URL}"
+        )
+        subject = f"Free LAWCOLAB Access for Every {name} Member — Built by a Fellow Lawyer"
 
-🎯 **Who is it for?**
-Perfect for solo practitioners, small-to-medium law firms, and legal chambers looking to modernize their operations and win more clients.
+    else:
+        # Post / comment
+        em = lambda x: x if use_emoji else ""
+        body = (
+            f"{em('👋 ')}Good day {name}!\n\n"
+            f"My name is Abraham Tahbat — I'm a lawyer and web developer with 15+ years of experience building SaaS platforms. "
+            f"I've been following this incredible community of {category} and I want to share something I built from personal experience in the legal industry.\n\n"
+            f"Most law firms and legal practitioners I know are still managing cases on WhatsApp, chasing invoices manually, missing court deadlines, and remaining invisible to potential clients online. "
+            f"I built {em('⚡ ')}LAWCOLAB to fix all of that:\n\n"
+            f"{em('📁 ')}Case & Matter Management — every file and deadline organised\n"
+            f"{em('👥 ')}Client Portal — clients track their cases 24/7\n"
+            f"{em('💰 ')}Billing & Invoicing — professional invoices in seconds\n"
+            f"{em('📅 ')}Court Calendar & Alerts — never miss a hearing\n"
+            f"{em('🌍 ')}Smart Business Directory — clients find YOUR firm globally by practice area & location\n"
+            f"{em('🛠️ ')}Custom Features — suggest anything, our dev team builds it\n\n"
+            f"{em('🎁 ')}We've set up FREE access for {name} members — test the full platform today:\n"
+            f"{em('👉 ')}{_URL}\n\n"
+            f"WhatsApp: {_WA}\n\n"
+            f"I'd love to know — what's the biggest challenge you face running your practice day-to-day? {em('💬')}\n\n"
+            f"— Abraham Tahbat | Lawyer & Software Developer — LAWCOLAB"
+        )
+        subject = ""
 
-🚀 **Start for free** → https://lawcolab.com
-
-We'd love to hear from this amazing community of {category.lower()} — what tools are you currently using to manage your practice?
-
-— The LAWCOLAB Team"""
-
-    subject = f"LAWCOLAB — Legal Operating System for {category}" if channel == "email" else ""
     return {"subject": subject, "body": body, "channel": channel}
