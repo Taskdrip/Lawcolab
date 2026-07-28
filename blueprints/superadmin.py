@@ -182,6 +182,8 @@ def platform_analytics():
 def web_analytics():
     """Advanced web analytics dashboard with AI robot recommendations."""
     from sqlalchemy import text
+    import json as _json
+
     days = request.args.get('days', 30, type=int)
     if days not in (7, 30, 90):
         days = 30
@@ -213,9 +215,7 @@ def web_analytics():
     visits_delta = round(((total_visits - prev_visits) / prev_visits * 100), 1) if prev_visits > 0 else 0
 
     # Bounce rate: sessions with only 1 page view
-    total_sessions = _scalar(
-        "SELECT COUNT(DISTINCT session_id) FROM page_analytics WHERE created_at > NOW() - INTERVAL :i",
-        i=interval)
+    total_sessions = unique_sessions
     single_page_sessions = _scalar(
         """SELECT COUNT(*) FROM (
               SELECT session_id FROM page_analytics
@@ -227,6 +227,16 @@ def web_analytics():
 
     # Pages per session
     pages_per_session = round((total_visits / unique_sessions), 2) if unique_sessions > 0 else 0.0
+
+    # Unique countries count
+    unique_countries = _scalar(
+        "SELECT COUNT(DISTINCT country) FROM page_analytics WHERE created_at > NOW() - INTERVAL :i AND country IS NOT NULL AND country != 'Unknown'",
+        i=interval)
+
+    # Today's visits
+    today_visits = _scalar(
+        "SELECT COUNT(*) FROM page_analytics WHERE created_at >= CURRENT_DATE",
+    )
 
     # ── Daily visits trend ────────────────────────────────────────────────────
     daily_rows = _q(
@@ -241,14 +251,28 @@ def web_analytics():
     daily_labels = [r[0] for r in daily_rows]
     daily_data   = [r[2] for r in daily_rows]
 
+    # ── Hourly breakdown (last 24h) ───────────────────────────────────────────
+    hourly_rows = _q(
+        """SELECT EXTRACT(HOUR FROM created_at)::int as hr, COUNT(*) as cnt
+           FROM page_analytics WHERE created_at > NOW() - INTERVAL '24 hours'
+           GROUP BY hr ORDER BY hr""")
+    hourly_map = {r[0]: r[1] for r in hourly_rows}
+    hourly_labels = [f'{h:02d}:00' for h in range(24)]
+    hourly_data   = [hourly_map.get(h, 0) for h in range(24)]
+
+    # Peak hour
+    peak_hour = max(range(24), key=lambda h: hourly_map.get(h, 0)) if hourly_map else None
+    peak_hour_label = f'{peak_hour:02d}:00–{(peak_hour+1)%24:02d}:00' if peak_hour is not None else 'N/A'
+
     # ── Top pages ─────────────────────────────────────────────────────────────
     top_pages_rows = _q(
-        """SELECT page_path, COUNT(*) as visits
+        """SELECT page_path, COUNT(*) as visits,
+                  COUNT(DISTINCT session_id) as unique_vis
            FROM page_analytics
            WHERE created_at > NOW() - INTERVAL :i
            GROUP BY page_path ORDER BY visits DESC LIMIT 10""",
         i=interval)
-    top_pages = [{'page_path': r[0], 'visits': r[1]} for r in top_pages_rows]
+    top_pages = [{'page_path': r[0], 'visits': r[1], 'unique_vis': r[2]} for r in top_pages_rows]
 
     # ── Device breakdown ──────────────────────────────────────────────────────
     device_rows = _q(
@@ -294,63 +318,109 @@ def web_analytics():
     country_rows = _q(
         """SELECT country, COUNT(*) as cnt
            FROM page_analytics WHERE created_at > NOW() - INTERVAL :i
-           GROUP BY country ORDER BY cnt DESC LIMIT 10""",
+           GROUP BY country ORDER BY cnt DESC LIMIT 15""",
         i=interval)
 
+    # ── New vs Returning (approximate by session first-seen) ──────────────────
+    new_sessions = _scalar(
+        """SELECT COUNT(DISTINCT session_id) FROM page_analytics
+           WHERE created_at > NOW() - INTERVAL :i
+             AND session_id NOT IN (
+               SELECT DISTINCT session_id FROM page_analytics
+               WHERE created_at <= NOW() - INTERVAL :i
+             )""",
+        i=interval)
+    returning_sessions = max(0, unique_sessions - new_sessions)
+    new_pct = round(new_sessions / unique_sessions * 100, 1) if unique_sessions > 0 else 0
+
     # ── AI Robot Recommendations ──────────────────────────────────────────────
-    import json as _json
     recs = []
 
+    # Bounce rate recommendation
     if bounce_rate > 70:
         recs.append({'type':'danger','icon':'fa-exclamation-triangle','priority':1,
-            'title':f'High Bounce Rate — {bounce_rate:.0f}%',
-            'text':'Over 70% of visitors leave after a single page. Fix this by strengthening your above-the-fold CTA, reducing page load time, and ensuring your headlines match user search intent. Add internal links to draw visitors deeper into the site.'})
+            'title':f'Critical: Bounce Rate at {bounce_rate:.0f}%',
+            'text':'Over 70% of visitors leave after a single page. Immediate actions: (1) Strengthen your above-the-fold headline to match visitor search intent, (2) Add a clear, prominent CTA above the fold, (3) Reduce page load time below 3 seconds, (4) Add 3–5 internal links on every page.',
+            'actions':['Audit page load speed','Add internal links','Improve CTAs']})
     elif bounce_rate > 50:
         recs.append({'type':'warning','icon':'fa-chart-line','priority':2,
             'title':f'Bounce Rate at {bounce_rate:.0f}% — Room to Improve',
-            'text':'Half your visitors leave after one page. Add a "Related Articles" or "You might also like" section to every page. A sticky CTA bar or exit-intent prompt can also recover departing visitors.'})
+            'text':'Half your visitors leave after one page. Add "Related Articles" sections, a sticky CTA bar, and ensure your navigation clearly shows what the site offers.',
+            'actions':['Add related content','Improve navigation','Add sticky CTA']})
     else:
         recs.append({'type':'success','icon':'fa-check-circle','priority':5,
-            'title':f'Healthy Bounce Rate ({bounce_rate:.0f}%)',
-            'text':'Visitors are exploring multiple pages — your content and navigation are working. Keep publishing regular blog posts and maintain fast page loads to sustain this engagement.'})
+            'title':f'Excellent Bounce Rate: {bounce_rate:.0f}%',
+            'text':'Visitors are exploring multiple pages — your content and navigation are working well. Sustain this by publishing regular blog posts and maintaining fast page loads.',
+            'actions':['Keep publishing content','Monitor weekly']})
 
+    # Mobile traffic
     mobile_pct = device_pcts.get('mobile', 0)
     if mobile_pct > 60:
         recs.append({'type':'info','icon':'fa-mobile-alt','priority':2,
             'title':f'{mobile_pct:.0f}% Mobile Traffic — Optimise for Small Screens',
-            'text':'The majority of your visitors are on mobile. Audit every page on a real phone: check tap-target size, font readability, hero image file size, and form usability. Google also uses mobile-first indexing, so mobile experience directly affects your search rankings.'})
+            'text':'The majority of visitors are on mobile. Google uses mobile-first indexing, so mobile UX directly impacts rankings. Check: tap targets ≥44px, font size ≥16px, hero images compressed, forms easy to fill.',
+            'actions':['Run Mobile-Friendly Test','Compress images','Check tap targets']})
+    elif mobile_pct > 0:
+        recs.append({'type':'info','icon':'fa-desktop','priority':4,
+            'title':f'Balanced Desktop ({100-mobile_pct:.0f}%) / Mobile ({mobile_pct:.0f}%) Split',
+            'text':'Your audience uses both desktop and mobile. Ensure your design and content work well across all screen sizes.',
+            'actions':['Test on mobile','Test on desktop']})
 
+    # Traffic volume
     if total_visits < 200:
         recs.append({'type':'warning','icon':'fa-search','priority':1,
-            'title':'Grow Organic Traffic with Consistent Blog Content',
-            'text':'Publishing 2–3 SEO-optimised blog posts per week is the most cost-effective way to build long-term Google traffic. Target keywords like "law firm software Nigeria", "case management legal Africa", and "client portal law firm". Each post compounds over time.'})
+            'title':'Priority: Grow Organic Traffic with SEO Blog Content',
+            'text':'Publishing 2–3 SEO-optimised articles per week is the highest-ROI growth tactic. Target: "law firm software Nigeria", "case management Africa", "legal billing software". Each post builds permanent Google ranking authority.',
+            'actions':['Publish 2x/week','Research keywords','Submit sitemap']})
     elif total_visits < 1000:
         recs.append({'type':'info','icon':'fa-rocket','priority':3,
-            'title':'Scale Traffic with Link Building and Social Sharing',
-            'text':'You have a solid traffic foundation. Accelerate growth by sharing blog posts in Nigerian bar association groups, LinkedIn law networks, and WhatsApp legal communities. Ask partner organisations to link to your directory pages — each external link boosts your Google authority.'})
+            'title':'Scale Traffic with Link Building & Social',
+            'text':'You have a solid foundation. Accelerate by sharing posts in bar association groups, LinkedIn legal networks, and WhatsApp communities. Each external backlink boosts your Google Domain Authority.',
+            'actions':['Share in LinkedIn groups','Get backlinks','Guest post outreach']})
+    else:
+        recs.append({'type':'success','icon':'fa-trophy','priority':4,
+            'title':'Strong Traffic Volume — Focus on Conversion',
+            'text':f'Great volume ({total_visits:,} views). Now focus on converting visitors to trial signups. A/B test your hero CTA, add social proof, and create a dedicated landing page for each key feature.',
+            'actions':['A/B test hero CTA','Add testimonials','Track conversions in GA4']})
 
+    # Top page conversion
     if top_pages:
         top = top_pages[0]
         recs.append({'type':'info','icon':'fa-star','priority':3,
-            'title':f'Top Page: {top["page_path"]} — Maximise Its Conversion',
-            'text':f'Your highest-traffic page ({top["visits"]} views) is your best conversion asset. Add a prominent "Start Free Trial" CTA, a trust badge (e.g. "500+ law firms"), and one client testimonial. Even a 1% conversion improvement on this page is meaningful growth.'})
+            'title':f'Top Page: {top["page_path"]} — Maximise Conversions',
+            'text':f'Your highest-traffic page ({top["visits"]:,} views) is your best conversion asset. Add: a "Start Free Trial" CTA, a trust badge ("500+ law firms"), one compelling testimonial, and a comparison table vs competitors.',
+            'actions':['Add CTA to top page','Add trust badge','Add testimonial']})
 
+    # Pages per session
     if pages_per_session < 1.5:
         recs.append({'type':'warning','icon':'fa-sitemap','priority':2,
-            'title':'Improve Internal Linking to Increase Pages per Session',
-            'text':f'Visitors currently view an average of {pages_per_session} pages per visit. Increase this by adding contextual internal links within blog posts, a "Features" nav link, and a footer with links to key pages. More pages per session signals engagement to Google and increases trial signups.'})
+            'title':f'Low Engagement: {pages_per_session} Pages/Session',
+            'text':'Visitors view fewer than 2 pages per visit. Fix with: contextual internal links in every post, a "You might also like" section, a features overview in the nav, and a footer with links to key pages.',
+            'actions':['Add internal links','Add related posts','Improve footer nav']})
 
+    # Google Analytics
+    ga4_active = bool(os.environ.get('GA4_MEASUREMENT_ID') or _get_site_setting('ga4_measurement_id') or True)
+    recs.append({'type':'success','icon':'fa-chart-bar','priority':4,
+        'title':'GA4 Active: G-EPSVWPRWPZ',
+        'text':'Google Analytics 4 is firing on every page. To unlock the full power of GA4: set up conversion events (free trial signup, contact form), create an audience for visitors who viewed pricing, and connect GA4 to Google Search Console for integrated search + behaviour data.',
+        'actions':['Set up GA4 conversions','Link to Search Console','Create remarketing audience']})
+
+    # Sitemap
     recs.append({'type':'info','icon':'fa-sitemap','priority':4,
-        'title':'Submit Your Sitemap to Google Search Console',
-        'text':'Your sitemap is live at /sitemap.xml. Open search.google.com/search-console, add your property, and submit the sitemap URL. This tells Google about every public page, blog post, and directory listing — accelerating indexing and ranking.'})
+        'title':'Submit Sitemap to Google Search Console',
+        'text':'Your sitemap is live at /sitemap.xml. In Search Console → Sitemaps, submit this URL. Google then crawls every public page, blog post, and directory listing — accelerating indexing and improving rankings.',
+        'actions':['Submit sitemap','Verify in Search Console','Monitor coverage']})
 
-    recs.append({'type':'info','icon':'fa-link','priority':4,
-        'title':'Enable GA4 Measurement ID for Richer Analytics',
-        'text':'Set the GA4_MEASUREMENT_ID environment variable in Replit Secrets to enable Google Analytics 4 event tracking. GA4 adds conversion funnels, engagement time, user journeys, and real-time reporting on top of the internal analytics you see here.'})
+    # Country-specific
+    if country_rows:
+        top_country = country_rows[0][0] if country_rows else 'Nigeria'
+        if top_country and top_country not in ('Unknown',):
+            recs.append({'type':'info','icon':'fa-globe-africa','priority':5,
+                'title':f'Top Market: {top_country} — Localise Your Content',
+                'text':f'{top_country} drives your most traffic. Ensure your content, pricing (NGN), and case studies speak directly to {top_country} law firms. Add country-specific testimonials and mention local bar associations.',
+                'actions':[f'Add {top_country} case studies','Show NGN pricing','Add local testimonials']})
 
     recs = sorted(recs, key=lambda x: x['priority'])
-
-    import json as _json
 
     # ── Google / SEO Settings ─────────────────────────────────────────────────
     ga4_id_env  = os.environ.get('GA4_MEASUREMENT_ID', '')
@@ -360,9 +430,12 @@ def web_analytics():
     gtm_db      = _get_site_setting('gtm_id', 'GTM-TVF3MJPP')
     domain_db   = _get_site_setting('site_domain', 'lawcolab.com')
 
+    # Always default to G-EPSVWPRWPZ if nothing is set
+    effective_ga4 = ga4_id_env or ga4_id_db or 'G-EPSVWPRWPZ'
+
     google_settings = {
-        'ga4_measurement_id': ga4_id_env or ga4_id_db,
-        'ga4_source':         'env' if ga4_id_env else ('db' if ga4_id_db else 'none'),
+        'ga4_measurement_id': effective_ga4,
+        'ga4_source':         'env' if ga4_id_env else ('db' if ga4_id_db else 'default'),
         'gsc_verification':   gsc_env or gsc_db,
         'gsc_source':         'env' if gsc_env else ('db' if gsc_db else 'none'),
         'gtm_id':             gtm_db,
@@ -379,13 +452,22 @@ def web_analytics():
         visits_delta=visits_delta,
         bounce_rate=bounce_rate,
         pages_per_session=pages_per_session,
+        unique_countries=unique_countries,
+        today_visits=today_visits,
+        new_sessions=new_sessions,
+        returning_sessions=returning_sessions,
+        new_pct=new_pct,
+        peak_hour_label=peak_hour_label,
         daily_labels=_json.dumps(daily_labels),
         daily_data=_json.dumps(daily_data),
+        hourly_labels=_json.dumps(hourly_labels),
+        hourly_data=_json.dumps(hourly_data),
         top_pages=top_pages,
         top_pages_labels=_json.dumps([p['page_path'][:30] for p in top_pages]),
         top_pages_data=_json.dumps([p['visits'] for p in top_pages]),
         device_labels=_json.dumps(device_labels),
         device_data=_json.dumps(device_data),
+        device_pcts=device_pcts,
         browser_labels=_json.dumps(browser_labels),
         browser_data=_json.dumps(browser_data),
         os_rows=os_rows,

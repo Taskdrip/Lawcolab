@@ -49,19 +49,21 @@
     <!-- ── Google Search Console Verification ───────────────────────────── -->
     <meta name="google-site-verification" content="{% block gsc_verification %}{{ config.get('GSC_VERIFICATION','') }}{% endblock %}">
 
-    <!-- ── Google Analytics 4 ────────────────────────────────────────────── -->
-    {% if config.get('GA4_MEASUREMENT_ID') %}
-    <script async src="https://www.googletagmanager.com/gtag/js?id={{ config['GA4_MEASUREMENT_ID'] }}"></script>
+    <!-- ── Google Analytics 4 (G-EPSVWPRWPZ) ──────────────────────────────── -->
+    {% set _ga4_id = config.get('GA4_MEASUREMENT_ID') or 'G-EPSVWPRWPZ' %}
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ _ga4_id }}"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', '{{ config["GA4_MEASUREMENT_ID"] }}', {
+      gtag('config', '{{ _ga4_id }}', {
         page_path: window.location.pathname,
-        send_page_view: true
+        send_page_view: true,
+        anonymize_ip: true,
+        cookie_flags: 'SameSite=None;Secure'
       });
     </script>
-    {% endif %}
 
     <!-- ── Schema.org Structured Data ───────────────────────────────────── -->
     {% block structured_data %}
