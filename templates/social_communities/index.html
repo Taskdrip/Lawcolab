@@ -4,18 +4,20 @@
 <div class="container-fluid py-4 px-4">
 
   <!-- Header -->
-  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
-    <div>
-      <h3 class="mb-0 fw-bold" style="color:#0d1b4b;">Social Communities CRM</h3>
-      <p class="text-muted mb-0 small">Discover and reach legal communities on Facebook, LinkedIn, Reddit, WhatsApp & more</p>
-    </div>
-    <div class="d-flex gap-2">
-      <button id="runRobotBtn" class="btn fw-bold" style="background:#0d1b4b;color:#FFD700;border-radius:10px;border:none;">
-        <i class="fas fa-robot me-2"></i>Run Discovery Robot
-      </button>
-      <button class="btn btn-outline-secondary fw-bold" data-bs-toggle="modal" data-bs-target="#addCommunityModal" style="border-radius:10px;">
-        <i class="fas fa-plus me-2"></i>Add Manually
-      </button>
+  <div class="mb-4">
+    <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+      <div style="min-width:0;">
+        <h3 class="mb-0 fw-bold" style="color:#0d1b4b;font-size:clamp(1.1rem,4vw,1.5rem);">Social Communities CRM</h3>
+        <p class="text-muted mb-0 small d-none d-sm-block">Discover and reach legal communities on Facebook, LinkedIn, Reddit, WhatsApp &amp; more</p>
+      </div>
+      <div class="d-flex gap-2 flex-shrink-0">
+        <button id="runRobotBtn" class="btn btn-sm fw-bold" style="background:#0d1b4b;color:#FFD700;border-radius:10px;border:none;">
+          <i class="fas fa-robot me-1"></i><span class="d-none d-sm-inline">Run </span>Robot
+        </button>
+        <button class="btn btn-sm btn-outline-secondary fw-bold" data-bs-toggle="modal" data-bs-target="#addCommunityModal" style="border-radius:10px;">
+          <i class="fas fa-plus me-1"></i><span class="d-none d-sm-inline">Add Manually</span><span class="d-sm-none">Add</span>
+        </button>
+      </div>
     </div>
   </div>
 

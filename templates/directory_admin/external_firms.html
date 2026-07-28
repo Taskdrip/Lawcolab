@@ -1,122 +1,413 @@
 {% extends "base.html" %}
 {% block title %}External Firms CRM — Directory Admin{% endblock %}
+
 {% block content %}
-<div class="container-fluid py-4">
-  <div class="d-flex align-items-center gap-3 mb-4">
-    <a href="{{ url_for('dir_admin.index') }}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;"><i class="fas fa-arrow-left"></i></a>
-    <h3 class="mb-0 fw-bold">External Firms CRM</h3>
-    <a href="{{ url_for('dir_admin.add_external') }}" class="btn btn-primary btn-sm ms-auto fw-bold" style="background:#0d1b4b;border-color:#0d1b4b;border-radius:8px;"><i class="fas fa-plus me-1"></i>Add Firm</a>
-    <a href="{{ url_for('dir_admin.robot_dashboard') }}" class="btn btn-warning btn-sm fw-bold" style="border-radius:8px;color:#0d1b4b;"><i class="fas fa-robot me-1"></i>Robot</a>
+<style>
+/* ── Mobile-first CRM styles ───────────────────────────────────────── */
+.crm-header{padding:1rem 1rem .5rem;display:flex;align-items:center;flex-wrap:wrap;gap:.6rem;}
+.crm-header h4{font-size:1.1rem;font-weight:800;color:#0d1b4b;margin:0;flex:1;min-width:0;}
+.chip-bar{padding:.5rem 1rem;display:flex;flex-wrap:wrap;gap:.45rem;}
+.chip{display:inline-flex;align-items:center;gap:.3rem;padding:.3rem .75rem;border-radius:50px;font-size:.78rem;font-weight:700;border:1.5px solid;cursor:pointer;text-decoration:none;white-space:nowrap;}
+.chip-all{border-color:#0d1b4b;color:#0d1b4b;background:#fff;}
+.chip-all.active{background:#0d1b4b;color:#fff;}
+.chip-new{border-color:#f59e0b;color:#92400e;background:#fff;}
+.chip-new.active{background:#fef3c7;border-color:#f59e0b;}
+.chip-contacted{border-color:#3b82f6;color:#1d4ed8;background:#fff;}
+.chip-contacted.active{background:#dbeafe;border-color:#3b82f6;}
+.chip-converted{border-color:#10b981;color:#065f46;background:#fff;}
+.chip-converted.active{background:#d1fae5;border-color:#10b981;}
+.chip-nowebsite{border-color:#ef4444;color:#b91c1c;background:#fff;}
+.chip-nowebsite.active{background:#fee2e2;border-color:#ef4444;}
+
+/* Firm card */
+.firm-card{background:#fff;border-radius:14px;border:1px solid #e8ecf0;padding:1rem;margin-bottom:.65rem;cursor:pointer;transition:box-shadow .15s,border-color .15s;-webkit-tap-highlight-color:transparent;}
+.firm-card:active{background:#f8fafc;}
+.firm-card:hover{border-color:#0d1b4b;box-shadow:0 4px 16px rgba(13,27,75,.1);}
+.firm-name{font-size:.95rem;font-weight:700;color:#0d1b4b;line-height:1.3;word-break:break-word;}
+.firm-meta{font-size:.78rem;color:#6b7280;display:flex;flex-wrap:wrap;gap:.3rem .75rem;margin-top:.3rem;}
+.firm-meta span{display:inline-flex;align-items:center;gap:.25rem;}
+.firm-badges{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.5rem;}
+.badge-area{background:#f0f4ff;color:#0d1b4b;font-size:.65rem;font-weight:600;padding:.15rem .5rem;border-radius:50px;}
+.badge-nosite{background:#fef3c7;color:#92400e;font-size:.65rem;font-weight:700;padding:.15rem .5rem;border-radius:50px;}
+.crm-status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0;}
+
+/* Contact chips row */
+.contact-row{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.6rem;}
+.contact-chip{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .6rem;border-radius:8px;font-size:.73rem;font-weight:600;background:#f8fafc;color:#374151;border:1px solid #e8ecf0;white-space:nowrap;overflow:hidden;max-width:180px;text-overflow:ellipsis;}
+.contact-chip i{flex-shrink:0;color:#9ca3af;}
+.contact-chip a{color:#374151;text-decoration:none;overflow:hidden;text-overflow:ellipsis;}
+
+/* Row action bar */
+.card-actions{display:flex;align-items:center;justify-content:space-between;margin-top:.75rem;padding-top:.65rem;border-top:1px solid #f1f5f9;}
+.btn-view{padding:.3rem .8rem;background:#0d1b4b;color:#fff;border-radius:8px;font-size:.75rem;font-weight:700;border:none;display:inline-flex;align-items:center;gap:.3rem;cursor:pointer;}
+.btn-view-page{padding:.3rem .8rem;background:#f0f4ff;color:#0d1b4b;border-radius:8px;font-size:.75rem;font-weight:700;border:1.5px solid #c7d2fe;text-decoration:none;display:inline-flex;align-items:center;gap:.3rem;}
+.btn-view-page:hover{background:#e0e7ff;color:#0d1b4b;}
+
+/* Offcanvas quick-view */
+.qv-panel{position:fixed;bottom:0;left:0;right:0;height:0;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.18);z-index:1060;overflow:hidden;transition:height .32s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;}
+.qv-panel.open{height:82vh;}
+.qv-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1059;opacity:0;pointer-events:none;transition:opacity .25s;}
+.qv-backdrop.show{opacity:1;pointer-events:all;}
+.qv-handle{width:36px;height:4px;background:#e8ecf0;border-radius:4px;margin:.75rem auto .5rem;flex-shrink:0;}
+.qv-header{padding:.5rem 1.25rem .75rem;border-bottom:1px solid #f0f4f8;flex-shrink:0;}
+.qv-title{font-size:1rem;font-weight:800;color:#0d1b4b;line-height:1.3;word-break:break-word;}
+.qv-body{overflow-y:auto;flex:1;padding:1rem 1.25rem 2rem;-webkit-overflow-scrolling:touch;}
+.qv-row{display:flex;flex-direction:column;gap:.2rem;padding:.6rem 0;border-bottom:1px solid #f8fafc;}
+.qv-row:last-child{border-bottom:none;}
+.qv-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9ca3af;}
+.qv-value{font-size:.88rem;color:#1a202c;font-weight:500;word-break:break-all;}
+.qv-actions{display:flex;flex-wrap:wrap;gap:.5rem;padding:1rem 1.25rem;border-top:1px solid #f0f4f8;background:#fff;flex-shrink:0;}
+.qv-btn{flex:1;min-width:90px;padding:.55rem .75rem;border-radius:10px;font-size:.8rem;font-weight:700;border:none;display:inline-flex;align-items:center;justify-content:center;gap:.4rem;cursor:pointer;text-decoration:none;}
+
+/* Desktop: table still available via d-none d-md-block overrides */
+@media(min-width:768px){
+  .mobile-only{display:none!important;}
+  .desktop-only{display:block!important;}
+  .qv-panel.open{height:auto;max-height:90vh;top:5vh;left:auto;right:0;width:min(480px,48vw);border-radius:20px 0 0 20px;}
+  .qv-panel{right:0;left:auto;width:min(480px,48vw);bottom:0;height:100vh;top:0;border-radius:20px 0 0 20px;}
+}
+@media(max-width:767px){
+  .desktop-only{display:none!important;}
+}
+
+/* Status colors */
+.s-new{background:#fef3c7;color:#92400e;}
+.s-contacted{background:#dbeafe;color:#1e40af;}
+.s-converted{background:#d1fae5;color:#065f46;}
+.s-inactive{background:#f3f4f6;color:#6b7280;}
+
+/* Filter bar */
+.filter-bar{padding:.5rem 1rem 1rem;display:flex;flex-direction:column;gap:.5rem;}
+.filter-bar .form-control,.filter-bar .form-select{border-radius:10px;font-size:.85rem;border:1.5px solid #e8ecf0;}
+.filter-bar .form-control:focus,.filter-bar .form-select:focus{border-color:#0d1b4b;box-shadow:none;}
+.search-submit{background:#0d1b4b;color:#fff;border:none;border-radius:10px;padding:.55rem 1.25rem;font-weight:700;font-size:.85rem;display:flex;align-items:center;gap:.4rem;}
+
+/* Pagination */
+.page-link{border-radius:8px!important;border:1.5px solid #e8ecf0;color:#0d1b4b;font-weight:600;padding:.35rem .75rem;}
+.page-item.active .page-link{background:#0d1b4b;border-color:#0d1b4b;}
+</style>
+
+<div style="max-width:700px;margin:0 auto;padding-bottom:3rem;">
+
+  <!-- ── Header ───────────────────────────────────────────────────── -->
+  <div class="crm-header">
+    <a href="{{ url_for('dir_admin.index') }}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;flex-shrink:0;"><i class="fas fa-arrow-left"></i></a>
+    <h4>External Firms CRM</h4>
+    <div class="d-flex gap-2 ms-auto flex-shrink-0">
+      <a href="{{ url_for('dir_admin.add_external') }}" class="btn btn-sm fw-bold" style="background:#0d1b4b;color:#fff;border-radius:8px;"><i class="fas fa-plus me-1"></i>Add Firm</a>
+      <a href="{{ url_for('dir_admin.robot_dashboard') }}" class="btn btn-sm fw-bold" style="background:#FFD700;color:#0d1b4b;border-radius:8px;"><i class="fas fa-robot me-1"></i>Robot</a>
+    </div>
   </div>
 
-  <!-- CRM Status Chips -->
-  <div class="d-flex flex-wrap gap-2 mb-4">
-    <a href="{{ url_for('dir_admin.external_firms') }}" class="btn btn-sm {% if not filters.crm_status and not filters.no_website %}btn-dark{% else %}btn-outline-secondary{% endif %}" style="border-radius:50px;">All <span class="badge bg-light text-dark ms-1">{{ counts.total }}</span></a>
-    <a href="?crm_status=new" class="btn btn-sm {% if filters.crm_status == 'new' %}btn-warning text-dark{% else %}btn-outline-warning{% endif %}" style="border-radius:50px;">New <span class="badge bg-light text-dark ms-1">{{ counts.new }}</span></a>
-    <a href="?crm_status=contacted" class="btn btn-sm {% if filters.crm_status == 'contacted' %}btn-info text-white{% else %}btn-outline-info{% endif %}" style="border-radius:50px;">Contacted <span class="badge bg-light text-dark ms-1">{{ counts.contacted }}</span></a>
-    <a href="?crm_status=converted" class="btn btn-sm {% if filters.crm_status == 'converted' %}btn-success{% else %}btn-outline-success{% endif %}" style="border-radius:50px;">Converted <span class="badge bg-light text-dark ms-1">{{ counts.converted }}</span></a>
-    <a href="?no_website=1" class="btn btn-sm {% if filters.no_website %}btn-danger{% else %}btn-outline-danger{% endif %}" style="border-radius:50px;"><i class="fas fa-exclamation-triangle me-1"></i>No Website <span class="badge bg-light text-dark ms-1">{{ counts.no_website }}</span></a>
+  <!-- ── Status chips ──────────────────────────────────────────────── -->
+  <div class="chip-bar">
+    <a href="{{ url_for('dir_admin.external_firms') }}" class="chip chip-all {% if not filters.crm_status and not filters.no_website %}active{% endif %}">All <span style="background:rgba(0,0,0,.15);padding:.05rem .4rem;border-radius:50px;font-size:.7rem;margin-left:.1rem;">{{ counts.total }}</span></a>
+    <a href="?crm_status=new" class="chip chip-new {% if filters.crm_status == 'new' %}active{% endif %}">New <span style="background:rgba(0,0,0,.12);padding:.05rem .4rem;border-radius:50px;font-size:.7rem;margin-left:.1rem;">{{ counts.new }}</span></a>
+    <a href="?crm_status=contacted" class="chip chip-contacted {% if filters.crm_status == 'contacted' %}active{% endif %}">Contacted <span style="background:rgba(0,0,0,.12);padding:.05rem .4rem;border-radius:50px;font-size:.7rem;margin-left:.1rem;">{{ counts.contacted }}</span></a>
+    <a href="?crm_status=converted" class="chip chip-converted {% if filters.crm_status == 'converted' %}active{% endif %}">Converted <span style="background:rgba(0,0,0,.12);padding:.05rem .4rem;border-radius:50px;font-size:.7rem;margin-left:.1rem;">{{ counts.converted }}</span></a>
+    <a href="?no_website=1" class="chip chip-nowebsite {% if filters.no_website %}active{% endif %}"><i class="fas fa-exclamation-triangle"></i> No Website <span style="background:rgba(0,0,0,.12);padding:.05rem .4rem;border-radius:50px;font-size:.7rem;margin-left:.1rem;">{{ counts.no_website }}</span></a>
   </div>
 
-  <!-- Search/filter bar -->
-  <form method="GET" class="row g-2 mb-4">
-    <div class="col-md-4"><input class="form-control" name="q" placeholder="Search firm name or city…" value="{{ filters.q }}"></div>
-    <div class="col-md-3">
-      <select class="form-select" name="state" onchange="this.form.submit()">
+  <!-- ── Search / Filter ───────────────────────────────────────────── -->
+  <form method="GET" class="filter-bar">
+    <input class="form-control" name="q" placeholder="Search firm name or city…" value="{{ filters.q }}">
+    <div class="d-flex gap-2">
+      <select class="form-select flex-grow-1" name="state" onchange="this.form.submit()">
         <option value="">All States</option>
         {% for s in states %}<option value="{{ s }}" {% if filters.state == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
       </select>
+      <input class="form-control" style="max-width:130px;" name="country" placeholder="Country" value="{{ filters.country }}">
     </div>
-    <div class="col-md-2">
-      <input class="form-control" name="country" placeholder="Country" value="{{ filters.country }}">
-    </div>
-    <div class="col-md-2">
-      <button type="submit" class="btn btn-primary w-100" style="background:#0d1b4b;border-color:#0d1b4b;border-radius:8px;"><i class="fas fa-search"></i></button>
-    </div>
+    <button type="submit" class="search-submit"><i class="fas fa-search"></i> Search</button>
   </form>
 
-  <!-- Table -->
-  <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;overflow:hidden;">
-    <table class="table table-hover mb-0">
-      <thead style="background:#f8fafc;">
-        <tr>
-          <th class="ps-4">Firm</th>
-          <th>Location</th>
-          <th>Contact</th>
-          <th>Source</th>
-          <th>CRM Status</th>
-          <th>Rating</th>
-          <th class="pe-4 text-end">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for firm in firms.items %}
-        <tr>
-          <td class="ps-4">
-            <div>
-              <div class="fw-semibold" style="font-size:.9rem;">{{ firm.name }}</div>
-              {% if not firm.has_website %}<span style="background:#fef3c7;color:#92400e;font-size:.68rem;font-weight:700;padding:.15rem .5rem;border-radius:50px;"><i class="fas fa-exclamation-triangle me-1"></i>No Website</span>{% endif %}
-              {% if firm.practice_areas %}
-              <div class="mt-1">{% for a in firm.practice_areas[:2] %}<span style="background:#f0f4ff;color:#0d1b4b;font-size:.65rem;font-weight:600;padding:.1rem .45rem;border-radius:50px;">{{ a }}</span> {% endfor %}</div>
-              {% endif %}
-            </div>
-          </td>
-          <td>
-            <div style="font-size:.82rem;">{{ firm.city or '—' }}</div>
-            <div class="text-muted" style="font-size:.75rem;">{{ firm.state }}{% if firm.country and firm.country != 'Nigeria' %}, {{ firm.country }}{% endif %}</div>
-          </td>
-          <td>
-            {% if firm.phone %}<div style="font-size:.8rem;"><i class="fas fa-phone me-1 text-muted"></i>{{ firm.phone }}</div>{% endif %}
-            {% if firm.website %}<div style="font-size:.78rem;"><i class="fas fa-globe me-1 text-muted"></i><a href="{{ firm.website }}" target="_blank" class="text-truncate d-inline-block" style="max-width:140px;">{{ firm.website }}</a></div>{% endif %}
-          </td>
-          <td>
-            {% if firm.source == 'google_maps' %}<span style="background:#e8f5e9;color:#2e7d32;font-size:.72rem;font-weight:700;padding:.2rem .6rem;border-radius:50px;"><i class="fab fa-google me-1"></i>Maps</span>
-            {% else %}<span style="background:#f0f4ff;color:#0d1b4b;font-size:.72rem;font-weight:700;padding:.2rem .6rem;border-radius:50px;"><i class="fas fa-hand me-1"></i>Manual</span>{% endif %}
-          </td>
-          <td>
-            <select class="form-select form-select-sm crm-status-select" data-firm-id="{{ firm.id }}" style="font-size:.78rem;border-radius:8px;width:auto;min-width:110px;">
-              {% for s in ['new','contacted','converted','inactive'] %}
-              <option value="{{ s }}" {% if firm.crm_status == s %}selected{% endif %}>{{ s|capitalize }}</option>
-              {% endfor %}
-            </select>
-          </td>
-          <td>
-            {% if firm.google_rating %}<div style="font-size:.82rem;color:#ffc107;"><i class="fas fa-star me-1"></i>{{ firm.google_rating }}</div>{% else %}<span class="text-muted small">—</span>{% endif %}
-            {% if firm.crm_notes %}<div class="text-muted" style="font-size:.72rem;"><i class="fas fa-sticky-note me-1"></i>{{ firm.crm_notes|length }} note{{ 's' if firm.crm_notes|length != 1 }}</div>{% endif %}
-          </td>
-          <td class="pe-4 text-end">
-            <a href="{{ url_for('dir_admin.external_detail', firm_id=firm.id) }}" class="btn btn-sm btn-outline-primary" style="border-radius:8px;">View</a>
-          </td>
-        </tr>
-        {% else %}
-        <tr><td colspan="7" class="text-center py-5 text-muted"><i class="fas fa-database fa-2x mb-2 d-block"></i>No firms found. Run the robot to discover firms!</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <!-- ── Firm cards ─────────────────────────────────────────────────── -->
+  <div style="padding:0 1rem;">
+    {% for firm in firms.items %}
+    {% set status_cls = {'new':'s-new','contacted':'s-contacted','converted':'s-converted','inactive':'s-inactive'}.get(firm.crm_status or 'new','s-new') %}
+    <div class="firm-card" onclick="openQuickView(this)" 
+         data-id="{{ firm.id }}"
+         data-name="{{ firm.name|e }}"
+         data-city="{{ firm.city or '' }}"
+         data-state="{{ firm.state or '' }}"
+         data-country="{{ firm.country or '' }}"
+         data-phone="{{ firm.phone or '' }}"
+         data-whatsapp="{{ firm.whatsapp or '' }}"
+         data-email="{{ firm.email or '' }}"
+         data-website="{{ firm.website or '' }}"
+         data-crm="{{ firm.crm_status or 'new' }}"
+         data-stage="{{ firm.pipeline_stage or 'new' }}"
+         data-score="{{ firm.lead_score or 0 }}"
+         data-source="{{ firm.source or '' }}"
+         data-rating="{{ firm.google_rating or '' }}"
+         data-areas="{{ firm.practice_areas[:4]|join(', ') if firm.practice_areas else '' }}"
+         data-has-website="{{ 'yes' if firm.has_website else 'no' }}"
+         data-gmb="{{ 'verified' if firm.gmb_verified else 'unverified' }}"
+         data-detail-url="{{ url_for('dir_admin.external_detail', firm_id=firm.id) }}"
+         data-maps-url="{{ firm.google_maps_url or '' }}">
+
+      <!-- Top row -->
+      <div class="d-flex align-items-start gap-2">
+        <div style="flex:1;min-width:0;">
+          <div class="firm-name">{{ firm.name }}</div>
+          <div class="firm-meta">
+            {% if firm.city or firm.state %}<span><i class="fas fa-map-marker-alt" style="font-size:.65rem;color:#9ca3af;"></i>{{ firm.city }}{% if firm.city and firm.state %}, {% endif %}{{ firm.state }}</span>{% endif %}
+            {% if firm.country and firm.country != 'Nigeria' %}<span><i class="fas fa-globe" style="font-size:.65rem;color:#9ca3af;"></i>{{ firm.country }}</span>{% endif %}
+            {% if firm.google_rating %}<span><i class="fas fa-star" style="font-size:.65rem;color:#ffc107;"></i>{{ firm.google_rating }}</span>{% endif %}
+          </div>
+        </div>
+        <div class="d-flex flex-column align-items-end gap-1 flex-shrink-0">
+          <span class="{{ status_cls }}" style="font-size:.68rem;font-weight:700;padding:.2rem .6rem;border-radius:50px;">{{ (firm.crm_status or 'new')|capitalize }}</span>
+          <span style="background:#f0f4ff;color:#0d1b4b;font-size:.68rem;font-weight:700;padding:.15rem .5rem;border-radius:50px;">{{ firm.lead_score or 0 }}/100</span>
+        </div>
+      </div>
+
+      <!-- Badges -->
+      <div class="firm-badges">
+        {% if not firm.has_website %}<span class="badge-nosite"><i class="fas fa-exclamation-triangle me-1"></i>No Website</span>{% endif %}
+        {% for a in firm.practice_areas[:3] %}<span class="badge-area">{{ a }}</span>{% endfor %}
+        {% if firm.source == 'google_maps' %}<span style="background:#e8f5e9;color:#2e7d32;font-size:.65rem;font-weight:700;padding:.15rem .5rem;border-radius:50px;"><i class="fab fa-google me-1"></i>Maps</span>{% endif %}
+      </div>
+
+      <!-- Contact row -->
+      {% if firm.phone or firm.website or firm.email %}
+      <div class="contact-row">
+        {% if firm.phone %}<span class="contact-chip" onclick="event.stopPropagation()"><i class="fas fa-phone"></i><a href="tel:{{ firm.phone }}">{{ firm.phone }}</a></span>{% endif %}
+        {% if firm.website %}<span class="contact-chip" onclick="event.stopPropagation()"><i class="fas fa-globe"></i><a href="{{ firm.website }}" target="_blank" rel="noopener">{{ firm.website|replace('https://','') | replace('http://','') | truncate(28,true,'…') }}</a></span>{% endif %}
+      </div>
+      {% endif %}
+
+      <!-- Action bar -->
+      <div class="card-actions">
+        <div class="d-flex align-items-center gap-2">
+          <select class="crm-status-select" data-firm-id="{{ firm.id }}" style="font-size:.72rem;border-radius:8px;border:1.5px solid #e8ecf0;padding:.25rem .5rem;background:#fff;color:#374151;font-weight:600;" onclick="event.stopPropagation()" onchange="updateStatus(this)">
+            {% for s in ['new','contacted','converted','inactive'] %}
+            <option value="{{ s }}" {% if firm.crm_status == s %}selected{% endif %}>{{ s|capitalize }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="d-flex gap-2" onclick="event.stopPropagation()">
+          <button class="btn-view" onclick="openQuickViewById({{ firm.id }})"><i class="fas fa-eye"></i> Quick View</button>
+          <a href="{{ url_for('dir_admin.external_detail', firm_id=firm.id) }}" class="btn-view-page"><i class="fas fa-external-link-alt"></i> Full Page</a>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:4rem 2rem;background:#fff;border-radius:16px;border:1px solid #e8ecf0;">
+      <i class="fas fa-database fa-2x mb-3 d-block" style="color:#e0e0e0;"></i>
+      <div class="fw-bold text-muted mb-1">No firms found</div>
+      <div class="text-muted small mb-3">Run the robot to discover law firms automatically.</div>
+      <a href="{{ url_for('dir_admin.robot_dashboard') }}" class="btn btn-sm fw-bold" style="background:#0d1b4b;color:#FFD700;border-radius:8px;"><i class="fas fa-robot me-2"></i>Open Robot</a>
+    </div>
+    {% endfor %}
+
+    <!-- Pagination -->
+    {% if firms.pages > 1 %}
+    <nav class="mt-3">
+      <ul class="pagination justify-content-center flex-wrap gap-1" style="font-size:.82rem;">
+        {% if firms.has_prev %}<li class="page-item"><a class="page-link" href="?{% for k,v in filters.items() %}{% if v %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ firms.prev_num }}">‹</a></li>{% endif %}
+        {% for p in firms.iter_pages() %}{% if p %}<li class="page-item {% if p == firms.page %}active{% endif %}"><a class="page-link" href="?{% for k,v in filters.items() %}{% if v %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ p }}">{{ p }}</a></li>{% else %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}{% endfor %}
+        {% if firms.has_next %}<li class="page-item"><a class="page-link" href="?{% for k,v in filters.items() %}{% if v %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ firms.next_num }}">›</a></li>{% endif %}
+      </ul>
+    </nav>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ── Quick-View Slide Panel ──────────────────────────────────────── -->
+<div class="qv-backdrop" id="qvBackdrop" onclick="closeQuickView()"></div>
+<div class="qv-panel" id="qvPanel">
+  <div class="qv-handle" id="qvDragHandle"></div>
+  <div class="qv-header">
+    <div class="d-flex align-items-start gap-2">
+      <div style="flex:1;min-width:0;">
+        <div class="qv-title" id="qvName">—</div>
+        <div id="qvBadges" class="d-flex flex-wrap gap-1 mt-1"></div>
+      </div>
+      <button onclick="closeQuickView()" style="background:none;border:none;padding:.25rem;border-radius:8px;color:#9ca3af;font-size:1.1rem;flex-shrink:0;"><i class="fas fa-times"></i></button>
+    </div>
   </div>
 
-  {% if firms.pages > 1 %}
-  <nav class="mt-3">
-    <ul class="pagination justify-content-center">
-      {% if firms.has_prev %}<li class="page-item"><a class="page-link" href="?{% for k,v in filters.items() %}{% if v %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ firms.prev_num }}">‹</a></li>{% endif %}
-      {% for p in firms.iter_pages() %}{% if p %}<li class="page-item {% if p == firms.page %}active{% endif %}"><a class="page-link" href="?page={{ p }}">{{ p }}</a></li>{% else %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}{% endfor %}
-      {% if firms.has_next %}<li class="page-item"><a class="page-link" href="?{% for k,v in filters.items() %}{% if v %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ firms.next_num }}">›</a></li>{% endif %}
-    </ul>
-  </nav>
-  {% endif %}
+  <div class="qv-body">
+    <!-- Location -->
+    <div class="qv-row">
+      <div class="qv-label"><i class="fas fa-map-marker-alt me-1"></i>Location</div>
+      <div class="qv-value" id="qvLocation">—</div>
+    </div>
+    <!-- Contact -->
+    <div class="qv-row" id="qvPhoneRow">
+      <div class="qv-label"><i class="fas fa-phone me-1"></i>Phone</div>
+      <div class="qv-value"><a id="qvPhone" href="#" style="color:#0d1b4b;">—</a></div>
+    </div>
+    <div class="qv-row" id="qvWaRow">
+      <div class="qv-label"><i class="fab fa-whatsapp me-1"></i>WhatsApp</div>
+      <div class="qv-value"><a id="qvWa" href="#" target="_blank" style="color:#25d366;">—</a></div>
+    </div>
+    <div class="qv-row" id="qvEmailRow">
+      <div class="qv-label"><i class="fas fa-envelope me-1"></i>Email</div>
+      <div class="qv-value"><a id="qvEmail" href="#" style="color:#0d1b4b;">—</a></div>
+    </div>
+    <div class="qv-row" id="qvWebRow">
+      <div class="qv-label"><i class="fas fa-globe me-1"></i>Website</div>
+      <div class="qv-value"><a id="qvWeb" href="#" target="_blank" rel="noopener" style="color:#3b82f6;word-break:break-all;">—</a></div>
+    </div>
+    <!-- CRM & Pipeline -->
+    <div class="qv-row">
+      <div class="qv-label"><i class="fas fa-tag me-1"></i>CRM Status</div>
+      <div class="qv-value">
+        <select id="qvStatusSel" style="border-radius:8px;border:1.5px solid #e8ecf0;padding:.3rem .6rem;font-size:.85rem;font-weight:600;" onchange="updateStatusFromPanel(this)">
+          {% for s in ['new','contacted','converted','inactive'] %}
+          <option value="{{ s }}">{{ s|capitalize }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="qv-row">
+      <div class="qv-label"><i class="fas fa-chart-line me-1"></i>Pipeline Stage</div>
+      <div class="qv-value" id="qvStage">—</div>
+    </div>
+    <div class="qv-row">
+      <div class="qv-label"><i class="fas fa-star me-1"></i>Lead Score &amp; Rating</div>
+      <div class="qv-value" id="qvScore">—</div>
+    </div>
+    <div class="qv-row">
+      <div class="qv-label"><i class="fas fa-info-circle me-1"></i>Practice Areas</div>
+      <div class="qv-value" id="qvAreas">—</div>
+    </div>
+    <div class="qv-row">
+      <div class="qv-label"><i class="fas fa-map-pin me-1"></i>Google Maps</div>
+      <div class="qv-value" id="qvMapsRow">—</div>
+    </div>
+  </div>
+
+  <div class="qv-actions">
+    <a id="qvCallBtn" href="#" class="qv-btn" style="background:#e8f5e9;color:#065f46;"><i class="fas fa-phone"></i> Call</a>
+    <a id="qvWaBtn" href="#" target="_blank" class="qv-btn" style="background:#dcfce7;color:#166534;"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+    <a id="qvFullBtn" href="#" class="qv-btn" style="background:#0d1b4b;color:#FFD700;flex-grow:2;"><i class="fas fa-id-card"></i> View Full Profile</a>
+  </div>
 </div>
 
 <script>
-document.querySelectorAll('.crm-status-select').forEach(sel => {
-  sel.addEventListener('change', async function() {
-    const resp = await fetch(`/superadmin/directory/external/${this.dataset.firmId}/update-status`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: `crm_status=${this.value}&csrf_token={{ csrf_token() }}`
-    });
-    const d = await resp.json();
-    if (!d.success) alert('Failed to update status');
+const CSRF = '{{ csrf_token() }}';
+let currentFirmId = null;
+
+// ── Quick-view open/close ────────────────────────────────────────────
+function openQuickView(card) {
+  const d = card.dataset;
+  currentFirmId = d.id;
+
+  // Header
+  document.getElementById('qvName').textContent = d.name;
+  const badges = document.getElementById('qvBadges');
+  badges.innerHTML = '';
+  if (d.hasWebsite === 'no') badges.innerHTML += `<span class="badge-nosite"><i class="fas fa-exclamation-triangle me-1"></i>No Website</span>`;
+  if (d.gmb === 'verified') badges.innerHTML += `<span style="background:#d1fae5;color:#065f46;font-size:.68rem;font-weight:700;padding:.15rem .5rem;border-radius:50px;"><i class="fas fa-check-circle me-1"></i>GMB Verified</span>`;
+  if (d.source === 'google_maps') badges.innerHTML += `<span style="background:#e8f5e9;color:#2e7d32;font-size:.68rem;font-weight:700;padding:.15rem .5rem;border-radius:50px;"><i class="fab fa-google me-1"></i>Maps</span>`;
+
+  // Location
+  const loc = [d.city, d.state, (d.country && d.country !== 'Nigeria') ? d.country : ''].filter(Boolean).join(', ');
+  document.getElementById('qvLocation').textContent = loc || '—';
+
+  // Phone
+  if (d.phone) { document.getElementById('qvPhoneRow').style.display = ''; document.getElementById('qvPhone').textContent = d.phone; document.getElementById('qvPhone').href = `tel:${d.phone}`; }
+  else document.getElementById('qvPhoneRow').style.display = 'none';
+
+  // WhatsApp
+  if (d.whatsapp) { document.getElementById('qvWaRow').style.display = ''; document.getElementById('qvWa').textContent = d.whatsapp; document.getElementById('qvWa').href = `https://wa.me/${d.whatsapp.replace(/\+/g,'')}`; }
+  else document.getElementById('qvWaRow').style.display = 'none';
+
+  // Email
+  if (d.email) { document.getElementById('qvEmailRow').style.display = ''; document.getElementById('qvEmail').textContent = d.email; document.getElementById('qvEmail').href = `mailto:${d.email}`; }
+  else document.getElementById('qvEmailRow').style.display = 'none';
+
+  // Website
+  if (d.website) { document.getElementById('qvWebRow').style.display = ''; document.getElementById('qvWeb').textContent = d.website; document.getElementById('qvWeb').href = d.website; }
+  else document.getElementById('qvWebRow').style.display = 'none';
+
+  // CRM status selector
+  const sel = document.getElementById('qvStatusSel');
+  sel.value = d.crm;
+  sel.dataset.firmId = d.id;
+
+  // Stage, score, areas, maps
+  const stageLabels = {new:'New Lead',discovered:'Discovered',verified:'Verified',contacted:'Contacted',email_sent:'Email Sent',whatsapp_sent:'WhatsApp Sent',interested:'Interested',meeting_scheduled:'Meeting Scheduled',demo_completed:'Demo Done',negotiating:'Negotiating',won:'Won 🏆',lost:'Lost',customer:'Customer 👑'};
+  document.getElementById('qvStage').textContent = stageLabels[d.stage] || d.stage || '—';
+  document.getElementById('qvScore').textContent = (d.score ? d.score + '/100' : '0/100') + (d.rating ? ' · ⭐ ' + d.rating : '');
+  document.getElementById('qvAreas').textContent = d.areas || '—';
+
+  // Maps
+  const mapsEl = document.getElementById('qvMapsRow');
+  if (d.mapsUrl) { mapsEl.innerHTML = `<a href="${d.mapsUrl}" target="_blank" style="color:#3b82f6;"><i class="fab fa-google me-1"></i>View on Google Maps</a>`; }
+  else { mapsEl.textContent = '—'; }
+
+  // Action buttons
+  document.getElementById('qvCallBtn').href = d.phone ? `tel:${d.phone}` : '#';
+  document.getElementById('qvCallBtn').style.display = d.phone ? '' : 'none';
+  document.getElementById('qvWaBtn').href = d.whatsapp ? `https://wa.me/${d.whatsapp.replace(/\+/g,'')}` : '#';
+  document.getElementById('qvWaBtn').style.display = d.whatsapp ? '' : 'none';
+  document.getElementById('qvFullBtn').href = d.detailUrl;
+
+  document.getElementById('qvBackdrop').classList.add('show');
+  document.getElementById('qvPanel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function openQuickViewById(firmId) {
+  const card = document.querySelector(`.firm-card[data-id="${firmId}"]`);
+  if (card) openQuickView(card);
+}
+
+function closeQuickView() {
+  document.getElementById('qvBackdrop').classList.remove('show');
+  document.getElementById('qvPanel').classList.remove('open');
+  document.body.style.overflow = '';
+  currentFirmId = null;
+}
+
+// Close on Escape
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeQuickView(); });
+
+// Drag-to-dismiss (mobile)
+let dragStart = 0;
+const handle = document.getElementById('qvDragHandle');
+const panel = document.getElementById('qvPanel');
+handle.addEventListener('touchstart', e => { dragStart = e.touches[0].clientY; }, {passive:true});
+handle.addEventListener('touchend', e => {
+  const delta = e.changedTouches[0].clientY - dragStart;
+  if (delta > 60) closeQuickView();
+}, {passive:true});
+
+// ── Status update ──────────────────────────────────────────────────
+async function updateStatus(sel) {
+  const resp = await fetch(`/superadmin/directory/external/${sel.dataset.firmId}/update-status`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    body: `crm_status=${sel.value}&csrf_token=${CSRF}`
   });
-});
+  const d = await resp.json();
+  if (d.success) showToast('Status updated ✓');
+  else showToast('Update failed', '#dc3545');
+}
+
+async function updateStatusFromPanel(sel) {
+  const firmId = sel.dataset.firmId;
+  await updateStatus(sel);
+  // Also sync the card's selector
+  const cardSel = document.querySelector(`.firm-card[data-id="${firmId}"] .crm-status-select`);
+  if (cardSel) cardSel.value = sel.value;
+  // Update card's status badge
+  const card = document.querySelector(`.firm-card[data-id="${firmId}"]`);
+  if (card) card.dataset.crm = sel.value;
+}
+
+// ── Toast ─────────────────────────────────────────────────────────
+function showToast(msg, bg='#10b981') {
+  const t = document.createElement('div');
+  t.style.cssText = `position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:${bg};color:#fff;padding:.6rem 1.25rem;border-radius:50px;font-weight:700;font-size:.82rem;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.2);pointer-events:none;white-space:nowrap;`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.style.opacity='0', 2000);
+  setTimeout(() => t.remove(), 2400);
+}
 </script>
 {% endblock %}
