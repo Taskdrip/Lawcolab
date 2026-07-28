@@ -177,6 +177,204 @@ def platform_analytics():
     
     return render_template('superadmin/analytics.html', analytics=analytics)
 
+@superadmin_bp.route('/web-analytics')
+@require_super_admin
+def web_analytics():
+    """Advanced web analytics dashboard with AI robot recommendations."""
+    from sqlalchemy import text
+    days = request.args.get('days', 30, type=int)
+    if days not in (7, 30, 90):
+        days = 30
+
+    def _q(sql, **kw):
+        try:
+            return db.session.execute(text(sql), kw).fetchall()
+        except Exception:
+            return []
+
+    def _scalar(sql, **kw):
+        try:
+            return db.session.execute(text(sql), kw).scalar() or 0
+        except Exception:
+            return 0
+
+    interval = f'{days} days'
+
+    # ── KPIs ──────────────────────────────────────────────────────────────────
+    total_visits = _scalar(
+        "SELECT COUNT(*) FROM page_analytics WHERE created_at > NOW() - INTERVAL :i",
+        i=interval)
+    unique_sessions = _scalar(
+        "SELECT COUNT(DISTINCT session_id) FROM page_analytics WHERE created_at > NOW() - INTERVAL :i",
+        i=interval)
+    prev_visits = _scalar(
+        "SELECT COUNT(*) FROM page_analytics WHERE created_at BETWEEN NOW()-INTERVAL :p AND NOW()-INTERVAL :i",
+        p=f'{days*2} days', i=interval)
+    visits_delta = round(((total_visits - prev_visits) / prev_visits * 100), 1) if prev_visits > 0 else 0
+
+    # Bounce rate: sessions with only 1 page view
+    total_sessions = _scalar(
+        "SELECT COUNT(DISTINCT session_id) FROM page_analytics WHERE created_at > NOW() - INTERVAL :i",
+        i=interval)
+    single_page_sessions = _scalar(
+        """SELECT COUNT(*) FROM (
+              SELECT session_id FROM page_analytics
+              WHERE created_at > NOW() - INTERVAL :i
+              GROUP BY session_id HAVING COUNT(*) = 1
+           ) s""",
+        i=interval)
+    bounce_rate = round((single_page_sessions / total_sessions * 100), 1) if total_sessions > 0 else 0.0
+
+    # Pages per session
+    pages_per_session = round((total_visits / unique_sessions), 2) if unique_sessions > 0 else 0.0
+
+    # ── Daily visits trend ────────────────────────────────────────────────────
+    daily_rows = _q(
+        """SELECT TO_CHAR(created_at::date, 'Mon DD') as day,
+                  DATE(created_at) as raw_date,
+                  COUNT(*) as visits
+           FROM page_analytics
+           WHERE created_at > NOW() - INTERVAL :i
+           GROUP BY DATE(created_at), TO_CHAR(created_at::date, 'Mon DD')
+           ORDER BY raw_date""",
+        i=interval)
+    daily_labels = [r[0] for r in daily_rows]
+    daily_data   = [r[2] for r in daily_rows]
+
+    # ── Top pages ─────────────────────────────────────────────────────────────
+    top_pages_rows = _q(
+        """SELECT page_path, COUNT(*) as visits
+           FROM page_analytics
+           WHERE created_at > NOW() - INTERVAL :i
+           GROUP BY page_path ORDER BY visits DESC LIMIT 10""",
+        i=interval)
+    top_pages = [{'page_path': r[0], 'visits': r[1]} for r in top_pages_rows]
+
+    # ── Device breakdown ──────────────────────────────────────────────────────
+    device_rows = _q(
+        """SELECT device_type, COUNT(*) as cnt
+           FROM page_analytics WHERE created_at > NOW() - INTERVAL :i
+           GROUP BY device_type ORDER BY cnt DESC""",
+        i=interval)
+    device_labels = [r[0].title() for r in device_rows]
+    device_data   = [r[1] for r in device_rows]
+    device_pcts   = {}
+    if device_rows:
+        _total = sum(r[1] for r in device_rows) or 1
+        for r in device_rows:
+            device_pcts[r[0]] = round(r[1] / _total * 100, 1)
+
+    # ── Browser breakdown ─────────────────────────────────────────────────────
+    browser_rows = _q(
+        """SELECT browser, COUNT(*) as cnt
+           FROM page_analytics WHERE created_at > NOW() - INTERVAL :i
+           GROUP BY browser ORDER BY cnt DESC LIMIT 8""",
+        i=interval)
+    browser_labels = [r[0] for r in browser_rows]
+    browser_data   = [r[1] for r in browser_rows]
+
+    # ── OS breakdown ──────────────────────────────────────────────────────────
+    os_rows = _q(
+        """SELECT os_name, COUNT(*) as cnt
+           FROM page_analytics WHERE created_at > NOW() - INTERVAL :i
+           GROUP BY os_name ORDER BY cnt DESC LIMIT 6""",
+        i=interval)
+
+    # ── Top referrers ─────────────────────────────────────────────────────────
+    ref_rows = _q(
+        """SELECT referrer, COUNT(*) as cnt
+           FROM page_analytics
+           WHERE referrer IS NOT NULL AND referrer != ''
+             AND created_at > NOW() - INTERVAL :i
+           GROUP BY referrer ORDER BY cnt DESC LIMIT 10""",
+        i=interval)
+    top_referrers = [{'referrer': r[0][:80], 'cnt': r[1]} for r in ref_rows]
+
+    # ── Country breakdown ─────────────────────────────────────────────────────
+    country_rows = _q(
+        """SELECT country, COUNT(*) as cnt
+           FROM page_analytics WHERE created_at > NOW() - INTERVAL :i
+           GROUP BY country ORDER BY cnt DESC LIMIT 10""",
+        i=interval)
+
+    # ── AI Robot Recommendations ──────────────────────────────────────────────
+    import json as _json
+    recs = []
+
+    if bounce_rate > 70:
+        recs.append({'type':'danger','icon':'fa-exclamation-triangle','priority':1,
+            'title':f'High Bounce Rate — {bounce_rate:.0f}%',
+            'text':'Over 70% of visitors leave after a single page. Fix this by strengthening your above-the-fold CTA, reducing page load time, and ensuring your headlines match user search intent. Add internal links to draw visitors deeper into the site.'})
+    elif bounce_rate > 50:
+        recs.append({'type':'warning','icon':'fa-chart-line','priority':2,
+            'title':f'Bounce Rate at {bounce_rate:.0f}% — Room to Improve',
+            'text':'Half your visitors leave after one page. Add a "Related Articles" or "You might also like" section to every page. A sticky CTA bar or exit-intent prompt can also recover departing visitors.'})
+    else:
+        recs.append({'type':'success','icon':'fa-check-circle','priority':5,
+            'title':f'Healthy Bounce Rate ({bounce_rate:.0f}%)',
+            'text':'Visitors are exploring multiple pages — your content and navigation are working. Keep publishing regular blog posts and maintain fast page loads to sustain this engagement.'})
+
+    mobile_pct = device_pcts.get('mobile', 0)
+    if mobile_pct > 60:
+        recs.append({'type':'info','icon':'fa-mobile-alt','priority':2,
+            'title':f'{mobile_pct:.0f}% Mobile Traffic — Optimise for Small Screens',
+            'text':'The majority of your visitors are on mobile. Audit every page on a real phone: check tap-target size, font readability, hero image file size, and form usability. Google also uses mobile-first indexing, so mobile experience directly affects your search rankings.'})
+
+    if total_visits < 200:
+        recs.append({'type':'warning','icon':'fa-search','priority':1,
+            'title':'Grow Organic Traffic with Consistent Blog Content',
+            'text':'Publishing 2–3 SEO-optimised blog posts per week is the most cost-effective way to build long-term Google traffic. Target keywords like "law firm software Nigeria", "case management legal Africa", and "client portal law firm". Each post compounds over time.'})
+    elif total_visits < 1000:
+        recs.append({'type':'info','icon':'fa-rocket','priority':3,
+            'title':'Scale Traffic with Link Building and Social Sharing',
+            'text':'You have a solid traffic foundation. Accelerate growth by sharing blog posts in Nigerian bar association groups, LinkedIn law networks, and WhatsApp legal communities. Ask partner organisations to link to your directory pages — each external link boosts your Google authority.'})
+
+    if top_pages:
+        top = top_pages[0]
+        recs.append({'type':'info','icon':'fa-star','priority':3,
+            'title':f'Top Page: {top["page_path"]} — Maximise Its Conversion',
+            'text':f'Your highest-traffic page ({top["visits"]} views) is your best conversion asset. Add a prominent "Start Free Trial" CTA, a trust badge (e.g. "500+ law firms"), and one client testimonial. Even a 1% conversion improvement on this page is meaningful growth.'})
+
+    if pages_per_session < 1.5:
+        recs.append({'type':'warning','icon':'fa-sitemap','priority':2,
+            'title':'Improve Internal Linking to Increase Pages per Session',
+            'text':f'Visitors currently view an average of {pages_per_session} pages per visit. Increase this by adding contextual internal links within blog posts, a "Features" nav link, and a footer with links to key pages. More pages per session signals engagement to Google and increases trial signups.'})
+
+    recs.append({'type':'info','icon':'fa-sitemap','priority':4,
+        'title':'Submit Your Sitemap to Google Search Console',
+        'text':'Your sitemap is live at /sitemap.xml. Open search.google.com/search-console, add your property, and submit the sitemap URL. This tells Google about every public page, blog post, and directory listing — accelerating indexing and ranking.'})
+
+    recs.append({'type':'info','icon':'fa-link','priority':4,
+        'title':'Enable GA4 Measurement ID for Richer Analytics',
+        'text':'Set the GA4_MEASUREMENT_ID environment variable in Replit Secrets to enable Google Analytics 4 event tracking. GA4 adds conversion funnels, engagement time, user journeys, and real-time reporting on top of the internal analytics you see here.'})
+
+    recs = sorted(recs, key=lambda x: x['priority'])
+
+    import json as _json
+    return render_template('superadmin/web_analytics.html',
+        days=days,
+        total_visits=total_visits,
+        unique_sessions=unique_sessions,
+        prev_visits=prev_visits,
+        visits_delta=visits_delta,
+        bounce_rate=bounce_rate,
+        pages_per_session=pages_per_session,
+        daily_labels=_json.dumps(daily_labels),
+        daily_data=_json.dumps(daily_data),
+        top_pages=top_pages,
+        top_pages_labels=_json.dumps([p['page_path'][:30] for p in top_pages]),
+        top_pages_data=_json.dumps([p['visits'] for p in top_pages]),
+        device_labels=_json.dumps(device_labels),
+        device_data=_json.dumps(device_data),
+        browser_labels=_json.dumps(browser_labels),
+        browser_data=_json.dumps(browser_data),
+        os_rows=os_rows,
+        top_referrers=top_referrers,
+        country_rows=country_rows,
+        recs=recs,
+    )
+
+
 @superadmin_bp.route('/law-firms')
 @require_super_admin
 def manage_law_firms():

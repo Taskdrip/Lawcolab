@@ -1,0 +1,522 @@
+{% extends 'base.html' %}
+{% block title %}Web Analytics — LAWCOLAB Super Admin{% endblock %}
+{% block meta_robots %}noindex, nofollow{% endblock %}
+
+{% block additional_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ── Analytics Dashboard ── */
+.wa-topbar{background:#0d1b4b;padding:1.5rem 0;border-bottom:3px solid #FFD700;}
+.wa-topbar h1{color:#fff;font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:800;margin:0;}
+.wa-topbar .sub{color:rgba(255,255,255,.6);font-size:.82rem;margin-top:.2rem;}
+.wa-topbar .breadcrumb-item a{color:rgba(255,255,255,.6);}
+.wa-topbar .breadcrumb-item.active{color:#FFD700;}
+.wa-topbar .breadcrumb-item+.breadcrumb-item::before{color:rgba(255,255,255,.3);}
+
+/* Range pills */
+.range-pill{display:inline-flex;align-items:center;gap:.3rem;padding:.35rem .85rem;
+  border-radius:50px;font-size:.78rem;font-weight:600;text-decoration:none;
+  border:1.5px solid rgba(255,255,255,.25);color:rgba(255,255,255,.7);transition:all .15s;}
+.range-pill:hover,.range-pill.active{background:#FFD700;color:#0d1b4b;border-color:#FFD700;}
+
+/* KPI cards */
+.kpi-card{background:#fff;border-radius:16px;padding:1.5rem;
+  box-shadow:0 2px 12px rgba(0,0,0,.07);border-left:4px solid transparent;
+  transition:transform .2s,box-shadow .2s;}
+.kpi-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.1);}
+.kpi-card.primary{border-left-color:#0d1b4b;}
+.kpi-card.gold{border-left-color:#FFD700;}
+.kpi-card.green{border-left-color:#16a34a;}
+.kpi-card.red{border-left-color:#dc2626;}
+.kpi-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;
+  justify-content:center;font-size:1.1rem;margin-bottom:1rem;}
+.kpi-icon.bg-navy{background:rgba(13,27,75,.1);color:#0d1b4b;}
+.kpi-icon.bg-gold{background:rgba(255,215,0,.15);color:#b8870b;}
+.kpi-icon.bg-green{background:rgba(22,163,74,.1);color:#16a34a;}
+.kpi-icon.bg-red{background:rgba(220,38,38,.1);color:#dc2626;}
+.kpi-value{font-size:2.2rem;font-weight:800;color:#0d1b4b;line-height:1;}
+.kpi-label{font-size:.8rem;color:#64748b;margin-top:.4rem;font-weight:500;}
+.kpi-delta{font-size:.75rem;font-weight:700;margin-top:.5rem;display:inline-flex;align-items:center;gap:.25rem;}
+.kpi-delta.up{color:#16a34a;}
+.kpi-delta.down{color:#dc2626;}
+.kpi-delta.neutral{color:#64748b;}
+
+/* Charts */
+.chart-card{background:#fff;border-radius:16px;padding:1.5rem;
+  box-shadow:0 2px 12px rgba(0,0,0,.07);height:100%;}
+.chart-card h6{font-size:.82rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;color:#64748b;margin-bottom:1rem;}
+.chart-wrap{position:relative;}
+
+/* AI Robot Panel */
+.ai-panel{background:linear-gradient(135deg,#0d1b4b 0%,#1a3a6b 100%);
+  border-radius:16px;padding:1.5rem;box-shadow:0 4px 20px rgba(13,27,75,.25);}
+.ai-panel h5{color:#FFD700;font-family:'Playfair Display',serif;font-weight:800;
+  font-size:1.1rem;margin-bottom:.4rem;}
+.ai-panel .subtitle{color:rgba(255,255,255,.6);font-size:.8rem;margin-bottom:1.25rem;}
+.robot-badge{display:inline-flex;align-items:center;gap:.5rem;
+  background:rgba(255,215,0,.12);border:1px solid rgba(255,215,0,.3);
+  color:#FFD700;font-size:.7rem;font-weight:700;
+  padding:.2rem .7rem;border-radius:50px;letter-spacing:.05em;margin-bottom:.75rem;}
+.rec-item{background:rgba(255,255,255,.06);border-radius:12px;
+  padding:1rem 1.1rem;margin-bottom:.75rem;border-left:3px solid transparent;}
+.rec-item.danger{border-left-color:#ef4444;}
+.rec-item.warning{border-left-color:#f59e0b;}
+.rec-item.success{border-left-color:#22c55e;}
+.rec-item.info{border-left-color:#38bdf8;}
+.rec-item h6{color:#fff;font-size:.88rem;font-weight:700;margin-bottom:.3rem;}
+.rec-item p{color:rgba(255,255,255,.72);font-size:.8rem;line-height:1.55;margin:0;}
+.rec-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;font-size:.75rem;flex-shrink:0;margin-right:.75rem;}
+.rec-icon.danger{background:rgba(239,68,68,.2);color:#ef4444;}
+.rec-icon.warning{background:rgba(245,158,11,.2);color:#f59e0b;}
+.rec-icon.success{background:rgba(34,197,94,.2);color:#22c55e;}
+.rec-icon.info{background:rgba(56,189,248,.2);color:#38bdf8;}
+
+/* Tables */
+.data-table th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;
+  color:#64748b;font-weight:700;border-bottom:2px solid #f0f3fa;padding:.6rem .75rem;}
+.data-table td{font-size:.82rem;color:#374151;padding:.6rem .75rem;
+  border-bottom:1px solid #f8faff;vertical-align:middle;}
+.data-table tbody tr:hover{background:#f8faff;}
+.data-bar{height:6px;background:#e8eef4;border-radius:3px;overflow:hidden;min-width:60px;}
+.data-bar-fill{height:100%;background:linear-gradient(90deg,#0d1b4b,#1a3a6b);border-radius:3px;}
+
+/* Page path pill */
+.path-pill{font-size:.78rem;background:#f0f4ff;color:#0d1b4b;font-weight:600;
+  padding:.2rem .6rem;border-radius:6px;font-family:monospace;}
+
+/* Referrer */
+.ref-domain{font-size:.82rem;color:#374151;font-weight:600;}
+.ref-url{font-size:.72rem;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;}
+
+/* Country flag placeholder */
+.country-row td:first-child{font-size:.85rem;font-weight:600;color:#0d1b4b;}
+
+/* Device donut legend */
+.device-legend{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem;justify-content:center;}
+.device-legend-item{display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:#5a6474;}
+.device-dot{width:10px;height:10px;border-radius:50%;}
+
+/* No data state */
+.no-data{text-align:center;padding:3rem 1rem;color:#9aa3b0;}
+.no-data i{font-size:2.5rem;opacity:.3;display:block;margin-bottom:.75rem;}
+
+@media(max-width:768px){
+  .kpi-value{font-size:1.8rem;}
+  .ai-panel{padding:1.25rem;}
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Top bar -->
+<div class="wa-topbar">
+  <div class="container">
+    <nav aria-label="breadcrumb" class="mb-2">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{{ url_for('superadmin.dashboard') }}">Super Admin</a></li>
+        <li class="breadcrumb-item active">Web Analytics</li>
+      </ol>
+    </nav>
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <h1><i class="fas fa-chart-line me-2" style="color:#FFD700;"></i>Web Analytics</h1>
+        <div class="sub">Internal page tracking &bull; Visits, sessions, devices &amp; AI insights</div>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ url_for('superadmin.web_analytics', days=7) }}"
+           class="range-pill {% if days==7 %}active{% endif %}">7 days</a>
+        <a href="{{ url_for('superadmin.web_analytics', days=30) }}"
+           class="range-pill {% if days==30 %}active{% endif %}">30 days</a>
+        <a href="{{ url_for('superadmin.web_analytics', days=90) }}"
+           class="range-pill {% if days==90 %}active{% endif %}">90 days</a>
+        <a href="{{ url_for('superadmin.platform_analytics') }}"
+           class="range-pill" style="border-color:rgba(255,215,0,.4);color:#FFD700;">
+          <i class="fas fa-users me-1"></i>Platform Stats
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container py-4">
+
+  <!-- ── KPI Row ── -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="kpi-card primary">
+        <div class="kpi-icon bg-navy"><i class="fas fa-eye"></i></div>
+        <div class="kpi-value">{{ "{:,}".format(total_visits) }}</div>
+        <div class="kpi-label">Total Page Views</div>
+        {% if visits_delta != 0 %}
+        <div class="kpi-delta {% if visits_delta > 0 %}up{% elif visits_delta < 0 %}down{% else %}neutral{% endif %}">
+          <i class="fas fa-arrow-{% if visits_delta > 0 %}up{% else %}down{% endif %}"></i>
+          {{ visits_delta|abs }}% vs prior period
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="kpi-card gold">
+        <div class="kpi-icon bg-gold"><i class="fas fa-users"></i></div>
+        <div class="kpi-value">{{ "{:,}".format(unique_sessions) }}</div>
+        <div class="kpi-label">Unique Sessions</div>
+        <div class="kpi-delta neutral"><i class="fas fa-circle" style="font-size:.4rem;"></i>{{ days }}-day window</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="kpi-card {% if bounce_rate > 70 %}red{% elif bounce_rate > 50 %}gold{% else %}green{% endif %}">
+        <div class="kpi-icon {% if bounce_rate > 70 %}bg-red{% elif bounce_rate > 50 %}bg-gold{% else %}bg-green{% endif %}">
+          <i class="fas fa-percentage"></i>
+        </div>
+        <div class="kpi-value">{{ bounce_rate }}%</div>
+        <div class="kpi-label">Bounce Rate</div>
+        <div class="kpi-delta {% if bounce_rate < 50 %}up{% elif bounce_rate > 70 %}down{% else %}neutral{% endif %}">
+          <i class="fas fa-{% if bounce_rate < 50 %}thumbs-up{% elif bounce_rate > 70 %}exclamation-triangle{% else %}minus{% endif %}"></i>
+          {% if bounce_rate < 50 %}Good{% elif bounce_rate > 70 %}High{% else %}Moderate{% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="kpi-card green">
+        <div class="kpi-icon bg-green"><i class="fas fa-file-alt"></i></div>
+        <div class="kpi-value">{{ pages_per_session }}</div>
+        <div class="kpi-label">Pages / Session</div>
+        <div class="kpi-delta {% if pages_per_session >= 2 %}up{% else %}neutral{% endif %}">
+          <i class="fas fa-arrow-{% if pages_per_session >= 2 %}up{% else %}right{% endif %}"></i>
+          {% if pages_per_session >= 2 %}Engaged{% else %}1 session = avg{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- ── LEFT COLUMN ── -->
+    <div class="col-lg-8">
+
+      <!-- Daily visits chart -->
+      <div class="chart-card mb-4">
+        <h6><i class="fas fa-chart-area me-2"></i>Visits Over Last {{ days }} Days</h6>
+        {% if total_visits > 0 %}
+        <div class="chart-wrap" style="height:220px;">
+          <canvas id="dailyChart"></canvas>
+        </div>
+        {% else %}
+        <div class="no-data">
+          <i class="fas fa-chart-area"></i>
+          <p>No visits recorded yet. Pages will be tracked as visitors arrive.</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Top pages table -->
+      <div class="chart-card mb-4">
+        <h6><i class="fas fa-file-alt me-2"></i>Top Pages</h6>
+        {% if top_pages %}
+        <div class="table-responsive">
+          <table class="table data-table mb-0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Page Path</th>
+                <th>Views</th>
+                <th style="min-width:120px;">Share</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% set max_v = top_pages[0].visits if top_pages else 1 %}
+              {% for p in top_pages %}
+              <tr>
+                <td style="color:#94a3b8;font-size:.75rem;">{{ loop.index }}</td>
+                <td><span class="path-pill">{{ p.page_path }}</span></td>
+                <td style="font-weight:700;color:#0d1b4b;">{{ "{:,}".format(p.visits) }}</td>
+                <td>
+                  <div class="data-bar">
+                    <div class="data-bar-fill" style="width:{{ (p.visits / max_v * 100)|int }}%;"></div>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="no-data"><i class="fas fa-file-alt"></i><p>No page data yet.</p></div>
+        {% endif %}
+      </div>
+
+      <!-- Referrers -->
+      <div class="chart-card mb-4">
+        <h6><i class="fas fa-external-link-alt me-2"></i>Top Referrers</h6>
+        {% if top_referrers %}
+        <div class="table-responsive">
+          <table class="table data-table mb-0">
+            <thead>
+              <tr><th>#</th><th>Referrer</th><th>Visits</th></tr>
+            </thead>
+            <tbody>
+              {% for r in top_referrers %}
+              <tr>
+                <td style="color:#94a3b8;font-size:.75rem;">{{ loop.index }}</td>
+                <td>
+                  <div class="ref-domain">
+                    {% set domain = r.referrer | replace('https://','') | replace('http://','') %}
+                    {{ domain.split('/')[0] }}
+                  </div>
+                  <div class="ref-url">{{ r.referrer }}</div>
+                </td>
+                <td style="font-weight:700;color:#0d1b4b;">{{ r.cnt }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="no-data"><i class="fas fa-external-link-alt"></i><p>No referrer data yet. Most traffic is direct or from Google.</p></div>
+        {% endif %}
+      </div>
+
+      <!-- Countries -->
+      <div class="chart-card">
+        <h6><i class="fas fa-globe-africa me-2"></i>Countries</h6>
+        {% if country_rows %}
+        <div class="table-responsive">
+          <table class="table data-table mb-0">
+            <thead>
+              <tr><th>#</th><th>Country</th><th>Visits</th></tr>
+            </thead>
+            <tbody>
+              {% for row in country_rows %}
+              <tr>
+                <td style="color:#94a3b8;font-size:.75rem;">{{ loop.index }}</td>
+                <td style="font-weight:600;color:#0d1b4b;">{{ row[0] or 'Unknown' }}</td>
+                <td style="font-weight:700;color:#0d1b4b;">{{ row[1] }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:.75rem;color:#94a3b8;margin-top:.75rem;margin-bottom:0;">
+          <i class="fas fa-info-circle me-1"></i>
+          Country detection requires GeoIP. Set <code>GEOIP_DB_PATH</code> env var to enable automatic country identification.
+        </p>
+        {% else %}
+        <div class="no-data"><i class="fas fa-globe"></i><p>No country data yet.</p></div>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <!-- ── RIGHT COLUMN ── -->
+    <div class="col-lg-4">
+
+      <!-- AI Robot Panel -->
+      <div class="ai-panel mb-4">
+        <div class="robot-badge">🤖 &nbsp; AI ANALYST ROBOT</div>
+        <h5><i class="fas fa-brain me-2"></i>Smart Recommendations</h5>
+        <p class="subtitle">Based on your last {{ days }} days of traffic data</p>
+
+        {% for rec in recs %}
+        <div class="rec-item {{ rec.type }}">
+          <div class="d-flex align-items-start">
+            <div class="rec-icon {{ rec.type }}">
+              <i class="fas {{ rec.icon }}"></i>
+            </div>
+            <div>
+              <h6>{{ rec.title }}</h6>
+              <p>{{ rec.text }}</p>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+
+        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.1);">
+          <p style="font-size:.72rem;color:rgba(255,255,255,.4);margin:0;">
+            <i class="fas fa-sync me-1"></i>
+            Recommendations update automatically as new traffic data arrives.
+          </p>
+        </div>
+      </div>
+
+      <!-- Device breakdown -->
+      <div class="chart-card mb-4">
+        <h6><i class="fas fa-devices me-2"></i>Devices</h6>
+        {% if device_data %}
+        <div class="chart-wrap" style="height:180px;">
+          <canvas id="deviceChart"></canvas>
+        </div>
+        <div class="device-legend">
+          <div class="device-legend-item"><div class="device-dot" style="background:#0d1b4b;"></div>Desktop</div>
+          <div class="device-legend-item"><div class="device-dot" style="background:#FFD700;"></div>Mobile</div>
+          <div class="device-legend-item"><div class="device-dot" style="background:#16a34a;"></div>Tablet</div>
+        </div>
+        {% else %}
+        <div class="no-data"><i class="fas fa-tablet-alt"></i><p>No device data yet.</p></div>
+        {% endif %}
+      </div>
+
+      <!-- Browsers -->
+      <div class="chart-card mb-4">
+        <h6><i class="fas fa-globe me-2"></i>Browsers</h6>
+        {% if browser_data %}
+        <div class="chart-wrap" style="height:180px;">
+          <canvas id="browserChart"></canvas>
+        </div>
+        {% else %}
+        <div class="no-data"><i class="fas fa-globe"></i><p>No browser data yet.</p></div>
+        {% endif %}
+      </div>
+
+      <!-- OS -->
+      <div class="chart-card mb-4">
+        <h6><i class="fas fa-desktop me-2"></i>Operating Systems</h6>
+        {% if os_rows %}
+        <table class="table data-table mb-0">
+          <tbody>
+            {% for row in os_rows %}
+            <tr>
+              <td style="font-weight:600;color:#0d1b4b;">
+                {% if 'Windows' in row[0] %}<i class="fab fa-windows me-2" style="color:#0078d4;"></i>
+                {% elif 'macOS' in row[0] %}<i class="fab fa-apple me-2" style="color:#555;"></i>
+                {% elif 'Android' in row[0] %}<i class="fab fa-android me-2" style="color:#3ddc84;"></i>
+                {% elif 'iOS' in row[0] %}<i class="fab fa-apple me-2" style="color:#555;"></i>
+                {% elif 'Linux' in row[0] %}<i class="fab fa-linux me-2" style="color:#f5a623;"></i>
+                {% else %}<i class="fas fa-question-circle me-2" style="color:#94a3b8;"></i>{% endif %}
+                {{ row[0] }}
+              </td>
+              <td style="text-align:right;font-weight:700;color:#0d1b4b;">{{ row[1] }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="no-data"><i class="fas fa-desktop"></i><p>No OS data yet.</p></div>
+        {% endif %}
+      </div>
+
+      <!-- Quick actions -->
+      <div class="chart-card" style="background:#f8faff;">
+        <h6><i class="fas fa-tools me-2"></i>SEO Quick Actions</h6>
+        <div class="d-grid gap-2">
+          <a href="/sitemap.xml" target="_blank"
+             class="btn btn-sm" style="background:#0d1b4b;color:#FFD700;font-weight:600;border-radius:8px;">
+            <i class="fas fa-sitemap me-2"></i>View Sitemap.xml
+          </a>
+          <a href="/robots.txt" target="_blank"
+             class="btn btn-outline-secondary btn-sm" style="border-radius:8px;">
+            <i class="fas fa-robot me-2"></i>View Robots.txt
+          </a>
+          <a href="https://search.google.com/search-console" target="_blank" rel="noopener"
+             class="btn btn-outline-secondary btn-sm" style="border-radius:8px;">
+            <i class="fab fa-google me-2"></i>Google Search Console ↗
+          </a>
+          <a href="https://analytics.google.com" target="_blank" rel="noopener"
+             class="btn btn-outline-secondary btn-sm" style="border-radius:8px;">
+            <i class="fas fa-chart-bar me-2"></i>Google Analytics ↗
+          </a>
+          <a href="{{ url_for('blog.admin_list') }}"
+             class="btn btn-outline-secondary btn-sm" style="border-radius:8px;">
+            <i class="fas fa-pen me-2"></i>Manage Blog Posts
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Chart defaults ──────────────────────────────────────────────────────────
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.color = '#64748b';
+Chart.defaults.plugins.legend.display = false;
+
+const NAVY = '#0d1b4b';
+const GOLD = '#FFD700';
+const COLORS = ['#0d1b4b','#FFD700','#16a34a','#2563eb','#7c3aed','#dc2626','#ea580c','#0891b2'];
+
+// ── Daily visits ─────────────────────────────────────────────────────────────
+{% if total_visits > 0 %}
+(function(){
+  const labels = {{ daily_labels | safe }};
+  const data   = {{ daily_data | safe }};
+  new Chart(document.getElementById('dailyChart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        borderColor: NAVY,
+        backgroundColor: 'rgba(13,27,75,.08)',
+        borderWidth: 2.5,
+        fill: true,
+        tension: 0.4,
+        pointRadius: data.length > 30 ? 0 : 4,
+        pointBackgroundColor: NAVY,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y} views` } } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.04)' },
+             ticks: { precision: 0 } },
+        x: { grid: { display: false },
+             ticks: { maxTicksLimit: 12 } }
+      }
+    }
+  });
+})();
+{% endif %}
+
+// ── Device donut ─────────────────────────────────────────────────────────────
+{% if device_data %}
+(function(){
+  new Chart(document.getElementById('deviceChart'), {
+    type: 'doughnut',
+    data: {
+      labels: {{ device_labels | safe }},
+      datasets: [{ data: {{ device_data | safe }},
+        backgroundColor: [NAVY, GOLD, '#16a34a', '#2563eb'],
+        borderWidth: 2, borderColor: '#fff' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '65%',
+      plugins: {
+        legend: { display: true, position: 'bottom',
+                  labels: { boxWidth: 10, padding: 10, font: { size: 11 } } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed}` } }
+      }
+    }
+  });
+})();
+{% endif %}
+
+// ── Browser bar ──────────────────────────────────────────────────────────────
+{% if browser_data %}
+(function(){
+  new Chart(document.getElementById('browserChart'), {
+    type: 'bar',
+    data: {
+      labels: {{ browser_labels | safe }},
+      datasets: [{ data: {{ browser_data | safe }},
+        backgroundColor: COLORS, borderRadius: 6, borderSkipped: false }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x} visits` } } },
+      scales: {
+        x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.04)' }, ticks: { precision: 0 } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+})();
+{% endif %}
+</script>
+{% endblock %}

@@ -362,6 +362,71 @@ def run_migrations(db):
         "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS claim_address TEXT",
         "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS claim_submitted_at TIMESTAMP",
         "CREATE INDEX IF NOT EXISTS idx_dlf_claim_pending ON directory_law_firms(claim_pending)",
+
+        # ── Blog tables ───────────────────────────────────────────────────────
+        """
+        CREATE TABLE IF NOT EXISTS blog_posts (
+            id SERIAL PRIMARY KEY,
+            title VARCHAR(300) NOT NULL,
+            slug VARCHAR(300) UNIQUE NOT NULL,
+            content TEXT,
+            excerpt VARCHAR(500),
+            category VARCHAR(100) DEFAULT 'General',
+            tags VARCHAR(500),
+            hero_image VARCHAR(500),
+            author VARCHAR(200) DEFAULT 'LAWCOLAB Team',
+            published BOOLEAN DEFAULT FALSE,
+            featured BOOLEAN DEFAULT FALSE,
+            view_count INTEGER DEFAULT 0,
+            comment_count INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT NOW(),
+            updated_at TIMESTAMP DEFAULT NOW(),
+            published_at TIMESTAMP
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS blog_comments (
+            id SERIAL PRIMARY KEY,
+            post_id INTEGER,
+            name VARCHAR(100),
+            email VARCHAR(200),
+            content TEXT,
+            approved BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS blog_likes (
+            id SERIAL PRIMARY KEY,
+            post_id INTEGER,
+            session_id VARCHAR(64),
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+        """,
+        "CREATE INDEX IF NOT EXISTS idx_blog_posts_slug ON blog_posts(slug)",
+        "CREATE INDEX IF NOT EXISTS idx_blog_posts_published ON blog_posts(published)",
+        "CREATE INDEX IF NOT EXISTS idx_blog_comments_post ON blog_comments(post_id)",
+
+        # ── Page analytics tracking ───────────────────────────────────────────
+        """
+        CREATE TABLE IF NOT EXISTS page_analytics (
+            id SERIAL PRIMARY KEY,
+            session_id VARCHAR(64),
+            page_path VARCHAR(500),
+            referrer VARCHAR(500),
+            ip_hash VARCHAR(64),
+            country VARCHAR(100) DEFAULT 'Unknown',
+            device_type VARCHAR(20) DEFAULT 'desktop',
+            browser VARCHAR(100) DEFAULT 'Other',
+            os_name VARCHAR(100) DEFAULT 'Unknown',
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+        """,
+        "CREATE INDEX IF NOT EXISTS idx_pa_session ON page_analytics(session_id)",
+        "CREATE INDEX IF NOT EXISTS idx_pa_path ON page_analytics(page_path)",
+        "CREATE INDEX IF NOT EXISTS idx_pa_created ON page_analytics(created_at)",
+        "CREATE INDEX IF NOT EXISTS idx_pa_device ON page_analytics(device_type)",
+        "CREATE INDEX IF NOT EXISTS idx_pa_country ON page_analytics(country)",
     ]
 
     with db.engine.connect() as conn:

@@ -66,6 +66,13 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 app.config["UPLOAD_FOLDER"] = "uploads"
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16 MB
 
+# ── SEO / Analytics ───────────────────────────────────────────────────────────
+# Set GA4_MEASUREMENT_ID in Replit Secrets to enable Google Analytics 4
+# e.g.  GA4_MEASUREMENT_ID = G-XXXXXXXXXX
+app.config["GA4_MEASUREMENT_ID"] = os.environ.get("GA4_MEASUREMENT_ID", "")
+# Set GSC_VERIFICATION in Replit Secrets to fill the Google Search Console meta tag
+app.config["GSC_VERIFICATION"] = os.environ.get("GSC_VERIFICATION", "")
+
 # ── Extensions ────────────────────────────────────────────────────────────────
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
