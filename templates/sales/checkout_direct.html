@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout — LawColab {{ plan.title() }} Plan</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{background:#f6f9fc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#30313d;min-height:100vh}
+
+        /* ── Topbar ── */
+        .topbar{background:#fff;border-bottom:1px solid #e6ebf1;padding:14px 0;position:sticky;top:0;z-index:100}
+        .brand{font-size:1.18rem;font-weight:700;color:#0a2540;text-decoration:none;letter-spacing:-.3px}
+        .brand span{color:#635bff}
+        .secure-tag{font-size:.78rem;color:#6b7385;display:flex;align-items:center;gap:5px}
+        .secure-tag i{color:#00c16e}
+
+        /* ── Steps ── */
+        .step-bar{display:flex;align-items:center;justify-content:center;gap:0;padding:18px 0 0}
+        .step{display:flex;align-items:center;gap:8px;font-size:.78rem;font-weight:500;color:#8792a2}
+        .step.done{color:#00a36c}.step.active{color:#635bff;font-weight:700}
+        .step-dot{width:24px;height:24px;border-radius:50%;border:2px solid #c5cad3;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;flex-shrink:0}
+        .step.done .step-dot{background:#00a36c;border-color:#00a36c;color:#fff}
+        .step.active .step-dot{background:#635bff;border-color:#635bff;color:#fff}
+        .step-line{width:40px;height:2px;background:#e6ebf1;margin:0 4px}
+        .step.done+.step-line{background:#00a36c}
+
+        /* ── Layout ── */
+        .checkout-wrap{max-width:1060px;margin:32px auto;padding:0 16px 60px;display:grid;grid-template-columns:1fr 380px;gap:28px;align-items:start}
+        @media(max-width:860px){.checkout-wrap{grid-template-columns:1fr}}
+
+        /* ── Card shells ── */
+        .card-shell{background:#fff;border:1px solid #e6ebf1;border-radius:16px;padding:28px;margin-bottom:20px}
+        .card-shell:last-child{margin-bottom:0}
+        .section-head{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:#8792a2;margin-bottom:20px}
+
+        /* ── Plan selector tabs ── */
+        .plan-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:0}
+        .plan-tab{border:1.5px solid #e6ebf1;border-radius:10px;padding:12px 10px;cursor:pointer;text-align:center;transition:border-color .18s,background .18s;background:#fff;position:relative}
+        .plan-tab:hover{border-color:#635bff}
+        .plan-tab.active{border-color:#635bff;background:#fafafe;box-shadow:0 0 0 3px rgba(99,91,255,.08)}
+        .plan-tab .tab-name{font-size:.8rem;font-weight:700;color:#0a2540;display:block}
+        .plan-tab .tab-price{font-size:.75rem;color:#635bff;font-weight:600;margin-top:3px;display:block}
+        .plan-tab .tab-period{font-size:.65rem;color:#8792a2;display:block}
+        .plan-tab.popular-tab::after{content:'Popular';position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#635bff;color:#fff;font-size:.55rem;font-weight:800;padding:2px 8px;border-radius:10px;white-space:nowrap;letter-spacing:.5px}
+        @media(max-width:580px){.plan-tabs{grid-template-columns:repeat(2,1fr)}}
+
+        /* ── August discount banner ── */
+        .aug-banner{background:linear-gradient(135deg,#fff8e6,#fff0c2);border:1.5px solid #ffc107;border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:20px}
+        .aug-banner .emoji{font-size:1.4rem;flex-shrink:0}
+        .aug-banner p{margin:0;font-size:.84rem;color:#7a4f00;line-height:1.5}
+        .aug-banner strong{color:#5a3700}
+        .aug-pill{background:#e65c00;color:#fff;font-size:.68rem;font-weight:800;padding:4px 10px;border-radius:20px;white-space:nowrap;letter-spacing:.5px;flex-shrink:0}
+
+        /* ── Form fields ── */
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+        @media(max-width:500px){.form-row{grid-template-columns:1fr}}
+        .form-group{margin-bottom:16px}
+        .form-label{display:block;font-size:.72rem;font-weight:600;color:#0a2540;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+        .form-input{width:100%;border:1.5px solid #e6ebf1;border-radius:10px;padding:11px 14px;font-size:.9rem;color:#0a2540;background:#fff;outline:none;transition:border-color .18s,box-shadow .18s;font-family:inherit}
+        .form-input:focus{border-color:#635bff;box-shadow:0 0 0 3px rgba(99,91,255,.1)}
+        .form-input::placeholder{color:#b0b9c5}
+
+        /* ── Payment method ── */
+        .pay-method-card{border:1.5px solid #e6ebf1;border-radius:12px;padding:16px 18px;margin-bottom:10px;cursor:pointer;transition:border-color .18s,background .18s;background:#fff;display:flex;align-items:center;gap:14px}
+        .pay-method-card:hover{border-color:#635bff}
+        .pay-method-card.selected{border-color:#635bff;background:#fafafe;box-shadow:0 0 0 3px rgba(99,91,255,.07)}
+        .pay-method-card.recommended{border-color:#635bff}
+        .pay-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+        .pay-icon.bank{background:linear-gradient(135deg,#0a2540,#1a3a5c);color:#fff}
+        .pay-icon.crypto{background:linear-gradient(135deg,#f7931a,#e8821a);color:#fff}
+        .pay-info strong{display:block;font-size:.9rem;font-weight:700;color:#0a2540}
+        .pay-info span{font-size:.76rem;color:#8792a2}
+        .pay-radio{width:20px;height:20px;border-radius:50%;border:2px solid #c5cad3;margin-left:auto;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+        .pay-method-card.selected .pay-radio{border-color:#635bff}
+        .pay-radio-inner{width:10px;height:10px;background:#635bff;border-radius:50%;display:none}
+        .pay-method-card.selected .pay-radio-inner{display:block}
+        .rec-badge{background:#e6fff4;color:#00a36c;font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:10px;border:1px solid #b6f0d4;white-space:nowrap}
+
+        /* ── Crypto wallets ── */
+        .crypto-wallets{margin-top:8px;display:none}
+        .crypto-wallets.show{display:block}
+        .wallet-opt{border:1.5px solid #e6ebf1;border-radius:10px;padding:12px 16px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:border-color .18s}
+        .wallet-opt:hover{border-color:#f7931a}
+        .wallet-opt.selected{border-color:#f7931a;background:#fffaf0}
+        .wallet-opt .w-name{font-size:.85rem;font-weight:600;color:#0a2540}
+        .wallet-opt .w-addr{font-size:.7rem;color:#8792a2;font-family:monospace;word-break:break-all}
+
+        /* ── Pay button ── */
+        .pay-btn{width:100%;background:linear-gradient(135deg,#635bff,#4f49e0);color:#fff;border:none;border-radius:12px;padding:16px 24px;font-size:1rem;font-weight:700;cursor:pointer;transition:opacity .18s,box-shadow .18s;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 18px rgba(99,91,255,.28);margin-top:8px;letter-spacing:.1px}
+        .pay-btn:hover{opacity:.93;box-shadow:0 6px 24px rgba(99,91,255,.38)}
+        .pay-btn:active{transform:scale(.99)}
+        .pay-btn-note{text-align:center;font-size:.74rem;color:#8792a2;margin-top:10px}
+        .pay-btn-note i{color:#00c16e}
+
+        /* ── Summary panel (right) ── */
+        .summary-sticky{position:sticky;top:80px}
+        .summary-card{background:#fff;border:1px solid #e6ebf1;border-radius:16px;padding:26px;margin-bottom:16px}
+        .plan-badge-sm{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#635bff,#8b84ff);color:#fff;font-size:.65rem;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:.6px;text-transform:uppercase;margin-bottom:10px}
+        .plan-title{font-size:1.15rem;font-weight:700;color:#0a2540;margin-bottom:2px}
+        .plan-period-sm{font-size:.78rem;color:#8792a2;margin-bottom:18px}
+        .price-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:.85rem;color:#425466;border-bottom:1px solid #f0f3f7}
+        .price-row:last-of-type{border-bottom:none}
+        .price-row .amt{font-weight:500}
+        .price-row.strike .amt{text-decoration:line-through;color:#b0b9c5}
+        .price-row.saving{color:#00a36c;font-weight:600}
+        .saving-tag{background:#e6fff4;border:1px solid #b6f0d4;color:#007a52;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:10px}
+        .total-row{display:flex;justify-content:space-between;align-items:center;padding:16px 0 0;font-size:1rem;font-weight:700;color:#0a2540;border-top:2px solid #e6ebf1;margin-top:8px}
+        .total-row .total-amt{font-size:1.3rem;color:#635bff}
+        .feat-list{list-style:none;padding:0;margin:18px 0 0;display:flex;flex-direction:column;gap:8px}
+        .feat-list li{display:flex;align-items:center;gap:8px;font-size:.82rem;color:#425466}
+        .feat-list li i{color:#00a36c;font-size:.75rem;flex-shrink:0}
+        .guarantee-card{background:#f0f4ff;border:1px solid #d0d8ff;border-radius:12px;padding:16px;display:flex;align-items:flex-start;gap:12px}
+        .guarantee-card i{color:#635bff;font-size:1.1rem;flex-shrink:0;margin-top:2px}
+        .guarantee-card p{margin:0;font-size:.8rem;color:#425466;line-height:1.5}
+        .guarantee-card strong{color:#0a2540;font-size:.84rem}
+
+        /* ── Flash messages ── */
+        .flash-msg{background:#fff3cd;border:1px solid #ffc107;border-radius:10px;padding:12px 16px;font-size:.85rem;color:#7a4f00;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+        .flash-msg.error{background:#fde8e8;border-color:#f87171;color:#7f1d1d}
+    </style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="container-lg">
+    <div class="d-flex align-items-center justify-content-between">
+      <a href="/" class="brand">Law<span>Colab</span></a>
+      <div class="secure-tag"><i class="fas fa-lock"></i> 256-bit Secure Checkout</div>
+    </div>
+  </div>
+</div>
+
+<!-- Step bar -->
+<div class="container-lg">
+  <div class="step-bar">
+    <div class="step active">
+      <div class="step-dot">1</div>
+      <span>Your Details &amp; Plan</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+      <div class="step-dot">2</div>
+      <span>Make Transfer</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+      <div class="step-dot">3</div>
+      <span>Activated</span>
+    </div>
+  </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="container-lg" style="margin-top:16px">
+  {% for cat, msg in messages %}
+  <div class="flash-msg {% if cat == 'error' %}error{% endif %}">
+    <i class="fas fa-{% if cat == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+    {{ msg }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<div class="checkout-wrap">
+
+  <!-- ── LEFT PANEL ── -->
+  <div>
+
+    <!-- August discount banner -->
+    {% if august_discount %}
+    <div class="aug-banner">
+      <span class="emoji">🎉</span>
+      <p><strong>August Special — Nigerian Law Firms:</strong> 40% off all plans this month only. Prices already discounted below.</p>
+      <span class="aug-pill">40% OFF</span>
+    </div>
+    {% endif %}
+
+    <!-- 1. Plan selection -->
+    <div class="card-shell">
+      <div class="section-head"><i class="fas fa-th-large me-1"></i> Select Your Plan</div>
+      <div class="plan-tabs">
+
+        <!-- Starter -->
+        <div class="plan-tab {% if plan == 'starter' %}active{% endif %}" onclick="selectPlanTab('starter')">
+          <span style="font-size:1.3rem">🚀</span>
+          <span class="tab-name">Starter</span>
+          <span class="tab-price">{{ currency_symbol }}{{ "{:,.0f}".format(plan_prices.get('starter', 0)) }}</span>
+          <span class="tab-period">/ month</span>
+        </div>
+
+        <!-- Growth -->
+        <div class="plan-tab popular-tab {% if plan == 'growth' %}active{% endif %}" onclick="selectPlanTab('growth')">
+          <span style="font-size:1.3rem">📈</span>
+          <span class="tab-name">Growth</span>
+          <span class="tab-price">{{ currency_symbol }}{{ "{:,.0f}".format(plan_prices.get('growth', 0)) }}</span>
+          <span class="tab-period">/ 3 months</span>
+        </div>
+
+        <!-- Enterprise -->
+        <div class="plan-tab {% if plan == 'enterprise' %}active{% endif %}" onclick="selectPlanTab('enterprise')">
+          <span style="font-size:1.3rem">👑</span>
+          <span class="tab-name">Enterprise</span>
+          <span class="tab-price">{{ currency_symbol }}{{ "{:,.0f}".format(plan_prices.get('enterprise', 0)) }}</span>
+          <span class="tab-period">/ year</span>
+        </div>
+
+        <!-- Founders -->
+        <div class="plan-tab {% if plan in ['founders','founder'] %}active{% endif %}" onclick="selectPlanTab('founders')">
+          <span style="font-size:1.3rem">🏛️</span>
+          <span class="tab-name">Founders</span>
+          <span class="tab-price">{{ currency_symbol }}{{ "{:,.0f}".format(plan_prices.get('founders', 0)) }}</span>
+          <span class="tab-period">White-label</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 2. Your details -->
+    <div class="card-shell">
+      <div class="section-head"><i class="fas fa-user me-1"></i> Your Information</div>
+      <form id="checkoutForm" method="POST" action="{{ url_for('sales.direct_checkout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="plan" id="planInput" value="{{ plan }}">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Full Name *</label>
+            <input type="text" name="name" class="form-input" placeholder="e.g. Chukwuemeka Obi" required autocomplete="name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Law Firm Name</label>
+            <input type="text" name="firm_name" class="form-input" placeholder="e.g. Obi & Associates" autocomplete="organization">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Email Address *</label>
+            <input type="email" name="email" class="form-input" placeholder="you@yourfirm.com" required autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" name="phone" class="form-input" placeholder="+234 800 000 0000" autocomplete="tel">
+          </div>
+        </div>
+
+        <!-- 3. Payment method -->
+        <div class="section-head mt-3"><i class="fas fa-credit-card me-1"></i> Payment Method</div>
+
+        <!-- Bank Transfer (primary) -->
+        <div class="pay-method-card recommended selected" id="bankCard" onclick="selectPayment('bank_transfer')">
+          <div class="pay-icon bank"><i class="fas fa-university"></i></div>
+          <div class="pay-info">
+            <strong>Naira Bank Transfer <span class="rec-badge ms-1">Recommended</span></strong>
+            <span>Transfer directly to Zenith Bank — instant activation on confirmation</span>
+          </div>
+          <div class="pay-radio"><div class="pay-radio-inner"></div></div>
+        </div>
+
+        {% if crypto_wallets %}
+        <!-- Crypto -->
+        <div class="pay-method-card" id="cryptoCard" onclick="selectPayment('crypto')">
+          <div class="pay-icon crypto"><i class="fab fa-bitcoin"></i></div>
+          <div class="pay-info">
+            <strong>Crypto Payment</strong>
+            <span>BTC, ETH, USDT and more — {{ crypto_wallets|length }} wallet{{ 's' if crypto_wallets|length != 1 }} available</span>
+          </div>
+          <div class="pay-radio"><div class="pay-radio-inner"></div></div>
+        </div>
+
+        <div class="crypto-wallets" id="cryptoWallets">
+          {% for wallet in crypto_wallets %}
+          <div class="wallet-opt" id="wallet_{{ wallet.id }}" onclick="selectWallet({{ wallet.id }})">
+            <div>
+              <div class="w-name">{{ wallet.currency }}{% if wallet.network %} — {{ wallet.network }}{% endif %}</div>
+              <div class="w-addr">{{ wallet.wallet_address }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <input type="hidden" name="payment_method" id="paymentMethodInput" value="bank_transfer">
+
+        <button type="submit" class="pay-btn" id="payBtn">
+          <i class="fas fa-lock lock-icon"></i>
+          <span id="payBtnText">Continue to Bank Transfer</span>
+        </button>
+        <div class="pay-btn-note"><i class="fas fa-shield-alt"></i> Your data is encrypted and secure</div>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- ── RIGHT PANEL — Order Summary ── -->
+  <div class="summary-sticky">
+    <div class="summary-card">
+      <div class="plan-badge-sm">
+        <i class="fas fa-star"></i>
+        <span id="summaryBadge">{{ plan.title() }} Plan</span>
+      </div>
+      <div class="plan-title" id="summaryTitle">
+        {% if plan == 'starter' %}Starter — 1 Month
+        {% elif plan == 'growth' %}Growth — 3 Months
+        {% elif plan == 'enterprise' %}Enterprise — Annual
+        {% elif plan in ['founders','founder'] %}Founders White-Label License
+        {% else %}{{ plan.title() }}{% endif %}
+      </div>
+      <div class="plan-period-sm" id="summaryPeriod">
+        {% if plan == 'starter' %}Monthly subscription
+        {% elif plan == 'growth' %}3-month subscription
+        {% elif plan == 'enterprise' %}12-month subscription
+        {% elif plan in ['founders','founder'] %}One-time license — 6 months onboarding
+        {% else %}Subscription{% endif %}
+      </div>
+
+      <div id="priceBreakdown">
+        {% set plan_key = 'founders' if plan in ['founders','founder'] else plan %}
+        {% if august_discount and original_prices %}
+        <div class="price-row strike">
+          <span>Regular price</span>
+          <span class="amt">{{ currency_symbol }}{{ "{:,.0f}".format(original_prices.get(plan_key, 0)) }}</span>
+        </div>
+        <div class="price-row saving">
+          <span>August discount (40% off) <span class="saving-tag">SAVE {{ currency_symbol }}{{ "{:,.0f}".format(original_prices.get(plan_key, 0) - plan_prices.get(plan_key, 0)) }}</span></span>
+          <span class="amt">-{{ currency_symbol }}{{ "{:,.0f}".format(original_prices.get(plan_key, 0) - plan_prices.get(plan_key, 0)) }}</span>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="total-row">
+        <span>Total Due</span>
+        <span class="total-amt" id="summaryTotal">{{ currency_symbol }}{{ "{:,.0f}".format(plan_prices.get('founders' if plan in ['founders','founder'] else plan, 0)) }}</span>
+      </div>
+
+      <ul class="feat-list" id="summaryFeats">
+        {% if plan == 'starter' %}
+        <li><i class="fas fa-check-circle"></i> Up to 5 team members</li>
+        <li><i class="fas fa-check-circle"></i> Full client management</li>
+        <li><i class="fas fa-check-circle"></i> Case & project tracking</li>
+        <li><i class="fas fa-check-circle"></i> Invoicing & billing</li>
+        <li><i class="fas fa-check-circle"></i> Secure client portal</li>
+        {% elif plan == 'growth' %}
+        <li><i class="fas fa-check-circle"></i> Up to 20 team members</li>
+        <li><i class="fas fa-check-circle"></i> Everything in Starter</li>
+        <li><i class="fas fa-check-circle"></i> Advanced analytics</li>
+        <li><i class="fas fa-check-circle"></i> Calendar & scheduling</li>
+        <li><i class="fas fa-check-circle"></i> Showcase profile</li>
+        {% elif plan == 'enterprise' %}
+        <li><i class="fas fa-check-circle"></i> Unlimited team members</li>
+        <li><i class="fas fa-check-circle"></i> Everything in Growth</li>
+        <li><i class="fas fa-check-circle"></i> White-label client portal</li>
+        <li><i class="fas fa-check-circle"></i> Custom API integrations</li>
+        <li><i class="fas fa-check-circle"></i> 24/7 premium support</li>
+        {% else %}
+        <li><i class="fas fa-check-circle"></i> Full white-label license</li>
+        <li><i class="fas fa-check-circle"></i> Your own SaaS — keep 100% revenue</li>
+        <li><i class="fas fa-check-circle"></i> 6 months setup & support</li>
+        <li><i class="fas fa-check-circle"></i> Custom branding & domain</li>
+        <li><i class="fas fa-check-circle"></i> Reseller rights included</li>
+        {% endif %}
+      </ul>
+    </div>
+
+    <div class="guarantee-card">
+      <i class="fas fa-shield-check"></i>
+      <p><strong>Activation Guarantee</strong><br>Your account is activated within 2 hours of payment confirmation. Our team reviews every transfer manually.</p>
+    </div>
+  </div>
+
+</div><!-- /.checkout-wrap -->
+
+<script>
+  // Plan data injected from Flask
+  const PLANS = {
+    starter:    { name:'Starter Plan', period:'Monthly subscription', feat:['Up to 5 team members','Full client management','Case & project tracking','Invoicing & billing','Secure client portal'], title:'Starter — 1 Month' },
+    growth:     { name:'Growth Plan',  period:'3-month subscription', feat:['Up to 20 team members','Everything in Starter','Advanced analytics','Calendar & scheduling','Showcase profile'], title:'Growth — 3 Months' },
+    enterprise: { name:'Enterprise',   period:'12-month subscription', feat:['Unlimited team members','Everything in Growth','White-label client portal','Custom API integrations','24/7 premium support'], title:'Enterprise — Annual' },
+    founders:   { name:'Founders License', period:'One-time — 6 months onboarding', feat:['Full white-label license','Your own SaaS — keep 100% revenue','6 months setup & support','Custom branding & domain','Reseller rights included'], title:'Founders White-Label License' },
+  };
+  const PRICES = {
+    {% for k, v in plan_prices.items() %}'{{ k }}': {{ v }},{% endfor %}
+  };
+  const ORIG = {
+    {% if original_prices %}{% for k, v in original_prices.items() %}'{{ k }}': {{ v }},{% endfor %}{% endif %}
+  };
+  const SYM = '{{ currency_symbol }}';
+  const HAS_AUG = {{ 'true' if august_discount else 'false' }};
+
+  function fmt(n){ return SYM + Number(n).toLocaleString('en-NG', {minimumFractionDigits:0, maximumFractionDigits:0}); }
+
+  function selectPlanTab(planId){
+    document.querySelectorAll('.plan-tab').forEach(t=>t.classList.remove('active'));
+    const tab = document.querySelector(`.plan-tab[onclick="selectPlanTab('${planId}')"]`);
+    if(tab) tab.classList.add('active');
+    document.getElementById('planInput').value = planId;
+    updateSummary(planId);
+  }
+
+  function updateSummary(planId){
+    const key = (planId === 'founder') ? 'founders' : planId;
+    const p   = PLANS[key] || PLANS.starter;
+    const price = PRICES[key] || 0;
+    const orig  = ORIG[key]  || price;
+
+    document.getElementById('summaryBadge').textContent  = p.name;
+    document.getElementById('summaryTitle').textContent  = p.title;
+    document.getElementById('summaryPeriod').textContent = p.period;
+    document.getElementById('summaryTotal').textContent  = fmt(price);
+
+    // Price breakdown
+    let html = '';
+    if(HAS_AUG && orig > price){
+      const saved = orig - price;
+      html += `<div class="price-row strike"><span>Regular price</span><span class="amt">${fmt(orig)}</span></div>`;
+      html += `<div class="price-row saving"><span>August discount (40% off) <span class="saving-tag">SAVE ${fmt(saved)}</span></span><span class="amt">-${fmt(saved)}</span></div>`;
+    }
+    document.getElementById('priceBreakdown').innerHTML = html;
+
+    // Features
+    const feats = p.feat.map(f=>`<li><i class="fas fa-check-circle"></i> ${f}</li>`).join('');
+    document.getElementById('summaryFeats').innerHTML = feats;
+  }
+
+  function selectPayment(method){
+    document.querySelectorAll('.pay-method-card').forEach(c=>c.classList.remove('selected'));
+    document.getElementById('paymentMethodInput').value = method;
+
+    if(method === 'bank_transfer'){
+      document.getElementById('bankCard').classList.add('selected');
+      document.getElementById('payBtnText').textContent = 'Continue to Bank Transfer';
+      const cw = document.getElementById('cryptoWallets');
+      if(cw) cw.classList.remove('show');
+    } else {
+      document.getElementById('cryptoCard')?.classList.add('selected');
+      document.getElementById('payBtnText').textContent = 'Continue to Crypto Payment';
+      const cw = document.getElementById('cryptoWallets');
+      if(cw) cw.classList.add('show');
+    }
+  }
+
+  function selectWallet(wid){
+    document.querySelectorAll('.wallet-opt').forEach(w=>w.classList.remove('selected'));
+    document.getElementById('wallet_'+wid)?.classList.add('selected');
+    document.getElementById('paymentMethodInput').value = 'crypto_' + wid;
+  }
+
+  // Prevent double-submit
+  document.getElementById('checkoutForm').addEventListener('submit', function(){
+    const btn = document.getElementById('payBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing…';
+  });
+</script>
+</body>
+</html>

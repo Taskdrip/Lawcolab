@@ -839,6 +839,90 @@ def popup_settings_api():
 # Duplicate route removed - keeping the enhanced checkout_page function above
 
 
+@sales_bp.route('/direct-checkout', methods=['GET', 'POST'])
+def direct_checkout():
+    """Direct checkout page — no popup/lead-form required. Linked from home page plan cards."""
+    import re as _re, time as _time
+
+    plan = (request.args.get('plan') or request.form.get('plan') or 'starter').lower().strip()
+    valid_plans = ['starter', 'growth', 'enterprise', 'founders', 'founder']
+    if plan not in valid_plans:
+        plan = 'starter'
+
+    settings = PopupSettings.query.first()
+    if not settings:
+        settings = PopupSettings()
+
+    active_currency, currency_symbol, plan_prices, original_prices, august_discount, discount_rate = \
+        _resolve_checkout_pricing(settings)
+
+    from models_payment import PaymentGateway, CryptoWallet as _CW
+    crypto_wallets = _CW.query.filter_by(is_active=True).order_by(_CW.currency).all()
+
+    if request.method == 'POST':
+        try:
+            validate_csrf(request.form.get('csrf_token'))
+        except Exception:
+            flash('Security token expired. Please try again.', 'error')
+            return redirect(url_for('sales.direct_checkout', plan=plan))
+
+        plan       = request.form.get('plan', plan).lower().strip()
+        name       = request.form.get('name', '').strip()
+        firm_name  = request.form.get('firm_name', '').strip()
+        email      = request.form.get('email', '').strip().lower()
+        phone      = request.form.get('phone', '').strip()
+        pay_method = request.form.get('payment_method', 'bank_transfer').strip()
+
+        if not name or not email:
+            flash('Your name and email are required.', 'error')
+            return redirect(url_for('sales.direct_checkout', plan=plan))
+
+        if not _re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
+            flash('Please enter a valid email address.', 'error')
+            return redirect(url_for('sales.direct_checkout', plan=plan))
+
+        # Store lead record
+        lead = SalesLead()
+        lead.name         = name
+        lead.firm_name    = firm_name
+        lead.email        = email
+        lead.phone        = phone
+        lead.plan         = plan
+        lead.payment_method = pay_method
+        lead.status       = 'payment_pending'
+        db.session.add(lead)
+        db.session.commit()
+
+        plan_key   = 'founders' if plan in ('founder', 'founders') else plan
+        pay_amount = plan_prices.get(plan_key, 0)
+        pay_ref    = f"LAWCOLAB-{plan_key.upper()}-{int(_time.time())}"
+
+        session['lead_data']          = {'name': name, 'firm_name': firm_name, 'email': email,
+                                          'phone': phone, 'plan': plan, 'payment_method': pay_method}
+        session['lead_id']            = lead.id
+        session['selected_plan']      = plan
+        session['payment_method']     = pay_method
+        session['payment_reference']  = pay_ref
+        session['payment_amount']     = pay_amount
+        session['payment_currency']   = active_currency
+        session['payment_start_time'] = int(_time.time())
+
+        if pay_method.startswith('crypto_') or pay_method == 'crypto':
+            return redirect(url_for('sales.payment_evidence'))
+        return redirect(url_for('sales.bank_instructions'))
+
+    return render_template('sales/checkout_direct.html',
+                           plan=plan,
+                           settings=settings,
+                           plan_prices=plan_prices,
+                           original_prices=original_prices,
+                           active_currency=active_currency,
+                           currency_symbol=currency_symbol,
+                           august_discount=august_discount,
+                           discount_rate=discount_rate,
+                           crypto_wallets=crypto_wallets)
+
+
 @sales_bp.route('/payment-admin')
 @login_required
 @role_required([ROLE_SUPER_ADMIN])

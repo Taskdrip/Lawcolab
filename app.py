@@ -118,9 +118,11 @@ def currency_symbol_filter(currency_code):
 
 # ── DB setup + super admin seed ───────────────────────────────────────────────
 with app.app_context():
-    import models        # noqa: F401
-    import models_chat   # noqa: F401
-    import models_audit  # noqa: F401
+    import models              # noqa: F401
+    import models_chat         # noqa: F401
+    import models_audit        # noqa: F401
+    import models_payment      # noqa: F401
+    import models_payment_custom  # noqa: F401
     db.create_all()
     logger.info("Database tables created / verified")
 
@@ -158,3 +160,43 @@ with app.app_context():
             "SUPER_ADMIN_EMAIL / SUPER_ADMIN_PASSWORD not set — "
             "super admin will not be auto-created on first deploy."
         )
+
+    # ── Seed Zenith Bank account (primary NGN account) ────────────────────────
+    from models_payment_custom import PaymentBankAccount
+    _zb = PaymentBankAccount.query.filter_by(account_number='1310505179').first()
+    if not _zb:
+        _zb = PaymentBankAccount(
+            account_name='Lawcolab Global',
+            account_number='1310505179',
+            bank_name='Zenith Bank',
+            account_type='current',
+            currency='NGN',
+            is_active=True,
+            is_primary=True,
+            display_order=0,
+            instructions=(
+                'Transfer the exact amount shown. '
+                'Include your payment reference in the narration/description.'
+            ),
+        )
+        PaymentBankAccount.query.update({'is_primary': False})
+        db.session.add(_zb)
+        db.session.commit()
+        logger.info("Zenith Bank account seeded: Lawcolab Global / 1310505179")
+    else:
+        # Ensure it is always marked active & primary
+        if not _zb.is_primary or not _zb.is_active:
+            PaymentBankAccount.query.update({'is_primary': False})
+            _zb.is_primary = True
+            _zb.is_active = True
+            db.session.commit()
+
+    # ── Disable the sales popup (use direct checkout from home page instead) ──
+    from models import PopupSettings as _PS
+    _ps = _PS.query.first()
+    if not _ps:
+        _ps = _PS()
+        db.session.add(_ps)
+    _ps.popup_enabled = False
+    db.session.commit()
+    logger.info("Sales popup disabled — direct checkout active")
