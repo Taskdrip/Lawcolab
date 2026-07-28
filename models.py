@@ -216,7 +216,7 @@ class LawFirm(db.Model):
     # Admin access and subscription management
     admin_access_granted = db.Column(db.Boolean, default=False, nullable=False)
     admin_access_expires = db.Column(db.DateTime)
-    subscription_period = db.Column(db.String(20))  # 3days, 1month, 3months, 6months, 1year
+    subscription_period = db.Column(db.String(20))  # 30days, 1month, 3months, 6months, 1year
     
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
@@ -733,7 +733,7 @@ class PopupSettings(db.Model):
     thankyou_video_url = db.Column(db.String(500), nullable=True)
     
     # 5-Plan Pricing Structure
-    trial_duration_days = db.Column(db.Integer, default=3)  # Free trial duration
+    trial_duration_days = db.Column(db.Integer, default=30)  # Free trial duration
     starter_price = db.Column(db.Numeric(10, 2), default=39.00)  # 1-month Starter Plan
     growth_price = db.Column(db.Numeric(10, 2), default=90.00)  # 3-month Growth Plan
     enterprise_price = db.Column(db.Numeric(10, 2), default=350.00)  # 1-year Enterprise Plan

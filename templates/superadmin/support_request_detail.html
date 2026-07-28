@@ -72,9 +72,9 @@
                             <div class="row mb-3">
                                 <div class="col-sm-3"><strong>Request Type:</strong></div>
                                 <div class="col-sm-9">
-                                    <span class="badge {% if request.request_type in ['3days', 'trial'] %}bg-info{% elif request.request_type == '1month' %}bg-primary{% elif request.request_type in ['3months', '6months'] %}bg-success{% else %}bg-warning{% endif %}">
-                                        {% if request.request_type == '3days' %}
-                                        3 Day Trial
+                                    <span class="badge {% if request.request_type in ['30days', 'trial'] %}bg-info{% elif request.request_type == '1month' %}bg-primary{% elif request.request_type in ['3months', '6months'] %}bg-success{% else %}bg-warning{% endif %}">
+                                        {% if request.request_type == '30days' %}
+                                        30 Day Trial
                                         {% elif request.request_type == '1month' %}
                                         1 Month License
                                         {% elif request.request_type == '3months' %}

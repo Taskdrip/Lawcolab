@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Settings — {{ current_user.law_firm.name if current_user.law_firm else 'Admin' }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row justify-content-center">
+    <div class="col-xl-9 col-lg-11">
+
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h3 fw-bold text-dark mb-1">
+            <i class="fas fa-cog me-2 text-primary"></i>Firm Settings
+          </h1>
+          <p class="text-muted mb-0">Configure your law firm's preferences, currency, and contact details.</p>
+        </div>
+        <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+      </div>
+
+      <!-- Flash messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show mb-3" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endwith %}
+
+      <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <!-- ── Currency & Billing ─────────────────────────────── -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white border-bottom py-3">
+            <h5 class="fw-bold mb-0">
+              <i class="fas fa-dollar-sign me-2 text-success"></i>Currency &amp; Billing
+            </h5>
+          </div>
+          <div class="card-body p-4">
+            <div class="row g-3">
+              <div class="col-md-5">
+                <label class="form-label fw-semibold">Invoice &amp; Billing Currency</label>
+                <select class="form-select" name="currency">
+                  {% set cur = firm.currency if firm and firm.currency else 'USD' %}
+                  <option value="USD" {% if cur == 'USD' %}selected{% endif %}>USD — US Dollar ($)</option>
+                  <option value="NGN" {% if cur == 'NGN' %}selected{% endif %}>NGN — Nigerian Naira (₦)</option>
+                  <option value="GBP" {% if cur == 'GBP' %}selected{% endif %}>GBP — British Pound (£)</option>
+                  <option value="EUR" {% if cur == 'EUR' %}selected{% endif %}>EUR — Euro (€)</option>
+                  <option value="CAD" {% if cur == 'CAD' %}selected{% endif %}>CAD — Canadian Dollar ($)</option>
+                  <option value="ZAR" {% if cur == 'ZAR' %}selected{% endif %}>ZAR — South African Rand (R)</option>
+                  <option value="GHS" {% if cur == 'GHS' %}selected{% endif %}>GHS — Ghanaian Cedi (₵)</option>
+                  <option value="KES" {% if cur == 'KES' %}selected{% endif %}>KES — Kenyan Shilling (KSh)</option>
+                </select>
+                <small class="text-muted">Used on all invoices and client-facing documents.</small>
+              </div>
+
+              {% if settings %}
+              <div class="col-md-7">
+                <label class="form-label fw-semibold">Platform Trial &amp; Pricing Info</label>
+                <div class="alert alert-info mb-0 small">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Current free trial: <strong>{{ settings.trial_duration_days or 30 }} days</strong> &nbsp;|&nbsp;
+                  Starter: <strong>${{ settings.starter_price }}</strong> &nbsp;|&nbsp;
+                  Growth: <strong>${{ settings.growth_price }}</strong> &nbsp;|&nbsp;
+                  Enterprise: <strong>${{ settings.enterprise_price }}</strong><br>
+                  {% if current_user.is_super_admin() %}
+                  <a href="{{ url_for('sales.admin_dashboard') }}" class="alert-link">
+                    <i class="fas fa-cogs me-1"></i>Change platform pricing &amp; trial duration →
+                  </a>
+                  {% else %}
+                  Platform pricing is set by the system administrator.
+                  {% endif %}
+                </div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Contact Details ───────────────────────────────── -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white border-bottom py-3">
+            <h5 class="fw-bold mb-0">
+              <i class="fas fa-address-card me-2 text-primary"></i>Contact Details
+            </h5>
+            <small class="text-muted">Shown on invoices, client portal, and public profile.</small>
+          </div>
+          <div class="card-body p-4">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Phone Number</label>
+                <input type="text" name="phone" class="form-control"
+                       value="{{ firm.phone or '' }}" placeholder="+1 555 123 4567">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Email Address</label>
+                <input type="email" name="email" class="form-control"
+                       value="{{ firm.email or '' }}" placeholder="contact@yourfirm.com">
+              </div>
+              <div class="col-md-8">
+                <label class="form-label fw-semibold">Office Address</label>
+                <input type="text" name="address" class="form-control"
+                       value="{{ firm.address or '' }}" placeholder="123 Legal Street, City, Country">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Website</label>
+                <input type="url" name="website" class="form-control"
+                       value="{{ firm.website or '' }}" placeholder="https://yourfirm.com">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Subscription Status ───────────────────────────── -->
+        {% if current_user.law_firm %}
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white border-bottom py-3">
+            <h5 class="fw-bold mb-0">
+              <i class="fas fa-shield-alt me-2 text-warning"></i>Subscription Status
+            </h5>
+          </div>
+          <div class="card-body p-4">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="border rounded p-3 text-center">
+                  <div class="text-muted small mb-1">Plan</div>
+                  <div class="fw-bold fs-5">
+                    {% set period = current_user.law_firm.subscription_period %}
+                    {% if period == '30days' %}🆓 Free Trial
+                    {% elif period == '1month' %}💼 Starter
+                    {% elif period == '3months' %}🚀 Growth
+                    {% elif period == '6months' %}👑 Founders
+                    {% elif period == '1year' %}⚡ Enterprise
+                    {% else %}—{% endif %}
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="border rounded p-3 text-center">
+                  <div class="text-muted small mb-1">Status</div>
+                  <div class="fw-bold fs-5">
+                    {% if current_user.law_firm.admin_access_granted and not current_user.law_firm.is_subscription_expired %}
+                      <span class="text-success">✅ Active</span>
+                    {% else %}
+                      <span class="text-danger">❌ Inactive</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="border rounded p-3 text-center">
+                  <div class="text-muted small mb-1">Days Remaining</div>
+                  <div class="fw-bold fs-5">
+                    {% if current_user.law_firm.days_until_expiry is not none %}
+                      {{ current_user.law_firm.days_until_expiry }} days
+                    {% else %}
+                      —
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              <div class="col-12">
+                <a href="{{ url_for('sales.popup_page') }}" class="btn btn-warning fw-bold">
+                  <i class="fas fa-rocket me-2"></i>Upgrade / View Plans
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Save button -->
+        <div class="d-flex gap-3 mb-5">
+          <button type="submit" class="btn btn-primary btn-lg px-5">
+            <i class="fas fa-save me-2"></i>Save Settings
+          </button>
+          <a href="{{ url_for('admin.firm_profile') }}" class="btn btn-outline-secondary btn-lg">
+            <i class="fas fa-building me-2"></i>Edit Full Firm Profile
+          </a>
+          <a href="{{ url_for('admin.banking_settings') }}" class="btn btn-outline-secondary btn-lg">
+            <i class="fas fa-university me-2"></i>Banking Details
+          </a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

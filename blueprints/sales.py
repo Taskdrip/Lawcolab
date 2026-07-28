@@ -601,7 +601,7 @@ def update_settings():
         settings.thankyou_video_url = request.form.get('thankyou_video_url', '').strip()
         
         # Update 5-plan pricing structure (USD)
-        settings.trial_duration_days = int(request.form.get('trial_duration_days', 3))
+        settings.trial_duration_days = int(request.form.get('trial_duration_days', 30))
         settings.starter_price    = float(request.form.get('starter_price',    39.00))
         settings.growth_price     = float(request.form.get('growth_price',     90.00))
         settings.enterprise_price = float(request.form.get('enterprise_price', 350.00))
@@ -617,6 +617,20 @@ def update_settings():
             settings.enterprise_price_ngn = float(request.form.get('enterprise_price_ngn', 550000))
         if request.form.get('founders_price_ngn'):
             settings.founders_price_ngn   = float(request.form.get('founders_price_ngn',   2750000))
+
+        # Checkout currency
+        if request.form.get('checkout_currency'):
+            settings.checkout_currency = request.form.get('checkout_currency', 'USD')
+
+        # Regular (strike-through) USD prices
+        if request.form.get('starter_regular_price'):
+            settings.starter_regular_price   = float(request.form.get('starter_regular_price',   70))
+        if request.form.get('growth_regular_price'):
+            settings.growth_regular_price    = float(request.form.get('growth_regular_price',    210))
+        if request.form.get('enterprise_regular_price'):
+            settings.enterprise_regular_price = float(request.form.get('enterprise_regular_price', 840))
+        if request.form.get('founders_regular_price'):
+            settings.founders_regular_price  = float(request.form.get('founders_regular_price',  840))
 
         # Auto geo-currency flag
         settings.auto_geo_currency = request.form.get('auto_geo_currency') == 'on'

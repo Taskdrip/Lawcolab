@@ -421,6 +421,40 @@ def _seed_default_sliders(law_firm_id):
     db.session.commit()
 
 
+@admin_bp.route('/settings', methods=['GET', 'POST'])
+@require_admin
+def admin_settings():
+    """Admin can manage firm-level settings: invoice currency, notification prefs, etc."""
+    from models import PopupSettings
+    firm = LawFirm.query.get(current_user.law_firm_id)
+    settings = PopupSettings.query.first()
+
+    if request.method == 'POST' and firm:
+        # Firm invoice currency
+        firm.currency = request.form.get('currency', 'USD')
+
+        # Firm contact / display details
+        field_map = {
+            'phone': 'phone', 'email': 'email',
+            'address': 'address', 'website': 'website',
+        }
+        for form_key, attr in field_map.items():
+            val = request.form.get(form_key, '').strip()
+            if val:
+                setattr(firm, attr, val)
+
+        try:
+            db.session.commit()
+            flash('Settings saved successfully!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash('Error saving settings. Please try again.', 'error')
+
+        return redirect(url_for('admin.admin_settings'))
+
+    return render_template('admin/settings.html', firm=firm, settings=settings)
+
+
 @admin_bp.route('/sliders')
 @require_super_admin
 def manage_sliders():

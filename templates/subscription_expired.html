@@ -94,7 +94,7 @@
         </div>
         
         <div class="card-body text-center">
-            {% if current_user.law_firm and current_user.law_firm.subscription_period == '3days' %}
+            {% if current_user.law_firm and current_user.law_firm.subscription_period == '30days' %}
                 <h4 class="text-primary mb-3">Your Free Trial Has Ended</h4>
                 <p class="text-muted mb-4">
                     Thank you for trying LawColab! To continue managing your legal practice with our powerful tools, 
@@ -144,7 +144,7 @@
                     <i class="fas fa-arrow-up me-2"></i>Upgrade Now
                 </a>
                 
-                {% if not current_user.law_firm or current_user.law_firm.subscription_period != '3days' %}
+                {% if not current_user.law_firm or current_user.law_firm.subscription_period != '30days' %}
                     <a href="{{ url_for('auth.signup') }}" class="trial-btn">
                         <i class="fas fa-gift me-2"></i>Start Free Trial
                     </a>

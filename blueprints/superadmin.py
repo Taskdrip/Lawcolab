@@ -291,8 +291,8 @@ def grant_admin_access():
         from datetime import datetime, timedelta
         now = datetime.now()
         
-        if period == '3days':
-            expiry = now + timedelta(days=3)
+        if period == '30days':
+            expiry = now + timedelta(days=30)
         elif period == '1month':
             expiry = now + timedelta(days=30)
         elif period == '3months':
@@ -827,7 +827,7 @@ def extend_subscription(firm_id):
     action = data.get('action', 'extend')   # extend | set
 
     period_map = {
-        '3days': 3, '1month': 30, '3months': 90,
+        '30days': 30, '1month': 30, '3months': 90,
         '6months': 180, '1year': 365, '2years': 730
     }
     days = period_map.get(period, 365)

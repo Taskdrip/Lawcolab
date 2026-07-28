@@ -234,8 +234,107 @@
                             </div>
                         </div>
                         
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-2"></i>Save Settings
+                        <!-- Currency & Geo Settings -->
+                        <hr class="my-4">
+                        <h6 class="fw-bold mb-3"><i class="fas fa-globe me-2 text-primary"></i>Currency &amp; Geo-Pricing</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Default Checkout Currency</label>
+                                    <select class="form-select" name="checkout_currency">
+                                        <option value="USD" {% if settings.checkout_currency == 'USD' %}selected{% endif %}>USD — US Dollar ($)</option>
+                                        <option value="NGN" {% if settings.checkout_currency == 'NGN' %}selected{% endif %}>NGN — Nigerian Naira (₦)</option>
+                                        <option value="GBP" {% if settings.checkout_currency == 'GBP' %}selected{% endif %}>GBP — British Pound (£)</option>
+                                        <option value="EUR" {% if settings.checkout_currency == 'EUR' %}selected{% endif %}>EUR — Euro (€)</option>
+                                        <option value="CAD" {% if settings.checkout_currency == 'CAD' %}selected{% endif %}>CAD — Canadian Dollar ($)</option>
+                                    </select>
+                                    <small class="text-muted">Used when geo-detection is off, or as fallback.</small>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="mb-3 pt-2">
+                                    <label class="form-label">&nbsp;</label>
+                                    <div class="form-check form-switch mt-1">
+                                        <input class="form-check-input" type="checkbox" name="auto_geo_currency" id="autoGeoCurrency"
+                                               {% if settings.auto_geo_currency %}checked{% endif %}>
+                                        <label class="form-check-label" for="autoGeoCurrency">
+                                            <strong>Auto Geo-Currency</strong> — Nigerian IPs automatically see NGN prices; everyone else sees the default currency above.
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- NGN Pricing -->
+                        <hr class="my-3">
+                        <h6 class="fw-bold mb-3"><i class="fas fa-coins me-2 text-success"></i>NGN Pricing (₦) — Shown to Nigerian Visitors</h6>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">💼 Starter (₦)</label>
+                                    <input type="number" class="form-control" name="starter_price_ngn"
+                                           value="{{ settings.starter_price_ngn or 60000 }}" step="1000" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">🚀 Growth (₦)</label>
+                                    <input type="number" class="form-control" name="growth_price_ngn"
+                                           value="{{ settings.growth_price_ngn or 140000 }}" step="1000" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">⚡ Enterprise (₦)</label>
+                                    <input type="number" class="form-control" name="enterprise_price_ngn"
+                                           value="{{ settings.enterprise_price_ngn or 550000 }}" step="1000" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">👑 Founders Pack (₦)</label>
+                                    <input type="number" class="form-control" name="founders_price_ngn"
+                                           value="{{ settings.founders_price_ngn or 2750000 }}" step="10000" min="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Regular (strike-through) USD Pricing -->
+                        <hr class="my-3">
+                        <h6 class="fw-bold mb-3"><i class="fas fa-tag me-2 text-warning"></i>Regular Prices (USD) — "Was" / Strike-through Display</h6>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">💼 Starter Regular ($)</label>
+                                    <input type="number" class="form-control" name="starter_regular_price"
+                                           value="{{ settings.starter_regular_price or 70 }}" step="1" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">🚀 Growth Regular ($)</label>
+                                    <input type="number" class="form-control" name="growth_regular_price"
+                                           value="{{ settings.growth_regular_price or 210 }}" step="1" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">⚡ Enterprise Regular ($)</label>
+                                    <input type="number" class="form-control" name="enterprise_regular_price"
+                                           value="{{ settings.enterprise_regular_price or 840 }}" step="1" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">👑 Founders Regular ($)</label>
+                                    <input type="number" class="form-control" name="founders_regular_price"
+                                           value="{{ settings.founders_regular_price or 840 }}" step="1" min="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>Save All Settings
                         </button>
                     </form>
                 </div>

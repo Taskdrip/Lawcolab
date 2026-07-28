@@ -219,7 +219,7 @@ def request_access():
     
     # Create pricing map
     pricing = {
-        'trial': 'FREE 3-Day Trial',
+        'trial': 'FREE 30-Day Trial',
         '1month': '$70 (1 Month)',
         '3months': '$190 (3 Months) - Save $20',
         '6months': '$400 (6 Months) - Save $70', 

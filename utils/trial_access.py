@@ -52,10 +52,10 @@ def trial_warning_context():
         if law_firm.admin_access_granted and not law_firm.is_subscription_expired:
             context['subscription_status'] = law_firm.subscription_status
             context['days_until_expiry'] = law_firm.days_until_expiry
-            context['is_trial'] = law_firm.subscription_period == '3days'
+            context['is_trial'] = law_firm.subscription_period == '30days'
             
             # Calculate hours remaining for trials
-            if law_firm.admin_access_expires and law_firm.subscription_period == '3days':
+            if law_firm.admin_access_expires and law_firm.subscription_period == '30days':
                 time_remaining = law_firm.admin_access_expires - datetime.now()
                 context['hours_remaining'] = max(0, int(time_remaining.total_seconds() / 3600))
                 context['minutes_remaining'] = max(0, int((time_remaining.total_seconds() % 3600) / 60))
@@ -79,7 +79,7 @@ def check_feature_access(feature_name):
         return False
     
     # Feature-specific restrictions for trial users
-    if current_user.law_firm.subscription_period == '3days':
+    if current_user.law_firm.subscription_period == '30days':
         trial_restricted_features = [
             'advanced_reports',
             'bulk_operations',
@@ -103,7 +103,7 @@ def get_trial_notification():
     
     days_remaining = law_firm.days_until_expiry
     
-    if law_firm.subscription_period == '3days':
+    if law_firm.subscription_period == '30days':
         if days_remaining == 0:
             time_remaining = law_firm.admin_access_expires - datetime.now()
             hours_remaining = max(0, int(time_remaining.total_seconds() / 3600))
@@ -114,11 +114,11 @@ def get_trial_notification():
                 'action_url': url_for('sales.popup_page'),
                 'action_text': 'Upgrade Now'
             }
-        elif days_remaining == 1:
+        elif days_remaining <= 3:
             return {
                 'type': 'warning',
-                'title': 'Trial Expires Tomorrow',
-                'message': 'Your 3-day free trial ends tomorrow. Upgrade to continue accessing all features.',
+                'title': f'Trial Expires in {days_remaining} Day{"s" if days_remaining != 1 else ""}',
+                'message': f'Your 30-day free trial ends in {days_remaining} day{"s" if days_remaining != 1 else ""}. Upgrade to continue accessing all features.',
                 'action_url': url_for('sales.popup_page'),
                 'action_text': 'View Plans'
             }
@@ -142,7 +142,7 @@ def require_paid_plan(f):
             return redirect(url_for('subscription_expired'))
         
         # Block trial users from premium features
-        if current_user.law_firm.subscription_period == '3days':
+        if current_user.law_firm.subscription_period == '30days':
             flash('This feature requires a paid subscription. Upgrade to access premium features.', 'error')
             return redirect(url_for('subscription_expired'))
         

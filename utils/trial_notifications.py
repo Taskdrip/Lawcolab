@@ -14,7 +14,7 @@ def check_trial_expirations():
         # Find trials expiring in 24 hours
         tomorrow = datetime.now() + timedelta(hours=24)
         expiring_tomorrow = LawFirm.query.filter(
-            LawFirm.subscription_period == '3days',
+            LawFirm.subscription_period == '30days',
             LawFirm.admin_access_granted == True,
             LawFirm.admin_access_expires <= tomorrow,
             LawFirm.admin_access_expires > datetime.now()
@@ -23,7 +23,7 @@ def check_trial_expirations():
         # Find trials expiring in 1 hour
         one_hour = datetime.now() + timedelta(hours=1)
         expiring_soon = LawFirm.query.filter(
-            LawFirm.subscription_period == '3days',
+            LawFirm.subscription_period == '30days',
             LawFirm.admin_access_granted == True,
             LawFirm.admin_access_expires <= one_hour,
             LawFirm.admin_access_expires > datetime.now()
@@ -58,7 +58,7 @@ def send_trial_expiration_notification(law_firm, timing):
         # Determine message content based on timing
         if timing == '24_hours':
             subject = "Your LawColab trial expires tomorrow!"
-            message = f"Hi {admin_user.full_name}, your 3-day trial expires tomorrow. Upgrade now to keep access!"
+            message = f"Hi {admin_user.full_name}, your 30-day trial expires tomorrow. Upgrade now to keep access!"
         else:  # 1_hour
             subject = "URGENT: Your LawColab trial expires in 1 hour!"
             message = f"Hi {admin_user.full_name}, your trial expires in 1 hour! Upgrade immediately to avoid losing access."
@@ -83,7 +83,7 @@ def get_trial_flash_messages():
     law_firm = current_user.law_firm
     messages = []
     
-    if law_firm.subscription_period == '3days' and law_firm.admin_access_granted:
+    if law_firm.subscription_period == '30days' and law_firm.admin_access_granted:
         days_remaining = law_firm.days_until_expiry
         
         if days_remaining == 0:
@@ -103,7 +103,7 @@ def get_trial_flash_messages():
         elif days_remaining == 1:
             messages.append({
                 'type': 'info',
-                'message': f'Your 3-day trial ends tomorrow. <a href="/sales/popup" class="alert-link">View pricing plans</a> to continue using LawColab.'
+                'message': f'Your 30-day trial ends tomorrow. <a href="/sales/popup" class="alert-link">View pricing plans</a> to continue using LawColab.'
             })
     
     return messages
