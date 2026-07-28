@@ -817,6 +817,27 @@ def delete_law_firm(firm_id):
 
 # ── Extend / Modify Subscription ───────────────────────────────────────────────
 
+@superadmin_bp.route('/bulk-grant-trial', methods=['POST'])
+@require_super_admin
+def bulk_grant_trial():
+    """Grant a 14-day free trial (from today) to ALL law firms."""
+    trial_end = datetime.now() + timedelta(days=14)
+    firms = LawFirm.query.all()
+    count = 0
+    for firm in firms:
+        firm.admin_access_granted = True
+        firm.admin_access_expires = trial_end
+        firm.subscription_period  = '14days'
+        count += 1
+    try:
+        db.session.commit()
+        flash(f'✅ 2-week free trial granted to {count} law firm(s). Access expires {trial_end.strftime("%B %d, %Y")}.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error granting trials: {e}', 'danger')
+    return redirect(url_for('superadmin.dashboard'))
+
+
 @superadmin_bp.route('/law-firms/<int:firm_id>/extend-subscription', methods=['POST'])
 @require_super_admin
 def extend_subscription(firm_id):

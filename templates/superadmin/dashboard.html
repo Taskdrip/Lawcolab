@@ -18,6 +18,13 @@
                 <a href="{{ url_for('superadmin.create_super_admin') }}" class="btn btn-warning btn-sm fw-semibold">
                     <i class="fas fa-user-shield me-1"></i>Add Super Admin
                 </a>
+                <form method="POST" action="{{ url_for('superadmin.bulk_grant_trial') }}" class="d-inline"
+                      onsubmit="return confirm('Grant a fresh 14-day trial to ALL law firms from today?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-success btn-sm fw-semibold">
+                        <i class="fas fa-gift me-1"></i>Grant 2-Week Trial to All
+                    </button>
+                </form>
                 <div class="dropdown">
                     <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
                         <i class="fas fa-plus me-1"></i>Quick Actions
