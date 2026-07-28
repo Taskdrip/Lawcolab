@@ -201,9 +201,13 @@ def _send_smtp(to_email, subject, html, text, from_name, from_email,
 
 
 def _send_resend(to_email, subject, html, text, from_name, from_email, reply_to, settings):
-    api_key = settings.get("api_key") or os.environ.get("RESEND_API_KEY", "")
+    # Prefer env var so Railway/Replit secrets work without saving to DB
+    api_key = os.environ.get("RESEND_API_KEY", "") or settings.get("api_key", "")
     if not api_key:
-        raise ValueError("Resend API key not configured")
+        raise ValueError(
+            "Resend API key not configured. Set RESEND_API_KEY in your environment variables "
+            "or enter it in the Email Settings page."
+        )
     payload = {
         "from": f"{from_name} <{from_email}>",
         "to":   [to_email],
@@ -219,7 +223,35 @@ def _send_resend(to_email, subject, html, text, from_name, from_email, reply_to,
         headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
         json=payload, timeout=20,
     )
-    r.raise_for_status()
+    # Parse Resend error body for clear user-facing messages
+    if not r.ok:
+        try:
+            err_body = r.json()
+            err_msg = err_body.get("message") or err_body.get("name") or r.text
+        except Exception:
+            err_msg = r.text or f"HTTP {r.status_code}"
+        if r.status_code == 403:
+            raise ValueError(
+                f"Resend domain not verified (403). "
+                f"You must verify your sending domain in the Resend dashboard "
+                f"(resend.com/domains) before sending from '{from_email}'. "
+                f"For testing, change 'From Email' to 'onboarding@resend.dev'. "
+                f"Resend says: {err_msg}"
+            )
+        elif r.status_code == 401:
+            raise ValueError(
+                f"Resend API key is invalid or expired (401). "
+                f"Check your RESEND_API_KEY in Railway environment variables. "
+                f"Resend says: {err_msg}"
+            )
+        elif r.status_code == 422:
+            raise ValueError(
+                f"Resend rejected the request (422 — invalid data). "
+                f"Check that the From Email address is valid and the domain is verified. "
+                f"Resend says: {err_msg}"
+            )
+        else:
+            raise ValueError(f"Resend error {r.status_code}: {err_msg}")
     data = r.json()
     return {"success": True, "provider": "resend",
             "provider_message_id": data.get("id"), "error": None}

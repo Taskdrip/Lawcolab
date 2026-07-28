@@ -48,10 +48,31 @@
 
           <!-- API key fields (Resend, Mailgun, Postmark) -->
           <div id="cfg-api" class="provider-cfg" style="display:{{ 'block' if s.get('provider') in ('resend','mailgun','postmark') else 'none' }};">
-            <div class="mb-3">
+            <div class="mb-2">
               <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">API Key</label>
-              <input type="password" name="api_key" class="form-control" style="border-radius:9px;" placeholder="Enter your API key (leave blank to keep current)">
-              <div class="form-text" style="font-size:.75rem;">Get your key from the provider dashboard. Stored securely.</div>
+              <input type="password" name="api_key" class="form-control" style="border-radius:9px;" placeholder="Enter your API key (leave blank to keep current / use env var)">
+              <div class="form-text" style="font-size:.75rem;">
+                Leave blank if you've set <code>RESEND_API_KEY</code> in Railway environment variables — it will be used automatically.
+                Otherwise paste your key here and click <strong>Save Settings</strong>.
+              </div>
+            </div>
+            <!-- Resend-specific inline guide -->
+            <div id="resend-guide" style="display:{{ 'block' if s.get('provider')=='resend' else 'none' }};">
+              <div class="alert-guide mt-2">
+                <div style="font-weight:700;font-size:.82rem;margin-bottom:.5rem;"><i class="fas fa-exclamation-triangle me-1" style="color:#d97706;"></i> Resend requires a verified sending domain</div>
+                <ol style="font-size:.78rem;line-height:1.9;margin-bottom:.5rem;padding-left:1.2rem;">
+                  <li>Go to <a href="https://resend.com/domains" target="_blank" style="color:var(--navy);font-weight:600;">resend.com/domains</a> and add your domain (e.g. <code>lawcolab.com</code>).</li>
+                  <li>Add the DNS records Resend shows you to your domain registrar (GoDaddy, Namecheap, Cloudflare, etc.).</li>
+                  <li>Wait up to 48 hours for DNS propagation, then click <em>Verify</em> in the Resend dashboard.</li>
+                  <li>Once verified, set your <strong>From Email</strong> below to any address on that domain — e.g. <code>hello@lawcolab.com</code>.</li>
+                </ol>
+                <div style="background:#fef3c7;border-radius:8px;padding:.5rem .75rem;font-size:.76rem;">
+                  <strong>🧪 Quick test without domain verification:</strong> Set <strong>From Email</strong> to
+                  <code style="background:#fde68a;padding:0 3px;border-radius:3px;">onboarding@resend.dev</code>
+                  — this is Resend's built-in test address that works immediately with any API key.
+                  Change it back to your real address after your domain is verified.
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -71,6 +92,7 @@
             <div class="col-6">
               <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">From Email</label>
               <input type="email" name="from_email" class="form-control" style="border-radius:9px;" value="{{ s.get('from_email','noreply@lawcolab.com') }}">
+              <div class="form-text" style="font-size:.73rem;">Must be on a domain verified in Resend. Use <code>onboarding@resend.dev</code> for testing.</div>
             </div>
             <div class="col-6">
               <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Reply-To</label>
@@ -122,7 +144,7 @@
         </div>
       </div>
 
-      <div class="d-flex gap-2">
+      <div class="d-flex gap-2 flex-wrap">
         <button type="submit" class="btn-navy">
           <i class="fas fa-save me-1"></i> Save Settings
         </button>
@@ -130,24 +152,77 @@
           <i class="fas fa-vial me-1"></i> Send Test Email
         </button>
       </div>
+
+      <!-- Test email result -->
+      <div id="test-result" class="mt-3" style="display:none;"></div>
     </form>
   </div>
 
   <!-- Side info -->
   <div class="col-lg-4">
+
+    <!-- Current status -->
     <div class="ec-card mb-3">
-      <div class="ec-card-header"><span class="ec-card-title"><i class="fas fa-info-circle me-2"></i>Provider Guides</span></div>
+      <div class="ec-card-header"><span class="ec-card-title"><i class="fas fa-info-circle me-2"></i>Current Status</span></div>
+      <div class="ec-card-body" style="font-size:.82rem;line-height:1.8;">
+        <div class="d-flex justify-content-between mb-1">
+          <span style="color:var(--muted);">Provider</span>
+          <strong>{{ (s.get('provider') or 'simulate')|title }}</strong>
+        </div>
+        <div class="d-flex justify-content-between mb-1">
+          <span style="color:var(--muted);">From</span>
+          <strong style="font-size:.76rem;">{{ s.get('from_name','LAWCOLAB') }} &lt;{{ s.get('from_email','noreply@lawcolab.com') }}&gt;</strong>
+        </div>
+        <div class="d-flex justify-content-between mb-1">
+          <span style="color:var(--muted);">API Key</span>
+          {% if s.get('api_key') %}
+            <span class="badge bg-success" style="font-size:.7rem;">Saved in DB</span>
+          {% elif resend_env_key %}
+            <span class="badge bg-primary" style="font-size:.7rem;">From Env Var ✓</span>
+          {% else %}
+            <span class="badge bg-warning text-dark" style="font-size:.7rem;">Not set</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Resend setup guide -->
+    <div class="ec-card mb-3">
+      <div class="ec-card-header"><span class="ec-card-title"><i class="fas fa-book me-2"></i>Resend Setup Guide</span></div>
+      <div class="ec-card-body" style="font-size:.8rem;line-height:1.8;color:var(--muted);">
+        <p style="font-weight:700;color:#0d1b4b;margin-bottom:.4rem;">Step-by-step for Resend:</p>
+        <ol style="padding-left:1.1rem;margin-bottom:.75rem;">
+          <li>Sign up at <a href="https://resend.com" target="_blank" style="color:var(--navy);">resend.com</a></li>
+          <li>Go to <strong>API Keys</strong> → create a key</li>
+          <li>Copy the key (starts with <code>re_</code>)</li>
+          <li>Add it as <code>RESEND_API_KEY</code> in Railway environment variables <em>or</em> paste it in the API Key field above</li>
+          <li>Go to <strong>Domains</strong> → add <code>lawcolab.com</code></li>
+          <li>Add the DNS records to your domain registrar</li>
+          <li>After DNS propagates (&lt;48h), click <em>Verify</em></li>
+          <li>Set <strong>From Email</strong> to any address on the verified domain</li>
+          <li>Click <strong>Save Settings</strong> then <strong>Send Test Email</strong></li>
+        </ol>
+        <div style="background:#f0fdf4;border-radius:8px;padding:.5rem .75rem;border-left:3px solid #22c55e;font-size:.75rem;">
+          <strong>⚡ Quick test (no domain needed):</strong><br>
+          Set From Email to <code>onboarding@resend.dev</code> — works instantly for testing.
+        </div>
+      </div>
+    </div>
+
+    <div class="ec-card mb-3">
+      <div class="ec-card-header"><span class="ec-card-title"><i class="fas fa-link me-2"></i>Provider Links</span></div>
       <div class="ec-card-body p-0">
         {% for name, url, desc in [
-          ('Resend', 'https://resend.com', 'Free 3,000 emails/month. Best for startups.'),
-          ('Mailgun', 'https://mailgun.com', '5,000 free emails/3 months. Great webhooks.'),
-          ('Postmark', 'https://postmarkapp.com', 'Best deliverability. $15/month starter.'),
-          ('Gmail SMTP', 'https://support.google.com/mail/answer/7126229', 'Free via Gmail — 500/day limit.'),
+          ('Resend Dashboard', 'https://resend.com/overview', 'API keys, domains, analytics'),
+          ('Resend Domains', 'https://resend.com/domains', 'Verify your sending domain here'),
+          ('Mailgun', 'https://mailgun.com', '5,000 free emails/3 months'),
+          ('Postmark', 'https://postmarkapp.com', 'Best deliverability. $15/month'),
+          ('Gmail SMTP', 'https://support.google.com/mail/answer/7126229', 'Free — 500 emails/day'),
         ] %}
         <div class="px-3 py-2 {% if not loop.last %}border-bottom{% endif %}" style="border-color:#f1f5f9;">
           <div style="font-size:.82rem;font-weight:600;">{{ name }}</div>
           <div style="font-size:.76rem;color:var(--muted);margin-bottom:.2rem;">{{ desc }}</div>
-          <a href="{{ url }}" target="_blank" style="font-size:.74rem;color:var(--navy);">Get started →</a>
+          <a href="{{ url }}" target="_blank" style="font-size:.74rem;color:var(--navy);">Open →</a>
         </div>
         {% endfor %}
       </div>
@@ -156,9 +231,13 @@
     <div class="ec-card">
       <div class="ec-card-header"><span class="ec-card-title"><i class="fas fa-shield-alt me-2"></i>Security</span></div>
       <div class="ec-card-body" style="font-size:.82rem;color:var(--muted);line-height:1.7;">
-        <p>API keys and SMTP passwords are stored in the database. For production, we recommend using Railway environment variables instead and referencing them via <code>os.environ</code>.</p>
-        <p>Leave password/key fields blank to keep the current stored value.</p>
-        <p>Supported env vars: <code>RESEND_API_KEY</code>, <code>MAILGUN_API_KEY</code>, <code>POSTMARK_SERVER_TOKEN</code></p>
+        <p>The recommended approach is to set <code>RESEND_API_KEY</code> as a Railway environment variable — the app reads it automatically and you never need to paste it here.</p>
+        <p>If you paste the key in the form above, it is stored in the database. Leave it blank on subsequent saves to keep the existing stored key.</p>
+        <p><strong>Supported env vars:</strong><br>
+          <code>RESEND_API_KEY</code><br>
+          <code>MAILGUN_API_KEY</code><br>
+          <code>POSTMARK_SERVER_TOKEN</code>
+        </p>
       </div>
     </div>
   </div>
@@ -168,6 +247,7 @@
 .provider-card{border:2px solid var(--border);border-radius:12px;padding:.85rem;text-align:center;cursor:pointer;transition:all .15s;height:100%;}
 .provider-card:hover,.provider-card.selected{border-color:var(--navy);background:#f0f4ff;}
 .provider-card.selected{background:#f0f4ff;}
+.alert-guide{background:#fff7ed;border:1px solid #fdba74;border-radius:10px;padding:.75rem 1rem;}
 </style>
 {% endblock %}
 
@@ -179,15 +259,41 @@ function selectProvider(prov, el){
   document.querySelectorAll('input[name=provider]').forEach(r=>r.checked = r.value===prov);
   document.querySelectorAll('.provider-cfg').forEach(c=>c.style.display='none');
   if(prov==='smtp') document.getElementById('cfg-smtp').style.display='block';
-  else if(['resend','mailgun','postmark'].includes(prov)) document.getElementById('cfg-api').style.display='block';
+  else if(['resend','mailgun','postmark'].includes(prov)){
+    document.getElementById('cfg-api').style.display='block';
+    document.getElementById('resend-guide').style.display = prov==='resend' ? 'block' : 'none';
+  }
 }
 
 async function testSend(){
-  const email = prompt('Send test to (your email):', '{{ current_user.email }}');
+  const email = prompt('Send test email to:', '{{ current_user.email }}');
   if(!email) return;
-  const r = await api('{{ url_for("email_crm.test_send") }}', {email});
-  if(r.success) showToast(`Test email sent via ${r.provider}!`);
-  else showToast(r.error||'Send failed','error');
+
+  const resultDiv = document.getElementById('test-result');
+  resultDiv.style.display='block';
+  resultDiv.innerHTML = '<div class="alert alert-info py-2" style="font-size:.83rem;"><i class="fas fa-spinner fa-spin me-2"></i>Sending test email…</div>';
+
+  try {
+    const r = await api('{{ url_for("email_crm.test_send") }}', {email});
+    if(r.success){
+      resultDiv.innerHTML = `<div class="alert alert-success py-2" style="font-size:.83rem;">
+        <i class="fas fa-check-circle me-2"></i>
+        <strong>Test email sent!</strong> Provider: <code>${r.provider}</code>
+        ${r.provider_message_id ? `· Message ID: <code>${r.provider_message_id}</code>` : ''}
+        <br><span style="font-size:.75rem;opacity:.8;">Check your inbox at <strong>${email}</strong>. It may take a minute to arrive.</span>
+      </div>`;
+    } else {
+      resultDiv.innerHTML = `<div class="alert alert-danger py-2" style="font-size:.83rem;">
+        <i class="fas fa-times-circle me-2"></i>
+        <strong>Send failed.</strong><br>
+        <span style="font-size:.78rem;">${r.error||'Unknown error'}</span>
+      </div>`;
+    }
+  } catch(e){
+    resultDiv.innerHTML = `<div class="alert alert-danger py-2" style="font-size:.83rem;">
+      <i class="fas fa-times-circle me-2"></i>Network error: ${e}
+    </div>`;
+  }
 }
 </script>
 {% endblock %}

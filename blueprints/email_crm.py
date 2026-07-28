@@ -879,9 +879,12 @@ def analytics():
 @email_crm_bp.route('/settings')
 @require_super_admin
 def settings():
+    import os
     counts   = _folder_counts()
     s        = _get_settings()
-    return render_template('email_crm/settings.html', counts=counts, s=s)
+    resend_env_key = bool(os.environ.get("RESEND_API_KEY", ""))
+    return render_template('email_crm/settings.html', counts=counts, s=s,
+                           resend_env_key=resend_env_key)
 
 
 @email_crm_bp.route('/settings/save', methods=['POST'])
@@ -946,11 +949,21 @@ def save_settings():
 @email_crm_bp.route('/settings/test', methods=['POST'])
 @require_super_admin
 def test_send():
-    to_email = request.json.get('email', current_user.email)
+    data = request.json or {}
+    to_email = data.get('email') or current_user.email
     result = send_email(
         to_email=to_email,
-        subject='LAWCOLAB Email CRM — Test Message',
-        body_html='<p>This is a test email from your LAWCOLAB Email CRM. If you see this, your email provider is configured correctly! 🎉</p>',
+        subject='LAWCOLAB Email CRM — Test Message ✅',
+        body_html="""
+        <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;">
+          <h2 style="color:#0d1b4b;margin-bottom:8px;">✅ Email delivery confirmed!</h2>
+          <p style="color:#475569;">This test email was sent from your <strong>LAWCOLAB Email CRM</strong>.</p>
+          <p style="color:#475569;">If you're reading this, your email provider is configured correctly and ready to send messages to your CRM contacts.</p>
+          <hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0;">
+          <p style="font-size:12px;color:#94a3b8;">Sent to: <strong>{to_email}</strong><br>
+          Platform: LAWCOLAB Communications Hub</p>
+        </div>
+        """.format(to_email=to_email),
         base_url=_get_base_url(),
     )
     return jsonify(result)

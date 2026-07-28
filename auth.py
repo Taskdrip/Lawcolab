@@ -183,6 +183,43 @@ def signup():
             db.session.commit()
             login_user(user)
             flash('Registration successful! Welcome to your 14-day free trial of LawColab.', 'success')
+
+            # Send welcome email (non-blocking — failure must not break signup)
+            try:
+                from utils.email_sender import send_email
+                welcome_html = f"""
+                <div style="font-family:sans-serif;max-width:580px;margin:0 auto;padding:24px;">
+                  <h2 style="color:#0d1b4b;">Welcome to LAWCOLAB, {new_firm.name}! 🎉</h2>
+                  <p>Dear {user.first_name},</p>
+                  <p>We're thrilled to have <strong>{new_firm.name}</strong> join LAWCOLAB — your complete Legal Operating System.</p>
+                  <p>Your <strong>14-day free trial</strong> is now active. Here's what you can do right now:</p>
+                  <ul>
+                    <li>🏛️ Set up your firm profile and start adding cases</li>
+                    <li>💼 Invite your team members from the Admin panel</li>
+                    <li>📅 Sync your court calendar and set deadline reminders</li>
+                    <li>💳 Generate your first professional invoice</li>
+                    <li>🌐 List your firm on the public Law Firm Directory</li>
+                  </ul>
+                  <p>Need help? Our team is always available:</p>
+                  <ul>
+                    <li>💬 WhatsApp: <strong>+2348036622568</strong></li>
+                    <li>📧 Email: support@lawcolab.com</li>
+                  </ul>
+                  <p>Log in now: <a href="https://lawcolab.com" style="color:#0d1b4b;font-weight:600;">lawcolab.com</a></p>
+                  <hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0;">
+                  <p style="font-size:12px;color:#94a3b8;">Best regards,<br>
+                  <strong>Abraham Tahbat</strong><br>Lawyer & Founder, LAWCOLAB</p>
+                </div>
+                """
+                send_email(
+                    to_email=user.email,
+                    subject=f'Welcome to LAWCOLAB, {new_firm.name}! Your 14-day trial is active 🎉',
+                    body_html=welcome_html,
+                    from_name='Abraham at LAWCOLAB',
+                )
+            except Exception as email_err:
+                logger.warning("Welcome email failed (signup still succeeded): %s", email_err)
+
             return redirect(url_for('registration_success'))
         except Exception:
             db.session.rollback()
