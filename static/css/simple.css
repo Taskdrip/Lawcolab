@@ -168,6 +168,13 @@ a:hover { color: var(--lc-accent); }
   font-weight: 600;
   padding: 1rem 1.25rem;
 }
+/* Headings inside dark card headers must be white */
+.card-header h1, .card-header h2, .card-header h3,
+.card-header h4, .card-header h5, .card-header h6,
+.card-header p, .card-header span, .card-header small,
+.card-header .text-muted {
+  color: #ffffff !important;
+}
 .card-title { color: var(--lc-text); font-weight: 700; }
 .card-text  { color: var(--lc-text-muted); }
 

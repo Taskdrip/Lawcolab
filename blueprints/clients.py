@@ -93,20 +93,42 @@ def client_profile(client_id):
             flash('Access restricted — this client is not on any of your assigned cases.', 'warning')
             return redirect(url_for('clients.list_clients'))
     
-    # Get client's projects (from same law firm)
-    projects = Project.query.filter_by(law_firm_id=current_user.law_firm_id).join(ProjectAssignment).filter_by(user_id=client_id).all()
+    # Get client's projects safely (guard against None law_firm_id)
+    try:
+        if current_user.law_firm_id:
+            projects = (
+                Project.query
+                .filter_by(law_firm_id=current_user.law_firm_id)
+                .join(ProjectAssignment, Project.id == ProjectAssignment.project_id)
+                .filter(ProjectAssignment.user_id == client_id)
+                .all()
+            )
+        else:
+            # Super admins or users without a firm — show all projects for the client
+            projects = (
+                Project.query
+                .join(ProjectAssignment, Project.id == ProjectAssignment.project_id)
+                .filter(ProjectAssignment.user_id == client_id)
+                .all()
+            )
+    except Exception:
+        projects = []
     
     # Get client notes (only for team members and admins)
     notes = []
-    if current_user.is_admin() or current_user.is_team_member():
-        notes = ClientNote.query.filter_by(client_id=client_id).order_by(ClientNote.created_at.desc()).all()
+    try:
+        if current_user.is_admin() or current_user.is_team_member() or current_user.is_super_admin():
+            notes = ClientNote.query.filter_by(client_id=client_id).order_by(ClientNote.created_at.desc()).all()
+    except Exception:
+        notes = []
     
     form = ClientNoteForm()
     
-    # Always use the public profile template for now to avoid errors
-    return render_template('clients/public_profile.html', 
-                         client=client, 
-                         projects=projects)
+    return render_template('clients/profile.html',
+                         client=client,
+                         projects=projects,
+                         notes=notes,
+                         form=form)
 
 @clients_bp.route('/<client_id>/notes', methods=['POST'])
 @require_team_member_or_admin

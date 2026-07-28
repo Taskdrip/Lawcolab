@@ -1,230 +1,278 @@
 {% extends "base.html" %}
 
-{% block title %}{{ client.full_name }} - Client Profile{% endblock %}
+{% block title %}{{ client.full_name }} - Client Profile | LAWCOLAB{% endblock %}
 
 {% block content %}
 
 <!-- Page Header -->
-<div class="lc-page-header lc-ph-bg-consultation">
+<div class="lc-page-header lc-ph-bg-clients">
     <div class="container-fluid px-3 px-lg-4">
-        <div class="lc-ph-inner d-flex align-items-center gap-3">
-            <div class="lc-ph-icon"><i class="fas fa-user-tie"></i></div>
-            <div>
-                <h1>{{ client.full_name }}</h1>
-                <p class="lc-ph-sub mb-0">Client profile — cases, invoices & communication history</p>
+        <div class="lc-ph-inner d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="lc-ph-icon"><i class="fas fa-user-circle"></i></div>
+                <div>
+                    <h1>{{ client.full_name }}</h1>
+                    <p class="lc-ph-sub mb-0">Client Profile</p>
+                </div>
             </div>
-        </div>
-        <div class="lc-ph-breadcrumb">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('clients.list_clients') }}">Clients</a></li>
-                    <li class="breadcrumb-item active">{{ client.full_name }}</li>
-                </ol>
-            </nav>
+            <div class="lc-ph-actions">
+                <a href="{{ url_for('clients.list_clients') }}" class="btn btn-outline-light btn-sm fw-semibold">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Clients
+                </a>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="container py-4">
-    <div class="row">
-        <div class="col-lg-8">
-            <!-- Client Profile -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-start mb-4">
-                        <div class="flex-shrink-0">
-                            {% set user = client %}
-                            {% set size = 'lg' %}
-                            {% set show_badge = true %}
-                            {% include 'components/user_avatar.html' %}
-                        </div>
-                        <div class="flex-grow-1 ms-4">
-                            <h1 class="h3 mb-2">
-                                <a href="{{ url_for('public.user_profile', user_id=client.id) }}" class="text-decoration-none text-dark">
-                                    {{ client.full_name }} <i class="fas fa-external-link-alt ms-1 small text-muted"></i>
-                                </a>
-                            </h1>
-                            <p class="text-muted mb-2">
-                                <i class="fas fa-envelope me-2"></i>{{ client.email }}
-                            </p>
-                            {% if client.phone %}
-                            <p class="text-muted mb-2">
-                                <i class="fas fa-phone me-2"></i>{{ client.phone }}
-                            </p>
-                            {% endif %}
-                            <span class="badge bg-primary fw-bold px-2 py-1">
-                                <i class="fas fa-handshake me-1"></i>Client
+<div class="container-fluid mt-4 px-3 px-lg-4">
+    <div class="row g-4">
+
+        <!-- Left Column: Profile Info -->
+        <div class="col-lg-4">
+
+            <!-- Profile Card -->
+            <div class="card mb-4">
+                <div class="card-body text-center p-4">
+                    {% if client.profile_image_url %}
+                        <img src="{{ url_for('static', filename='uploads/' + client.profile_image_url) if not client.profile_image_url.startswith('http') else client.profile_image_url }}"
+                             alt="{{ client.full_name }}"
+                             class="rounded-circle mb-3 border border-3"
+                             style="width:100px;height:100px;object-fit:cover;border-color:var(--lc-gold)!important;">
+                    {% else %}
+                        <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
+                             style="width:100px;height:100px;background:var(--lc-navy);border:3px solid var(--lc-gold);">
+                            <span style="font-size:2.5rem;font-weight:700;color:#fff;">
+                                {{ client.first_name[0]|upper if client.first_name else '?' }}
                             </span>
-                            {% if client.company_name %}
-                            <span class="badge bg-info bg-opacity-25 text-info fw-normal px-2 py-1 ms-2">
-                                <i class="fas fa-building me-1"></i>{{ client.company_name }}
-                            </span>
-                            {% endif %}
-                            <small class="text-muted d-block mt-2">
-                                Member since {{ client.created_at.strftime('%B %Y') }}
-                            </small>
                         </div>
-                    </div>
-                    
-                    {% if client.bio %}
-                    <div class="mb-4">
-                        <h5>About</h5>
-                        <p class="text-muted">{{ client.bio }}</p>
+                    {% endif %}
+
+                    <h4 class="fw-bold mb-1" style="color:var(--lc-text);">{{ client.full_name }}</h4>
+                    {% if client.company_name %}
+                    <p class="text-muted mb-2">
+                        <i class="fas fa-building me-1"></i>{{ client.company_name }}
+                    </p>
+                    {% endif %}
+                    <span class="badge bg-{{ 'success' if client.active else 'secondary' }} px-3 py-2">
+                        <i class="fas fa-circle me-1" style="font-size:.6rem;vertical-align:middle;"></i>
+                        {{ 'Active' if client.active else 'Inactive' }}
+                    </span>
+
+                    {% if current_user.is_admin() %}
+                    <div class="mt-3">
+                        <form method="POST" action="{{ url_for('clients.upload_profile_image', client_id=client.id) }}" enctype="multipart/form-data" class="d-inline">
+                            {{ form.hidden_tag() }}
+                            <label class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-camera me-1"></i>Update Photo
+                                <input type="file" name="profile_image" accept="image/*" class="d-none" onchange="this.form.submit()">
+                            </label>
+                        </form>
                     </div>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- Client Projects -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-transparent border-0">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-briefcase me-2"></i>Active Cases
-                    </h5>
+            <!-- Contact Info Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-address-card me-2"></i>Contact Information
                 </div>
-                <div class="card-body">
+                <div class="card-body p-3">
+                    <div class="mb-3">
+                        <div class="small text-muted mb-1">Email Address</div>
+                        <a href="mailto:{{ client.email }}" class="fw-semibold text-break">
+                            <i class="fas fa-envelope me-1 text-muted"></i>{{ client.email }}
+                        </a>
+                    </div>
+                    {% if client.phone %}
+                    <div class="mb-3">
+                        <div class="small text-muted mb-1">Phone Number</div>
+                        <a href="tel:{{ client.phone }}" class="fw-semibold">
+                            <i class="fas fa-phone me-1 text-muted"></i>{{ client.phone }}
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% if client.company_name %}
+                    <div class="mb-3">
+                        <div class="small text-muted mb-1">Company</div>
+                        <div class="fw-semibold">
+                            <i class="fas fa-building me-1 text-muted"></i>{{ client.company_name }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if client.industry %}
+                    <div class="mb-3">
+                        <div class="small text-muted mb-1">Industry</div>
+                        <div class="fw-semibold">{{ client.industry }}</div>
+                    </div>
+                    {% endif %}
+                    {% if client.website_url %}
+                    <div class="mb-3">
+                        <div class="small text-muted mb-1">Website</div>
+                        <a href="{{ client.website_url }}" target="_blank" rel="noopener" class="fw-semibold">
+                            <i class="fas fa-external-link-alt me-1 text-muted"></i>{{ client.website_url }}
+                        </a>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <div class="small text-muted mb-1">Client Since</div>
+                        <div class="fw-semibold">
+                            <i class="fas fa-calendar me-1 text-muted"></i>
+                            {{ client.created_at.strftime('%B %d, %Y') if client.created_at else 'N/A' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-chart-bar me-2"></i>Case Overview
+                </div>
+                <div class="card-body p-3">
+                    <div class="row g-2 text-center">
+                        <div class="col-4">
+                            <div class="p-2 rounded" style="background:var(--lc-bg);">
+                                <div class="fw-bold fs-5" style="color:var(--lc-navy);">{{ projects|length }}</div>
+                                <div class="small text-muted">Total</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2 rounded" style="background:var(--lc-bg);">
+                                <div class="fw-bold fs-5 text-success">
+                                    {{ projects | selectattr('status', 'equalto', 'active') | list | length }}
+                                </div>
+                                <div class="small text-muted">Active</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2 rounded" style="background:var(--lc-bg);">
+                                <div class="fw-bold fs-5 text-secondary">
+                                    {{ projects | selectattr('status', 'equalto', 'completed') | list | length }}
+                                </div>
+                                <div class="small text-muted">Done</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /col-lg-4 -->
+
+        <!-- Right Column: Projects & Notes -->
+        <div class="col-lg-8">
+
+            <!-- Cases / Projects -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-folder-open me-2"></i>Cases &amp; Projects</span>
+                    <span class="badge bg-light text-dark">{{ projects|length }}</span>
+                </div>
+                <div class="card-body p-3">
                     {% if projects %}
                         <div class="row g-3">
-                            {% for project in projects %}
+                        {% for project in projects %}
                             <div class="col-md-6">
-                                <div class="card border-start border-primary border-4">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <h6 class="card-title mb-0">{{ project.title }}</h6>
-                                            <span class="badge bg-{{ 'success' if project.status == 'active' else 'secondary' }}">
-                                                {{ project.status.replace('_', ' ').title() }}
-                                            </span>
-                                        </div>
-                                        <p class="card-text small text-muted mb-3">
-                                            {{ project.description[:80] }}{% if project.description|length > 80 %}...{% endif %}
-                                        </p>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <small class="text-muted">
-                                                {% if project.deadline %}
-                                                    <i class="fas fa-calendar me-1"></i>{{ project.deadline.strftime('%b %d, %Y') }}
-                                                {% else %}
-                                                    <i class="fas fa-clock me-1"></i>No deadline
-                                                {% endif %}
-                                            </small>
-                                            <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="btn btn-sm btn-outline-primary">
-                                                View
-                                            </a>
-                                        </div>
+                                <div class="border rounded p-3 h-100" style="transition:box-shadow .2s;"
+                                     onmouseover="this.style.boxShadow='0 4px 16px rgba(13,27,75,.12)'"
+                                     onmouseout="this.style.boxShadow='none'">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="fw-bold mb-0" style="color:var(--lc-navy);">{{ project.name }}</h6>
+                                        <span class="badge bg-{{
+                                            'success' if project.status == 'active' else
+                                            'secondary' if project.status == 'completed' else
+                                            'warning text-dark' if project.status == 'pending' else 'info'
+                                        }} ms-2">{{ project.status|title }}</span>
+                                    </div>
+                                    {% if project.description %}
+                                    <p class="small text-muted mb-2">
+                                        {{ project.description[:120] }}{% if project.description|length > 120 %}…{% endif %}
+                                    </p>
+                                    {% endif %}
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar me-1"></i>
+                                            {{ project.created_at.strftime('%b %Y') if project.created_at else 'Recent' }}
+                                        </small>
+                                        <a href="{{ url_for('projects.project_detail', project_id=project.id) }}"
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye me-1"></i>View
+                                        </a>
                                     </div>
                                 </div>
                             </div>
-                            {% endfor %}
+                        {% endfor %}
                         </div>
                     {% else %}
                         <div class="text-center py-4">
-                            <i class="fas fa-briefcase fa-2x text-muted mb-3"></i>
-                            <p class="text-muted mb-0">No active cases assigned to this client.</p>
+                            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">No cases assigned to this client yet.</p>
                         </div>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- Client Notes (Admin/Team only) -->
-            {% if current_user.is_admin() or current_user.is_team_member() %}
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent border-0">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-sticky-note me-2"></i>Client Notes
-                    </h5>
+            <!-- Client Notes (admin/team only) -->
+            {% if current_user.is_admin() or current_user.is_team_member() or current_user.is_super_admin() %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-sticky-note me-2"></i>Client Notes
                 </div>
-                <div class="card-body">
-                    <!-- Add Note Form -->
+                <div class="card-body p-3">
+                    <!-- Add note form -->
                     <form method="POST" action="{{ url_for('clients.add_client_note', client_id=client.id) }}" class="mb-4">
                         {{ form.hidden_tag() }}
-                        <div class="mb-3">
-                            {{ form.note.label(class="form-label") }}
-                            {{ form.note(class="form-control", rows="3", placeholder="Add a note about this client...") }}
+                        <div class="mb-2">
+                            <textarea name="note" class="form-control" rows="3"
+                                      placeholder="Add a note about this client…" required
+                                      style="color:var(--lc-text);background:#fff;"></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-plus me-2"></i>Add Note
-                        </button>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus me-1"></i>Add Note
+                            </button>
+                        </div>
                     </form>
 
-                    <!-- Notes List -->
+                    <!-- Existing notes -->
                     {% if notes %}
+                        <div class="d-flex flex-column gap-3">
                         {% for note in notes %}
-                        <div class="border-start border-primary border-4 ps-3 mb-3">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <strong>{{ note.created_by_user.full_name }}</strong>
-                                <small class="text-muted">{{ note.created_at.strftime('%b %d, %Y at %I:%M %p') }}</small>
+                            <div class="p-3 rounded border-start border-4" style="border-color:var(--lc-navy)!important;background:var(--lc-bg);">
+                                <p class="mb-1" style="color:var(--lc-text);">{{ note.note }}</p>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <small class="text-muted">
+                                        <i class="fas fa-user me-1"></i>
+                                        {{ note.created_by_user.full_name if note.created_by_user else 'Team Member' }}
+                                    </small>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>
+                                        {{ note.created_at.strftime('%b %d, %Y %H:%M') if note.created_at else '' }}
+                                    </small>
+                                </div>
                             </div>
-                            <p class="mb-0">{{ note.note }}</p>
-                        </div>
                         {% endfor %}
-                    {% else %}
-                        <div class="text-center py-3">
-                            <i class="fas fa-sticky-note fa-2x text-muted mb-3"></i>
-                            <p class="text-muted mb-0">No notes yet. Add the first note above.</p>
                         </div>
+                    {% else %}
+                        <p class="text-muted text-center mb-0">No notes yet. Add the first note above.</p>
                     {% endif %}
                 </div>
             </div>
             {% endif %}
-        </div>
 
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-            <!-- Quick Actions -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-transparent border-0">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-bolt me-2"></i>Quick Actions
-                    </h5>
+            <!-- Company Description -->
+            {% if client.company_description %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-info-circle me-2"></i>About the Client
                 </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        {% if current_user.is_admin() or current_user.is_team_member() %}
-                        <a href="{{ url_for('clients.list_clients') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-arrow-left me-2"></i>Back to Clients
-                        </a>
-                        <a href="{{ url_for('chat.conversation', user_id=client.id) }}" class="btn btn-success">
-                            <i class="fas fa-comments me-2"></i>Start Chat
-                        </a>
-                        {% endif %}
-                        {% if projects %}
-                        <a href="{{ url_for('projects.list_projects') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-briefcase me-2"></i>View All Projects
-                        </a>
-                        {% endif %}
-                        {% if current_user.is_admin() %}
-                        <a href="{{ url_for('admin.edit_user', user_id=client.id) }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-edit me-2"></i>Edit Profile
-                        </a>
-                        {% endif %}
-                    </div>
+                <div class="card-body p-3">
+                    <p class="mb-0" style="color:var(--lc-text);">{{ client.company_description }}</p>
                 </div>
             </div>
+            {% endif %}
 
-            <!-- Client Stats -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent border-0">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-chart-bar me-2"></i>Client Summary
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row text-center g-3">
-                        <div class="col-6">
-                            <div class="p-3 bg-light rounded">
-                                <h4 class="mb-1">{{ projects|length }}</h4>
-                                <small class="text-muted">Active Cases</small>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="p-3 bg-light rounded">
-                                <h4 class="mb-1">{{ notes|length if notes else 0 }}</h4>
-                                <small class="text-muted">Notes</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+        </div><!-- /col-lg-8 -->
+    </div><!-- /row -->
 </div>
 {% endblock %}
