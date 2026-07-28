@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, flash, session
-from flask_login import current_user, login_required
+from flask_login import current_user, login_required, login_user
 from flask_wtf.csrf import validate_csrf
 from app import db
-from models import SalesLead, PopupSettings, CustomerReview, User, ROLE_SUPER_ADMIN, PaymentMethod, PopupSuppression
+from models import SalesLead, PopupSettings, CustomerReview, User, LawFirm, ROLE_SUPER_ADMIN, ROLE_ADMIN, PaymentMethod, PopupSuppression
 from utils.decorators import role_required
 from datetime import datetime
 from sqlalchemy import desc
@@ -12,6 +12,61 @@ import os
 from werkzeug.utils import secure_filename
 
 sales_bp = Blueprint('sales', __name__)
+
+
+def _create_account_from_lead(name, email, firm_name, phone, plan, is_trial=False):
+    """Create (or retrieve) a User + LawFirm from checkout data.
+
+    Returns (user, firm, temp_password).
+    temp_password is None when the user already existed.
+    """
+    import uuid, secrets, string
+    from datetime import timedelta
+
+    # Existing user? Reuse them (re-subscription / duplicate click)
+    existing = User.query.filter_by(email=email).first()
+    if existing:
+        return existing, existing.law_firm, None
+
+    # 12-char random temp password
+    alphabet = string.ascii_letters + string.digits + '!@#'
+    temp_password = ''.join(secrets.choice(alphabet) for _ in range(12))
+
+    parts = name.strip().split(' ', 1)
+    first_name = parts[0]
+    last_name  = parts[1] if len(parts) > 1 else ''
+
+    firm = LawFirm()
+    firm.name  = firm_name or f"{name}'s Law Firm"
+    firm.email = email
+    firm.phone = phone or ''
+
+    if is_trial:
+        firm.admin_access_granted = True
+        firm.admin_access_expires = datetime.now() + timedelta(days=14)
+        firm.subscription_period  = '14days_trial'
+    else:
+        # Paid plan — access granted after manual payment verification
+        firm.admin_access_granted = False
+        firm.subscription_period  = plan
+
+    db.session.add(firm)
+    db.session.flush()   # get firm.id before creating user
+
+    user = User()
+    user.id          = str(uuid.uuid4())
+    user.email       = email
+    user.first_name  = first_name
+    user.last_name   = last_name
+    user.phone       = phone or ''
+    user.role        = ROLE_ADMIN
+    user.law_firm_id = firm.id
+    user.set_password(temp_password)
+
+    db.session.add(user)
+    db.session.commit()
+
+    return user, firm, temp_password
 
 @sales_bp.route('/popup')
 def popup_page():
@@ -390,7 +445,31 @@ def submit_bank_proof():
                 lead.notes = notes
                 db.session.commit()
 
-        return redirect(url_for('sales.congratulations'))
+        # Auto-create account and log the customer in so they land on their dashboard
+        _ld = session.get('lead_data', {})
+        if _ld.get('email') and not current_user.is_authenticated:
+            try:
+                _user, _firm, _tmp_pw = _create_account_from_lead(
+                    _ld.get('name', ''),
+                    _ld['email'],
+                    _ld.get('firm_name', ''),
+                    _ld.get('phone', ''),
+                    session.get('selected_plan', 'starter'),
+                    is_trial=False
+                )
+                login_user(_user)
+                if _tmp_pw:
+                    session['checkout_temp_password'] = _tmp_pw
+            except Exception:
+                pass  # never block the payment confirmation flow
+
+        pay_ref = session.get('payment_reference', '')
+        flash(
+            f'✅ Payment evidence submitted! Your reference is <strong>{pay_ref}</strong>. '
+            f'We\'ll activate your account within 2 hours of confirming the transfer.',
+            'info'
+        )
+        return redirect(url_for('dashboard.admin_dashboard'))
 
     except Exception as e:
         db.session.rollback()
@@ -880,6 +959,37 @@ def direct_checkout():
         if not _re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
             flash('Please enter a valid email address.', 'error')
             return redirect(url_for('sales.direct_checkout', plan=plan))
+
+        # ── FREE TRIAL — instant account, no payment needed ──────────────────
+        if plan == 'trial':
+            trial_lead = SalesLead()
+            trial_lead.name           = name
+            trial_lead.firm_name      = firm_name
+            trial_lead.email          = email
+            trial_lead.phone          = phone
+            trial_lead.plan           = 'trial'
+            trial_lead.payment_method = 'free_trial'
+            trial_lead.status         = 'converted'
+            db.session.add(trial_lead)
+            db.session.commit()
+
+            user, firm, temp_pw = _create_account_from_lead(
+                name, email, firm_name, phone, 'trial', is_trial=True
+            )
+            login_user(user)
+
+            if temp_pw:
+                session['checkout_temp_password'] = temp_pw
+                flash(
+                    f'🎉 Your free 2-week trial is active! '
+                    f'Your login email is <strong>{email}</strong> and your temporary password is '
+                    f'<strong>{temp_pw}</strong> — please save it now.',
+                    'success'
+                )
+            else:
+                flash('Your free 2-week trial is active! Welcome back.', 'success')
+
+            return redirect(url_for('dashboard.admin_dashboard'))
 
         # Store lead record
         lead = SalesLead()

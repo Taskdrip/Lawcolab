@@ -783,6 +783,24 @@ body { background-color: #030711 !important; color: #e2e8f0 !important; }
       </div>
     </div>
 
+    <!-- Free Trial card -->
+    <div class="row justify-content-center mb-4">
+      <div class="col-lg-8">
+        <div style="background:linear-gradient(135deg,#0a1628,#0f2340);border:2px solid #4ade80;border-radius:18px;padding:28px 32px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+          <div style="font-size:3rem;line-height:1">🆓</div>
+          <div style="flex:1;min-width:200px">
+            <div style="display:inline-block;background:#4ade80;color:#052e16;font-size:.7rem;font-weight:800;padding:3px 12px;border-radius:20px;letter-spacing:.5px;margin-bottom:8px;">FREE · NO CREDIT CARD</div>
+            <h4 style="color:#fff !important;font-weight:800;margin:0 0 5px;font-size:1.3rem;">Try LawColab Free for 14 Days</h4>
+            <p style="color:rgba(255,255,255,.65) !important;margin:0;font-size:.88rem;">Access all Starter features instantly. Full client management, case tracking, and invoicing — live in under 2 minutes.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex-shrink:0">
+            <a href="{{ url_for('sales.direct_checkout', plan='trial') }}" class="lc-btn-outline" style="border-color:#4ade80 !important;color:#4ade80 !important;padding:12px 28px;font-size:.92rem;white-space:nowrap;"><i class="fas fa-rocket me-1"></i> Start Free Trial</a>
+            <span style="font-size:.73rem;color:rgba(255,255,255,.4) !important;text-align:center;">No payment · Cancel anytime</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="row g-4 justify-content-center align-items-stretch">
 
       <!-- Starter -->

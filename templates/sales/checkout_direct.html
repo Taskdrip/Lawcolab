@@ -37,7 +37,7 @@
         .section-head{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:#8792a2;margin-bottom:20px}
 
         /* ── Plan selector tabs ── */
-        .plan-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:0}
+        .plan-tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:0}
         .plan-tab{border:1.5px solid #e6ebf1;border-radius:10px;padding:12px 10px;cursor:pointer;text-align:center;transition:border-color .18s,background .18s;background:#fff;position:relative}
         .plan-tab:hover{border-color:#635bff}
         .plan-tab.active{border-color:#635bff;background:#fafafe;box-shadow:0 0 0 3px rgba(99,91,255,.08)}
@@ -45,7 +45,12 @@
         .plan-tab .tab-price{font-size:.75rem;color:#635bff;font-weight:600;margin-top:3px;display:block}
         .plan-tab .tab-period{font-size:.65rem;color:#8792a2;display:block}
         .plan-tab.popular-tab::after{content:'Popular';position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#635bff;color:#fff;font-size:.55rem;font-weight:800;padding:2px 8px;border-radius:10px;white-space:nowrap;letter-spacing:.5px}
-        @media(max-width:580px){.plan-tabs{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:700px){.plan-tabs{grid-template-columns:repeat(3,1fr)}}
+        @media(max-width:420px){.plan-tabs{grid-template-columns:repeat(2,1fr)}}
+        .trial-free-badge{display:inline-block;background:#4ade80;color:#052e16;font-size:.55rem;font-weight:800;padding:2px 7px;border-radius:10px;letter-spacing:.5px;margin-bottom:2px}
+        .trial-notice{background:#f0fdf4;border:1.5px solid #86efac;border-radius:12px;padding:14px 18px;margin-bottom:16px;display:none}
+        .trial-notice.show{display:block}
+        .trial-notice p{margin:0;font-size:.85rem;color:#166534;font-weight:500}
 
         /* ── August discount banner ── */
         .aug-banner{background:linear-gradient(135deg,#fff8e6,#fff0c2);border:1.5px solid #ffc107;border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:20px}
@@ -186,6 +191,15 @@
       <div class="section-head"><i class="fas fa-th-large me-1"></i> Select Your Plan</div>
       <div class="plan-tabs">
 
+        <!-- Free Trial -->
+        <div class="plan-tab {% if plan == 'trial' %}active{% endif %}" onclick="selectPlanTab('trial')" style="border-color:{% if plan == 'trial' %}#4ade80{% else %}#e6ebf1{% endif %}">
+          <span style="font-size:1.3rem">🆓</span>
+          <span class="tab-name" style="color:#166534">Trial</span>
+          <span class="tab-price" style="color:#16a34a">Free</span>
+          <span class="tab-period">14 days</span>
+          <span class="trial-free-badge" style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);white-space:nowrap">FREE</span>
+        </div>
+
         <!-- Starter -->
         <div class="plan-tab {% if plan == 'starter' %}active{% endif %}" onclick="selectPlanTab('starter')">
           <span style="font-size:1.3rem">🚀</span>
@@ -250,7 +264,13 @@
           </div>
         </div>
 
-        <!-- 3. Payment method -->
+        <!-- Trial notice (shown only when trial tab is active) -->
+        <div class="trial-notice {% if plan == 'trial' %}show{% endif %}" id="trialNotice">
+          <p>🎉 <strong>Free 14-day trial</strong> — No credit card required. You'll get instant access to all Starter features. Your account is created immediately after clicking the button below.</p>
+        </div>
+
+        <!-- 3. Payment method (hidden for trial) -->
+        <div id="paymentSection" {% if plan == 'trial' %}style="display:none"{% endif %}>
         <div class="section-head mt-3"><i class="fas fa-credit-card me-1"></i> Payment Method</div>
 
         <!-- Bank Transfer (primary) -->
