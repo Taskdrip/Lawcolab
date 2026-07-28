@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}My Firm Showcase — LAWCOLAB{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <div style="width:48px;height:48px;background:#0d1b4b;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+      <i class="fas fa-star" style="color:#FFD700;font-size:1.25rem;"></i>
+    </div>
+    <div>
+      <h2 class="mb-0" style="font-family:'Playfair Display',serif;font-weight:800;">Public Firm Showcase</h2>
+      <p class="text-muted mb-0">Manage your listing on the LAWCOLAB directory</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <!-- Status Card -->
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:2rem;margin-bottom:1.5rem;">
+        <h5 class="fw-bold mb-3">Profile Status</h5>
+        {% if not showcase %}
+        <div style="text-align:center;padding:2rem 0;">
+          <div style="font-size:3.5rem;color:#e0e8ff;margin-bottom:1rem;"><i class="fas fa-store"></i></div>
+          <h5 style="color:#555;">No showcase profile yet</h5>
+          <p class="text-muted mb-3">Create your firm's public profile to appear in the LAWCOLAB directory and attract new clients.</p>
+          <a href="{{ url_for('showcase_profile.edit') }}" class="btn btn-primary fw-bold" style="background:#0d1b4b;border-color:#0d1b4b;border-radius:10px;padding:.75rem 2rem;">
+            <i class="fas fa-plus me-2"></i>Create Your Profile
+          </a>
+        </div>
+        {% else %}
+        <div class="d-flex align-items-center gap-3 mb-4 p-3" style="background:#f8fafc;border-radius:12px;border:1px solid #e8ecf0;">
+          {% if showcase.logo_image_url %}
+          <img src="{{ showcase.logo_image_url }}" alt="" style="width:60px;height:60px;border-radius:10px;object-fit:cover;border:2px solid #e8ecf0;">
+          {% else %}
+          <div style="width:60px;height:60px;background:#e0e8ff;border-radius:10px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-balance-scale" style="color:#0d1b4b;font-size:1.5rem;"></i></div>
+          {% endif %}
+          <div class="flex-grow-1">
+            <div class="fw-bold" style="font-size:1.05rem;">{{ showcase.public_title or firm.name }}</div>
+            {% if showcase.tagline %}<div class="text-muted small">{{ showcase.tagline }}</div>{% endif %}
+          </div>
+          <div>
+            {% if showcase.submission_status == 'approved' %}
+            <span class="badge bg-success fs-6"><i class="fas fa-check-circle me-1"></i>Live in Directory</span>
+            {% elif showcase.submission_status == 'submitted' %}
+            <span class="badge bg-warning text-dark fs-6"><i class="fas fa-clock me-1"></i>Under Review</span>
+            {% elif showcase.submission_status == 'rejected' %}
+            <span class="badge bg-danger fs-6"><i class="fas fa-times-circle me-1"></i>Rejected</span>
+            {% else %}
+            <span class="badge bg-secondary fs-6"><i class="fas fa-edit me-1"></i>Draft</span>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if showcase.submission_status == 'approved' %}
+        <div class="alert alert-success border-0" style="border-radius:12px;">
+          <i class="fas fa-check-circle me-2"></i>Your firm is live in the directory!
+          <a href="{{ url_for('directory.firm_profile', showcase_id=showcase.id) }}" target="_blank" class="alert-link ms-2">View Public Profile →</a>
+        </div>
+        {% elif showcase.submission_status == 'rejected' and showcase.rejection_reason %}
+        <div class="alert alert-danger border-0" style="border-radius:12px;">
+          <strong><i class="fas fa-exclamation-triangle me-2"></i>Rejection reason:</strong> {{ showcase.rejection_reason }}<br>
+          <small class="mt-1 d-block">Please update your profile and resubmit.</small>
+        </div>
+        {% elif showcase.submission_status == 'submitted' %}
+        <div class="alert alert-info border-0" style="border-radius:12px;">
+          <i class="fas fa-clock me-2"></i>Your profile is under review. Our team will approve it shortly.
+        </div>
+        {% elif showcase.submission_status == 'draft' %}
+        <div class="alert alert-warning border-0" style="border-radius:12px;">
+          <i class="fas fa-edit me-2"></i>Your profile is saved as draft. Complete it and submit for review.
+        </div>
+        {% endif %}
+
+        <!-- Completion checklist -->
+        <h6 class="fw-bold mb-3 mt-3">Profile Completeness</h6>
+        {% set checks = [
+          ('Logo uploaded', showcase.logo_image_url),
+          ('Background image', showcase.hero_image_url),
+          ('Description added', showcase.public_description and showcase.public_description|length > 30),
+          ('Phone number', showcase.phone),
+          ('Practice areas', showcase.practice_areas_json),
+          ('Office location', showcase.locations_json),
+          ('Website URL', showcase.website_url),
+        ] %}
+        {% set done_count = checks|selectattr(1)|list|length %}
+        <div class="progress mb-3" style="height:8px;border-radius:50px;">
+          <div class="progress-bar" style="width:{{ (done_count / checks|length * 100)|round }}%;background:#0d1b4b;border-radius:50px;"></div>
+        </div>
+        <div class="row g-2">
+          {% for label, ok in checks %}
+          <div class="col-md-6">
+            <div style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;color:{% if ok %}#2e7d32{% else %}#888{% endif %};">
+              <i class="fas fa-{% if ok %}check-circle{% else %}circle{% endif %}"></i> {{ label }}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Stats (if approved) -->
+      {% if showcase and showcase.submission_status == 'approved' %}
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.75rem;">
+        <h5 class="fw-bold mb-3">Directory Performance</h5>
+        <div class="row g-3 text-center">
+          <div class="col-4">
+            <div style="font-size:2rem;font-weight:800;color:#0d1b4b;">{{ showcase.total_views }}</div>
+            <div class="text-muted small">Profile Views</div>
+          </div>
+          <div class="col-4">
+            <div style="font-size:2rem;font-weight:800;color:#0d1b4b;">{{ showcase.total_reviews }}</div>
+            <div class="text-muted small">Reviews</div>
+          </div>
+          <div class="col-4">
+            <div style="font-size:2rem;font-weight:800;color:#0d1b4b;">{{ "%.1f"|format(showcase.average_rating|float) }}</div>
+            <div class="text-muted small">Avg. Rating</div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.5rem;">
+        <h6 class="fw-bold mb-3">Quick Actions</h6>
+        <div class="d-grid gap-2">
+          <a href="{{ url_for('showcase_profile.edit') }}" class="btn btn-primary fw-bold" style="background:#0d1b4b;border-color:#0d1b4b;border-radius:10px;">
+            <i class="fas fa-edit me-2"></i>Edit Profile
+          </a>
+          {% if showcase and showcase.submission_status == 'approved' %}
+          <a href="{{ url_for('directory.firm_profile', showcase_id=showcase.id) }}" target="_blank" class="btn btn-outline-success fw-bold" style="border-radius:10px;">
+            <i class="fas fa-external-link-alt me-2"></i>View Live Profile
+          </a>
+          {% endif %}
+          <a href="{{ url_for('directory.index') }}" target="_blank" class="btn btn-outline-secondary" style="border-radius:10px;">
+            <i class="fas fa-globe me-2"></i>Browse Directory
+          </a>
+        </div>
+
+        <hr>
+        <div style="background:#f0f4ff;border-radius:12px;padding:1rem;margin-top:.5rem;">
+          <div class="fw-bold small mb-2" style="color:#0d1b4b;"><i class="fas fa-lightbulb me-1"></i> Tips</div>
+          <ul class="text-muted small mb-0" style="padding-left:1.2rem;line-height:1.8;">
+            <li>Add a professional logo and hero image</li>
+            <li>List all your practice areas</li>
+            <li>Add all your office locations</li>
+            <li>Include phone & WhatsApp for direct contact</li>
+            <li>Add team member profiles</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

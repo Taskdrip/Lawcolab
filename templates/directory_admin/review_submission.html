@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Review: {{ showcase.law_firm.name }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{{ url_for('dir_admin.submissions') }}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;"><i class="fas fa-arrow-left"></i></a>
+    <h3 class="mb-0 fw-bold">Review Submission: {{ showcase.public_title or showcase.law_firm.name }}</h3>
+    {% if showcase.submission_status == 'submitted' %}<span class="badge bg-warning text-dark fs-6">Pending Review</span>
+    {% elif showcase.submission_status == 'approved' %}<span class="badge bg-success fs-6">Live</span>
+    {% elif showcase.submission_status == 'rejected' %}<span class="badge bg-danger fs-6">Rejected</span>
+    {% else %}<span class="badge bg-secondary fs-6">Draft</span>{% endif %}
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <!-- Profile preview -->
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;overflow:hidden;margin-bottom:1.5rem;">
+        {% if showcase.hero_image_url %}
+        <div style="height:200px;overflow:hidden;"><img src="{{ showcase.hero_image_url }}" alt="" style="width:100%;height:100%;object-fit:cover;"></div>
+        {% else %}
+        <div style="height:120px;background:linear-gradient(135deg,#0d1b4b,#1a3a6b);"></div>
+        {% endif %}
+        <div style="padding:1.5rem;margin-top:-24px;position:relative;">
+          <div style="width:72px;height:72px;border-radius:14px;border:4px solid #fff;background:#f0f4ff;box-shadow:0 4px 16px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:1rem;">
+            {% if showcase.logo_image_url %}<img src="{{ showcase.logo_image_url }}" style="width:100%;height:100%;object-fit:cover;">{% else %}<i class="fas fa-balance-scale" style="color:#0d1b4b;font-size:1.5rem;"></i>{% endif %}
+          </div>
+          <h4 class="fw-bold">{{ showcase.public_title or showcase.law_firm.name }}</h4>
+          {% if showcase.tagline %}<p class="text-muted fst-italic">{{ showcase.tagline }}</p>{% endif %}
+          <p>{{ showcase.public_description or '(No description)' }}</p>
+
+          <div class="row g-3 mt-2">
+            <div class="col-md-6">
+              <div class="text-muted small fw-semibold mb-1">CONTACT</div>
+              {% if showcase.phone %}<div><i class="fas fa-phone me-1 text-primary"></i> {{ showcase.phone }}</div>{% endif %}
+              {% if showcase.whatsapp %}<div><i class="fab fa-whatsapp me-1 text-success"></i> {{ showcase.whatsapp }}</div>{% endif %}
+              {% if showcase.website_url %}<div><i class="fas fa-globe me-1" style="color:#0d1b4b;"></i> <a href="{{ showcase.website_url }}" target="_blank">{{ showcase.website_url }}</a></div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <div class="text-muted small fw-semibold mb-1">PRACTICE AREAS</div>
+              {% if showcase.practice_areas %}
+              <div class="d-flex flex-wrap gap-1">{% for a in showcase.practice_areas %}<span style="background:#f0f4ff;color:#0d1b4b;font-size:.75rem;font-weight:600;padding:.2rem .65rem;border-radius:50px;">{{ a }}</span>{% endfor %}</div>
+              {% else %}<span class="text-muted small">None listed</span>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <div class="text-muted small fw-semibold mb-1">LOCATIONS</div>
+              {% if showcase.locations %}
+              {% for loc in showcase.locations %}<div class="small"><i class="fas fa-map-marker-alt me-1 text-danger"></i>{{ loc.get('city','') }}{% if loc.get('state') %}, {{ loc.get('state') }}{% endif %} {{ '(Main)' if loc.get('is_primary') else '' }}</div>{% endfor %}
+              {% else %}<span class="text-muted small">None listed</span>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <div class="text-muted small fw-semibold mb-1">SOCIAL</div>
+              {% if showcase.linkedin_url %}<div class="small"><i class="fab fa-linkedin text-primary me-1"></i>LinkedIn</div>{% endif %}
+              {% if showcase.twitter_url %}<div class="small"><i class="fab fa-twitter" style="color:#1da1f2;" ></i> Twitter</div>{% endif %}
+              {% if showcase.facebook_url %}<div class="small"><i class="fab fa-facebook" style="color:#1877f2;"></i> Facebook</div>{% endif %}
+              {% if showcase.instagram_url %}<div class="small"><i class="fab fa-instagram" style="color:#c13584;"></i> Instagram</div>{% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions Panel -->
+    <div class="col-lg-4">
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.5rem;position:sticky;top:80px;">
+        <h6 class="fw-bold mb-3">Actions</h6>
+
+        {% if showcase.submission_status == 'submitted' %}
+        <form method="POST" action="{{ url_for('dir_admin.approve_submission', showcase_id=showcase.id) }}" class="mb-2">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-success fw-bold w-100" style="border-radius:10px;">
+            <i class="fas fa-check-circle me-2"></i>Approve & Publish
+          </button>
+        </form>
+
+        <button class="btn btn-danger fw-bold w-100 mb-3" style="border-radius:10px;" data-bs-toggle="collapse" data-bs-target="#rejectForm">
+          <i class="fas fa-times-circle me-2"></i>Reject
+        </button>
+        <div class="collapse mb-3" id="rejectForm">
+          <form method="POST" action="{{ url_for('dir_admin.reject_submission', showcase_id=showcase.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <textarea class="form-control mb-2" name="reason" rows="3" placeholder="Reason for rejection (shown to the firm)..." required style="border-radius:10px;font-size:.85rem;"></textarea>
+            <button type="submit" class="btn btn-danger w-100" style="border-radius:8px;">Confirm Rejection</button>
+          </form>
+        </div>
+        {% endif %}
+
+        {% if showcase.submission_status == 'approved' %}
+        <form method="POST" action="{{ url_for('dir_admin.toggle_feature', showcase_id=showcase.id) }}" class="mb-2">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn {% if showcase.is_featured %}btn-warning{% else %}btn-outline-warning{% endif %} w-100 fw-bold" style="border-radius:10px;">
+            <i class="fas fa-star me-2"></i>{% if showcase.is_featured %}Unfeature{% else %}Feature in Spotlight{% endif %}
+          </button>
+        </form>
+        {% endif %}
+
+        <!-- Firm info -->
+        <hr>
+        <div class="text-muted small">
+          <div><strong>Law Firm:</strong> {{ showcase.law_firm.name }}</div>
+          <div><strong>Email:</strong> {{ showcase.law_firm.email or '—' }}</div>
+          <div><strong>Submitted:</strong> {{ showcase.submitted_at.strftime('%b %d, %Y %H:%M') if showcase.submitted_at else '—' }}</div>
+          {% if showcase.approved_at %}<div><strong>Approved:</strong> {{ showcase.approved_at.strftime('%b %d, %Y') }}</div>{% endif %}
+          {% if showcase.rejection_reason %}<div class="mt-2 text-danger"><strong>Last rejection:</strong> {{ showcase.rejection_reason }}</div>{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

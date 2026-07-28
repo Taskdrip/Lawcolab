@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Directory CRM — Super Admin{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <div style="width:48px;height:48px;background:#0d1b4b;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+      <i class="fas fa-globe" style="color:#FFD700;font-size:1.25rem;"></i>
+    </div>
+    <div>
+      <h2 class="mb-0" style="font-family:'Playfair Display',serif;font-weight:800;">Directory CRM</h2>
+      <p class="text-muted mb-0">Manage the LAWCOLAB public law firm directory</p>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="row g-3 mb-4">
+    {% set cards = [
+      ('Pending Review', stats.pending, 'clock', '#f59e0b', '/superadmin/directory/submissions?status=submitted'),
+      ('Approved & Live', stats.approved, 'check-circle', '#10b981', '/superadmin/directory/submissions?status=approved'),
+      ('Directory Firms', stats.total_ext, 'building', '#3b82f6', '/superadmin/directory/external'),
+      ('No Website', stats.no_website, 'exclamation-triangle', '#ef4444', '/superadmin/directory/external?no_website=1'),
+      ('New Leads', stats.new_leads, 'star', '#8b5cf6', '/superadmin/directory/external?crm_status=new'),
+    ] %}
+    {% for label, val, icon, color, link in cards %}
+    <div class="col-md col-6">
+      <a href="{{ link }}" style="text-decoration:none;">
+        <div style="background:#fff;border-radius:14px;border:1px solid #e8ecf0;padding:1.25rem;transition:all .2s;" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.1)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+          <div class="d-flex align-items-center gap-3">
+            <div style="width:44px;height:44px;background:{{ color }}20;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fas fa-{{ icon }}" style="color:{{ color }};font-size:1.1rem;"></i>
+            </div>
+            <div>
+              <div style="font-size:1.6rem;font-weight:800;color:#0d1b4b;line-height:1;">{{ val }}</div>
+              <div class="text-muted" style="font-size:.78rem;">{{ label }}</div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="row g-4">
+    <!-- Recent Submissions -->
+    <div class="col-lg-8">
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.75rem;">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h5 class="fw-bold mb-0">Recent Submissions</h5>
+          <a href="{{ url_for('dir_admin.submissions') }}" class="btn btn-sm btn-outline-primary" style="border-radius:8px;">View All</a>
+        </div>
+        {% for sc in recent_submissions %}
+        <div style="display:flex;align-items:center;gap:1rem;padding:1rem 0;border-bottom:1px solid #f0f4f8;" class="{{ 'last:border-0' }}">
+          <div style="width:44px;height:44px;border-radius:10px;background:#f0f4ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+            {% if sc.logo_image_url %}<img src="{{ sc.logo_image_url }}" style="width:100%;height:100%;object-fit:cover;">{% else %}<i class="fas fa-balance-scale" style="color:#0d1b4b;"></i>{% endif %}
+          </div>
+          <div class="flex-grow-1">
+            <div class="fw-semibold" style="font-size:.92rem;">{{ sc.public_title or sc.law_firm.name }}</div>
+            <div class="text-muted" style="font-size:.78rem;">{{ sc.submitted_at.strftime('%b %d, %Y') if sc.submitted_at else 'Not submitted' }}</div>
+          </div>
+          <div>
+            {% if sc.submission_status == 'approved' %}
+            <span class="badge bg-success">Live</span>
+            {% elif sc.submission_status == 'submitted' %}
+            <span class="badge bg-warning text-dark">Pending</span>
+            {% elif sc.submission_status == 'rejected' %}
+            <span class="badge bg-danger">Rejected</span>
+            {% else %}
+            <span class="badge bg-secondary">Draft</span>
+            {% endif %}
+          </div>
+          <a href="{{ url_for('dir_admin.review_submission', showcase_id=sc.id) }}" class="btn btn-sm btn-outline-secondary" style="border-radius:8px;">Review</a>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-4"><i class="fas fa-inbox fa-2x mb-2 d-block"></i>No submissions yet</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="col-lg-4">
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.5rem;margin-bottom:1.5rem;">
+        <h6 class="fw-bold mb-3">Quick Actions</h6>
+        <div class="d-grid gap-2">
+          <a href="{{ url_for('dir_admin.robot_dashboard') }}" class="btn btn-primary fw-bold" style="background:#0d1b4b;border-color:#0d1b4b;border-radius:10px;">
+            <i class="fas fa-robot me-2"></i>Google Maps Robot
+          </a>
+          <a href="{{ url_for('dir_admin.add_external') }}" class="btn btn-outline-primary fw-bold" style="border-radius:10px;">
+            <i class="fas fa-plus me-2"></i>Add Firm Manually
+          </a>
+          <a href="{{ url_for('dir_admin.external_firms') }}" class="btn btn-outline-secondary" style="border-radius:10px;">
+            <i class="fas fa-database me-2"></i>View CRM Database
+          </a>
+          <a href="{{ url_for('directory.index') }}" target="_blank" class="btn btn-outline-secondary" style="border-radius:10px;">
+            <i class="fas fa-eye me-2"></i>View Public Directory
+          </a>
+        </div>
+      </div>
+
+      <div style="background:linear-gradient(135deg,#0d1b4b,#1a3a6b);border-radius:16px;padding:1.5rem;color:#fff;">
+        <div class="fw-bold mb-2"><i class="fas fa-robot me-2" style="color:#FFD700;"></i>Robot Status</div>
+        <p style="color:rgba(255,255,255,.75);font-size:.85rem;margin-bottom:1rem;">The Google Maps robot discovers Nigerian law firms automatically and adds them to the CRM database.</p>
+        <a href="{{ url_for('dir_admin.robot_dashboard') }}" class="btn btn-warning btn-sm fw-bold" style="border-radius:8px;color:#0d1b4b;">Open Robot Dashboard</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

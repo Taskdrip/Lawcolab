@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+{% block title %}{{ showcase.public_title or showcase.law_firm.name }} — LAWCOLAB Directory{% endblock %}
+
+{% block additional_css %}
+<style>
+.profile-hero {
+    min-height: 340px;
+    background: linear-gradient(135deg, #0d1b4b 0%, #1a3a6b 100%);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+}
+.profile-hero-bg { position: absolute; inset: 0; }
+.profile-hero-bg img { width: 100%; height: 100%; object-fit: cover; opacity: .35; }
+.profile-hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(10,20,60,.92) 0%, rgba(10,20,60,.4) 60%, transparent 100%);
+}
+.profile-hero-content { position: relative; z-index: 2; padding: 2.5rem 0; width: 100%; }
+.profile-logo {
+    width: 88px; height: 88px; border-radius: 16px;
+    border: 4px solid rgba(255,255,255,.9);
+    background: #fff;
+    box-shadow: 0 8px 32px rgba(0,0,0,.3);
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.verified-badge {
+    display: inline-flex; align-items: center; gap: .35rem;
+    background: rgba(46,125,50,.9); color: #fff;
+    font-size: .78rem; font-weight: 700;
+    padding: .35rem .9rem; border-radius: 50px;
+}
+.profile-stat-pill {
+    background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2);
+    border-radius: 50px; padding: .35rem 1rem;
+    color: rgba(255,255,255,.85); font-size: .82rem;
+    display: inline-flex; align-items: center; gap: .4rem;
+}
+/* Content layout */
+.profile-section { background: #fff; border-radius: 16px; border: 1px solid #e8ecf0; padding: 1.75rem; margin-bottom: 1.5rem; }
+.section-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; color: #0d1b4b; margin-bottom: 1.25rem; padding-bottom: .65rem; border-bottom: 2px solid #f0f4ff; }
+.area-chip { background: #f0f4ff; color: #0d1b4b; font-size: .78rem; font-weight: 600; padding: .3rem .8rem; border-radius: 50px; }
+.social-btn { display: inline-flex; align-items: center; gap: .4rem; padding: .5rem 1rem; border-radius: 8px; font-size: .82rem; font-weight: 600; text-decoration: none; transition: all .2s; }
+.social-btn:hover { transform: translateY(-2px); }
+/* Team cards */
+.team-card { background: #f8fafc; border-radius: 14px; padding: 1.25rem; text-align: center; }
+.team-avatar { width: 70px; height: 70px; border-radius: 50%; background: #e0e8ff; display: flex; align-items: center; justify-content: center; margin: 0 auto .75rem; overflow: hidden; }
+/* Review form */
+.star-rating input { display: none; }
+.star-rating label { cursor: pointer; font-size: 1.6rem; color: #ddd; transition: color .15s; }
+.star-rating input:checked ~ label,
+.star-rating label:hover,
+.star-rating label:hover ~ label { color: #ffc107; }
+.star-rating { display: flex; flex-direction: row-reverse; justify-content: flex-end; }
+/* Reviews */
+.review-card { background: #f8fafc; border-radius: 14px; padding: 1.25rem; margin-bottom: 1rem; border-left: 3px solid #0d1b4b; }
+.rating-bar { height: 8px; background: #e8ecf0; border-radius: 50px; overflow: hidden; }
+.rating-fill { height: 100%; background: linear-gradient(90deg, #FFD700, #FFA500); border-radius: 50px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<div class="profile-hero">
+  <div class="profile-hero-bg">
+    {% if showcase.hero_image_url %}<img src="{{ showcase.hero_image_url }}" alt="">{% endif %}
+  </div>
+  <div class="profile-hero-overlay"></div>
+  <div class="container profile-hero-content">
+    <div class="d-flex align-items-end gap-4 flex-wrap">
+      <div class="profile-logo">
+        {% if showcase.logo_image_url %}
+          <img src="{{ showcase.logo_image_url }}" alt="" style="width:100%;height:100%;object-fit:cover;">
+        {% else %}
+          <i class="fas fa-balance-scale" style="color:#0d1b4b;font-size:2.5rem;"></i>
+        {% endif %}
+      </div>
+      <div class="flex-grow-1">
+        <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
+          <h1 style="font-family:'Playfair Display',serif;color:#fff;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;margin:0;">
+            {{ showcase.public_title or showcase.law_firm.name }}
+          </h1>
+          {% if showcase.is_verified %}
+          <span class="verified-badge"><i class="fas fa-check-circle"></i> Verified</span>
+          {% endif %}
+        </div>
+        {% if showcase.tagline %}
+        <p style="color:rgba(255,255,255,.75);font-size:1rem;margin-bottom:.85rem;font-style:italic;">{{ showcase.tagline }}</p>
+        {% endif %}
+        <div class="d-flex flex-wrap gap-2">
+          <span class="profile-stat-pill"><i class="fas fa-star" style="color:#FFD700;"></i> {{ "%.1f"|format(showcase.average_rating|float) }} ({{ showcase.total_reviews }} reviews)</span>
+          <span class="profile-stat-pill"><i class="fas fa-eye"></i> {{ showcase.total_views }} views</span>
+          {% if showcase.primary_location %}
+          <span class="profile-stat-pill"><i class="fas fa-map-marker-alt"></i>
+            {{ showcase.primary_location.get('city','') }}{% if showcase.primary_location.get('state') %}, {{ showcase.primary_location.get('state') }}{% endif %}
+          </span>
+          {% endif %}
+          {% if showcase.founded_year %}
+          <span class="profile-stat-pill"><i class="fas fa-calendar"></i> Est. {{ showcase.founded_year }}</span>
+          {% endif %}
+        </div>
+      </div>
+      {% if showcase.phone %}
+      <div>
+        <a href="tel:{{ showcase.phone }}" class="btn btn-warning btn-lg fw-bold" style="border-radius:10px;white-space:nowrap;">
+          <i class="fas fa-phone me-2"></i>{{ showcase.phone }}
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Breadcrumb -->
+<div style="background:#f8fafc;border-bottom:1px solid #e8ecf0;padding:.65rem 0;">
+  <div class="container">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0" style="font-size:.82rem;">
+        <li class="breadcrumb-item"><a href="{{ url_for('directory.index') }}">Directory</a></li>
+        <li class="breadcrumb-item active">{{ showcase.public_title or showcase.law_firm.name }}</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<div class="container py-4">
+  <div class="row g-4">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+
+      <!-- About -->
+      <div class="profile-section">
+        <div class="section-title"><i class="fas fa-info-circle me-2" style="color:#0d1b4b;"></i>About the Firm</div>
+        <p style="color:#444;line-height:1.8;font-size:.97rem;">{{ showcase.public_description or showcase.law_firm.description or 'Professional legal services.' }}</p>
+        {% if showcase.practice_areas %}
+        <div class="mt-3">
+          <div class="fw-semibold text-muted small mb-2">PRACTICE AREAS</div>
+          <div class="d-flex flex-wrap gap-2">
+            {% for area in showcase.practice_areas %}
+            <span class="area-chip">{{ area }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Locations -->
+      {% if showcase.locations %}
+      <div class="profile-section">
+        <div class="section-title"><i class="fas fa-map-marker-alt me-2" style="color:#0d1b4b;"></i>Offices & Locations</div>
+        <div class="row g-3">
+          {% for loc in showcase.locations %}
+          <div class="col-md-6">
+            <div style="background:#f8fafc;border-radius:12px;padding:1.1rem;border:1px solid #e8ecf0;">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <i class="fas fa-building" style="color:#0d1b4b;"></i>
+                <strong style="font-size:.9rem;">
+                  {{ loc.get('city','') }}{% if loc.get('state') %}, {{ loc.get('state') }}{% endif %}
+                </strong>
+                {% if loc.get('is_primary') %}<span style="background:#FFD700;color:#0d1b4b;font-size:.65rem;font-weight:700;padding:.15rem .5rem;border-radius:50px;">Main Office</span>{% endif %}
+              </div>
+              {% if loc.get('address') %}<div class="text-muted small">{{ loc.get('address') }}</div>{% endif %}
+              {% if loc.get('country') %}<div class="text-muted small"><i class="fas fa-globe me-1"></i>{{ loc.get('country') }}</div>{% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Team -->
+      {% if showcase.team %}
+      <div class="profile-section">
+        <div class="section-title"><i class="fas fa-users me-2" style="color:#0d1b4b;"></i>Our Team</div>
+        <div class="row g-3">
+          {% for member in showcase.team %}
+          <div class="col-md-4 col-6">
+            <div class="team-card">
+              <div class="team-avatar">
+                {% if member.get('image_url') %}
+                  <img src="{{ member.get('image_url') }}" alt="" style="width:100%;height:100%;object-fit:cover;">
+                {% else %}
+                  <i class="fas fa-user" style="color:#0d1b4b;font-size:1.8rem;"></i>
+                {% endif %}
+              </div>
+              <div class="fw-semibold" style="font-size:.9rem;color:#1a1a2e;">{{ member.get('name','') }}</div>
+              <div class="text-muted" style="font-size:.78rem;">{{ member.get('role','') }}</div>
+              {% if member.get('bio') %}<div class="text-muted mt-1" style="font-size:.76rem;">{{ member.get('bio')[:80] }}…</div>{% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Reviews -->
+      <div class="profile-section">
+        <div class="section-title"><i class="fas fa-star me-2" style="color:#ffc107;"></i>Client Reviews</div>
+
+        <!-- Rating summary -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-3 text-center">
+            <div style="font-size:3.5rem;font-weight:900;color:#0d1b4b;line-height:1;">{{ "%.1f"|format(showcase.average_rating|float) }}</div>
+            <div style="color:#ffc107;font-size:1.1rem;">
+              {% for i in range(1,6) %}<i class="fas fa-star{% if i > showcase.average_rating|int %} text-muted{% endif %}"></i>{% endfor %}
+            </div>
+            <div class="text-muted small">{{ showcase.total_reviews }} reviews</div>
+          </div>
+          <div class="col-md-9">
+            {% set total_r = reviews|length or 1 %}
+            {% for star in [5,4,3,2,1] %}
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span style="font-size:.78rem;width:18px;">{{ star }}</span>
+              <i class="fas fa-star text-warning" style="font-size:.72rem;"></i>
+              <div class="rating-bar flex-grow-1">
+                <div class="rating-fill" style="width:{{ ((rating_dist.get(star,0) / (total_r)) * 100)|round }}%"></div>
+              </div>
+              <span class="text-muted" style="font-size:.75rem;width:20px;">{{ rating_dist.get(star,0) }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Individual Reviews -->
+        {% for review in reviews %}
+        <div class="review-card">
+          <div class="d-flex align-items-start justify-content-between mb-2">
+            <div>
+              <div class="fw-semibold" style="font-size:.9rem;">{{ review.reviewer_name }}</div>
+              {% if review.reviewer_company %}<div class="text-muted small">{{ review.reviewer_company }}</div>{% endif %}
+              {% if review.reviewer_location %}<div class="text-muted" style="font-size:.75rem;"><i class="fas fa-map-marker-alt me-1"></i>{{ review.reviewer_location }}</div>{% endif %}
+            </div>
+            <div class="text-end">
+              <div style="color:#ffc107;font-size:.8rem;">
+                {% for i in range(1,6) %}<i class="fas fa-star{% if i > review.rating %} text-muted{% endif %}"></i>{% endfor %}
+              </div>
+              <div class="text-muted" style="font-size:.72rem;">{{ review.created_at.strftime('%b %d, %Y') }}</div>
+            </div>
+          </div>
+          {% if review.review_title %}<div class="fw-semibold mb-1" style="font-size:.88rem;">{{ review.review_title }}</div>{% endif %}
+          <p class="mb-0" style="font-size:.88rem;color:#444;line-height:1.6;">{{ review.review_text }}</p>
+          {% if review.is_featured %}<span class="badge bg-warning text-dark mt-2" style="font-size:.68rem;">Featured Review</span>{% endif %}
+        </div>
+        {% else %}
+        <div class="text-center py-3 text-muted">
+          <i class="fas fa-comment-slash fa-2x mb-2 d-block"></i>No reviews yet. Be the first!
+        </div>
+        {% endfor %}
+
+        <!-- Leave a review -->
+        <div style="background:#f0f4ff;border-radius:14px;padding:1.5rem;margin-top:1.5rem;">
+          <div class="fw-bold mb-3" style="color:#0d1b4b;"><i class="fas fa-pen me-2"></i>Write a Review</div>
+          <form method="POST" action="{{ url_for('showcase.submit_review', showcase_id=showcase.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="row g-2 mb-3">
+              <div class="col-md-6"><input class="form-control" name="reviewer_name" placeholder="Your name *" required></div>
+              <div class="col-md-6"><input class="form-control" name="reviewer_email" placeholder="Email (optional)" type="email"></div>
+              <div class="col-md-6"><input class="form-control" name="reviewer_company" placeholder="Company (optional)"></div>
+              <div class="col-md-6"><input class="form-control" name="reviewer_location" placeholder="Your city (optional)"></div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Rating *</label>
+              <div class="star-rating">
+                {% for i in [5,4,3,2,1] %}
+                <input type="radio" name="rating" id="star{{ i }}" value="{{ i }}" {% if i == 5 %}checked{% endif %}>
+                <label for="star{{ i }}"><i class="fas fa-star"></i></label>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="mb-2"><input class="form-control" name="review_title" placeholder="Review title (optional)"></div>
+            <div class="mb-3"><textarea class="form-control" name="review_text" rows="3" placeholder="Share your experience with this firm *" required></textarea></div>
+            <button type="submit" class="btn btn-primary fw-bold" style="background:#0d1b4b;border-color:#0d1b4b;border-radius:8px;">
+              <i class="fas fa-paper-plane me-2"></i>Submit Review
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+
+      <!-- Contact Card -->
+      <div class="profile-section sticky-top" style="top:80px;">
+        <div class="section-title"><i class="fas fa-address-card me-2" style="color:#0d1b4b;"></i>Contact</div>
+        <div class="d-grid gap-2 mb-3">
+          {% if showcase.phone %}
+          <a href="tel:{{ showcase.phone }}" class="btn btn-primary fw-bold" style="background:#0d1b4b;border-color:#0d1b4b;border-radius:10px;">
+            <i class="fas fa-phone me-2"></i>{{ showcase.phone }}
+          </a>
+          {% endif %}
+          {% if showcase.whatsapp %}
+          <a href="https://wa.me/{{ showcase.whatsapp|replace('+','') }}" target="_blank" class="btn btn-success fw-bold" style="border-radius:10px;">
+            <i class="fab fa-whatsapp me-2"></i>WhatsApp
+          </a>
+          {% endif %}
+          {% if showcase.website_url %}
+          <a href="{{ showcase.website_url }}" target="_blank" class="btn btn-outline-primary fw-bold" style="border-radius:10px;">
+            <i class="fas fa-globe me-2"></i>Visit Website
+          </a>
+          {% endif %}
+        </div>
+
+        <!-- Social Links -->
+        {% if showcase.linkedin_url or showcase.twitter_url or showcase.facebook_url or showcase.instagram_url %}
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          {% if showcase.linkedin_url %}<a href="{{ showcase.linkedin_url }}" target="_blank" class="social-btn" style="background:#0077b5;color:#fff;"><i class="fab fa-linkedin"></i>LinkedIn</a>{% endif %}
+          {% if showcase.twitter_url %}<a href="{{ showcase.twitter_url }}" target="_blank" class="social-btn" style="background:#1da1f2;color:#fff;"><i class="fab fa-twitter"></i>Twitter</a>{% endif %}
+          {% if showcase.facebook_url %}<a href="{{ showcase.facebook_url }}" target="_blank" class="social-btn" style="background:#1877f2;color:#fff;"><i class="fab fa-facebook"></i>Facebook</a>{% endif %}
+          {% if showcase.instagram_url %}<a href="{{ showcase.instagram_url }}" target="_blank" class="social-btn" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;"><i class="fab fa-instagram"></i>Instagram</a>{% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Quick info -->
+        <div style="border-top:1px solid #f0f0f0;padding-top:1rem;">
+          {% if showcase.firm_size %}
+          <div class="d-flex align-items-center gap-2 mb-2 text-muted small">
+            <i class="fas fa-users" style="color:#0d1b4b;width:16px;"></i>
+            <span>{{ showcase.firm_size }} attorneys</span>
+          </div>
+          {% endif %}
+          {% if showcase.law_firm.email %}
+          <div class="d-flex align-items-center gap-2 mb-2 text-muted small">
+            <i class="fas fa-envelope" style="color:#0d1b4b;width:16px;"></i>
+            <span>{{ showcase.law_firm.email }}</span>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Send Message -->
+        <div style="margin-top:1.25rem;border-top:1px solid #f0f0f0;padding-top:1.25rem;">
+          <div class="fw-bold mb-2" style="font-size:.9rem;color:#0d1b4b;"><i class="fas fa-envelope me-2"></i>Send a Message</div>
+          <form method="POST" action="{{ url_for('showcase.send_message', showcase_id=showcase.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input class="form-control mb-2" name="sender_name" placeholder="Your name *" required style="font-size:.85rem;">
+            <input class="form-control mb-2" name="sender_email" placeholder="Email *" type="email" required style="font-size:.85rem;">
+            <input class="form-control mb-2" name="sender_phone" placeholder="Phone (optional)" style="font-size:.85rem;">
+            <input class="form-control mb-2" name="subject" placeholder="Subject *" required style="font-size:.85rem;">
+            <textarea class="form-control mb-2" name="message_text" rows="3" placeholder="Message *" required style="font-size:.85rem;"></textarea>
+            <button type="submit" class="btn btn-warning fw-bold w-100" style="border-radius:8px;color:#0d1b4b;">
+              <i class="fas fa-paper-plane me-2"></i>Send Message
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

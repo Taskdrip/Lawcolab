@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}{{ firm.name }} — CRM{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{{ url_for('dir_admin.external_firms') }}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;"><i class="fas fa-arrow-left"></i></a>
+    <h3 class="mb-0 fw-bold">{{ firm.name }}</h3>
+    {% if firm.source == 'google_maps' %}<span style="background:#e8f5e9;color:#2e7d32;font-size:.78rem;font-weight:700;padding:.3rem .8rem;border-radius:50px;"><i class="fab fa-google me-1"></i>Google Maps</span>{% endif %}
+    {% if not firm.has_website %}<span style="background:#fef3c7;color:#92400e;font-size:.78rem;font-weight:700;padding:.3rem .8rem;border-radius:50px;"><i class="fas fa-exclamation-triangle me-1"></i>No Website</span>{% endif %}
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <!-- Firm Info -->
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.75rem;margin-bottom:1.5rem;">
+        <h5 class="fw-bold mb-3">Firm Information</h5>
+        <div class="row g-3">
+          <div class="col-md-6"><label class="text-muted small fw-semibold">Name</label><div>{{ firm.name }}</div></div>
+          <div class="col-md-6"><label class="text-muted small fw-semibold">Phone</label><div>{{ firm.phone or '—' }}</div></div>
+          <div class="col-md-6"><label class="text-muted small fw-semibold">Email</label><div>{{ firm.email or '—' }}</div></div>
+          <div class="col-md-6"><label class="text-muted small fw-semibold">Website</label><div>{% if firm.website %}<a href="{{ firm.website }}" target="_blank">{{ firm.website }}</a>{% else %}<span class="text-danger fw-semibold">No website</span>{% endif %}</div></div>
+          <div class="col-md-6"><label class="text-muted small fw-semibold">City</label><div>{{ firm.city or '—' }}</div></div>
+          <div class="col-md-6"><label class="text-muted small fw-semibold">State</label><div>{{ firm.state or '—' }}</div></div>
+          <div class="col-md-6"><label class="text-muted small fw-semibold">Country</label><div>{{ firm.country or '—' }}</div></div>
+          <div class="col-md-6"><label class="text-muted small fw-semibold">Address</label><div>{{ firm.address or '—' }}</div></div>
+          {% if firm.google_rating %}
+          <div class="col-md-6"><label class="text-muted small fw-semibold">Google Rating</label><div style="color:#ffc107;"><i class="fas fa-star"></i> {{ firm.google_rating }} ({{ firm.google_reviews_count }} reviews)</div></div>
+          {% endif %}
+          {% if firm.google_maps_url %}
+          <div class="col-12"><label class="text-muted small fw-semibold">Google Maps</label><div><a href="{{ firm.google_maps_url }}" target="_blank" class="btn btn-sm btn-outline-secondary" style="border-radius:8px;"><i class="fab fa-google me-1"></i>View on Maps</a></div></div>
+          {% endif %}
+        </div>
+        {% if firm.practice_areas %}
+        <div class="mt-3">
+          <div class="text-muted small fw-semibold mb-2">PRACTICE AREAS</div>
+          <div class="d-flex flex-wrap gap-2">{% for a in firm.practice_areas %}<span style="background:#f0f4ff;color:#0d1b4b;font-size:.78rem;font-weight:600;padding:.3rem .8rem;border-radius:50px;">{{ a }}</span>{% endfor %}</div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- CRM Notes -->
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.75rem;">
+        <h5 class="fw-bold mb-3"><i class="fas fa-sticky-note me-2" style="color:#0d1b4b;"></i>CRM Notes</h5>
+
+        <!-- Add note form -->
+        <div style="background:#f8fafc;border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;">
+          <div class="fw-semibold small mb-2">Add Note</div>
+          <div class="row g-2">
+            <div class="col-md-3">
+              <select class="form-select form-select-sm" id="noteType" style="border-radius:8px;font-size:.85rem;">
+                <option value="general">📝 General</option>
+                <option value="call">📞 Call</option>
+                <option value="email">📧 Email</option>
+                <option value="visit">🏢 Visit</option>
+              </select>
+            </div>
+            <div class="col-md-9">
+              <textarea class="form-control" id="noteText" rows="2" placeholder="Add a note about this firm…" style="border-radius:8px;font-size:.85rem;"></textarea>
+            </div>
+            <div class="col-12 text-end">
+              <button class="btn btn-primary fw-bold" id="addNoteBtn" style="background:#0d1b4b;border-color:#0d1b4b;border-radius:8px;font-size:.85rem;">
+                <i class="fas fa-plus me-1"></i>Add Note
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Existing notes -->
+        <div id="notesList">
+          {% for note in firm.crm_notes %}
+          <div style="border-left:3px solid {% if note.note_type == 'call' %}#10b981{% elif note.note_type == 'email' %}#3b82f6{% elif note.note_type == 'visit' %}#f59e0b{% else %}#0d1b4b{% endif %};padding:.85rem 1.1rem;background:#f8fafc;border-radius:0 10px 10px 0;margin-bottom:.75rem;">
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:#888;">
+                {% if note.note_type == 'call' %}📞 Call{% elif note.note_type == 'email' %}📧 Email{% elif note.note_type == 'visit' %}🏢 Visit{% else %}📝 Note{% endif %}
+              </span>
+              <span class="text-muted" style="font-size:.75rem;">{{ note.created_at.strftime('%b %d, %Y %H:%M') }}</span>
+              <span class="text-muted" style="font-size:.75rem;">— {{ note.created_by.full_name }}</span>
+            </div>
+            <div style="font-size:.88rem;color:#444;">{{ note.note_text }}</div>
+          </div>
+          {% else %}
+          <div class="text-center text-muted py-3" id="emptyNotes"><i class="fas fa-sticky-note fa-2x mb-2 d-block"></i>No notes yet</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.5rem;margin-bottom:1.5rem;position:sticky;top:80px;">
+        <h6 class="fw-bold mb-3">CRM Status</h6>
+        <select class="form-select mb-3 crm-status-select" data-firm-id="{{ firm.id }}" style="border-radius:10px;">
+          {% for s in ['new','contacted','converted','inactive'] %}
+          <option value="{{ s }}" {% if firm.crm_status == s %}selected{% endif %}>{{ s|capitalize }}</option>
+          {% endfor %}
+        </select>
+
+        <div style="font-size:.82rem;color:#555;line-height:1.7;">
+          <div><strong>Source:</strong> {{ firm.source|replace('_',' ')|title }}</div>
+          <div><strong>Added:</strong> {{ firm.created_at.strftime('%b %d, %Y') }}</div>
+          <div><strong>Has Website:</strong> {% if firm.has_website %}<span class="text-success">Yes</span>{% else %}<span class="text-danger fw-bold">No</span>{% endif %}</div>
+          <div><strong>Is Claimed:</strong> {% if firm.is_claimed %}<span class="text-success">Yes</span>{% else %}No{% endif %}</div>
+        </div>
+
+        <hr>
+        <div class="d-grid gap-2 mt-2">
+          {% if firm.phone %}<a href="tel:{{ firm.phone }}" class="btn btn-outline-primary btn-sm" style="border-radius:8px;"><i class="fas fa-phone me-1"></i>Call</a>{% endif %}
+          {% if firm.website %}<a href="{{ firm.website }}" target="_blank" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;"><i class="fas fa-globe me-1"></i>Website</a>{% endif %}
+          {% if firm.google_maps_url %}<a href="{{ firm.google_maps_url }}" target="_blank" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;"><i class="fab fa-google me-1"></i>Google Maps</a>{% endif %}
+        </div>
+
+        <hr>
+        <form method="POST" action="{{ url_for('dir_admin.delete_external', firm_id=firm.id) }}" onsubmit="return confirm('Delete this firm from the CRM? This cannot be undone.')">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-outline-danger btn-sm w-100" style="border-radius:8px;"><i class="fas fa-trash me-1"></i>Delete from CRM</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// CRM status update
+document.querySelectorAll('.crm-status-select').forEach(sel => {
+  sel.addEventListener('change', async function() {
+    const resp = await fetch(`/superadmin/directory/external/${this.dataset.firmId}/update-status`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: `crm_status=${this.value}&csrf_token={{ csrf_token() }}`
+    });
+    const d = await resp.json();
+    if (d.success) {
+      const toast = document.createElement('div');
+      toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#10b981;color:#fff;padding:.75rem 1.25rem;border-radius:10px;font-weight:600;z-index:9999;';
+      toast.textContent = 'Status updated';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2500);
+    }
+  });
+});
+
+// Add note
+document.getElementById('addNoteBtn').addEventListener('click', async function() {
+  const text = document.getElementById('noteText').value.trim();
+  const type = document.getElementById('noteType').value;
+  if (!text) return;
+
+  const fd = new FormData();
+  fd.append('note_text', text);
+  fd.append('note_type', type);
+  fd.append('csrf_token', '{{ csrf_token() }}');
+
+  const resp = await fetch(`/superadmin/directory/external/{{ firm.id }}/add-note`, { method: 'POST', body: fd });
+  const d = await resp.json();
+  if (d.success) {
+    const n = d.note;
+    const colors = {call:'#10b981', email:'#3b82f6', visit:'#f59e0b', general:'#0d1b4b'};
+    const icons = {call:'📞 Call', email:'📧 Email', visit:'🏢 Visit', general:'📝 Note'};
+    const html = `<div style="border-left:3px solid ${colors[n.type]};padding:.85rem 1.1rem;background:#f8fafc;border-radius:0 10px 10px 0;margin-bottom:.75rem;">
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;">
+        <span style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:#888;">${icons[n.type]}</span>
+        <span style="color:#888;font-size:.75rem;">${n.created_at}</span>
+        <span style="color:#888;font-size:.75rem;">— ${n.author}</span>
+      </div>
+      <div style="font-size:.88rem;color:#444;">${n.text}</div>
+    </div>`;
+    const empty = document.getElementById('emptyNotes');
+    if (empty) empty.remove();
+    document.getElementById('notesList').insertAdjacentHTML('afterbegin', html);
+    document.getElementById('noteText').value = '';
+  }
+});
+</script>
+{% endblock %}

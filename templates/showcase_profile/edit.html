@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+{% block title %}Edit Firm Showcase — LAWCOLAB{% endblock %}
+
+{% block additional_css %}
+<style>
+.edit-section { background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.75rem;margin-bottom:1.5rem; }
+.edit-section-title { font-size:1rem;font-weight:700;color:#0d1b4b;margin-bottom:1.25rem;padding-bottom:.65rem;border-bottom:2px solid #f0f4ff;display:flex;align-items:center;gap:.5rem; }
+.img-upload-zone { border:2px dashed #d0d7e8;border-radius:14px;padding:2.5rem 1.5rem;text-align:center;cursor:pointer;transition:all .2s;background:#f8fafc; }
+.img-upload-zone:hover { border-color:#0d1b4b;background:#f0f4ff; }
+.img-preview { width:100%;height:180px;object-fit:cover;border-radius:10px;display:block; }
+.logo-preview { width:80px;height:80px;object-fit:cover;border-radius:12px;display:block; }
+.area-checkbox { display:none; }
+.area-chip-label { background:#f0f4ff;color:#0d1b4b;font-size:.78rem;font-weight:600;padding:.3rem .8rem;border-radius:50px;cursor:pointer;transition:all .2s;border:2px solid transparent;display:inline-block;margin:.2rem; }
+.area-checkbox:checked + .area-chip-label { background:#0d1b4b;color:#fff;border-color:#0d1b4b; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{{ url_for('showcase_profile.index') }}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;"><i class="fas fa-arrow-left"></i></a>
+    <div>
+      <h2 class="mb-0" style="font-family:'Playfair Display',serif;font-weight:800;">Edit Firm Showcase</h2>
+      <p class="text-muted mb-0 small">Status:
+        {% if showcase.submission_status == 'approved' %}<span class="text-success fw-semibold">Live in Directory</span>
+        {% elif showcase.submission_status == 'submitted' %}<span class="text-warning fw-semibold">Under Review</span>
+        {% elif showcase.submission_status == 'rejected' %}<span class="text-danger fw-semibold">Rejected — please update and resubmit</span>
+        {% else %}<span class="text-secondary fw-semibold">Draft</span>{% endif %}
+      </p>
+    </div>
+  </div>
+
+  {% if showcase.rejection_reason %}
+  <div class="alert alert-danger border-0 mb-4" style="border-radius:12px;"><i class="fas fa-exclamation-triangle me-2"></i><strong>Rejection reason:</strong> {{ showcase.rejection_reason }}</div>
+  {% endif %}
+
+  <form method="POST" enctype="multipart/form-data" id="showcaseForm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="hero_image_url_existing" value="{{ showcase.hero_image_url or '' }}">
+    <input type="hidden" name="logo_image_url_existing" value="{{ showcase.logo_image_url or '' }}">
+    <input type="hidden" name="locations_json" id="locationsJson" value="{{ showcase.locations_json or '[]' }}">
+    <input type="hidden" name="team_json" id="teamJson" value="{{ showcase.team_json or '[]' }}">
+
+    <div class="row g-4">
+      <div class="col-lg-8">
+
+        <!-- Images -->
+        <div class="edit-section">
+          <div class="edit-section-title"><i class="fas fa-image"></i> Images</div>
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label fw-semibold small">Background / Hero Image</label>
+              <div class="img-upload-zone" id="heroZone" onclick="document.getElementById('heroInput').click()">
+                {% if showcase.hero_image_url %}
+                <img src="{{ showcase.hero_image_url }}" id="heroPreview" class="img-preview">
+                {% else %}
+                <div id="heroPH">
+                  <i class="fas fa-image fa-2x text-muted mb-2"></i>
+                  <div class="text-muted small">Click to upload hero image (1200×400 recommended)</div>
+                </div>
+                {% endif %}
+              </div>
+              <input type="file" id="heroInput" name="hero_image" accept="image/*" style="display:none" onchange="previewImage(this,'heroPreview','heroPH','heroZone')">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">Logo</label>
+              <div class="img-upload-zone" style="padding:1.5rem;" id="logoZone" onclick="document.getElementById('logoInput').click()">
+                {% if showcase.logo_image_url %}
+                <img src="{{ showcase.logo_image_url }}" id="logoPreview" class="logo-preview mx-auto">
+                {% else %}
+                <div id="logoPH" class="text-center">
+                  <i class="fas fa-building fa-2x text-muted mb-2"></i>
+                  <div class="text-muted small">Upload logo</div>
+                </div>
+                {% endif %}
+              </div>
+              <input type="file" id="logoInput" name="logo_image" accept="image/*" style="display:none" onchange="previewImage(this,'logoPreview','logoPH','logoZone')">
+            </div>
+          </div>
+        </div>
+
+        <!-- Basic Info -->
+        <div class="edit-section">
+          <div class="edit-section-title"><i class="fas fa-info-circle"></i> Basic Information</div>
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label fw-semibold small">Firm Name *</label>
+              <input class="form-control" name="public_title" value="{{ showcase.public_title or firm.name }}" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">Founded Year</label>
+              <input class="form-control" name="founded_year" type="number" min="1800" max="2099" value="{{ showcase.founded_year or '' }}" placeholder="e.g. 2005">
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold small">Tagline</label>
+              <input class="form-control" name="tagline" value="{{ showcase.tagline or '' }}" placeholder="e.g. Nigeria's most trusted corporate law firm">
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold small">Description *</label>
+              <textarea class="form-control" name="public_description" rows="5" placeholder="Describe your firm's expertise, history, and what makes you different…" required>{{ showcase.public_description or '' }}</textarea>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Firm Size</label>
+              <select class="form-select" name="firm_size">
+                <option value="">Select…</option>
+                {% for size in ['Solo practitioner','2-5 attorneys','6-15 attorneys','16-50 attorneys','51-100 attorneys','100+ attorneys'] %}
+                <option value="{{ size }}" {% if showcase.firm_size == size %}selected{% endif %}>{{ size }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Practice Areas -->
+        <div class="edit-section">
+          <div class="edit-section-title"><i class="fas fa-balance-scale"></i> Practice Areas</div>
+          <div>
+            {% for area in practice_area_list %}
+            <input type="checkbox" class="area-checkbox" name="practice_areas" value="{{ area }}" id="pa_{{ loop.index }}"
+              {% if area in showcase.practice_areas %}checked{% endif %}>
+            <label class="area-chip-label" for="pa_{{ loop.index }}">{{ area }}</label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Contact & Social -->
+        <div class="edit-section">
+          <div class="edit-section-title"><i class="fas fa-address-card"></i> Contact & Social Media</div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small"><i class="fas fa-phone me-1"></i>Phone Number</label>
+              <input class="form-control" name="phone" value="{{ showcase.phone or '' }}" placeholder="+234 1 234 5678">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small"><i class="fab fa-whatsapp me-1 text-success"></i>WhatsApp</label>
+              <input class="form-control" name="whatsapp" value="{{ showcase.whatsapp or '' }}" placeholder="+234 8012345678">
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold small"><i class="fas fa-globe me-1"></i>Website URL</label>
+              <input class="form-control" name="website_url" type="url" value="{{ showcase.website_url or '' }}" placeholder="https://www.yourfirm.com">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small"><i class="fab fa-linkedin me-1" style="color:#0077b5;"></i>LinkedIn</label>
+              <input class="form-control" name="linkedin_url" type="url" value="{{ showcase.linkedin_url or '' }}" placeholder="https://linkedin.com/company/yourfirm">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small"><i class="fab fa-twitter me-1" style="color:#1da1f2;"></i>Twitter / X</label>
+              <input class="form-control" name="twitter_url" type="url" value="{{ showcase.twitter_url or '' }}" placeholder="https://twitter.com/yourfirm">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small"><i class="fab fa-facebook me-1" style="color:#1877f2;"></i>Facebook</label>
+              <input class="form-control" name="facebook_url" type="url" value="{{ showcase.facebook_url or '' }}" placeholder="https://facebook.com/yourfirm">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small"><i class="fab fa-instagram me-1" style="color:#c13584;"></i>Instagram</label>
+              <input class="form-control" name="instagram_url" type="url" value="{{ showcase.instagram_url or '' }}" placeholder="https://instagram.com/yourfirm">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small"><i class="fab fa-youtube me-1" style="color:#ff0000;"></i>YouTube</label>
+              <input class="form-control" name="youtube_url" type="url" value="{{ showcase.youtube_url or '' }}" placeholder="https://youtube.com/@yourfirm">
+            </div>
+          </div>
+        </div>
+
+        <!-- Locations -->
+        <div class="edit-section">
+          <div class="edit-section-title"><i class="fas fa-map-marker-alt"></i> Office Locations</div>
+          <div id="locationsContainer"></div>
+          <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addLocation()" style="border-radius:8px;">
+            <i class="fas fa-plus me-1"></i>Add Location
+          </button>
+        </div>
+
+        <!-- Team -->
+        <div class="edit-section">
+          <div class="edit-section-title"><i class="fas fa-users"></i> Team Members</div>
+          <div id="teamContainer"></div>
+          <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addTeamMember()" style="border-radius:8px;">
+            <i class="fas fa-plus me-1"></i>Add Team Member
+          </button>
+        </div>
+      </div>
+
+      <!-- Submit Panel -->
+      <div class="col-lg-4">
+        <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.5rem;position:sticky;top:80px;">
+          <h6 class="fw-bold mb-3">Save & Publish</h6>
+          <button type="submit" name="action" value="save" class="btn btn-outline-primary w-100 fw-bold mb-2" style="border-radius:10px;">
+            <i class="fas fa-save me-2"></i>Save Draft
+          </button>
+          <button type="submit" name="action" value="submit" class="btn btn-primary w-100 fw-bold" style="background:#0d1b4b;border-color:#0d1b4b;border-radius:10px;padding:.75rem;">
+            <i class="fas fa-paper-plane me-2"></i>Submit for Review
+          </button>
+          <p class="text-muted small mt-2">After submission, our team reviews and approves your profile within 24 hours.</p>
+
+          <hr>
+          <div style="background:#f0f4ff;border-radius:12px;padding:1rem;">
+            <div class="fw-bold small mb-2" style="color:#0d1b4b;"><i class="fas fa-lightbulb me-1"></i>Required for approval</div>
+            <ul class="text-muted small mb-0" style="padding-left:1.2rem;line-height:1.9;">
+              <li>Firm name & description (30+ chars)</li>
+              <li>At least one practice area</li>
+              <li>Phone number or contact method</li>
+              <li>At least one office location</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+// Image preview
+function previewImage(input, previewId, placeholderId, zoneId) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      let preview = document.getElementById(previewId);
+      if (!preview) {
+        preview = document.createElement('img');
+        preview.id = previewId;
+        preview.className = previewId === 'heroPreview' ? 'img-preview' : 'logo-preview mx-auto';
+        const ph = document.getElementById(placeholderId);
+        if (ph) ph.replaceWith(preview);
+        else document.getElementById(zoneId).appendChild(preview);
+      }
+      preview.src = e.target.result;
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+// Locations
+let locations = [];
+try { locations = JSON.parse(document.getElementById('locationsJson').value) || []; } catch(e) {}
+
+function renderLocations() {
+  const c = document.getElementById('locationsContainer');
+  c.innerHTML = '';
+  locations.forEach((loc, i) => {
+    c.innerHTML += `
+    <div style="background:#f8fafc;border-radius:12px;padding:1.1rem;border:1px solid #e8ecf0;margin-bottom:.75rem;">
+      <div class="row g-2">
+        <div class="col-md-6"><input class="form-control form-control-sm" placeholder="City" value="${loc.city||''}" onchange="locations[${i}].city=this.value;syncLocations()"></div>
+        <div class="col-md-6">
+          <select class="form-select form-select-sm" onchange="locations[${i}].state=this.value;syncLocations()">
+            <option value="">State</option>
+            {% for s in nigerian_states %}<option value="{{ s }}" ${loc.state==='{{ s }}'?'selected':''}>{{ s }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6"><input class="form-control form-control-sm" placeholder="Country" value="${loc.country||'Nigeria'}" onchange="locations[${i}].country=this.value;syncLocations()"></div>
+        <div class="col-md-6"><input class="form-control form-control-sm" placeholder="Address" value="${loc.address||''}" onchange="locations[${i}].address=this.value;syncLocations()"></div>
+        <div class="col-12 d-flex align-items-center justify-content-between">
+          <div class="form-check mb-0">
+            <input class="form-check-input" type="checkbox" id="primary_${i}" ${loc.is_primary?'checked':''} onchange="setPrimary(${i})">
+            <label class="form-check-label small" for="primary_${i}">Main Office</label>
+          </div>
+          <button type="button" class="btn btn-outline-danger btn-sm" style="border-radius:8px;font-size:.75rem;" onclick="removeLocation(${i})"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+    </div>`;
+  });
+  if (!locations.length) c.innerHTML = '<p class="text-muted small">No locations added yet.</p>';
+}
+
+function addLocation() {
+  locations.push({ city:'', state:'', country:'Nigeria', address:'', is_primary: locations.length === 0 });
+  renderLocations();
+  syncLocations();
+}
+function removeLocation(i) { locations.splice(i,1); renderLocations(); syncLocations(); }
+function setPrimary(i) { locations.forEach((l,j) => l.is_primary = j===i); renderLocations(); syncLocations(); }
+function syncLocations() { document.getElementById('locationsJson').value = JSON.stringify(locations); }
+
+// Team
+let team = [];
+try { team = JSON.parse(document.getElementById('teamJson').value) || []; } catch(e) {}
+
+function renderTeam() {
+  const c = document.getElementById('teamContainer');
+  c.innerHTML = '';
+  team.forEach((m, i) => {
+    c.innerHTML += `
+    <div style="background:#f8fafc;border-radius:12px;padding:1.1rem;border:1px solid #e8ecf0;margin-bottom:.75rem;">
+      <div class="row g-2">
+        <div class="col-md-6"><input class="form-control form-control-sm" placeholder="Full Name" value="${m.name||''}" onchange="team[${i}].name=this.value;syncTeam()"></div>
+        <div class="col-md-6"><input class="form-control form-control-sm" placeholder="Title / Role" value="${m.role||''}" onchange="team[${i}].role=this.value;syncTeam()"></div>
+        <div class="col-12"><textarea class="form-control form-control-sm" rows="2" placeholder="Short bio (optional)" onchange="team[${i}].bio=this.value;syncTeam()">${m.bio||''}</textarea></div>
+        <div class="col-12 d-flex justify-content-end">
+          <button type="button" class="btn btn-outline-danger btn-sm" style="border-radius:8px;font-size:.75rem;" onclick="removeTeamMember(${i})"><i class="fas fa-trash"></i> Remove</button>
+        </div>
+      </div>
+    </div>`;
+  });
+  if (!team.length) c.innerHTML = '<p class="text-muted small">No team members added yet.</p>';
+}
+
+function addTeamMember() { team.push({name:'',role:'',bio:''}); renderTeam(); syncTeam(); }
+function removeTeamMember(i) { team.splice(i,1); renderTeam(); syncTeam(); }
+function syncTeam() { document.getElementById('teamJson').value = JSON.stringify(team); }
+
+renderLocations();
+renderTeam();
+</script>
+{% endblock %}

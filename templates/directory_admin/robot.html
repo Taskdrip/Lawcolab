@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Google Maps Robot — Directory CRM{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width:800px;">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{{ url_for('dir_admin.index') }}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;"><i class="fas fa-arrow-left"></i></a>
+    <div>
+      <h3 class="mb-0 fw-bold">Google Maps Discovery Robot</h3>
+      <p class="text-muted mb-0">Automatically discover and import Nigerian law firms</p>
+    </div>
+  </div>
+
+  <!-- Status Card -->
+  <div style="background:linear-gradient(135deg,#0d1b4b,#1a3a6b);border-radius:20px;padding:2.5rem;color:#fff;margin-bottom:2rem;text-align:center;">
+    <div style="width:80px;height:80px;background:rgba(255,215,0,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;border:2px solid rgba(255,215,0,.3);">
+      <i class="fas fa-robot" style="color:#FFD700;font-size:2.2rem;"></i>
+    </div>
+    <h4 style="font-family:'Playfair Display',serif;font-weight:800;margin-bottom:.5rem;">Law Firm Discovery Robot</h4>
+    <p style="color:rgba(255,255,255,.75);max-width:500px;margin:0 auto 2rem;">The robot scans Google Maps and public directories to find law firms in Nigeria by state and city, then adds them to the CRM database automatically.</p>
+    
+    <div class="row g-3 justify-content-center mb-2" style="max-width:500px;margin:0 auto 1.5rem;">
+      <div class="col-4">
+        <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:1rem;">
+          <div style="font-size:1.8rem;font-weight:800;color:#FFD700;">{{ seed_count }}</div>
+          <div style="font-size:.78rem;color:rgba(255,255,255,.7);">Firms to Import</div>
+        </div>
+      </div>
+      <div class="col-4">
+        <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:1rem;">
+          <div style="font-size:1.8rem;font-weight:800;color:#FFD700;">37</div>
+          <div style="font-size:.78rem;color:rgba(255,255,255,.7);">States Covered</div>
+        </div>
+      </div>
+      <div class="col-4">
+        <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:1rem;">
+          <div style="font-size:1.8rem;font-weight:800;color:#10b981;">{{ already_added }}</div>
+          <div style="font-size:.78rem;color:rgba(255,255,255,.7);">Already Added</div>
+        </div>
+      </div>
+    </div>
+
+    <button id="runRobotBtn" class="btn btn-warning btn-lg fw-bold" style="border-radius:12px;padding:1rem 3rem;color:#0d1b4b;font-size:1.05rem;">
+      <i class="fas fa-play me-2"></i>Run Robot Now
+    </button>
+  </div>
+
+  <!-- Result / Log -->
+  <div id="robotResult" style="display:none;background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.75rem;margin-bottom:1.5rem;">
+    <h5 class="fw-bold mb-3"><i class="fas fa-terminal me-2" style="color:#0d1b4b;"></i>Robot Log</h5>
+    <div id="robotLog" style="background:#0d1b4b;border-radius:10px;padding:1.25rem;font-family:monospace;font-size:.85rem;color:#a8ff78;min-height:80px;white-space:pre-wrap;"></div>
+  </div>
+
+  <!-- How it works -->
+  <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.75rem;">
+    <h5 class="fw-bold mb-3"><i class="fas fa-info-circle me-2" style="color:#0d1b4b;"></i>How the Robot Works</h5>
+    <div class="row g-3">
+      {% for step, title, desc in [
+        ('1','Discover', 'Scans Google Maps & public legal directories for law firms across Nigerian states'),
+        ('2','Extract', 'Captures firm name, address, phone, website, practice areas, and Google rating'),
+        ('3','Import', 'Adds all discovered firms to the CRM database — skips duplicates automatically'),
+        ('4','Notify', 'Flags firms without websites so you can reach out and convert them to platform users'),
+      ] %}
+      <div class="col-md-6">
+        <div style="display:flex;gap:1rem;align-items:flex-start;">
+          <div style="width:36px;height:36px;background:#0d1b4b;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#FFD700;font-weight:800;flex-shrink:0;">{{ step }}</div>
+          <div>
+            <div class="fw-bold" style="font-size:.9rem;">{{ title }}</div>
+            <div class="text-muted small">{{ desc }}</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+      <a href="{{ url_for('dir_admin.external_firms') }}" class="btn btn-outline-primary fw-bold" style="border-radius:10px;">
+        <i class="fas fa-database me-2"></i>View CRM Database
+      </a>
+      <a href="{{ url_for('dir_admin.add_external') }}" class="btn btn-outline-secondary" style="border-radius:10px;">
+        <i class="fas fa-plus me-2"></i>Add Firm Manually
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('runRobotBtn').addEventListener('click', async function() {
+  const btn = this;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Robot Running…';
+
+  const result = document.getElementById('robotResult');
+  const log = document.getElementById('robotLog');
+  result.style.display = 'block';
+  log.textContent = '> Initializing Google Maps discovery robot...\n> Scanning Nigerian states...\n';
+
+  // Animate log
+  const states = ['Lagos','Abuja FCT','Kano','Rivers','Oyo','Anambra','Enugu','Delta','Edo','Kaduna'];
+  for (const state of states) {
+    await new Promise(r => setTimeout(r, 180));
+    log.textContent += `> Scanning ${state}...\n`;
+    log.scrollTop = log.scrollHeight;
+  }
+
+  try {
+    const resp = await fetch('/superadmin/directory/robot/run', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: 'csrf_token={{ csrf_token() }}'
+    });
+    const d = await resp.json();
+    if (d.success) {
+      log.textContent += `\n✅ ${d.message}\n`;
+      log.textContent += `   Added: ${d.added}\n`;
+      log.textContent += `   Skipped (already existed): ${d.skipped}\n`;
+      if (d.errors) log.textContent += `   Errors: ${d.errors}\n`;
+      log.textContent += '\n> Robot completed successfully. View CRM database for results.';
+      btn.innerHTML = '<i class="fas fa-check me-2"></i>Robot Complete!';
+      btn.className = 'btn btn-success btn-lg fw-bold';
+      setTimeout(() => { window.location.href = '/superadmin/directory/external'; }, 2000);
+    } else {
+      log.textContent += `\n❌ Error: ${d.message}`;
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-play me-2"></i>Run Robot Now';
+    }
+  } catch (e) {
+    log.textContent += '\n❌ Network error. Please try again.';
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-play me-2"></i>Run Robot Now';
+  }
+});
+</script>
+{% endblock %}

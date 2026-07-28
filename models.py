@@ -817,15 +817,40 @@ class LawFirmShowcase(db.Model):
     # Public display fields
     public_title = db.Column(db.String(200), nullable=True)
     public_description = db.Column(db.Text, nullable=True)
+    tagline = db.Column(db.String(300), nullable=True)
     hero_image_url = db.Column(db.String(500), nullable=True)
     logo_image_url = db.Column(db.String(500), nullable=True)
     
-    # Social media and contact
+    # Contact & social media
+    phone = db.Column(db.String(50), nullable=True)
+    whatsapp = db.Column(db.String(50), nullable=True)
     website_url = db.Column(db.String(300), nullable=True)
     facebook_url = db.Column(db.String(300), nullable=True)
     linkedin_url = db.Column(db.String(300), nullable=True)
     twitter_url = db.Column(db.String(300), nullable=True)
     instagram_url = db.Column(db.String(300), nullable=True)
+    youtube_url = db.Column(db.String(300), nullable=True)
+    
+    # Business info
+    founded_year = db.Column(db.Integer, nullable=True)
+    firm_size = db.Column(db.String(50), nullable=True)  # Solo, 2-10, 11-50, 51+
+    
+    # Practice areas (JSON array stored as text)
+    practice_areas_json = db.Column(db.Text, nullable=True)  # ["Corporate", "Family Law", ...]
+    
+    # Locations (JSON array: [{city, state, country, address, is_primary}])
+    locations_json = db.Column(db.Text, nullable=True)
+    
+    # Team members (JSON array: [{name, role, bio, image_url}])
+    team_json = db.Column(db.Text, nullable=True)
+    
+    # Submission / approval workflow
+    # status: draft → submitted → approved / rejected
+    submission_status = db.Column(db.String(20), default='draft', nullable=False)
+    submitted_at = db.Column(db.DateTime, nullable=True)
+    approved_at = db.Column(db.DateTime, nullable=True)
+    approved_by_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=True)
+    rejection_reason = db.Column(db.Text, nullable=True)
     
     # Showcase stats
     total_reviews = db.Column(db.Integer, default=0)
@@ -836,7 +861,7 @@ class LawFirmShowcase(db.Model):
     is_verified = db.Column(db.Boolean, default=False)
     verified_date = db.Column(db.DateTime, nullable=True)
     verified_by_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=True)
-    verification_reason = db.Column(db.String(200), nullable=True)  # e.g., "1-year premium subscription"
+    verification_reason = db.Column(db.String(200), nullable=True)
     
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
@@ -846,6 +871,125 @@ class LawFirmShowcase(db.Model):
     public_reviews = db.relationship('PublicLawFirmReview', back_populates='showcase', cascade='all, delete-orphan')
     public_messages = db.relationship('PublicLawFirmMessage', back_populates='showcase', cascade='all, delete-orphan')
     verified_by = db.relationship('User', foreign_keys=[verified_by_id])
+    approved_by = db.relationship('User', foreign_keys=[approved_by_id])
+    
+    @property
+    def practice_areas(self):
+        import json
+        if self.practice_areas_json:
+            try:
+                return json.loads(self.practice_areas_json)
+            except Exception:
+                return []
+        return []
+    
+    @property
+    def locations(self):
+        import json
+        if self.locations_json:
+            try:
+                return json.loads(self.locations_json)
+            except Exception:
+                return []
+        return []
+    
+    @property
+    def team(self):
+        import json
+        if self.team_json:
+            try:
+                return json.loads(self.team_json)
+            except Exception:
+                return []
+        return []
+    
+    @property
+    def primary_location(self):
+        locs = self.locations
+        for loc in locs:
+            if loc.get('is_primary'):
+                return loc
+        return locs[0] if locs else None
+
+
+# ─── Public Law Firm Directory (External / Scraped Firms) ────────────────────
+
+class DirectoryLawFirm(db.Model):
+    """Firms discovered via Google Maps robot or manually added by super admin.
+    These are NOT platform users — they're entries in the smart directory hub."""
+    __tablename__ = 'directory_law_firms'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Basic info
+    name = db.Column(db.String(300), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    phone = db.Column(db.String(100), nullable=True)
+    email = db.Column(db.String(200), nullable=True)
+    website = db.Column(db.String(500), nullable=True)
+    
+    # Location
+    address = db.Column(db.Text, nullable=True)
+    city = db.Column(db.String(100), nullable=True)
+    state = db.Column(db.String(100), nullable=True)
+    country = db.Column(db.String(100), default='Nigeria', nullable=True)
+    postal_code = db.Column(db.String(20), nullable=True)
+    latitude = db.Column(db.Float, nullable=True)
+    longitude = db.Column(db.Float, nullable=True)
+    
+    # Google Maps data
+    google_place_id = db.Column(db.String(200), nullable=True, unique=True)
+    google_rating = db.Column(db.Numeric(3, 1), nullable=True)
+    google_reviews_count = db.Column(db.Integer, default=0)
+    google_maps_url = db.Column(db.String(500), nullable=True)
+    
+    # Practice areas (JSON array)
+    practice_areas_json = db.Column(db.Text, nullable=True)
+    
+    # Source & status
+    source = db.Column(db.String(50), default='manual')  # manual, google_maps, platform_import
+    has_website = db.Column(db.Boolean, default=False)
+    is_active = db.Column(db.Boolean, default=True)
+    is_claimed = db.Column(db.Boolean, default=False)  # True if firm has joined the platform
+    claimed_firm_id = db.Column(db.Integer, db.ForeignKey('law_firms.id'), nullable=True)
+    
+    # CRM metadata (super admin use)
+    crm_status = db.Column(db.String(50), default='new')  # new, contacted, converted, inactive
+    logo_url = db.Column(db.String(500), nullable=True)
+    
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    
+    # Relationships
+    crm_notes = db.relationship('DirectoryNote', back_populates='firm', cascade='all, delete-orphan', order_by='DirectoryNote.created_at.desc()')
+    claimed_firm = db.relationship('LawFirm', foreign_keys=[claimed_firm_id])
+    
+    @property
+    def practice_areas(self):
+        import json
+        if self.practice_areas_json:
+            try:
+                return json.loads(self.practice_areas_json)
+            except Exception:
+                return []
+        return []
+
+
+class DirectoryNote(db.Model):
+    """CRM notes added by super admins on directory firms (HubSpot-style)."""
+    __tablename__ = 'directory_notes'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    firm_id = db.Column(db.Integer, db.ForeignKey('directory_law_firms.id'), nullable=False)
+    created_by_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
+    note_text = db.Column(db.Text, nullable=False)
+    note_type = db.Column(db.String(50), default='general')  # general, call, email, visit
+    
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    
+    # Relationships
+    firm = db.relationship('DirectoryLawFirm', back_populates='crm_notes')
+    created_by = db.relationship('User', foreign_keys=[created_by_id])
 
 
 class PublicLawFirmReview(db.Model):

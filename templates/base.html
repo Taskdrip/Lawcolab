@@ -564,6 +564,10 @@
                             <li><a class="dropdown-item" href="{{ url_for('superadmin.manage_sliders') }}">
                                 <i class="fas fa-images me-2"></i>Dashboard Sliders
                             </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('dir_admin.index') }}">
+                                <i class="fas fa-globe me-2" style="color:#FFD700;"></i>Directory CRM
+                            </a></li>
                         </ul>
                     </li>
                     {% endif %}
@@ -591,6 +595,9 @@
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('admin.firm_profile') }}">
                                 <i class="fas fa-building me-2"></i>Firm Profile
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('showcase_profile.index') }}">
+                                <i class="fas fa-star me-2" style="color:#FFD700;"></i>Public Showcase
                             </a></li>
                         </ul>
                     </li>
@@ -726,10 +733,15 @@
                 <ul class="navbar-nav ms-auto align-items-lg-center">
                     <li class="nav-item"><a class="nav-link lc-link" href="{{ url_for('about') }}">About</a></li>
                     <li class="nav-item"><a class="nav-link lc-link" href="{{ url_for('landing') }}">Features</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link lc-link{% if 'directory' in (request.endpoint or '') %} active{% endif %}" href="{{ url_for('directory.index') }}">
+                            <i class="fas fa-globe me-1"></i>Directory
+                        </a>
+                    </li>
                     <li class="nav-item"><a class="nav-link lc-link" href="{{ url_for('contact') }}">Contact</a></li>
                     <li class="nav-item"><a class="nav-link lc-link" href="{{ url_for('auth.login') }}">Login</a></li>
                     <li class="nav-item ms-lg-2">
-                        <a class="btn lc-btn-signup" href="{{ url_for('auth.signup') }}">Sign Up</a>
+                        <a class="btn lc-btn-signup" href="{{ url_for('auth.signup') }}">Sign Up Free</a>
                     </li>
                 </ul>
                 {% endif %}

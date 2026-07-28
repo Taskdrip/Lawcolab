@@ -27,6 +27,9 @@ from blueprints.sales import sales_bp
 
 # Import showcase blueprint
 from blueprints.showcase import showcase_bp
+from blueprints.showcase_profile import showcase_profile_bp
+from blueprints.directory import directory_bp
+from blueprints.directory_admin import dir_admin_bp
 
 # Import payment management blueprints
 from blueprints.payment_management import payment_mgmt_bp
@@ -55,6 +58,9 @@ app.register_blueprint(invoices_bp, url_prefix="/invoices")
 app.register_blueprint(invoice_chat_bp, url_prefix="/invoice-chat")
 app.register_blueprint(sales_bp, url_prefix="/sales")
 app.register_blueprint(showcase_bp, url_prefix="/showcase")
+app.register_blueprint(showcase_profile_bp, url_prefix="/showcase-profile")
+app.register_blueprint(directory_bp, url_prefix="/directory")
+app.register_blueprint(dir_admin_bp, url_prefix="/superadmin/directory")
 app.register_blueprint(payment_mgmt_bp)  # Payment management
 app.register_blueprint(escrow_bp)  # Escrow system
 app.register_blueprint(simple_checkout_bp, url_prefix="/payment")  # Simple payment checkout

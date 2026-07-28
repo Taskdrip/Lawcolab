@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Add Firm — Directory CRM{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width:760px;">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{{ url_for('dir_admin.external_firms') }}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;"><i class="fas fa-arrow-left"></i></a>
+    <h3 class="mb-0 fw-bold">Add Firm to Directory</h3>
+  </div>
+
+  <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:2rem;">
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label fw-semibold">Firm Name *</label>
+          <input class="form-control" name="name" required placeholder="e.g. Templars Law">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Phone</label>
+          <input class="form-control" name="phone" placeholder="+234 1 234 5678">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Email</label>
+          <input class="form-control" name="email" type="email" placeholder="info@firm.com">
+        </div>
+        <div class="col-12">
+          <label class="form-label fw-semibold">Website</label>
+          <input class="form-control" name="website" placeholder="https://www.firm.com">
+        </div>
+        <div class="col-12">
+          <label class="form-label fw-semibold">Address</label>
+          <input class="form-control" name="address" placeholder="Street address">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">City</label>
+          <input class="form-control" name="city" placeholder="Lagos">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">State</label>
+          <select class="form-select" name="state">
+            <option value="">Select state</option>
+            {% for s in states %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Country</label>
+          <input class="form-control" name="country" value="Nigeria">
+        </div>
+        <div class="col-12">
+          <label class="form-label fw-semibold">Description</label>
+          <textarea class="form-control" name="description" rows="3" placeholder="Brief description…"></textarea>
+        </div>
+        <div class="col-12">
+          <label class="form-label fw-semibold">Practice Areas</label>
+          <div class="row g-2">
+            {% for area in practice_areas %}
+            <div class="col-md-4 col-6">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="practice_areas" value="{{ area }}" id="pa_{{ loop.index }}">
+                <label class="form-check-label small" for="pa_{{ loop.index }}">{{ area }}</label>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-primary fw-bold" style="background:#0d1b4b;border-color:#0d1b4b;border-radius:10px;padding:.75rem 2rem;">
+          <i class="fas fa-plus me-2"></i>Add to Directory
+        </button>
+        <a href="{{ url_for('dir_admin.external_firms') }}" class="btn btn-outline-secondary" style="border-radius:10px;padding:.75rem 1.5rem;">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

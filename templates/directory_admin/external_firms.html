@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}External Firms CRM — Directory Admin{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{{ url_for('dir_admin.index') }}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;"><i class="fas fa-arrow-left"></i></a>
+    <h3 class="mb-0 fw-bold">External Firms CRM</h3>
+    <a href="{{ url_for('dir_admin.add_external') }}" class="btn btn-primary btn-sm ms-auto fw-bold" style="background:#0d1b4b;border-color:#0d1b4b;border-radius:8px;"><i class="fas fa-plus me-1"></i>Add Firm</a>
+    <a href="{{ url_for('dir_admin.robot_dashboard') }}" class="btn btn-warning btn-sm fw-bold" style="border-radius:8px;color:#0d1b4b;"><i class="fas fa-robot me-1"></i>Robot</a>
+  </div>
+
+  <!-- CRM Status Chips -->
+  <div class="d-flex flex-wrap gap-2 mb-4">
+    <a href="{{ url_for('dir_admin.external_firms') }}" class="btn btn-sm {% if not filters.crm_status and not filters.no_website %}btn-dark{% else %}btn-outline-secondary{% endif %}" style="border-radius:50px;">All <span class="badge bg-light text-dark ms-1">{{ counts.total }}</span></a>
+    <a href="?crm_status=new" class="btn btn-sm {% if filters.crm_status == 'new' %}btn-warning text-dark{% else %}btn-outline-warning{% endif %}" style="border-radius:50px;">New <span class="badge bg-light text-dark ms-1">{{ counts.new }}</span></a>
+    <a href="?crm_status=contacted" class="btn btn-sm {% if filters.crm_status == 'contacted' %}btn-info text-white{% else %}btn-outline-info{% endif %}" style="border-radius:50px;">Contacted <span class="badge bg-light text-dark ms-1">{{ counts.contacted }}</span></a>
+    <a href="?crm_status=converted" class="btn btn-sm {% if filters.crm_status == 'converted' %}btn-success{% else %}btn-outline-success{% endif %}" style="border-radius:50px;">Converted <span class="badge bg-light text-dark ms-1">{{ counts.converted }}</span></a>
+    <a href="?no_website=1" class="btn btn-sm {% if filters.no_website %}btn-danger{% else %}btn-outline-danger{% endif %}" style="border-radius:50px;"><i class="fas fa-exclamation-triangle me-1"></i>No Website <span class="badge bg-light text-dark ms-1">{{ counts.no_website }}</span></a>
+  </div>
+
+  <!-- Search/filter bar -->
+  <form method="GET" class="row g-2 mb-4">
+    <div class="col-md-4"><input class="form-control" name="q" placeholder="Search firm name or city…" value="{{ filters.q }}"></div>
+    <div class="col-md-3">
+      <select class="form-select" name="state" onchange="this.form.submit()">
+        <option value="">All States</option>
+        {% for s in states %}<option value="{{ s }}" {% if filters.state == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <input class="form-control" name="country" placeholder="Country" value="{{ filters.country }}">
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-primary w-100" style="background:#0d1b4b;border-color:#0d1b4b;border-radius:8px;"><i class="fas fa-search"></i></button>
+    </div>
+  </form>
+
+  <!-- Table -->
+  <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;overflow:hidden;">
+    <table class="table table-hover mb-0">
+      <thead style="background:#f8fafc;">
+        <tr>
+          <th class="ps-4">Firm</th>
+          <th>Location</th>
+          <th>Contact</th>
+          <th>Source</th>
+          <th>CRM Status</th>
+          <th>Rating</th>
+          <th class="pe-4 text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for firm in firms.items %}
+        <tr>
+          <td class="ps-4">
+            <div>
+              <div class="fw-semibold" style="font-size:.9rem;">{{ firm.name }}</div>
+              {% if not firm.has_website %}<span style="background:#fef3c7;color:#92400e;font-size:.68rem;font-weight:700;padding:.15rem .5rem;border-radius:50px;"><i class="fas fa-exclamation-triangle me-1"></i>No Website</span>{% endif %}
+              {% if firm.practice_areas %}
+              <div class="mt-1">{% for a in firm.practice_areas[:2] %}<span style="background:#f0f4ff;color:#0d1b4b;font-size:.65rem;font-weight:600;padding:.1rem .45rem;border-radius:50px;">{{ a }}</span> {% endfor %}</div>
+              {% endif %}
+            </div>
+          </td>
+          <td>
+            <div style="font-size:.82rem;">{{ firm.city or '—' }}</div>
+            <div class="text-muted" style="font-size:.75rem;">{{ firm.state }}{% if firm.country and firm.country != 'Nigeria' %}, {{ firm.country }}{% endif %}</div>
+          </td>
+          <td>
+            {% if firm.phone %}<div style="font-size:.8rem;"><i class="fas fa-phone me-1 text-muted"></i>{{ firm.phone }}</div>{% endif %}
+            {% if firm.website %}<div style="font-size:.78rem;"><i class="fas fa-globe me-1 text-muted"></i><a href="{{ firm.website }}" target="_blank" class="text-truncate d-inline-block" style="max-width:140px;">{{ firm.website }}</a></div>{% endif %}
+          </td>
+          <td>
+            {% if firm.source == 'google_maps' %}<span style="background:#e8f5e9;color:#2e7d32;font-size:.72rem;font-weight:700;padding:.2rem .6rem;border-radius:50px;"><i class="fab fa-google me-1"></i>Maps</span>
+            {% else %}<span style="background:#f0f4ff;color:#0d1b4b;font-size:.72rem;font-weight:700;padding:.2rem .6rem;border-radius:50px;"><i class="fas fa-hand me-1"></i>Manual</span>{% endif %}
+          </td>
+          <td>
+            <select class="form-select form-select-sm crm-status-select" data-firm-id="{{ firm.id }}" style="font-size:.78rem;border-radius:8px;width:auto;min-width:110px;">
+              {% for s in ['new','contacted','converted','inactive'] %}
+              <option value="{{ s }}" {% if firm.crm_status == s %}selected{% endif %}>{{ s|capitalize }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td>
+            {% if firm.google_rating %}<div style="font-size:.82rem;color:#ffc107;"><i class="fas fa-star me-1"></i>{{ firm.google_rating }}</div>{% else %}<span class="text-muted small">—</span>{% endif %}
+            {% if firm.crm_notes %}<div class="text-muted" style="font-size:.72rem;"><i class="fas fa-sticky-note me-1"></i>{{ firm.crm_notes|length }} note{{ 's' if firm.crm_notes|length != 1 }}</div>{% endif %}
+          </td>
+          <td class="pe-4 text-end">
+            <a href="{{ url_for('dir_admin.external_detail', firm_id=firm.id) }}" class="btn btn-sm btn-outline-primary" style="border-radius:8px;">View</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center py-5 text-muted"><i class="fas fa-database fa-2x mb-2 d-block"></i>No firms found. Run the robot to discover firms!</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if firms.pages > 1 %}
+  <nav class="mt-3">
+    <ul class="pagination justify-content-center">
+      {% if firms.has_prev %}<li class="page-item"><a class="page-link" href="?{% for k,v in filters.items() %}{% if v %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ firms.prev_num }}">‹</a></li>{% endif %}
+      {% for p in firms.iter_pages() %}{% if p %}<li class="page-item {% if p == firms.page %}active{% endif %}"><a class="page-link" href="?page={{ p }}">{{ p }}</a></li>{% else %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}{% endfor %}
+      {% if firms.has_next %}<li class="page-item"><a class="page-link" href="?{% for k,v in filters.items() %}{% if v %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ firms.next_num }}">›</a></li>{% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+
+<script>
+document.querySelectorAll('.crm-status-select').forEach(sel => {
+  sel.addEventListener('change', async function() {
+    const resp = await fetch(`/superadmin/directory/external/${this.dataset.firmId}/update-status`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: `crm_status=${this.value}&csrf_token={{ csrf_token() }}`
+    });
+    const d = await resp.json();
+    if (!d.success) alert('Failed to update status');
+  });
+});
+</script>
+{% endblock %}

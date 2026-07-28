@@ -234,3 +234,4 @@ sqlalchemy
 weasyprint
 werkzeug
 wtforms
+gunicorn

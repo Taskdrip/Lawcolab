@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}{{ firm.name }} — LAWCOLAB Directory{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('directory.index') }}">Directory</a></li>
+      <li class="breadcrumb-item active">{{ firm.name }}</li>
+    </ol>
+  </nav>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:2rem;margin-bottom:1.5rem;">
+        <div class="d-flex align-items-start gap-4 mb-3">
+          <div style="width:72px;height:72px;border-radius:14px;background:#f0f4ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="fas fa-balance-scale" style="color:#0d1b4b;font-size:1.8rem;"></i>
+          </div>
+          <div class="flex-grow-1">
+            <h1 style="font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:800;color:#0d1b4b;margin-bottom:.3rem;">{{ firm.name }}</h1>
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+              <span class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>{{ firm.city }}{% if firm.state %}, {{ firm.state }}{% endif %}, {{ firm.country }}</span>
+              {% if firm.source == 'google_maps' %}<span style="background:#e8f5e9;color:#2e7d32;font-size:.72rem;font-weight:700;padding:.2rem .6rem;border-radius:50px;"><i class="fab fa-google me-1"></i>Google Maps</span>{% endif %}
+              {% if firm.google_rating %}<span style="color:#ffc107;font-size:.85rem;"><i class="fas fa-star me-1"></i>{{ firm.google_rating }} ({{ firm.google_reviews_count }} Google reviews)</span>{% endif %}
+            </div>
+          </div>
+        </div>
+
+        {% if firm.description %}
+        <p style="color:#555;line-height:1.8;">{{ firm.description }}</p>
+        {% endif %}
+
+        {% if firm.practice_areas %}
+        <div class="mt-3">
+          <div class="text-muted small fw-semibold mb-2">PRACTICE AREAS</div>
+          <div class="d-flex flex-wrap gap-2">
+            {% for a in firm.practice_areas %}<span style="background:#f0f4ff;color:#0d1b4b;font-size:.78rem;font-weight:600;padding:.3rem .8rem;border-radius:50px;">{{ a }}</span>{% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Not on platform CTA -->
+      <div style="background:linear-gradient(135deg,#0d1b4b,#1a3a6b);border-radius:16px;padding:2rem;color:#fff;text-align:center;">
+        <h4 style="font-family:'Playfair Display',serif;font-weight:700;margin-bottom:.75rem;">Is this your firm?</h4>
+        <p style="color:rgba(255,255,255,.75);margin-bottom:1.5rem;">Claim this listing, add your logo, description, team, and get discovered by more clients on LAWCOLAB.</p>
+        <a href="{{ url_for('auth.signup') }}" class="btn btn-warning fw-bold" style="border-radius:10px;padding:.75rem 2rem;color:#0d1b4b;">
+          <i class="fas fa-check-circle me-2"></i>Claim & Upgrade Listing
+        </a>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.5rem;">
+        <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:#0d1b4b;margin-bottom:1rem;padding-bottom:.65rem;border-bottom:2px solid #f0f4ff;">Contact Information</div>
+        {% if firm.phone %}
+        <div class="mb-3">
+          <a href="tel:{{ firm.phone }}" class="btn btn-primary w-100 fw-bold" style="background:#0d1b4b;border-color:#0d1b4b;border-radius:10px;">
+            <i class="fas fa-phone me-2"></i>{{ firm.phone }}
+          </a>
+        </div>
+        {% endif %}
+        {% if firm.website %}
+        <div class="mb-3">
+          <a href="{{ firm.website }}" target="_blank" class="btn btn-outline-primary w-100 fw-bold" style="border-radius:10px;">
+            <i class="fas fa-globe me-2"></i>Visit Website
+          </a>
+        </div>
+        {% endif %}
+        {% if firm.google_maps_url %}
+        <a href="{{ firm.google_maps_url }}" target="_blank" class="btn btn-outline-secondary w-100" style="border-radius:10px;font-size:.88rem;">
+          <i class="fab fa-google me-2"></i>View on Google Maps
+        </a>
+        {% endif %}
+        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #f0f0f0;">
+          <div class="text-muted small mb-1"><i class="fas fa-info-circle me-1"></i> This listing was added from public sources. Information may be outdated.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
