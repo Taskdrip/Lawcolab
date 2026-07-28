@@ -187,35 +187,32 @@ def signup():
             # Send welcome email (non-blocking — failure must not break signup)
             try:
                 from utils.email_sender import send_email
-                welcome_html = f"""
-                <div style="font-family:sans-serif;max-width:580px;margin:0 auto;padding:24px;">
-                  <h2 style="color:#0d1b4b;">Welcome to LAWCOLAB, {new_firm.name}! 🎉</h2>
-                  <p>Dear {user.first_name},</p>
-                  <p>We're thrilled to have <strong>{new_firm.name}</strong> join LAWCOLAB — your complete Legal Operating System.</p>
-                  <p>Your <strong>14-day free trial</strong> is now active. Here's what you can do right now:</p>
-                  <ul>
-                    <li>🏛️ Set up your firm profile and start adding cases</li>
-                    <li>💼 Invite your team members from the Admin panel</li>
-                    <li>📅 Sync your court calendar and set deadline reminders</li>
-                    <li>💳 Generate your first professional invoice</li>
-                    <li>🌐 List your firm on the public Law Firm Directory</li>
-                  </ul>
-                  <p>Need help? Our team is always available:</p>
-                  <ul>
-                    <li>💬 WhatsApp: <strong>+2348036622568</strong></li>
-                    <li>📧 Email: support@lawcolab.com</li>
-                  </ul>
-                  <p>Log in now: <a href="https://lawcolab.com" style="color:#0d1b4b;font-weight:600;">lawcolab.com</a></p>
-                  <hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0;">
-                  <p style="font-size:12px;color:#94a3b8;">Best regards,<br>
-                  <strong>Abraham Tahbat</strong><br>Lawyer & Founder, LAWCOLAB</p>
-                </div>
-                """
+                from flask import request as flask_request
+                import datetime as _dt
+                _base_url = flask_request.host_url.rstrip('/')
+                _logo_url = f"{_base_url}/static/images/lawcolab-logo.png"
+                _dashboard_url = f"{_base_url}/dashboard"
+                # Calculate days remaining in trial
+                _trial_days = 14
+                if new_firm.admin_access_expires:
+                    _delta = new_firm.admin_access_expires - _dt.datetime.now()
+                    _trial_days = max(1, _delta.days)
+                welcome_html = render_template(
+                    'emails/welcome.html',
+                    first_name=user.first_name,
+                    firm_name=new_firm.name,
+                    email=user.email or '',
+                    trial_days=_trial_days,
+                    logo_url=_logo_url,
+                    base_url=_base_url,
+                    dashboard_url=_dashboard_url,
+                    year=_dt.datetime.now().year,
+                )
                 send_email(
                     to_email=user.email,
-                    subject=f'Welcome to LAWCOLAB, {new_firm.name}! Your 14-day trial is active 🎉',
+                    subject=f'Welcome to LawCoLab, {new_firm.name} — your trial is live ✦',
                     body_html=welcome_html,
-                    from_name='Abraham at LAWCOLAB',
+                    from_name='Abraham at LawCoLab',
                     from_email='noreply@mail.lawcolab.com',
                 )
             except Exception as email_err:

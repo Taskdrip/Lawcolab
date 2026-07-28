@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to LawCoLab</title>
+  <!--[if mso]>
+  <noscript>
+    <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
+  </noscript>
+  <![endif]-->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', Arial, sans-serif; background-color: #f0f4f8; color: #1e293b; -webkit-font-smoothing: antialiased; }
+    a { text-decoration: none; }
+    img { border: 0; display: block; max-width: 100%; }
+    @media only screen and (max-width: 600px) {
+      .email-wrapper { padding: 16px !important; }
+      .hero-content { padding: 36px 24px !important; }
+      .content-block { padding: 32px 24px !important; }
+      .features-grid td { display: block !important; width: 100% !important; padding: 8px 0 !important; }
+      .cta-block { padding: 32px 24px !important; }
+      .footer-block { padding: 24px !important; }
+      h1 { font-size: 26px !important; }
+    }
+  </style>
+</head>
+<body>
+<div class="email-wrapper" style="background-color:#f0f4f8; padding:32px 16px;">
+
+  <!-- Outer container -->
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" border="0" role="presentation"
+               style="max-width:600px; width:100%; background:#ffffff; border-radius:16px; overflow:hidden;
+                      box-shadow:0 4px 24px rgba(13,27,75,0.10);">
+
+          <!-- ── HEADER / LOGO ── -->
+          <tr>
+            <td style="background:#0d1b4b; padding:28px 40px 22px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+                <tr>
+                  <td>
+                    <!-- Logo -->
+                    <img src="{{ logo_url }}" alt="LawCoLab" width="140" height="auto"
+                         style="display:block; max-height:56px; object-fit:contain;"
+                         onerror="this.style.display='none'">
+                  </td>
+                  <td align="right" style="vertical-align:middle;">
+                    <span style="font-family:'Inter',Arial,sans-serif; font-size:11px; font-weight:600;
+                                 color:#FFD700; letter-spacing:1.5px; text-transform:uppercase;">
+                      Legal Practice OS
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ── GOLD ACCENT LINE ── -->
+          <tr>
+            <td style="height:4px; background:linear-gradient(90deg,#FFD700 0%,#FFA500 50%,#FFD700 100%);"></td>
+          </tr>
+
+          <!-- ── HERO ── -->
+          <tr>
+            <td class="hero-content"
+                style="background:linear-gradient(160deg,#0d1b4b 0%,#1a3a6b 100%);
+                       padding:48px 40px 40px; text-align:center;">
+              <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; font-weight:600;
+                         color:#FFD700; letter-spacing:2px; text-transform:uppercase;
+                         margin-bottom:16px;">
+                ✦ &nbsp; Welcome to the Family &nbsp; ✦
+              </p>
+              <h1 style="font-family:'Playfair Display',Georgia,serif; font-size:32px;
+                          font-weight:800; color:#ffffff; line-height:1.25; margin-bottom:14px;">
+                You're in, {{ first_name }}.<br>
+                <span style="color:#FFD700;">Let's build something great.</span>
+              </h1>
+              <p style="font-family:'Inter',Arial,sans-serif; font-size:15px; color:rgba(255,255,255,0.78);
+                         line-height:1.6; max-width:440px; margin:0 auto 28px;">
+                <strong style="color:#fff;">{{ firm_name }}</strong> now has a
+                14&#8209;day free trial with full access to LawCoLab —
+                your firm's new operating system.
+              </p>
+              <!-- Trial badge -->
+              <div style="display:inline-block; background:rgba(255,215,0,0.12); border:1px solid rgba(255,215,0,0.4);
+                           border-radius:40px; padding:10px 24px;">
+                <span style="font-family:'Inter',Arial,sans-serif; font-size:13px; font-weight:700;
+                               color:#FFD700; letter-spacing:0.5px;">
+                  🗓️ &nbsp; Trial active — {{ trial_days }} days remaining
+                </span>
+              </div>
+            </td>
+          </tr>
+
+          <!-- ── INTRO ── -->
+          <tr>
+            <td class="content-block" style="padding:40px 40px 8px;">
+              <p style="font-family:'Inter',Arial,sans-serif; font-size:15px; color:#374151; line-height:1.7;">
+                Hi {{ first_name }},
+              </p>
+              <p style="font-family:'Inter',Arial,sans-serif; font-size:15px; color:#374151;
+                         line-height:1.7; margin-top:12px;">
+                We're genuinely glad to have you here. LawCoLab was built by lawyers for lawyers —
+                so we know how much time gets lost to paperwork, chasing clients, and juggling spreadsheets.
+                Your trial gives you everything switched on so you can feel the difference from day one.
+              </p>
+            </td>
+          </tr>
+
+          <!-- ── WHAT'S READY NOW ── -->
+          <tr>
+            <td class="content-block" style="padding:32px 40px 8px;">
+              <h2 style="font-family:'Playfair Display',Georgia,serif; font-size:20px;
+                          font-weight:800; color:#0d1b4b; margin-bottom:20px;">
+                Everything ready for you right now
+              </h2>
+              <!-- Feature cards grid -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0"
+                     class="features-grid" role="presentation">
+                <tr>
+                  <td width="50%" style="padding:0 8px 16px 0; vertical-align:top;">
+                    <div style="background:#f8faff; border:1px solid #e2e8f0; border-radius:12px;
+                                 padding:20px 18px; border-left:3px solid #0d1b4b;">
+                      <div style="font-size:22px; margin-bottom:8px;">⚖️</div>
+                      <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; font-weight:700;
+                                  color:#0d1b4b; margin-bottom:4px;">Case Management</p>
+                      <p style="font-family:'Inter',Arial,sans-serif; font-size:12px; color:#64748b; line-height:1.5;">
+                        Track every case, deadline, and document in one place. No more lost files.
+                      </p>
+                    </div>
+                  </td>
+                  <td width="50%" style="padding:0 0 16px 8px; vertical-align:top;">
+                    <div style="background:#f8faff; border:1px solid #e2e8f0; border-radius:12px;
+                                 padding:20px 18px; border-left:3px solid #FFD700;">
+                      <div style="font-size:22px; margin-bottom:8px;">🧾</div>
+                      <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; font-weight:700;
+                                  color:#0d1b4b; margin-bottom:4px;">Billing &amp; Invoices</p>
+                      <p style="font-family:'Inter',Arial,sans-serif; font-size:12px; color:#64748b; line-height:1.5;">
+                        Generate professional invoices and track payments with ease.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td width="50%" style="padding:0 8px 16px 0; vertical-align:top;">
+                    <div style="background:#f8faff; border:1px solid #e2e8f0; border-radius:12px;
+                                 padding:20px 18px; border-left:3px solid #0d1b4b;">
+                      <div style="font-size:22px; margin-bottom:8px;">📅</div>
+                      <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; font-weight:700;
+                                  color:#0d1b4b; margin-bottom:4px;">Court Calendar</p>
+                      <p style="font-family:'Inter',Arial,sans-serif; font-size:12px; color:#64748b; line-height:1.5;">
+                        Sync hearings, set reminders, and never miss a filing deadline again.
+                      </p>
+                    </div>
+                  </td>
+                  <td width="50%" style="padding:0 0 16px 8px; vertical-align:top;">
+                    <div style="background:#f8faff; border:1px solid #e2e8f0; border-radius:12px;
+                                 padding:20px 18px; border-left:3px solid #FFD700;">
+                      <div style="font-size:22px; margin-bottom:8px;">🤝</div>
+                      <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; font-weight:700;
+                                  color:#0d1b4b; margin-bottom:4px;">Client Portal</p>
+                      <p style="font-family:'Inter',Arial,sans-serif; font-size:12px; color:#64748b; line-height:1.5;">
+                        Give clients a secure space to view updates, messages, and documents.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td width="50%" style="padding:0 8px 0 0; vertical-align:top;">
+                    <div style="background:#f8faff; border:1px solid #e2e8f0; border-radius:12px;
+                                 padding:20px 18px; border-left:3px solid #0d1b4b;">
+                      <div style="font-size:22px; margin-bottom:8px;">👥</div>
+                      <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; font-weight:700;
+                                  color:#0d1b4b; margin-bottom:4px;">Team Collaboration</p>
+                      <p style="font-family:'Inter',Arial,sans-serif; font-size:12px; color:#64748b; line-height:1.5;">
+                        Invite colleagues, assign tasks, and collaborate on cases in real time.
+                      </p>
+                    </div>
+                  </td>
+                  <td width="50%" style="padding:0 0 0 8px; vertical-align:top;">
+                    <div style="background:#f8faff; border:1px solid #e2e8f0; border-radius:12px;
+                                 padding:20px 18px; border-left:3px solid #FFD700;">
+                      <div style="font-size:22px; margin-bottom:8px;">🌐</div>
+                      <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; font-weight:700;
+                                  color:#0d1b4b; margin-bottom:4px;">Law Firm Directory</p>
+                      <p style="font-family:'Inter',Arial,sans-serif; font-size:12px; color:#64748b; line-height:1.5;">
+                        List your firm publicly and get discovered by potential clients.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ── DIVIDER ── -->
+          <tr>
+            <td style="padding:32px 40px 0;">
+              <hr style="border:none; border-top:1px solid #e8eef4;">
+            </td>
+          </tr>
+
+          <!-- ── PEEK AT WHAT'S AHEAD (non-pitchy) ── -->
+          <tr>
+            <td class="content-block" style="padding:32px 40px 8px;">
+              <h2 style="font-family:'Playfair Display',Georgia,serif; font-size:20px;
+                          font-weight:800; color:#0d1b4b; margin-bottom:6px;">
+                A glimpse of where you can grow 🌱
+              </h2>
+              <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; color:#64748b;
+                         line-height:1.6; margin-bottom:20px;">
+                As your practice grows, LawCoLab grows with you. Here are a few things other firms
+                unlock when they're ready:
+              </p>
+
+              <!-- Tier rows -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+                <!-- Starter -->
+                <tr>
+                  <td style="padding-bottom:12px;">
+                    <div style="background:#eff6ff; border-radius:10px; padding:16px 20px;
+                                 display:flex; align-items:flex-start;">
+                      <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+                        <tr>
+                          <td width="28" style="vertical-align:top; padding-top:2px;">
+                            <div style="width:24px; height:24px; background:#1d4ed8; border-radius:6px;
+                                         text-align:center; line-height:24px; font-size:12px; color:#fff;
+                                         font-weight:700;">S</div>
+                          </td>
+                          <td style="padding-left:12px; vertical-align:top;">
+                            <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; font-weight:700;
+                                       color:#1d4ed8; margin-bottom:2px;">Starter Plan</p>
+                            <p style="font-family:'Inter',Arial,sans-serif; font-size:12px; color:#374151; line-height:1.5;">
+                              Up to 5 users, full case management, billing &amp; invoices, 20 GB storage — everything a small firm needs.
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+                  </td>
+                </tr>
+                <!-- Growth -->
+                <tr>
+                  <td style="padding-bottom:12px;">
+                    <div style="background:#fff7ed; border-radius:10px; padding:16px 20px;">
+                      <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+                        <tr>
+                          <td width="28" style="vertical-align:top; padding-top:2px;">
+                            <div style="width:24px; height:24px; background:#c2410c; border-radius:6px;
+                                         text-align:center; line-height:24px; font-size:12px; color:#fff;
+                                         font-weight:700;">G</div>
+                          </td>
+                          <td style="padding-left:12px; vertical-align:top;">
+                            <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; font-weight:700;
+                                       color:#c2410c; margin-bottom:2px;">Growth Plan</p>
+                            <p style="font-family:'Inter',Arial,sans-serif; font-size:12px; color:#374151; line-height:1.5;">
+                              Up to 20 users, advanced analytics &amp; reports, priority support, 100 GB storage, and all integrations with API access.
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+                  </td>
+                </tr>
+                <!-- Enterprise -->
+                <tr>
+                  <td>
+                    <div style="background:#f9fafb; border-radius:10px; padding:16px 20px;
+                                 border:1px solid #e5e7eb;">
+                      <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+                        <tr>
+                          <td width="28" style="vertical-align:top; padding-top:2px;">
+                            <div style="width:24px; height:24px; background:#0d1b4b; border-radius:6px;
+                                         text-align:center; line-height:24px; font-size:12px; color:#FFD700;
+                                         font-weight:700;">E</div>
+                          </td>
+                          <td style="padding-left:12px; vertical-align:top;">
+                            <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; font-weight:700;
+                                       color:#0d1b4b; margin-bottom:2px;">Enterprise Plan</p>
+                            <p style="font-family:'Inter',Arial,sans-serif; font-size:12px; color:#374151; line-height:1.5;">
+                              Unlimited users, multi-office management, white-label client portal, custom integrations, SSO, and 24/7 priority support — for firms that run at scale.
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ── DIVIDER ── -->
+          <tr>
+            <td style="padding:32px 40px 0;">
+              <hr style="border:none; border-top:1px solid #e8eef4;">
+            </td>
+          </tr>
+
+          <!-- ── 3 QUICK STEPS ── -->
+          <tr>
+            <td class="content-block" style="padding:32px 40px 8px;">
+              <h2 style="font-family:'Playfair Display',Georgia,serif; font-size:20px;
+                          font-weight:800; color:#0d1b4b; margin-bottom:20px;">
+                Three things to do first
+              </h2>
+              <!-- Step 1 -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation"
+                     style="margin-bottom:16px;">
+                <tr>
+                  <td width="40" style="vertical-align:top; padding-top:2px;">
+                    <div style="width:32px; height:32px; background:#0d1b4b; border-radius:50%;
+                                 text-align:center; line-height:32px; font-size:14px; font-weight:700;
+                                 color:#FFD700;">1</div>
+                  </td>
+                  <td style="padding-left:12px; vertical-align:top;">
+                    <p style="font-family:'Inter',Arial,sans-serif; font-size:14px; font-weight:700;
+                                color:#0d1b4b; margin-bottom:2px;">Complete your firm profile</p>
+                    <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; color:#64748b; line-height:1.5;">
+                      Add your logo, practice areas, and location from the Admin panel. It takes under 3 minutes.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              <!-- Step 2 -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation"
+                     style="margin-bottom:16px;">
+                <tr>
+                  <td width="40" style="vertical-align:top; padding-top:2px;">
+                    <div style="width:32px; height:32px; background:#0d1b4b; border-radius:50%;
+                                 text-align:center; line-height:32px; font-size:14px; font-weight:700;
+                                 color:#FFD700;">2</div>
+                  </td>
+                  <td style="padding-left:12px; vertical-align:top;">
+                    <p style="font-family:'Inter',Arial,sans-serif; font-size:14px; font-weight:700;
+                                color:#0d1b4b; margin-bottom:2px;">Add your first case</p>
+                    <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; color:#64748b; line-height:1.5;">
+                      Head to Case Management and create a case. Attach documents, add parties, set a hearing date.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              <!-- Step 3 -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+                <tr>
+                  <td width="40" style="vertical-align:top; padding-top:2px;">
+                    <div style="width:32px; height:32px; background:#0d1b4b; border-radius:50%;
+                                 text-align:center; line-height:32px; font-size:14px; font-weight:700;
+                                 color:#FFD700;">3</div>
+                  </td>
+                  <td style="padding-left:12px; vertical-align:top;">
+                    <p style="font-family:'Inter',Arial,sans-serif; font-size:14px; font-weight:700;
+                                color:#0d1b4b; margin-bottom:2px;">Invite a colleague</p>
+                    <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; color:#64748b; line-height:1.5;">
+                      LawCoLab works best as a team. Invite a lawyer or paralegal from the Admin → Team section.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ── CTA BUTTON ── -->
+          <tr>
+            <td class="cta-block" style="padding:32px 40px 40px; text-align:center;">
+              <a href="{{ dashboard_url }}"
+                 style="display:inline-block; background:#0d1b4b; color:#FFD700;
+                         font-family:'Inter',Arial,sans-serif; font-size:15px; font-weight:700;
+                         padding:16px 40px; border-radius:10px; letter-spacing:0.3px;
+                         text-decoration:none; box-shadow:0 4px 14px rgba(13,27,75,0.25);">
+                Go to My Dashboard &rarr;
+              </a>
+              <p style="font-family:'Inter',Arial,sans-serif; font-size:12px; color:#94a3b8;
+                         margin-top:14px; line-height:1.5;">
+                Or visit <a href="{{ base_url }}" style="color:#0d1b4b; font-weight:600;">lawcolab.com</a>
+                and sign in with <strong>{{ email }}</strong>
+              </p>
+            </td>
+          </tr>
+
+          <!-- ── FOUNDER SIGN-OFF ── -->
+          <tr>
+            <td style="padding:0 40px 40px;">
+              <div style="background:#f8faff; border-radius:12px; padding:24px 24px;
+                           border:1px solid #e2e8f0;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+                  <tr>
+                    <td width="52" style="vertical-align:top;">
+                      <img src="{{ base_url }}/static/abraham_founder.jpg"
+                           alt="Abraham Tahbat" width="44" height="44"
+                           style="border-radius:50%; object-fit:cover; width:44px; height:44px;"
+                           onerror="this.style.display='none'">
+                    </td>
+                    <td style="padding-left:14px; vertical-align:top;">
+                      <p style="font-family:'Inter',Arial,sans-serif; font-size:14px; font-weight:700;
+                                  color:#0d1b4b; margin-bottom:2px;">Abraham Tahbat</p>
+                      <p style="font-family:'Inter',Arial,sans-serif; font-size:12px; color:#64748b;
+                                  margin-bottom:8px;">Lawyer &amp; Founder, LawCoLab</p>
+                      <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; color:#374151;
+                                  line-height:1.6; font-style:italic;">
+                        "I built this because every tool I tried felt designed for accountants, not lawyers.
+                        I hope LawCoLab feels like it was made for you — because it was."
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </td>
+          </tr>
+
+          <!-- ── SUPPORT STRIP ── -->
+          <tr>
+            <td style="background:#0d1b4b; padding:24px 40px; text-align:center;">
+              <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; font-weight:600;
+                         color:#FFD700; margin-bottom:8px; letter-spacing:0.5px;">
+                We're always a message away
+              </p>
+              <p style="font-family:'Inter',Arial,sans-serif; font-size:12px; color:rgba(255,255,255,0.7);
+                         line-height:1.6;">
+                💬 WhatsApp &nbsp;
+                <a href="https://wa.me/2348036622568"
+                   style="color:#fff; font-weight:600;">+234 803 662 2568</a>
+                &nbsp;&nbsp;|&nbsp;&nbsp;
+                📧
+                <a href="mailto:support@lawcolab.com"
+                   style="color:#fff; font-weight:600;">support@lawcolab.com</a>
+              </p>
+            </td>
+          </tr>
+
+          <!-- ── FOOTER ── -->
+          <tr>
+            <td class="footer-block"
+                style="background:#f8faff; border-top:1px solid #e2e8f0;
+                        padding:24px 40px; text-align:center;">
+              <img src="{{ logo_url }}" alt="LawCoLab" width="100" height="auto"
+                   style="display:inline-block; max-height:36px; object-fit:contain; margin-bottom:12px; opacity:0.6;"
+                   onerror="this.style.display='none'">
+              <p style="font-family:'Inter',Arial,sans-serif; font-size:11px; color:#94a3b8;
+                         line-height:1.6;">
+                LawCoLab &bull; Collaborate. Innovate. Elevate.<br>
+                You're receiving this because you signed up at
+                <a href="{{ base_url }}" style="color:#64748b;">lawcolab.com</a>.<br>
+                &copy; {{ year }} LawCoLab. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</div>
+</body>
+</html>
