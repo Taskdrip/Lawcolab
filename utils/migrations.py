@@ -187,6 +187,96 @@ def run_migrations(db):
         """,
         "CREATE INDEX IF NOT EXISTS idx_court_history_event ON court_date_history(event_id)",
         "CREATE INDEX IF NOT EXISTS idx_court_history_date ON court_date_history(hearing_date DESC)",
+
+        # ── crm_campaigns table (v2) ──────────────────────────────────────────
+        """
+        CREATE TABLE IF NOT EXISTS crm_campaigns (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(200) NOT NULL,
+            description TEXT,
+            status VARCHAR(30) DEFAULT 'draft',
+            target_country VARCHAR(100),
+            target_practice_area VARCHAR(200),
+            created_by_id VARCHAR REFERENCES users(id),
+            created_at TIMESTAMP DEFAULT NOW(),
+            updated_at TIMESTAMP DEFAULT NOW(),
+            total_leads INTEGER DEFAULT 0,
+            emails_sent INTEGER DEFAULT 0,
+            replies_received INTEGER DEFAULT 0,
+            meetings_booked INTEGER DEFAULT 0,
+            conversions INTEGER DEFAULT 0
+        )
+        """,
+
+        # ── outreach_messages table (v2) ──────────────────────────────────────
+        """
+        CREATE TABLE IF NOT EXISTS outreach_messages (
+            id SERIAL PRIMARY KEY,
+            firm_id INTEGER NOT NULL REFERENCES directory_law_firms(id) ON DELETE CASCADE,
+            campaign_id INTEGER REFERENCES crm_campaigns(id) ON DELETE SET NULL,
+            created_by_id VARCHAR REFERENCES users(id),
+            channel VARCHAR(30) DEFAULT 'email',
+            message_type VARCHAR(50) DEFAULT 'cold_outreach',
+            subject VARCHAR(300),
+            body TEXT NOT NULL,
+            recipient_name VARCHAR(200),
+            recipient_email VARCHAR(200),
+            recipient_phone VARCHAR(100),
+            status VARCHAR(30) DEFAULT 'draft',
+            ai_generated BOOLEAN DEFAULT FALSE,
+            scheduled_at TIMESTAMP,
+            sent_at TIMESTAMP,
+            opened_at TIMESTAMP,
+            replied_at TIMESTAMP,
+            reply_text TEXT,
+            reply_classification VARCHAR(50),
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+        """,
+
+        # ── lead_tasks table (v2) ─────────────────────────────────────────────
+        """
+        CREATE TABLE IF NOT EXISTS lead_tasks (
+            id SERIAL PRIMARY KEY,
+            firm_id INTEGER NOT NULL REFERENCES directory_law_firms(id) ON DELETE CASCADE,
+            assigned_to_id VARCHAR REFERENCES users(id),
+            created_by_id VARCHAR REFERENCES users(id),
+            title VARCHAR(300) NOT NULL,
+            description TEXT,
+            task_type VARCHAR(50) DEFAULT 'follow_up',
+            priority VARCHAR(20) DEFAULT 'normal',
+            status VARCHAR(30) DEFAULT 'open',
+            due_at TIMESTAMP,
+            completed_at TIMESTAMP,
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+        """,
+
+        # ── directory_law_firms: v2 columns ───────────────────────────────────
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS pipeline_stage VARCHAR(50) DEFAULT 'new'",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS lead_score INTEGER DEFAULT 0",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS confidence_score INTEGER DEFAULT 0",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS whatsapp VARCHAR(100)",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS founding_year INTEGER",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS firm_size VARCHAR(50)",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS num_lawyers INTEGER",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS decision_makers_json TEXT",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS social_links_json TEXT",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS opening_hours_json TEXT",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS website_status VARCHAR(20) DEFAULT 'unknown'",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS enriched_at TIMESTAMP",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS enrichment_source VARCHAR(100)",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS assigned_to_id VARCHAR REFERENCES users(id)",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS next_followup_at TIMESTAMP",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS last_contacted_at TIMESTAMP",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS tags_json TEXT",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS campaign_id INTEGER REFERENCES crm_campaigns(id) ON DELETE SET NULL",
+
+        # ── Indexes for performance ────────────────────────────────────────────
+        "CREATE INDEX IF NOT EXISTS idx_dlf_pipeline ON directory_law_firms(pipeline_stage)",
+        "CREATE INDEX IF NOT EXISTS idx_dlf_lead_score ON directory_law_firms(lead_score DESC)",
+        "CREATE INDEX IF NOT EXISTS idx_dlf_campaign ON directory_law_firms(campaign_id)",
+        "CREATE INDEX IF NOT EXISTS idx_dlf_assigned ON directory_law_firms(assigned_to_id)",
     ]
 
     with db.engine.connect() as conn:

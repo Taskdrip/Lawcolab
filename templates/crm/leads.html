@@ -1,0 +1,278 @@
+{% extends "crm/base_crm.html" %}
+{% block title %}All Leads — LAWCOLAB CRM{% endblock %}
+{% block page_title %}All Leads{% endblock %}
+
+{% block topbar_actions %}
+<div class="view-toggle">
+  <button onclick="setView('table')" class="{% if view=='table' %}active{% endif %}" id="btn-table"><i class="fas fa-list"></i></button>
+  <button onclick="setView('card')" class="{% if view=='card' %}active{% endif %}" id="btn-card"><i class="fas fa-th"></i></button>
+  <button onclick="setView('kanban')" class="{% if view=='kanban' %}active{% endif %}" id="btn-kanban"><i class="fas fa-columns"></i></button>
+</div>
+<a href="{{ url_for('crm.discovery') }}" class="btn btn-crm-gold btn-sm ms-2"><i class="fas fa-robot me-1"></i>Discover</a>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.filter-bar{background:#fff;border-radius:12px;border:1px solid var(--border);padding:.75rem 1rem;margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;}
+.filter-chip{display:inline-flex;align-items:center;padding:.3rem .75rem;border-radius:50px;font-size:.75rem;font-weight:600;border:1.5px solid transparent;cursor:pointer;text-decoration:none;transition:all .15s;}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Stage filter chips -->
+<div class="filter-bar">
+  <a href="{{ url_for('crm.leads', q=filters.q, country=filters.country, view=view) }}"
+     class="filter-chip {% if not filters.stage %}active{% endif %}"
+     style="{% if not filters.stage %}background:#0d1b4b;color:#fff;{% else %}background:#f1f5f9;color:#374151;{% endif %}">
+    All <span style="opacity:.7;margin-left:.3rem;">{{ firms.total }}</span>
+  </a>
+  {% for s in stages %}
+  {% set meta = stage_meta[s] %}
+  {% set cnt = stage_counts.get(s, 0) %}
+  {% if cnt > 0 %}
+  <a href="{{ url_for('crm.leads', stage=s, q=filters.q, view=view) }}"
+     class="filter-chip"
+     style="{% if filters.stage == s %}background:{{ meta.color }};color:#fff;border-color:{{ meta.color }};{% else %}background:{{ meta.color }}15;color:{{ meta.color }};border-color:{{ meta.color }}40;{% endif %}">
+    {{ meta.label }} <span style="opacity:.75;margin-left:.3rem;">{{ cnt }}</span>
+  </a>
+  {% endif %}
+  {% endfor %}
+</div>
+
+<!-- Search + sort bar -->
+<form method="GET" class="d-flex gap-2 flex-wrap mb-3" id="filterForm">
+  <input type="hidden" name="view" value="{{ view }}">
+  <input type="hidden" name="stage" value="{{ filters.stage }}">
+  <input class="crm-search flex-grow-1" name="q" placeholder="Search name, city, email…" value="{{ filters.q }}" style="max-width:320px;">
+  <input class="crm-search" name="country" placeholder="Country" value="{{ filters.country }}" style="width:150px;">
+  <select name="sort" class="crm-search" style="width:160px;" onchange="this.form.submit()">
+    <option value="updated_at" {% if sort=='updated_at' %}selected{% endif %}>Recently Updated</option>
+    <option value="lead_score" {% if sort=='lead_score' %}selected{% endif %}>Lead Score ↓</option>
+    <option value="name" {% if sort=='name' %}selected{% endif %}>Name A–Z</option>
+    <option value="created_at" {% if sort=='created_at' %}selected{% endif %}>Newest</option>
+  </select>
+  <button type="submit" class="btn btn-crm-primary btn-sm"><i class="fas fa-search"></i></button>
+  {% if filters.q or filters.stage or filters.country %}
+  <a href="{{ url_for('crm.leads', view=view) }}" class="btn btn-crm-outline btn-sm">Clear</a>
+  {% endif %}
+</form>
+
+<!-- Bulk actions bar -->
+<div id="bulkBar" class="d-none mb-3 p-3" style="background:#0d1b4b;border-radius:10px;display:flex;align-items:center;gap:1rem;">
+  <span class="text-white fw-bold" style="font-size:.85rem;"><span id="selCount">0</span> selected</span>
+  <select id="bulkStage" class="form-select form-select-sm" style="width:180px;border-radius:8px;">
+    <option value="">Move to stage…</option>
+    {% for s in stages %}<option value="{{ s }}">{{ stage_meta[s].label }}</option>{% endfor %}
+  </select>
+  <button class="btn btn-sm" style="background:var(--gold);color:#0d1b4b;border-radius:8px;font-weight:700;" onclick="bulkSetStage()">Move</button>
+  <button class="btn btn-sm btn-outline-light" style="border-radius:8px;" onclick="bulkScore()"><i class="fas fa-star me-1"></i>Score</button>
+  <button class="btn btn-sm btn-outline-danger" style="border-radius:8px;" onclick="bulkArchive()">Archive</button>
+  <button class="btn btn-sm btn-outline-light ms-auto" style="border-radius:8px;" onclick="clearSel()">✕ Clear</button>
+</div>
+
+<!-- TABLE VIEW -->
+{% if view == 'table' %}
+<div class="crm-card">
+  <table class="crm-table">
+    <thead>
+      <tr>
+        <th style="width:36px;"><input type="checkbox" id="selectAll" onchange="toggleAll(this)" style="cursor:pointer;"></th>
+        <th>Firm</th>
+        <th>Location</th>
+        <th>Contact</th>
+        <th>Stage</th>
+        <th>Score</th>
+        <th>Source</th>
+        <th class="text-end pe-4">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for firm in firms.items %}
+      <tr>
+        <td><input type="checkbox" class="row-check" value="{{ firm.id }}" onchange="updateBulkBar()"></td>
+        <td>
+          <div style="font-weight:600;font-size:.85rem;">{{ firm.name }}</div>
+          {% if firm.practice_areas %}
+          <div class="mt-1">{% for a in firm.practice_areas[:2] %}
+            <span style="background:#f0f4ff;color:#0d1b4b;font-size:.65rem;font-weight:600;padding:.1rem .45rem;border-radius:50px;">{{ a }}</span>
+          {% endfor %}</div>
+          {% endif %}
+        </td>
+        <td style="font-size:.8rem;">
+          <div>{{ firm.city or '—' }}</div>
+          <div style="color:#718096;">{{ firm.state or '' }}{% if firm.state and firm.country %}, {% endif %}{{ firm.country or '' }}</div>
+        </td>
+        <td style="font-size:.78rem;">
+          {% if firm.email %}<div><i class="fas fa-envelope me-1 text-muted"></i>{{ firm.email[:30] }}</div>{% endif %}
+          {% if firm.phone %}<div><i class="fas fa-phone me-1 text-muted"></i>{{ firm.phone }}</div>{% endif %}
+          {% if firm.whatsapp %}<div><i class="fab fa-whatsapp me-1 text-success"></i>{{ firm.whatsapp }}</div>{% endif %}
+        </td>
+        <td>
+          <select class="stage-select" data-id="{{ firm.id }}"
+            style="border:none;background:{{ firm.pipeline_stage_color }}18;color:{{ firm.pipeline_stage_color }};
+                   font-size:.73rem;font-weight:700;border-radius:50px;padding:.25rem .6rem;cursor:pointer;outline:none;">
+            {% for s in stages %}
+            <option value="{{ s }}" {% if (firm.pipeline_stage or 'new') == s %}selected{% endif %}>{{ stage_meta[s].label }}</option>
+            {% endfor %}
+          </select>
+        </td>
+        <td>
+          <div class="score-ring" style="background:{% if (firm.lead_score or 0) >= 70 %}#198754{% elif (firm.lead_score or 0) >= 40 %}#fd7e14{% else %}#adb5bd{% endif %};">
+            {{ firm.lead_score or 0 }}
+          </div>
+        </td>
+        <td>
+          <span style="font-size:.7rem;font-weight:700;padding:.2rem .55rem;border-radius:50px;
+            background:{% if firm.source=='ai_discovery' %}#e8f5e9{% elif firm.source=='google_maps' %}#e8f0fe{% else %}#f8fafc{% endif %};
+            color:{% if firm.source=='ai_discovery' %}#2e7d32{% elif firm.source=='google_maps' %}#1a73e8{% else %}#718096{% endif %};">
+            {{ {'ai_discovery':'AI','google_maps':'Maps','manual':'Manual','platform_import':'Platform'}.get(firm.source, firm.source) }}
+          </span>
+        </td>
+        <td class="text-end pe-4">
+          <a href="{{ url_for('crm.lead_detail', firm_id=firm.id) }}" class="btn btn-sm btn-crm-outline me-1" style="font-size:.75rem;">
+            <i class="fas fa-eye"></i>
+          </a>
+          {% if firm.website %}
+          <a href="{{ firm.website }}" target="_blank" class="btn btn-sm btn-crm-outline" style="font-size:.75rem;">
+            <i class="fas fa-external-link-alt"></i>
+          </a>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="8" class="text-center py-5 text-muted">No leads found. <a href="{{ url_for('crm.discovery') }}">Discover some →</a></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- CARD VIEW -->
+{% elif view == 'card' %}
+<div class="row g-3">
+  {% for firm in firms.items %}
+  <div class="col-md-6 col-xl-4">
+    <div class="lead-card" onclick="window.location='{{ url_for('crm.lead_detail', firm_id=firm.id) }}'">
+      <div class="d-flex align-items-start gap-3 mb-3">
+        <div style="width:42px;height:42px;border-radius:10px;background:#e8f0fe;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem;font-weight:800;color:#0d1b4b;">
+          {{ firm.name[0] }}
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ firm.name }}</div>
+          <div style="font-size:.75rem;color:#718096;">{{ firm.city or '' }}{% if firm.city and firm.country %}, {% endif %}{{ firm.country or '' }}</div>
+        </div>
+        <div class="score-ring flex-shrink-0"
+             style="background:{% if (firm.lead_score or 0) >= 70 %}#198754{% elif (firm.lead_score or 0) >= 40 %}#fd7e14{% else %}#adb5bd{% endif %};">
+          {{ firm.lead_score or 0 }}
+        </div>
+      </div>
+      <div class="d-flex flex-wrap gap-1 mb-3">
+        {% for a in firm.practice_areas[:3] %}
+        <span style="background:#f0f4ff;color:#0d1b4b;font-size:.65rem;font-weight:600;padding:.15rem .5rem;border-radius:50px;">{{ a }}</span>
+        {% endfor %}
+      </div>
+      <div class="d-flex align-items-center justify-content-between">
+        <span class="stage-badge" style="color:{{ firm.pipeline_stage_color }};background:{{ firm.pipeline_stage_color }}18;border-color:{{ firm.pipeline_stage_color }}40;">
+          <i class="fas fa-circle" style="font-size:.4rem;"></i> {{ firm.pipeline_stage_label }}
+        </span>
+        <div class="d-flex gap-1">
+          {% if firm.phone %}
+          <a href="tel:{{ firm.phone }}" class="btn btn-sm" style="background:#e8f5e9;color:#2e7d32;border-radius:7px;padding:.25rem .5rem;font-size:.75rem;" onclick="event.stopPropagation()"><i class="fas fa-phone"></i></a>
+          {% endif %}
+          {% if firm.whatsapp %}
+          <a href="https://wa.me/{{ firm.whatsapp|replace('+','') }}" target="_blank" class="btn btn-sm" style="background:#e8f5e9;color:#25d366;border-radius:7px;padding:.25rem .5rem;font-size:.75rem;" onclick="event.stopPropagation()"><i class="fab fa-whatsapp"></i></a>
+          {% endif %}
+          {% if firm.website %}
+          <a href="{{ firm.website }}" target="_blank" class="btn btn-sm" style="background:#e8f0fe;color:#1a73e8;border-radius:7px;padding:.25rem .5rem;font-size:.75rem;" onclick="event.stopPropagation()"><i class="fas fa-globe"></i></a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-12 text-center py-5 text-muted">No leads found. <a href="{{ url_for('crm.discovery') }}">Discover some →</a></div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Pagination -->
+{% if firms.pages > 1 %}
+<div class="d-flex justify-content-center mt-4 gap-2">
+  {% if firms.has_prev %}
+  <a href="{{ url_for('crm.leads', page=firms.prev_num, q=filters.q, stage=filters.stage, view=view, sort=sort) }}" class="btn btn-crm-outline btn-sm">← Prev</a>
+  {% endif %}
+  <span class="btn btn-sm" style="background:#f1f5f9;border-radius:9px;font-size:.82rem;">{{ firms.page }} / {{ firms.pages }}</span>
+  {% if firms.has_next %}
+  <a href="{{ url_for('crm.leads', page=firms.next_num, q=filters.q, stage=filters.stage, view=view, sort=sort) }}" class="btn btn-crm-outline btn-sm">Next →</a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const selectedIds = new Set();
+
+function setView(v){
+  const url = new URL(window.location);
+  url.searchParams.set('view', v);
+  window.location = url.toString();
+}
+
+function toggleAll(cb){
+  document.querySelectorAll('.row-check').forEach(c=>{
+    c.checked = cb.checked;
+    cb.checked ? selectedIds.add(parseInt(c.value)) : selectedIds.delete(parseInt(c.value));
+  });
+  updateBulkBar();
+}
+
+function updateBulkBar(){
+  const checks = document.querySelectorAll('.row-check:checked');
+  checks.forEach(c=>selectedIds.add(parseInt(c.value)));
+  document.querySelectorAll('.row-check:not(:checked)').forEach(c=>selectedIds.delete(parseInt(c.value)));
+  const bar = document.getElementById('bulkBar');
+  document.getElementById('selCount').textContent = selectedIds.size;
+  bar.classList.toggle('d-none', selectedIds.size === 0);
+  bar.style.display = selectedIds.size > 0 ? 'flex' : '';
+}
+
+function clearSel(){
+  selectedIds.clear();
+  document.querySelectorAll('.row-check,#selectAll').forEach(c=>c.checked=false);
+  updateBulkBar();
+}
+
+async function bulkSetStage(){
+  const stage = document.getElementById('bulkStage').value;
+  if(!stage){ showToast('Pick a stage first','error'); return; }
+  const r = await apiPost('{{ url_for("crm.bulk_action") }}', {ids:[...selectedIds], action:'set_stage', stage});
+  if(r.success){ showToast(`${r.count} leads moved to ${stage}`); setTimeout(()=>location.reload(),1000); }
+}
+
+async function bulkScore(){
+  const r = await apiPost('{{ url_for("crm.bulk_action") }}', {ids:[...selectedIds], action:'score'});
+  if(r.success){ showToast(`Scored ${r.count} leads`); setTimeout(()=>location.reload(),1000); }
+}
+
+async function bulkArchive(){
+  if(!confirm('Archive selected leads?')) return;
+  const r = await apiPost('{{ url_for("crm.bulk_action") }}', {ids:[...selectedIds], action:'archive'});
+  if(r.success){ showToast(`${r.count} leads archived`); setTimeout(()=>location.reload(),800); }
+}
+
+// Inline stage change
+document.querySelectorAll('.stage-select').forEach(sel=>{
+  sel.addEventListener('change', async function(){
+    const id = this.dataset.id;
+    const stage = this.value;
+    const r = await apiPost(`/superadmin/crm/lead/${id}/stage`, {stage});
+    if(r.success){
+      this.style.background = r.color+'18';
+      this.style.color = r.color;
+      showToast(`${r.label}`);
+    }
+  });
+});
+</script>
+{% endblock %}

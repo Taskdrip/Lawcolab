@@ -1,0 +1,311 @@
+{% extends "crm/base_crm.html" %}
+{% block title %}{{ firm.name }} — LAWCOLAB CRM{% endblock %}
+{% block page_title %}Lead Detail{% endblock %}
+
+{% block topbar_actions %}
+<a href="{{ url_for('crm.leads') }}" class="btn btn-crm-outline btn-sm"><i class="fas fa-arrow-left me-1"></i>All Leads</a>
+{% if firm.website %}<a href="{{ firm.website }}" target="_blank" class="btn btn-crm-outline btn-sm"><i class="fas fa-globe me-1"></i>Website</a>{% endif %}
+{% if firm.phone %}<a href="tel:{{ firm.phone }}" class="btn btn-crm-outline btn-sm"><i class="fas fa-phone me-1"></i>Call</a>{% endif %}
+{% if firm.whatsapp %}<a href="https://wa.me/{{ firm.whatsapp|replace('+','') }}" target="_blank" class="btn btn-crm-gold btn-sm"><i class="fab fa-whatsapp me-1"></i>WhatsApp</a>{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Left: Main info -->
+  <div class="col-lg-8">
+    <!-- Header card -->
+    <div class="crm-card mb-4">
+      <div class="crm-card-body">
+        <div class="d-flex align-items-start gap-4">
+          <div style="width:64px;height:64px;border-radius:14px;background:#e8f0fe;
+                      display:flex;align-items:center;justify-content:center;
+                      font-size:1.6rem;font-weight:800;color:#0d1b4b;flex-shrink:0;">
+            {{ firm.name[0] }}
+          </div>
+          <div style="flex:1;">
+            <h2 style="font-size:1.25rem;font-weight:800;margin-bottom:.25rem;">{{ firm.name }}</h2>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              <span style="font-size:.8rem;color:#718096;"><i class="fas fa-map-marker-alt me-1"></i>{{ [firm.city, firm.state, firm.country]|select|join(', ') or 'Location unknown' }}</span>
+              {% if firm.founding_year %}<span style="font-size:.8rem;color:#718096;"><i class="fas fa-calendar me-1"></i>Est. {{ firm.founding_year }}</span>{% endif %}
+              {% if firm.firm_size %}<span style="font-size:.8rem;color:#718096;"><i class="fas fa-users me-1"></i>{{ firm.firm_size }}</span>{% endif %}
+            </div>
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+              <!-- Stage selector -->
+              <select id="stageSelect" data-id="{{ firm.id }}"
+                style="border:2px solid {{ firm.pipeline_stage_color }};background:{{ firm.pipeline_stage_color }}15;
+                       color:{{ firm.pipeline_stage_color }};font-size:.78rem;font-weight:700;
+                       border-radius:50px;padding:.3rem .8rem;cursor:pointer;outline:none;">
+                {% for s in stages %}
+                <option value="{{ s }}" {% if (firm.pipeline_stage or 'new') == s %}selected{% endif %}>{{ stage_meta[s].label }}</option>
+                {% endfor %}
+              </select>
+              <!-- Score badge -->
+              <div class="score-ring"
+                   style="background:{% if (firm.lead_score or 0) >= 70 %}#198754{% elif (firm.lead_score or 0) >= 40 %}#fd7e14{% else %}#adb5bd{% endif %};">
+                {{ firm.lead_score or 0 }}
+              </div>
+              <button onclick="recalcScore({{ firm.id }})" class="btn btn-sm btn-crm-outline" style="font-size:.75rem;"><i class="fas fa-sync me-1"></i>Recalc Score</button>
+              <!-- Source badge -->
+              <span style="font-size:.72rem;font-weight:700;padding:.2rem .6rem;border-radius:50px;background:#f0f4ff;color:#0d1b4b;">{{ firm.source|upper }}</span>
+            </div>
+          </div>
+        </div>
+        {% if firm.description %}
+        <div class="mt-3 p-3" style="background:#f8fafc;border-radius:10px;font-size:.83rem;color:#374151;line-height:1.6;">
+          {{ firm.description }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Contact details -->
+    <div class="crm-card mb-4">
+      <div class="crm-card-header"><h3 class="crm-card-title"><i class="fas fa-address-card me-2 text-primary"></i>Contact Information</h3></div>
+      <div class="crm-card-body">
+        <div class="row g-3">
+          {% set contact_items = [
+            ('envelope', 'Email', firm.email or '—'),
+            ('phone', 'Phone', firm.phone or '—'),
+            ('whatsapp', 'WhatsApp', firm.whatsapp or '—'),
+            ('globe', 'Website', firm.website or '—'),
+            ('map-marker-alt', 'Address', firm.address or '—'),
+            ('star', 'Google Rating', (firm.google_rating|string + ' (' + firm.google_reviews_count|string + ' reviews)') if firm.google_rating else '—'),
+          ] %}
+          {% for icon, label, val in contact_items %}
+          <div class="col-md-6">
+            <div style="font-size:.72rem;color:#718096;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.2rem;">{{ label }}</div>
+            <div style="font-size:.85rem;font-weight:500;">
+              {% if icon == 'globe' and firm.website %}<a href="{{ firm.website }}" target="_blank" style="color:#0d1b4b;">{{ val }}</a>
+              {% elif icon == 'envelope' and firm.email %}<a href="mailto:{{ firm.email }}" style="color:#0d1b4b;">{{ val }}</a>
+              {% elif icon == 'whatsapp' and firm.whatsapp %}
+                <a href="https://wa.me/{{ firm.whatsapp|replace('+','') }}" target="_blank" style="color:#25d366;">{{ val }}</a>
+              {% else %}{{ val }}{% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% if firm.practice_areas %}
+        <div class="mt-3">
+          <div style="font-size:.72rem;color:#718096;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem;">Practice Areas</div>
+          <div class="d-flex flex-wrap gap-1">
+            {% for a in firm.practice_areas %}
+            <span style="background:#f0f4ff;color:#0d1b4b;font-size:.75rem;font-weight:600;padding:.2rem .65rem;border-radius:50px;">{{ a }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        {% if firm.decision_makers %}
+        <div class="mt-3">
+          <div style="font-size:.72rem;color:#718096;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem;">Decision Makers</div>
+          <div class="d-flex flex-wrap gap-2">
+            {% for dm in firm.decision_makers %}
+            <div style="background:#f8fafc;border:1px solid var(--border);border-radius:9px;padding:.5rem .75rem;">
+              <div style="font-size:.82rem;font-weight:700;">{{ dm.get('name', '') }}</div>
+              <div style="font-size:.72rem;color:#718096;">{{ dm.get('title', '') }}</div>
+              {% if dm.get('email') %}<a href="mailto:{{ dm.email }}" style="font-size:.72rem;color:#0d1b4b;">{{ dm.email }}</a>{% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Communication timeline -->
+    <div class="crm-card mb-4">
+      <div class="crm-card-header">
+        <h3 class="crm-card-title"><i class="fas fa-history me-2 text-warning"></i>Communication History</h3>
+        <a href="{{ url_for('crm.outreach') }}?firm={{ firm.id }}" class="btn btn-crm-gold btn-sm" style="font-size:.75rem;"><i class="fas fa-paper-plane me-1"></i>New Message</a>
+      </div>
+      <div class="crm-card-body p-0">
+        {% for msg in messages %}
+        <div class="px-4 py-3 border-bottom d-flex gap-3">
+          <div style="width:34px;height:34px;border-radius:9px;flex-shrink:0;
+               background:{% if msg.channel=='email' %}#e8f0fe{% elif msg.channel=='whatsapp' %}#e8f5e9{% else %}#f8fafc{% endif %};
+               display:flex;align-items:center;justify-content:center;font-size:.9rem;">
+            <i class="fa{% if msg.channel=='whatsapp' %}b{% else %}s{% endif %} fa-{% if msg.channel=='whatsapp' %}whatsapp text-success{% elif msg.channel=='email' %}envelope text-primary{% else %}comment text-muted{% endif %}"></i>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:.83rem;font-weight:600;">{{ msg.subject or '(' + msg.channel + ' message)' }}</div>
+            <div style="font-size:.78rem;color:#374151;white-space:pre-line;margin:.25rem 0;">{{ msg.body[:200] }}{% if msg.body|length > 200 %}…{% endif %}</div>
+            <div class="d-flex gap-3">
+              <span style="font-size:.72rem;color:#718096;">{{ msg.created_at.strftime('%b %d, %Y %H:%M') }}</span>
+              <span style="font-size:.7rem;font-weight:700;padding:.1rem .45rem;border-radius:50px;
+                background:{% if msg.status in ('sent','delivered') %}#e8f5e9;color:#2e7d32{% elif msg.status=='draft' %}#f0f4ff;color:#0d1b4b{% elif msg.status=='replied' %}#fef9e7;color:#b8860b{% else %}#f8fafc;color:#718096{% endif %};">
+                {{ msg.status|capitalize }}
+              </span>
+              {% if msg.status == 'draft' %}
+              <button onclick="markSent({{ msg.id }})" style="font-size:.72rem;background:none;border:none;color:#0d1b4b;font-weight:600;cursor:pointer;padding:0;">Mark Sent ✓</button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted" style="font-size:.85rem;">No messages yet. <a href="{{ url_for('crm.outreach') }}">Generate AI outreach →</a></div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Notes + Tasks -->
+  <div class="col-lg-4">
+    <!-- Notes -->
+    <div class="crm-card mb-4">
+      <div class="crm-card-header"><h3 class="crm-card-title"><i class="fas fa-sticky-note me-2" style="color:#ffc107;"></i>Notes</h3></div>
+      <div class="crm-card-body">
+        <div class="d-flex gap-2 mb-3">
+          <textarea id="noteText" class="form-control form-control-sm" rows="2" placeholder="Add a note…" style="border-radius:9px;font-size:.83rem;resize:none;"></textarea>
+          <button onclick="addNote({{ firm.id }})" class="btn btn-crm-primary btn-sm align-self-end" style="width:42px;flex-shrink:0;"><i class="fas fa-plus"></i></button>
+        </div>
+        <div id="notesList">
+          {% for note in notes %}
+          <div class="p-3 mb-2" style="background:#f8fafc;border-radius:10px;border:1px solid var(--border);">
+            <div style="font-size:.8rem;line-height:1.5;">{{ note.note_text }}</div>
+            <div style="font-size:.7rem;color:#718096;margin-top:.3rem;">{{ note.created_by.full_name }} · {{ note.created_at.strftime('%b %d, %Y') }}</div>
+          </div>
+          {% else %}
+          <div class="text-center py-3 text-muted" style="font-size:.8rem;" id="emptyNotes">No notes yet</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Tasks -->
+    <div class="crm-card mb-4">
+      <div class="crm-card-header"><h3 class="crm-card-title"><i class="fas fa-tasks me-2 text-success"></i>Tasks</h3></div>
+      <div class="crm-card-body">
+        <div class="mb-3 p-3" style="background:#f8fafc;border-radius:10px;border:1px solid var(--border);">
+          <input id="taskTitle" class="form-control form-control-sm mb-2" placeholder="Task title…" style="border-radius:8px;font-size:.82rem;">
+          <div class="d-flex gap-2">
+            <select id="taskType" class="form-select form-select-sm" style="border-radius:8px;font-size:.78rem;">
+              <option value="follow_up">Follow-up</option>
+              <option value="call">Call</option>
+              <option value="email">Email</option>
+              <option value="demo">Demo</option>
+              <option value="meeting">Meeting</option>
+            </select>
+            <input id="taskDue" type="date" class="form-control form-control-sm" style="border-radius:8px;font-size:.78rem;">
+          </div>
+          <button onclick="addTask({{ firm.id }})" class="btn btn-crm-primary btn-sm w-100 mt-2" style="font-size:.78rem;">Add Task</button>
+        </div>
+        <div id="tasksList">
+          {% for task in tasks %}
+          <div class="d-flex align-items-start gap-2 mb-2 p-2" style="border-radius:9px;border:1px solid var(--border);" id="task-{{ task.id }}">
+            <input type="checkbox" {% if task.status=='done' %}checked{% endif %}
+                   onchange="completeTask({{ firm.id }}, {{ task.id }}, this)"
+                   style="cursor:pointer;margin-top:.2rem;flex-shrink:0;">
+            <div style="flex:1;">
+              <div style="font-size:.8rem;font-weight:600;{% if task.status=='done' %}text-decoration:line-through;color:#718096;{% endif %}">{{ task.title }}</div>
+              <div style="font-size:.7rem;color:#718096;">{{ task.task_type|capitalize }}{% if task.due_at %} · Due {{ task.due_at.strftime('%b %d') }}{% endif %}</div>
+            </div>
+            <span style="font-size:.65rem;font-weight:700;padding:.15rem .4rem;border-radius:50px;
+              background:{% if task.priority=='urgent' %}#fce8e8;color:#dc3545{% elif task.priority=='high' %}#fff3e0;color:#fd7e14{% else %}#f0f4ff;color:#0d1b4b{% endif %};">
+              {{ task.priority }}
+            </span>
+          </div>
+          {% else %}
+          <div class="text-center py-3 text-muted" style="font-size:.8rem;" id="emptyTasks">No tasks yet</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="crm-card">
+      <div class="crm-card-header"><h3 class="crm-card-title"><i class="fas fa-bolt me-2 text-warning"></i>Quick Actions</h3></div>
+      <div class="crm-card-body">
+        <div class="d-grid gap-2">
+          <a href="{{ url_for('crm.outreach') }}?firm={{ firm.id }}" class="btn btn-crm-primary btn-sm text-start">
+            <i class="fas fa-paper-plane me-2"></i>Generate AI Message
+          </a>
+          {% if firm.phone %}
+          <a href="tel:{{ firm.phone }}" class="btn btn-crm-outline btn-sm text-start">
+            <i class="fas fa-phone me-2"></i>Call {{ firm.phone }}
+          </a>
+          {% endif %}
+          {% if firm.whatsapp %}
+          <a href="https://wa.me/{{ firm.whatsapp|replace('+','') }}" target="_blank" class="btn btn-crm-outline btn-sm text-start" style="color:#25d366;border-color:#25d366;">
+            <i class="fab fa-whatsapp me-2"></i>WhatsApp
+          </a>
+          {% endif %}
+          {% if firm.website %}
+          <a href="{{ firm.website }}" target="_blank" class="btn btn-crm-outline btn-sm text-start">
+            <i class="fas fa-external-link-alt me-2"></i>Visit Website
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Stage change
+document.getElementById('stageSelect').addEventListener('change', async function(){
+  const r = await apiPost('/superadmin/crm/lead/{{ firm.id }}/stage', {stage: this.value});
+  if(r.success){
+    this.style.borderColor = r.color;
+    this.style.background = r.color+'15';
+    this.style.color = r.color;
+    showToast('Stage updated to '+r.label);
+  }
+});
+
+async function recalcScore(id){
+  const r = await apiPost(`/superadmin/crm/lead/${id}/score`);
+  if(r.success){
+    document.querySelector('.score-ring').textContent = r.score;
+    showToast('Score recalculated: '+r.score);
+  }
+}
+
+async function addNote(id){
+  const text = document.getElementById('noteText').value.trim();
+  if(!text) return;
+  const r = await apiPost(`/superadmin/crm/lead/${id}/note`, {text, type:'general'});
+  if(r.success){
+    document.getElementById('noteText').value = '';
+    document.getElementById('emptyNotes')?.remove();
+    const el = document.createElement('div');
+    el.className = 'p-3 mb-2';
+    el.style.cssText = 'background:#f8fafc;border-radius:10px;border:1px solid var(--border);';
+    el.innerHTML = `<div style="font-size:.8rem;line-height:1.5;">${r.note.text}</div>
+      <div style="font-size:.7rem;color:#718096;margin-top:.3rem;">${r.note.author} · ${r.note.created_at}</div>`;
+    document.getElementById('notesList').prepend(el);
+    showToast('Note added');
+  }
+}
+
+async function addTask(id){
+  const title = document.getElementById('taskTitle').value.trim();
+  if(!title){ showToast('Enter a task title','error'); return; }
+  const r = await apiPost(`/superadmin/crm/lead/${id}/task`, {
+    title, task_type: document.getElementById('taskType').value,
+    due_at: document.getElementById('taskDue').value || null,
+  });
+  if(r.success){
+    document.getElementById('taskTitle').value = '';
+    document.getElementById('taskDue').value = '';
+    document.getElementById('emptyTasks')?.remove();
+    showToast('Task added');
+    setTimeout(()=>location.reload(),700);
+  }
+}
+
+async function completeTask(firmId, taskId, cb){
+  const r = await apiPost(`/superadmin/crm/lead/${firmId}/task/${taskId}/complete`);
+  if(r.success){
+    const row = document.getElementById('task-'+taskId);
+    if(row) row.querySelector('div').style.textDecoration = 'line-through';
+    showToast('Task completed');
+  } else { cb.checked = !cb.checked; }
+}
+
+async function markSent(msgId){
+  const r = await apiPost(`/superadmin/crm/outreach/mark-sent/${msgId}`);
+  if(r.success){ showToast('Marked as sent'); setTimeout(()=>location.reload(),700); }
+}
+</script>
+{% endblock %}

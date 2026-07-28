@@ -1,0 +1,165 @@
+{% extends "crm/base_crm.html" %}
+{% block title %}AI Discovery — LAWCOLAB CRM{% endblock %}
+{% block page_title %}AI Lead Discovery{% endblock %}
+
+{% block extra_css %}
+<style>
+.discovery-hero{background:linear-gradient(135deg,#0d1b4b 0%,#1a2d7a 100%);border-radius:16px;padding:2rem;color:#fff;margin-bottom:1.5rem;}
+.search-box-large{background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.2);border-radius:14px;padding:.9rem 1.25rem;color:#fff;font-size:1rem;width:100%;backdrop-filter:blur(8px);}
+.search-box-large::placeholder{color:rgba(255,255,255,.5);}
+.search-box-large:focus{outline:none;border-color:var(--gold);background:rgba(255,255,255,.15);}
+.suggested-query{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:50px;padding:.3rem .85rem;font-size:.78rem;color:rgba(255,255,255,.85);cursor:pointer;transition:all .15s;white-space:nowrap;}
+.suggested-query:hover{background:var(--gold);color:#0d1b4b;border-color:var(--gold);font-weight:700;}
+.result-row{background:#fff;border-radius:10px;border:1px solid var(--border);padding:.85rem 1rem;margin-bottom:.5rem;display:flex;align-items:center;gap:1rem;transition:all .2s;}
+.result-row.added{border-color:#198754;background:#e8f5e9;}
+.result-row.duplicate{border-color:#ffc107;background:#fef9e7;opacity:.7;}
+.spinner{width:20px;height:20px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero search -->
+<div class="discovery-hero">
+  <div class="d-flex align-items-center gap-3 mb-3">
+    <div style="width:48px;height:48px;background:var(--gold);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">🤖</div>
+    <div>
+      <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:.15rem;">AI Lead Discovery</h2>
+      <p style="font-size:.85rem;color:rgba(255,255,255,.65);margin:0;">Search law firms globally using natural language — powered by AI web search.</p>
+    </div>
+  </div>
+
+  <div class="d-flex gap-3 mb-3">
+    <input id="searchInput" class="search-box-large flex-grow-1" type="text"
+           placeholder="e.g. Corporate lawyers in Lagos Nigeria · Immigration attorneys in London · Family law firms in Toronto"
+           onkeydown="if(event.key==='Enter') runSearch()">
+    <button onclick="runSearch()" class="btn btn-crm-gold" style="padding:.9rem 1.75rem;font-size:.95rem;font-weight:700;border-radius:14px;flex-shrink:0;">
+      <span id="searchBtnText"><i class="fas fa-search me-2"></i>Discover</span>
+      <span id="searchSpinner" class="d-none"><div class="spinner"></div></span>
+    </button>
+  </div>
+
+  <div class="d-flex flex-wrap gap-2">
+    <span style="font-size:.75rem;color:rgba(255,255,255,.5);align-self:center;">Try:</span>
+    {% for q in ['Law firms in Ibadan Nigeria', 'Corporate lawyers in Lagos', 'Barristers in Abuja', 'Solicitors in London', 'Immigration lawyers in Toronto', 'IP attorneys in Dubai'] %}
+    <span class="suggested-query" onclick="document.getElementById('searchInput').value='{{ q }}'">{{ q }}</span>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Results area -->
+<div id="resultsArea" class="d-none mb-4">
+  <div class="crm-card">
+    <div class="crm-card-header">
+      <h3 class="crm-card-title" id="resultsTitle">Results</h3>
+      <span id="resultsBadge" style="font-size:.78rem;color:#718096;"></span>
+    </div>
+    <div class="crm-card-body p-0" id="resultsList"></div>
+  </div>
+</div>
+
+<!-- Status message -->
+<div id="statusMsg" class="d-none alert mb-4" style="border-radius:12px;font-size:.85rem;"></div>
+
+<!-- Recently discovered -->
+<div class="crm-card">
+  <div class="crm-card-header">
+    <h3 class="crm-card-title"><i class="fas fa-history me-2 text-warning"></i>Recently Discovered</h3>
+    <span style="font-size:.78rem;color:#718096;">{{ total }} total leads</span>
+  </div>
+  <div class="crm-card-body p-0">
+    {% for firm in recent %}
+    <a href="{{ url_for('crm.lead_detail', firm_id=firm.id) }}" class="d-flex align-items-center gap-3 px-4 py-3 border-bottom text-decoration-none"
+       style="color:inherit;" onmouseenter="this.style.background='#f8fafc'" onmouseleave="this.style.background=''">
+      <div style="width:36px;height:36px;border-radius:9px;background:#e8f0fe;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:800;color:#0d1b4b;flex-shrink:0;">
+        {{ firm.name[0] }}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ firm.name }}</div>
+        <div style="font-size:.73rem;color:#718096;">{{ firm.city or '' }}{% if firm.city and firm.country %}, {% endif %}{{ firm.country or '' }} · {{ firm.created_at.strftime('%b %d') }}</div>
+      </div>
+      <div class="score-ring flex-shrink-0"
+           style="background:{% if (firm.lead_score or 0) >= 70 %}#198754{% elif (firm.lead_score or 0) >= 40 %}#fd7e14{% else %}#adb5bd{% endif %};">
+        {{ firm.lead_score or 0 }}
+      </div>
+      {% if firm.website %}
+      <a href="{{ firm.website }}" target="_blank" onclick="event.stopPropagation()" style="font-size:.75rem;color:#0d1b4b;flex-shrink:0;"><i class="fas fa-external-link-alt"></i></a>
+      {% endif %}
+    </a>
+    {% else %}
+    <div class="text-center py-5 text-muted" style="font-size:.85rem;">No AI-discovered firms yet. Run a search above to get started.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function runSearch(){
+  const q = document.getElementById('searchInput').value.trim();
+  if(!q){ showToast('Enter a search query first','error'); return; }
+
+  // Loading state
+  document.getElementById('searchBtnText').classList.add('d-none');
+  document.getElementById('searchSpinner').classList.remove('d-none');
+  document.getElementById('resultsArea').classList.add('d-none');
+  document.getElementById('statusMsg').classList.add('d-none');
+
+  try {
+    const r = await apiPost('{{ url_for("crm.discovery_search") }}', {query: q});
+    if(r.success){
+      renderResults(r.found, r.message);
+    } else {
+      showStatus('error', r.error || 'Search failed. Please try again.');
+    }
+  } catch(e){
+    showStatus('error', 'Network error: '+e.message);
+  } finally {
+    document.getElementById('searchBtnText').classList.remove('d-none');
+    document.getElementById('searchSpinner').classList.add('d-none');
+  }
+}
+
+function renderResults(found, message){
+  const area = document.getElementById('resultsArea');
+  const list = document.getElementById('resultsList');
+  document.getElementById('resultsTitle').textContent = 'Discovery Results';
+  document.getElementById('resultsBadge').textContent = message;
+
+  list.innerHTML = '';
+  if(!found || found.length === 0){
+    list.innerHTML = '<div class="text-center py-4 text-muted" style="font-size:.85rem;">No law firms found. Try a different search query.</div>';
+  } else {
+    found.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'result-row px-4 '+item.status;
+      div.innerHTML = `
+        <div style="width:36px;height:36px;border-radius:9px;background:${item.status==='added'?'#e8f5e9':'#fef9e7'};display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:800;color:${item.status==='added'?'#2e7d32':'#92400e'};flex-shrink:0;">
+          ${item.name[0]}
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:.85rem;font-weight:600;">${item.name}</div>
+          ${item.website ? `<div style="font-size:.75rem;color:#718096;">${item.website.slice(0,60)}</div>` : ''}
+        </div>
+        <span style="font-size:.72rem;font-weight:700;padding:.2rem .6rem;border-radius:50px;background:${item.status==='added'?'#e8f5e9;color:#2e7d32':'#fef9e7;color:#92400e'};">
+          ${item.status==='added'?'✓ Added':'Duplicate'}
+        </span>
+        ${item.id ? `<a href="/superadmin/crm/lead/${item.id}" style="font-size:.78rem;color:#0d1b4b;flex-shrink:0;">View →</a>` : ''}
+      `;
+      list.appendChild(div);
+    });
+  }
+  area.classList.remove('d-none');
+  showToast(message);
+}
+
+function showStatus(type, msg){
+  const el = document.getElementById('statusMsg');
+  el.className = `alert alert-${type==='error'?'danger':'success'} mb-4`;
+  el.style.borderRadius = '12px';
+  el.style.fontSize = '.85rem';
+  el.textContent = msg;
+  el.classList.remove('d-none');
+}
+</script>
+{% endblock %}

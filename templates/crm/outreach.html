@@ -1,0 +1,263 @@
+{% extends "crm/base_crm.html" %}
+{% block title %}AI Outreach — LAWCOLAB CRM{% endblock %}
+{% block page_title %}AI Personalized Outreach{% endblock %}
+
+{% block extra_css %}
+<style>
+.channel-tab{padding:.45rem 1rem;border-radius:50px;font-size:.78rem;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:#374151;transition:all .15s;}
+.channel-tab.active{background:#0d1b4b;color:#fff;border-color:#0d1b4b;}
+.firm-checkbox{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:9px;border:1.5px solid var(--border);cursor:pointer;transition:all .15s;background:#fff;}
+.firm-checkbox:hover{border-color:#0d1b4b;background:#f8fafc;}
+.firm-checkbox.selected{border-color:#0d1b4b;background:#e8f0fe;}
+.msg-card{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:.75rem;}
+.msg-card.ai-badge::before{content:'✨ AI';position:absolute;top:-8px;right:12px;background:linear-gradient(135deg,#0d1b4b,#6610f2);color:#fff;font-size:.65rem;font-weight:800;padding:.2rem .6rem;border-radius:50px;}
+.msg-card{position:relative;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Left: Compose -->
+  <div class="col-lg-5">
+    <div class="crm-card mb-4">
+      <div class="crm-card-header"><h3 class="crm-card-title"><i class="fas fa-magic me-2 text-primary"></i>Generate Messages</h3></div>
+      <div class="crm-card-body">
+        <!-- Channel -->
+        <div class="mb-3">
+          <label style="font-size:.75rem;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.5rem;">Channel</label>
+          <div class="d-flex flex-wrap gap-2">
+            {% for ch, icon, label in [('email','envelope','Email'),('whatsapp','whatsapp','WhatsApp'),('linkedin','linkedin','LinkedIn'),('sms','sms','SMS'),('twitter','twitter','Twitter/X')] %}
+            <button class="channel-tab {% if ch=='email' %}active{% endif %}" data-channel="{{ ch }}" onclick="setChannel(this,'{{ ch }}')">
+              <i class="fa{% if ch in ('whatsapp','linkedin','twitter') %}b{% else %}s{% endif %} fa-{{ icon }} me-1"></i>{{ label }}
+            </button>
+            {% endfor %}
+          </div>
+          <input type="hidden" id="selectedChannel" value="email">
+        </div>
+
+        <!-- Message type -->
+        <div class="mb-3">
+          <label style="font-size:.75rem;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.5rem;">Message Type</label>
+          <select id="msgType" class="crm-search w-100">
+            <option value="cold_outreach">Cold Outreach (First Touch)</option>
+            <option value="follow_up">First Follow-up</option>
+            <option value="second_followup">Second Follow-up</option>
+            <option value="meeting_invite">Meeting Invitation</option>
+            <option value="re_engagement">Re-engagement</option>
+          </select>
+        </div>
+
+        <!-- Campaign -->
+        <div class="mb-3">
+          <label style="font-size:.75rem;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.5rem;">Add to Campaign (optional)</label>
+          <select id="campaignSelect" class="crm-search w-100">
+            <option value="">No campaign</option>
+            {% for c in campaigns %}
+            <option value="{{ c.id }}">{{ c.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Select leads -->
+        <div class="mb-3">
+          <label style="font-size:.75rem;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.5rem;">
+            Select Leads <span id="selCountLabel" style="color:#0d1b4b;">(0 selected)</span>
+          </label>
+          <input id="leadSearch" class="crm-search w-100 mb-2" placeholder="Filter leads…" oninput="filterLeads(this.value)">
+          <div id="leadsList" style="max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:.35rem;">
+            {% for firm in leads %}
+            <label class="firm-checkbox" data-name="{{ firm.name|lower }}" data-id="{{ firm.id }}">
+              <input type="checkbox" value="{{ firm.id }}" class="lead-check" onchange="updateSelCount()" style="flex-shrink:0;">
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ firm.name }}</div>
+                <div style="font-size:.7rem;color:#718096;">{{ firm.city or '' }}{% if firm.city and firm.country %}, {% endif %}{{ firm.country or '' }}</div>
+              </div>
+              <div class="score-ring flex-shrink-0"
+                   style="width:28px;height:28px;font-size:.65rem;background:{% if (firm.lead_score or 0) >= 70 %}#198754{% elif (firm.lead_score or 0) >= 40 %}#fd7e14{% else %}#adb5bd{% endif %};">
+                {{ firm.lead_score or 0 }}
+              </div>
+            </label>
+            {% else %}
+            <div class="text-center py-3 text-muted" style="font-size:.85rem;">No leads in early stages. <a href="{{ url_for('crm.discovery') }}">Discover some →</a></div>
+            {% endfor %}
+          </div>
+          <div class="d-flex gap-2 mt-2">
+            <button onclick="selectAll()" class="btn btn-crm-outline btn-sm flex-grow-1" style="font-size:.75rem;">Select All</button>
+            <button onclick="clearAll()" class="btn btn-crm-outline btn-sm flex-grow-1" style="font-size:.75rem;">Clear</button>
+          </div>
+        </div>
+
+        <button id="generateBtn" onclick="generateMessages()" class="btn btn-crm-gold w-100" style="font-weight:700;font-size:.9rem;">
+          <i class="fas fa-magic me-2"></i>Generate AI Messages
+        </button>
+
+        <div style="font-size:.73rem;color:#718096;text-align:center;margin-top:.5rem;">
+          Messages are personalized for each firm's location, practice area & size.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Generated messages -->
+  <div class="col-lg-7">
+    <div id="generatingState" class="d-none text-center py-5">
+      <div style="font-size:2.5rem;margin-bottom:1rem;">🤖</div>
+      <div style="font-size:1rem;font-weight:700;color:#0d1b4b;margin-bottom:.5rem;">Generating personalized messages…</div>
+      <div style="font-size:.85rem;color:#718096;">Analyzing firm profiles and crafting tailored outreach.</div>
+      <div style="margin-top:1rem;"><div class="spinner" style="border-color:#0d1b4b40;border-top-color:#0d1b4b;width:32px;height:32px;margin:0 auto;"></div></div>
+    </div>
+
+    <div id="messagesContainer">
+      {% if recent_msgs %}
+      <div class="crm-card mb-3">
+        <div class="crm-card-header"><h3 class="crm-card-title"><i class="fas fa-history me-2 text-muted"></i>Recent Messages</h3></div>
+        <div class="crm-card-body p-0">
+          {% for msg in recent_msgs[:10] %}
+          <div class="px-4 py-3 border-bottom d-flex gap-3">
+            <div style="width:32px;height:32px;border-radius:8px;background:#f0f4ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fa{% if msg.channel=='whatsapp' %}b{% else %}s{% endif %} fa-{% if msg.channel=='whatsapp' %}whatsapp text-success{% elif msg.channel=='email' %}envelope text-primary{% else %}comment text-muted{% endif %}" style="font-size:.8rem;"></i>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:.83rem;font-weight:600;">{{ msg.firm.name if msg.firm else '—' }}</div>
+              <div style="font-size:.75rem;color:#374151;">{{ msg.subject or msg.body[:80] }}</div>
+              <div style="font-size:.7rem;color:#718096;margin-top:.2rem;">{{ msg.created_at.strftime('%b %d, %Y') }} · {{ msg.channel|capitalize }} · <span style="font-weight:700;">{{ msg.status|capitalize }}</span></div>
+            </div>
+            {% if msg.ai_generated %}<span style="font-size:.65rem;background:linear-gradient(135deg,#0d1b4b,#6610f2);color:#fff;padding:.15rem .5rem;border-radius:50px;align-self:start;flex-shrink:0;">✨ AI</span>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <div class="text-center py-5">
+        <div style="font-size:3rem;margin-bottom:1rem;opacity:.3;">✉️</div>
+        <div style="font-size:.95rem;font-weight:600;color:#374151;margin-bottom:.35rem;">No messages yet</div>
+        <div style="font-size:.85rem;color:#718096;">Select leads and click Generate to create personalized AI outreach.</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function setChannel(btn, ch){
+  document.querySelectorAll('.channel-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('selectedChannel').value = ch;
+}
+
+function filterLeads(q){
+  document.querySelectorAll('#leadsList label').forEach(l=>{
+    const name = l.dataset.name || '';
+    l.style.display = name.includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+
+function updateSelCount(){
+  const n = document.querySelectorAll('.lead-check:checked').length;
+  document.getElementById('selCountLabel').textContent = `(${n} selected)`;
+  document.querySelectorAll('.firm-checkbox').forEach(l=>{
+    l.classList.toggle('selected', l.querySelector('input')?.checked);
+  });
+}
+
+function selectAll(){
+  document.querySelectorAll('.lead-check').forEach(c=>{ c.checked=true; });
+  updateSelCount();
+}
+
+function clearAll(){
+  document.querySelectorAll('.lead-check').forEach(c=>{ c.checked=false; });
+  updateSelCount();
+}
+
+async function generateMessages(){
+  const ids = [...document.querySelectorAll('.lead-check:checked')].map(c=>c.value);
+  if(!ids.length){ showToast('Select at least one lead','error'); return; }
+
+  document.getElementById('generatingState').classList.remove('d-none');
+  document.getElementById('messagesContainer').classList.add('d-none');
+  document.getElementById('generateBtn').disabled = true;
+
+  const r = await apiPost('{{ url_for("crm.generate_outreach") }}', {
+    firm_ids: ids,
+    channel: document.getElementById('selectedChannel').value,
+    message_type: document.getElementById('msgType').value,
+  });
+
+  document.getElementById('generatingState').classList.add('d-none');
+  document.getElementById('messagesContainer').classList.remove('d-none');
+  document.getElementById('generateBtn').disabled = false;
+
+  if(!r.success){ showToast(r.error || 'Generation failed','error'); return; }
+
+  const container = document.getElementById('messagesContainer');
+  container.innerHTML = `<div class="mb-3 d-flex align-items-center justify-content-between">
+    <h3 style="font-size:.9rem;font-weight:700;color:#374151;margin:0;">Generated Messages (${r.messages.length})</h3>
+    <button onclick="saveAllMessages()" class="btn btn-crm-primary btn-sm"><i class="fas fa-save me-1"></i>Save All as Draft</button>
+  </div>`;
+
+  r.messages.forEach(msg => {
+    const card = document.createElement('div');
+    card.className = 'msg-card ai-badge';
+    card.innerHTML = `
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <div style="font-size:.88rem;font-weight:700;flex:1;">${msg.firm_name}</div>
+        <button onclick="saveMessage(${msg.firm_id}, this)" class="btn btn-sm" style="background:#e8f0fe;color:#0d1b4b;border-radius:8px;font-size:.73rem;font-weight:700;">
+          <i class="fas fa-save me-1"></i>Save
+        </button>
+      </div>
+      ${msg.subject ? `<div style="font-size:.78rem;font-weight:700;color:#374151;margin-bottom:.4rem;padding:.3rem .6rem;background:#f0f4ff;border-radius:7px;">Subject: ${msg.subject}</div>` : ''}
+      <textarea class="form-control form-control-sm msg-body" style="border-radius:9px;font-size:.8rem;resize:vertical;line-height:1.6;min-height:140px;">${msg.body}</textarea>
+      <div style="font-size:.7rem;color:#718096;margin-top:.4rem;">✨ AI-generated · Ready to send</div>
+    `;
+    card.dataset.firmId = msg.firm_id;
+    card.dataset.firmName = msg.firm_name;
+    card.dataset.subject = msg.subject || '';
+    container.appendChild(card);
+  });
+
+  showToast(`${r.messages.length} messages generated`);
+  window._generatedMessages = r.messages;
+}
+
+async function saveMessage(firmId, btn){
+  const card = btn.closest('.msg-card');
+  const body = card.querySelector('.msg-body').value;
+  const subject = card.dataset.subject;
+  const r = await apiPost('{{ url_for("crm.save_outreach") }}', {
+    firm_id: firmId,
+    channel: document.getElementById('selectedChannel').value,
+    message_type: document.getElementById('msgType').value,
+    subject, body, ai_generated: true,
+    campaign_id: document.getElementById('campaignSelect').value || null,
+  });
+  if(r.success){
+    btn.innerHTML = '<i class="fas fa-check me-1"></i>Saved';
+    btn.style.background = '#e8f5e9';
+    btn.style.color = '#198754';
+    btn.disabled = true;
+    showToast('Message saved as draft');
+  }
+}
+
+async function saveAllMessages(){
+  const cards = document.querySelectorAll('.msg-card[data-firm-id]');
+  let saved = 0;
+  for(const card of cards){
+    const r = await apiPost('{{ url_for("crm.save_outreach") }}', {
+      firm_id: card.dataset.firmId,
+      channel: document.getElementById('selectedChannel').value,
+      message_type: document.getElementById('msgType').value,
+      subject: card.dataset.subject,
+      body: card.querySelector('.msg-body').value,
+      ai_generated: true,
+      campaign_id: document.getElementById('campaignSelect').value || null,
+    });
+    if(r.success) saved++;
+  }
+  showToast(`${saved} messages saved as drafts`);
+}
+</script>
+{% endblock %}

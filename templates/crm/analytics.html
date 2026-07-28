@@ -1,0 +1,187 @@
+{% extends "crm/base_crm.html" %}
+{% block title %}Analytics — LAWCOLAB CRM{% endblock %}
+{% block page_title %}Analytics{% endblock %}
+
+{% block topbar_actions %}
+<a href="{{ url_for('crm.export_csv') }}" class="btn btn-crm-outline btn-sm"><i class="fas fa-download me-1"></i>Export CSV</a>
+{% endblock %}
+
+{% block content %}
+<!-- KPI Row -->
+<div class="row g-3 mb-4">
+  {% set kpis = [
+    ('building', '#0d1b4b', '#e8f0fe', 'Total Leads', total),
+    ('trophy', '#b8860b', '#fef9e7', 'Won / Customers', won),
+    ('chart-line', '#198754', '#e8f5e9', 'Conversion Rate', conversion_rate|string + '%'),
+    ('paper-plane', '#0d6efd', '#e8f0fe', 'Messages Sent', sent_msgs),
+    ('reply', '#6f42c1', '#f3e8ff', 'Replies Received', replied_msgs),
+  ] %}
+  {% for icon, color, bg, label, val in kpis %}
+  <div class="col-6 col-lg">
+    <div class="stat-tile">
+      <div class="stat-icon" style="background:{{ bg }};color:{{ color }};"><i class="fas fa-{{ icon }}"></i></div>
+      <div><div class="stat-val">{{ val }}</div><div class="stat-label">{{ label }}</div></div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="row g-4">
+  <!-- Pipeline stages chart -->
+  <div class="col-lg-6">
+    <div class="crm-card">
+      <div class="crm-card-header"><h3 class="crm-card-title"><i class="fas fa-filter me-2 text-primary"></i>Pipeline Distribution</h3></div>
+      <div class="crm-card-body"><canvas id="stageChart" height="280"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Monthly growth -->
+  <div class="col-lg-6">
+    <div class="crm-card">
+      <div class="crm-card-header"><h3 class="crm-card-title"><i class="fas fa-chart-line me-2 text-success"></i>Monthly New Leads</h3></div>
+      <div class="crm-card-body"><canvas id="monthlyChart" height="280"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Country distribution -->
+  <div class="col-lg-6">
+    <div class="crm-card">
+      <div class="crm-card-header"><h3 class="crm-card-title"><i class="fas fa-globe me-2 text-info"></i>Top Countries</h3></div>
+      <div class="crm-card-body p-0">
+        {% set max_count = country_data[0][1] if country_data else 1 %}
+        {% for country, count in country_data %}
+        <div class="d-flex align-items-center gap-3 px-4 py-3 border-bottom">
+          <div style="width:120px;font-size:.82rem;font-weight:600;flex-shrink:0;">{{ country or 'Unknown' }}</div>
+          <div style="flex:1;background:#f1f5f9;border-radius:6px;height:18px;overflow:hidden;">
+            <div style="width:{{ (count/max_count*100)|round }}%;height:100%;background:#0d1b4b;border-radius:6px;"></div>
+          </div>
+          <div style="width:36px;text-align:right;font-size:.82rem;font-weight:700;">{{ count }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Lead score distribution -->
+  <div class="col-lg-6">
+    <div class="crm-card">
+      <div class="crm-card-header"><h3 class="crm-card-title"><i class="fas fa-star me-2 text-warning"></i>Lead Score Distribution</h3></div>
+      <div class="crm-card-body">
+        {% set score_total = score_buckets.values()|sum or 1 %}
+        {% for bucket, count in score_buckets.items() %}
+        {% set pct = (count/score_total*100)|round %}
+        <div class="d-flex align-items-center gap-3 mb-2">
+          <div style="width:55px;font-size:.78rem;font-weight:700;flex-shrink:0;color:{% if '81' in bucket %}#198754{% elif '61' in bucket %}#fd7e14{% elif '41' in bucket %}#ffc107{% else %}#adb5bd{% endif %};">{{ bucket }}</div>
+          <div style="flex:1;background:#f1f5f9;border-radius:6px;height:22px;overflow:hidden;">
+            <div style="width:{{ [pct,2]|max }}%;height:100%;border-radius:6px;background:{% if '81' in bucket %}#198754{% elif '61' in bucket %}#fd7e14{% elif '41' in bucket %}#ffc107{% else %}#adb5bd{% endif %};"></div>
+          </div>
+          <div style="width:36px;text-align:right;font-size:.8rem;font-weight:700;">{{ count }}</div>
+        </div>
+        {% endfor %}
+        <div class="mt-3 p-3" style="background:#f8fafc;border-radius:10px;">
+          <div style="font-size:.78rem;color:#718096;margin-bottom:.5rem;font-weight:600;">Quick actions</div>
+          <button onclick="scoreAll()" class="btn btn-crm-primary btn-sm"><i class="fas fa-sync me-1"></i>Recalculate All Scores</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Source breakdown -->
+  <div class="col-lg-4">
+    <div class="crm-card">
+      <div class="crm-card-header"><h3 class="crm-card-title"><i class="fas fa-database me-2"></i>Lead Sources</h3></div>
+      <div class="crm-card-body">
+        <canvas id="sourceChart" height="220"></canvas>
+        <div class="mt-3">
+          {% for src, cnt in source_data.items() %}
+          <div class="d-flex justify-content-between mb-1">
+            <span style="font-size:.8rem;">{{ {'ai_discovery':'AI Discovery','google_maps':'Google Maps','manual':'Manual','platform_import':'Platform Import'}.get(src, src) }}</span>
+            <span style="font-size:.8rem;font-weight:700;">{{ cnt }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Outreach funnel -->
+  <div class="col-lg-8">
+    <div class="crm-card">
+      <div class="crm-card-header"><h3 class="crm-card-title"><i class="fas fa-funnel-dollar me-2 text-success"></i>Outreach Funnel</h3></div>
+      <div class="crm-card-body">
+        {% set funnel_steps = [
+          ('Total Leads', total, '#0d1b4b'),
+          ('Messages Sent', sent_msgs, '#0d6efd'),
+          ('Replies Received', replied_msgs, '#198754'),
+          ('Won / Customers', won, '#b8860b'),
+        ] %}
+        {% for label, val, color in funnel_steps %}
+        {% set pct = (val/total*100)|round if total else 0 %}
+        <div class="mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span style="font-size:.82rem;font-weight:600;">{{ label }}</span>
+            <span style="font-size:.82rem;font-weight:700;color:{{ color }};">{{ val }} <span style="color:#718096;font-weight:400;">({{ pct }}%)</span></span>
+          </div>
+          <div style="background:#f1f5f9;border-radius:6px;height:28px;overflow:hidden;">
+            <div style="width:{{ [pct,1]|max }}%;height:100%;background:{{ color }};border-radius:6px;display:flex;align-items:center;padding-left:.5rem;font-size:.72rem;color:{% if color == '#ffc107' %}#0d1b4b{% else %}#fff{% endif %};font-weight:700;">
+              {{ pct }}%
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Pipeline stages
+new Chart(document.getElementById('stageChart'), {
+  type: 'doughnut',
+  data: {
+    labels: [{% for s, cnt in stage_data.items() %}'{{ {"new":"New","discovered":"Discovered","verified":"Verified","contacted":"Contacted","email_sent":"Email Sent","whatsapp_sent":"WhatsApp Sent","interested":"Interested","meeting_scheduled":"Meeting Sched.","demo_completed":"Demo Done","negotiating":"Negotiating","won":"Won","lost":"Lost","customer":"Customer"}.get(s,s) }}',{% endfor %}],
+    datasets:[{
+      data:[{% for s, cnt in stage_data.items() %}{{ cnt }},{% endfor %}],
+      backgroundColor:['#6c757d','#0d6efd','#6610f2','#fd7e14','#ffc107','#20c997','#198754','#6f42c1','#0dcaf0','#d63384','#0d6832','#dc3545','#b8860b'],
+      borderWidth:2,borderColor:'#fff',
+    }]
+  },
+  options:{plugins:{legend:{position:'right',labels:{font:{size:11},padding:12}}},cutout:'60%'}
+});
+
+// Monthly growth
+new Chart(document.getElementById('monthlyChart'), {
+  type: 'bar',
+  data: {
+    labels: [{% for m in monthly %}'{{ m.month }}',{% endfor %}],
+    datasets:[{
+      label:'New Leads',
+      data:[{% for m in monthly %}{{ m.count }},{% endfor %}],
+      backgroundColor:'rgba(13,27,75,.8)',borderRadius:6,
+    }]
+  },
+  options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'}}}}
+});
+
+// Source chart
+new Chart(document.getElementById('sourceChart'), {
+  type: 'pie',
+  data: {
+    labels: [{% for s in source_data.keys() %}'{{ {"ai_discovery":"AI Discovery","google_maps":"Google Maps","manual":"Manual","platform_import":"Platform"}.get(s,s) }}',{% endfor %}],
+    datasets:[{
+      data:[{% for cnt in source_data.values() %}{{ cnt }},{% endfor %}],
+      backgroundColor:['#198754','#1a73e8','#6c757d','#fd7e14'],
+      borderWidth:2,borderColor:'#fff',
+    }]
+  },
+  options:{plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}
+});
+
+async function scoreAll(){
+  const r = await apiPost('{{ url_for("crm.score_all") }}');
+  if(r.success){ showToast(`Scored ${r.scored} leads`); setTimeout(()=>location.reload(),1200); }
+}
+</script>
+{% endblock %}

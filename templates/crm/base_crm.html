@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}LAWCOLAB CRM{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" rel="stylesheet">
+  {% block extra_css %}{% endblock %}
+  <style>
+    *{font-family:'Inter',sans-serif;}
+    :root{
+      --navy:#0d1b4b;--gold:#FFD700;--gold-dark:#b8860b;
+      --sidebar-w:240px;--sidebar-bg:#0d1b4b;--sidebar-text:rgba(255,255,255,.75);
+      --sidebar-active:rgba(255,215,0,.15);--sidebar-hover:rgba(255,255,255,.07);
+      --bg:#f0f2f7;--card-bg:#fff;--border:#e2e8f0;
+      --text:#1a202c;--text-muted:#718096;
+    }
+    body{background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+
+    /* ── Sidebar ── */
+    .crm-sidebar{
+      position:fixed;top:0;left:0;height:100vh;width:var(--sidebar-w);
+      background:var(--sidebar-bg);z-index:100;overflow-y:auto;
+      display:flex;flex-direction:column;
+      transition:transform .25s ease;
+    }
+    .crm-sidebar::-webkit-scrollbar{width:4px;}
+    .crm-sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:2px;}
+    .sidebar-logo{
+      padding:1.25rem 1.25rem 1rem;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      display:flex;align-items:center;gap:.6rem;
+    }
+    .sidebar-logo-icon{
+      width:36px;height:36px;background:var(--gold);border-radius:9px;
+      display:flex;align-items:center;justify-content:center;
+      color:var(--navy);font-size:1rem;font-weight:800;flex-shrink:0;
+    }
+    .sidebar-logo-text{color:#fff;font-weight:700;font-size:.95rem;line-height:1.2;}
+    .sidebar-logo-text span{color:var(--gold);font-weight:800;}
+    .sidebar-logo-sub{color:rgba(255,255,255,.45);font-size:.68rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;}
+
+    .sidebar-section{padding:.75rem 1rem .25rem;color:rgba(255,255,255,.35);font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;}
+    .sidebar-nav{list-style:none;margin:0;padding:0 .5rem;}
+    .sidebar-nav li a{
+      display:flex;align-items:center;gap:.65rem;
+      padding:.55rem .75rem;border-radius:8px;
+      color:var(--sidebar-text);text-decoration:none;
+      font-size:.82rem;font-weight:500;
+      transition:all .15s ease;
+      margin-bottom:.1rem;
+    }
+    .sidebar-nav li a:hover{background:var(--sidebar-hover);color:#fff;}
+    .sidebar-nav li a.active{background:var(--sidebar-active);color:var(--gold);font-weight:600;}
+    .sidebar-nav li a .nav-icon{width:18px;text-align:center;font-size:.85rem;flex-shrink:0;}
+    .sidebar-nav li a .nav-badge{
+      margin-left:auto;background:rgba(255,255,255,.15);
+      color:rgba(255,255,255,.7);font-size:.65rem;font-weight:700;
+      padding:.1rem .45rem;border-radius:50px;
+    }
+    .sidebar-footer{margin-top:auto;padding:1rem;border-top:1px solid rgba(255,255,255,.08);}
+    .sidebar-footer a{color:rgba(255,255,255,.5);font-size:.78rem;text-decoration:none;display:flex;align-items:center;gap:.5rem;}
+    .sidebar-footer a:hover{color:#fff;}
+
+    /* ── Main content ── */
+    .crm-main{margin-left:var(--sidebar-w);min-height:100vh;display:flex;flex-direction:column;}
+    .crm-topbar{
+      background:#fff;border-bottom:1px solid var(--border);
+      padding:.7rem 1.5rem;display:flex;align-items:center;gap:1rem;
+      position:sticky;top:0;z-index:50;
+    }
+    .crm-topbar h1{font-size:1.05rem;font-weight:700;color:var(--text);margin:0;}
+    .crm-content{padding:1.5rem;flex:1;}
+
+    /* ── Cards ── */
+    .crm-card{
+      background:var(--card-bg);border-radius:14px;
+      border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.04);
+    }
+    .crm-card-header{
+      padding:.9rem 1.25rem;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .crm-card-title{font-size:.88rem;font-weight:700;color:var(--text);margin:0;}
+    .crm-card-body{padding:1.25rem;}
+
+    /* ── Stat tiles ── */
+    .stat-tile{
+      background:var(--card-bg);border-radius:14px;border:1px solid var(--border);
+      padding:1.1rem 1.25rem;
+      display:flex;align-items:center;gap:1rem;
+    }
+    .stat-icon{
+      width:44px;height:44px;border-radius:11px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.1rem;flex-shrink:0;
+    }
+    .stat-val{font-size:1.6rem;font-weight:800;line-height:1;color:var(--text);}
+    .stat-label{font-size:.75rem;font-weight:500;color:var(--text-muted);margin-top:.2rem;}
+
+    /* ── Stage badge ── */
+    .stage-badge{
+      display:inline-flex;align-items:center;gap:.3rem;
+      padding:.2rem .65rem;border-radius:50px;font-size:.72rem;font-weight:700;
+      border:1.5px solid currentColor;
+    }
+
+    /* ── Lead score ring ── */
+    .score-ring{
+      width:38px;height:38px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font-size:.72rem;font-weight:800;color:#fff;flex-shrink:0;
+    }
+
+    /* ── Glassmorphism lead card ── */
+    .lead-card{
+      background:#fff;border-radius:12px;border:1px solid var(--border);
+      padding:1rem;transition:all .2s ease;cursor:pointer;
+    }
+    .lead-card:hover{border-color:#0d1b4b;box-shadow:0 4px 16px rgba(13,27,75,.1);transform:translateY(-1px);}
+
+    /* ── Table ── */
+    .crm-table{width:100%;border-collapse:collapse;}
+    .crm-table th{
+      background:#f8fafc;font-size:.73rem;font-weight:700;
+      color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;
+      padding:.65rem 1rem;border-bottom:1px solid var(--border);
+    }
+    .crm-table td{padding:.7rem 1rem;border-bottom:1px solid #f1f5f9;font-size:.83rem;vertical-align:middle;}
+    .crm-table tr:hover td{background:#fafbff;}
+    .crm-table tr:last-child td{border-bottom:none;}
+
+    /* ── Buttons ── */
+    .btn-crm-primary{
+      background:var(--navy);color:#fff;border:none;border-radius:9px;
+      padding:.45rem 1rem;font-size:.82rem;font-weight:600;
+      transition:all .15s ease;
+    }
+    .btn-crm-primary:hover{background:#162654;color:#fff;box-shadow:0 4px 12px rgba(13,27,75,.25);}
+    .btn-crm-gold{
+      background:var(--gold);color:var(--navy);border:none;border-radius:9px;
+      padding:.45rem 1rem;font-size:.82rem;font-weight:700;
+      transition:all .15s ease;
+    }
+    .btn-crm-gold:hover{background:#e6c700;box-shadow:0 4px 12px rgba(255,215,0,.35);}
+    .btn-crm-outline{
+      background:transparent;color:var(--navy);border:1.5px solid var(--border);
+      border-radius:9px;padding:.45rem 1rem;font-size:.82rem;font-weight:600;
+    }
+    .btn-crm-outline:hover{border-color:var(--navy);background:#f8fafc;}
+
+    /* ── Pipeline Kanban ── */
+    .kanban-board{display:flex;gap:1rem;overflow-x:auto;padding-bottom:.5rem;}
+    .kanban-board::-webkit-scrollbar{height:5px;}
+    .kanban-board::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+    .kanban-col{
+      min-width:240px;max-width:260px;flex-shrink:0;
+      background:#f8fafc;border-radius:12px;border:1px solid var(--border);
+      display:flex;flex-direction:column;
+    }
+    .kanban-col-header{
+      padding:.7rem .9rem;border-radius:12px 12px 0 0;
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .kanban-col-title{font-size:.78rem;font-weight:700;color:#fff;}
+    .kanban-col-count{background:rgba(255,255,255,.25);color:#fff;font-size:.7rem;font-weight:700;padding:.1rem .45rem;border-radius:50px;}
+    .kanban-cards{padding:.5rem;min-height:120px;flex:1;}
+    .kanban-item{
+      background:#fff;border-radius:9px;border:1px solid var(--border);
+      padding:.7rem .8rem;margin-bottom:.5rem;cursor:pointer;
+      transition:all .15s ease;
+      user-select:none;
+    }
+    .kanban-item:hover{border-color:#0d1b4b;box-shadow:0 2px 8px rgba(13,27,75,.08);}
+    .kanban-item.dragging{opacity:.5;border-color:var(--gold);}
+
+    /* ── Slide-over panel ── */
+    .slide-panel{
+      position:fixed;top:0;right:-100%;width:min(520px,100vw);height:100vh;
+      background:#fff;z-index:1000;box-shadow:-8px 0 40px rgba(0,0,0,.15);
+      transition:right .3s cubic-bezier(.4,0,.2,1);
+      display:flex;flex-direction:column;overflow:hidden;
+    }
+    .slide-panel.open{right:0;}
+    .slide-panel-header{
+      padding:1.1rem 1.25rem;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;background:#fff;
+      flex-shrink:0;
+    }
+    .slide-panel-body{flex:1;overflow-y:auto;padding:1.25rem;}
+    .slide-panel-footer{padding:1rem 1.25rem;border-top:1px solid var(--border);background:#fff;flex-shrink:0;}
+    .slide-overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;
+      opacity:0;pointer-events:none;transition:opacity .3s ease;
+    }
+    .slide-overlay.open{opacity:1;pointer-events:all;}
+
+    /* ── Search input ── */
+    .crm-search{
+      background:#f8fafc;border:1.5px solid var(--border);border-radius:10px;
+      padding:.5rem .9rem;font-size:.85rem;width:280px;
+      transition:all .2s ease;
+    }
+    .crm-search:focus{outline:none;border-color:var(--navy);background:#fff;box-shadow:0 0 0 3px rgba(13,27,75,.07);}
+
+    /* ── View toggle ── */
+    .view-toggle{display:flex;background:#f1f5f9;border-radius:9px;padding:2px;gap:2px;}
+    .view-toggle button{
+      background:transparent;border:none;padding:.35rem .65rem;border-radius:7px;
+      font-size:.8rem;color:var(--text-muted);cursor:pointer;transition:all .15s ease;
+    }
+    .view-toggle button.active{background:#fff;color:var(--navy);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.1);}
+
+    /* ── Alerts ── */
+    .crm-toast{
+      position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;
+      background:#fff;border-radius:12px;border:1px solid var(--border);
+      box-shadow:0 8px 30px rgba(0,0,0,.12);
+      padding:.85rem 1.25rem;min-width:280px;max-width:380px;
+      display:flex;align-items:center;gap:.75rem;
+      transform:translateY(20px);opacity:0;
+      transition:all .3s cubic-bezier(.34,1.56,.64,1);
+    }
+    .crm-toast.show{transform:translateY(0);opacity:1;}
+
+    /* ── Mobile ── */
+    @media(max-width:768px){
+      .crm-sidebar{transform:translateX(-100%);}
+      .crm-sidebar.mobile-open{transform:none;}
+      .crm-main{margin-left:0;}
+      .crm-content{padding:1rem;}
+      .crm-search{width:100%;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav class="crm-sidebar" id="crmSidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-icon">⚖</div>
+    <div>
+      <div class="sidebar-logo-text">LAW<span>COLAB</span></div>
+      <div class="sidebar-logo-sub">AI Growth Engine</div>
+    </div>
+  </div>
+
+  <div class="sidebar-section">Main</div>
+  <ul class="sidebar-nav">
+    <li><a href="{{ url_for('crm.index') }}" class="{% if request.endpoint == 'crm.index' %}active{% endif %}">
+      <i class="fas fa-chart-pie nav-icon"></i> Dashboard
+    </a></li>
+    <li><a href="{{ url_for('crm.leads') }}" class="{% if request.endpoint in ('crm.leads','crm.lead_detail') %}active{% endif %}">
+      <i class="fas fa-building nav-icon"></i> All Leads
+    </a></li>
+    <li><a href="{{ url_for('crm.leads', view='kanban') }}" class="{% if request.endpoint == 'crm.leads' and request.args.get('view') == 'kanban' %}active{% endif %}">
+      <i class="fas fa-columns nav-icon"></i> Pipeline
+    </a></li>
+  </ul>
+
+  <div class="sidebar-section">Grow</div>
+  <ul class="sidebar-nav">
+    <li><a href="{{ url_for('crm.discovery') }}" class="{% if 'discovery' in request.endpoint %}active{% endif %}">
+      <i class="fas fa-robot nav-icon"></i> AI Discovery
+    </a></li>
+    <li><a href="{{ url_for('crm.outreach') }}" class="{% if 'outreach' in request.endpoint %}active{% endif %}">
+      <i class="fas fa-paper-plane nav-icon"></i> AI Outreach
+    </a></li>
+    <li><a href="{{ url_for('crm.campaigns') }}" class="{% if 'campaign' in request.endpoint %}active{% endif %}">
+      <i class="fas fa-bullhorn nav-icon"></i> Campaigns
+    </a></li>
+  </ul>
+
+  <div class="sidebar-section">Insights</div>
+  <ul class="sidebar-nav">
+    <li><a href="{{ url_for('crm.analytics') }}" class="{% if 'analytics' in request.endpoint %}active{% endif %}">
+      <i class="fas fa-chart-bar nav-icon"></i> Analytics
+    </a></li>
+    <li><a href="{{ url_for('crm.export_csv') }}" target="_blank">
+      <i class="fas fa-download nav-icon"></i> Export CSV
+    </a></li>
+  </ul>
+
+  <div class="sidebar-section">Platform</div>
+  <ul class="sidebar-nav">
+    <li><a href="{{ url_for('dir_admin.submissions') }}">
+      <i class="fas fa-inbox nav-icon"></i> Submissions
+    </a></li>
+    <li><a href="{{ url_for('superadmin.index') }}">
+      <i class="fas fa-cog nav-icon"></i> Super Admin
+    </a></li>
+  </ul>
+
+  <div class="sidebar-footer">
+    <a href="{{ url_for('dir_admin.index') }}"><i class="fas fa-arrow-left"></i> Legacy CRM</a>
+  </div>
+</nav>
+
+<!-- Main -->
+<div class="crm-main">
+  <!-- Topbar -->
+  <div class="crm-topbar">
+    <button class="d-md-none btn btn-sm btn-outline-secondary me-1" onclick="document.getElementById('crmSidebar').classList.toggle('mobile-open')">
+      <i class="fas fa-bars"></i>
+    </button>
+    <h1>{% block page_title %}CRM{% endblock %}</h1>
+    <div class="ms-auto d-flex align-items-center gap-2">
+      {% block topbar_actions %}{% endblock %}
+      <a href="{{ url_for('crm.score_all') }}" class="btn btn-sm btn-outline-secondary" style="border-radius:8px;font-size:.78rem;"
+         onclick="event.preventDefault();fetch(this.href,{method:'POST',headers:{'X-CSRFToken':'{{ csrf_token() }}'}}).then(()=>location.reload())">
+        <i class="fas fa-star me-1"></i>Score All
+      </a>
+    </div>
+  </div>
+
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="px-4 pt-3">
+      {% for cat, msg in messages %}
+      <div class="alert alert-{{ 'success' if cat == 'success' else 'danger' if cat == 'error' else 'warning' }} alert-dismissible fade show" style="border-radius:10px;font-size:.85rem;" role="alert">
+        {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Page content -->
+  <div class="crm-content">
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="crmToast" class="crm-toast">
+  <i id="crmToastIcon" class="fas fa-check-circle text-success"></i>
+  <span id="crmToastMsg"></span>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const CSRF_TOKEN = '{{ csrf_token() }}';
+
+function showToast(msg, type='success'){
+  const t=document.getElementById('crmToast');
+  const i=document.getElementById('crmToastIcon');
+  document.getElementById('crmToastMsg').textContent=msg;
+  i.className='fas '+(type==='success'?'fa-check-circle text-success':type==='error'?'fa-times-circle text-danger':'fa-info-circle text-info');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+function apiPost(url, data={}){
+  return fetch(url,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','X-CSRFToken':CSRF_TOKEN},
+    body:JSON.stringify(data)
+  }).then(r=>r.json());
+}
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

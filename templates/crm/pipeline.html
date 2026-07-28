@@ -1,0 +1,132 @@
+{% extends "crm/base_crm.html" %}
+{% block title %}Pipeline — LAWCOLAB CRM{% endblock %}
+{% block page_title %}Pipeline View{% endblock %}
+
+{% block topbar_actions %}
+<div class="view-toggle">
+  <button onclick="window.location='{{ url_for('crm.leads', view='table') }}'"><i class="fas fa-list"></i></button>
+  <button onclick="window.location='{{ url_for('crm.leads', view='card') }}'"><i class="fas fa-th"></i></button>
+  <button class="active"><i class="fas fa-columns"></i></button>
+</div>
+<span class="ms-2" style="font-size:.8rem;color:#718096;">{{ total }} leads</span>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.crm-content{padding:1rem 1.5rem;}
+.kanban-board{height:calc(100vh - 130px);align-items:flex-start;}
+.kanban-col{height:calc(100vh - 155px);overflow-y:auto;}
+.kanban-col::-webkit-scrollbar{width:3px;}
+.kanban-col::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.drag-over{border:2px dashed var(--gold)!important;background:rgba(255,215,0,.05)!important;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="kanban-board">
+  {% for s in stages %}
+  {% set meta = stage_meta[s] %}
+  {% set col_firms = kanban_cols.get(s, []) %}
+  <div class="kanban-col" id="col-{{ s }}" data-stage="{{ s }}"
+       ondragover="event.preventDefault();this.classList.add('drag-over')"
+       ondragleave="this.classList.remove('drag-over')"
+       ondrop="handleDrop(event, '{{ s }}')">
+    <div class="kanban-col-header" style="background:{{ meta.color }};">
+      <span class="kanban-col-title"><i class="fas fa-{{ meta.icon }} me-1"></i>{{ meta.label }}</span>
+      <span class="kanban-col-count">{{ col_firms|length }}</span>
+    </div>
+    <div class="kanban-cards" id="cards-{{ s }}">
+      {% for firm in col_firms %}
+      <div class="kanban-item" id="firm-{{ firm.id }}" draggable="true"
+           ondragstart="dragStart(event, {{ firm.id }})"
+           onclick="window.location='{{ url_for('crm.lead_detail', firm_id=firm.id) }}'">
+        <div class="d-flex align-items-start gap-2 mb-2">
+          <div style="width:28px;height:28px;border-radius:7px;background:{{ meta.color }}20;
+                      display:flex;align-items:center;justify-content:center;
+                      font-size:.75rem;font-weight:800;color:{{ meta.color }};flex-shrink:0;">
+            {{ firm.name[0] }}
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:.8rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ firm.name }}</div>
+            <div style="font-size:.7rem;color:#718096;">{{ firm.city or '' }}{% if firm.city %}, {% endif %}{{ firm.country or '' }}</div>
+          </div>
+          <div class="score-ring" style="width:28px;height:28px;font-size:.65rem;flex-shrink:0;
+               background:{% if (firm.lead_score or 0) >= 70 %}#198754{% elif (firm.lead_score or 0) >= 40 %}#fd7e14{% else %}#adb5bd{% endif %};">
+            {{ firm.lead_score or 0 }}
+          </div>
+        </div>
+        {% if firm.practice_areas %}
+        <div class="d-flex flex-wrap gap-1 mb-2">
+          {% for a in firm.practice_areas[:2] %}
+          <span style="background:#f0f4ff;color:#0d1b4b;font-size:.6rem;font-weight:600;padding:.1rem .4rem;border-radius:50px;">{{ a }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+        <div class="d-flex gap-1">
+          {% if firm.phone %}<span style="font-size:.65rem;color:#718096;"><i class="fas fa-phone me-1"></i>{{ firm.phone[:15] }}</span>{% endif %}
+          {% if firm.website %}<span style="font-size:.65rem;color:#1a73e8;"><i class="fas fa-globe me-1"></i>Web</span>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Drop indicator toast -->
+<div id="dropToast" style="display:none;position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);
+     background:#0d1b4b;color:#fff;padding:.6rem 1.5rem;border-radius:50px;font-size:.82rem;font-weight:600;z-index:9999;">
+  Moving lead…
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let draggedId = null;
+
+function dragStart(event, id){
+  draggedId = id;
+  event.dataTransfer.effectAllowed = 'move';
+  document.getElementById('firm-'+id).classList.add('dragging');
+}
+
+async function handleDrop(event, newStage){
+  event.preventDefault();
+  event.currentTarget.classList.remove('drag-over');
+  if(!draggedId) return;
+
+  const card = document.getElementById('firm-'+draggedId);
+  if(card) card.classList.remove('dragging');
+
+  const toast = document.getElementById('dropToast');
+  toast.style.display = 'block';
+
+  try {
+    const r = await apiPost(`/superadmin/crm/lead/${draggedId}/stage`, {stage: newStage});
+    if(r.success){
+      // Move card visually
+      const targetCards = document.getElementById('cards-'+newStage);
+      if(targetCards && card){
+        targetCards.insertBefore(card, targetCards.firstChild);
+      }
+      // Update count badges
+      updateColumnCount(newStage);
+      showToast(`Moved to ${r.label}`);
+    }
+  } catch(e){ showToast('Failed to move', 'error'); }
+  finally {
+    setTimeout(()=>toast.style.display='none', 500);
+    draggedId = null;
+  }
+}
+
+function updateColumnCount(stage){
+  const col = document.getElementById('col-'+stage);
+  if(col){
+    const cards = col.querySelectorAll('.kanban-item').length;
+    const badge = col.querySelector('.kanban-col-count');
+    if(badge) badge.textContent = cards;
+  }
+}
+</script>
+{% endblock %}

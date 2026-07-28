@@ -1,0 +1,131 @@
+{% extends "crm/base_crm.html" %}
+{% block title %}Campaigns — LAWCOLAB CRM{% endblock %}
+{% block page_title %}Campaigns{% endblock %}
+
+{% block topbar_actions %}
+<button onclick="document.getElementById('newCampModal').classList.add('show');document.getElementById('newCampModal').style.display='block';"
+  class="btn btn-crm-gold btn-sm"><i class="fas fa-plus me-1"></i>New Campaign</button>
+{% endblock %}
+
+{% block content %}
+{% if campaigns %}
+<div class="row g-4">
+  {% for camp in campaigns %}
+  <div class="col-md-6 col-xl-4">
+    <div class="crm-card h-100" style="cursor:pointer;" onclick="window.location='{{ url_for('crm.campaign_detail', campaign_id=camp.id) }}'">
+      <div class="crm-card-body">
+        <!-- Header -->
+        <div class="d-flex align-items-start gap-3 mb-3">
+          <div style="width:42px;height:42px;border-radius:11px;
+                      background:{% if camp.status=='active' %}#e8f5e9{% elif camp.status=='paused' %}#fef9e7{% else %}#f8fafc{% endif %};
+                      display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">
+            {{ '📢' if camp.status=='active' else '⏸' if camp.status=='paused' else '📋' }}
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:.9rem;font-weight:700;margin-bottom:.15rem;">{{ camp.name }}</div>
+            {% if camp.description %}
+            <div style="font-size:.75rem;color:#718096;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ camp.description }}</div>
+            {% endif %}
+          </div>
+          <span style="font-size:.7rem;font-weight:700;padding:.2rem .6rem;border-radius:50px;flex-shrink:0;
+            background:{% if camp.status=='active' %}#e8f5e9;color:#2e7d32{% elif camp.status=='paused' %}#fef9e7;color:#92400e{% elif camp.status=='completed' %}#e8f0fe;color:#0d1b4b{% else %}#f8fafc;color:#718096{% endif %};">
+            {{ camp.status|capitalize }}
+          </span>
+        </div>
+
+        <!-- Target info -->
+        {% if camp.target_country or camp.target_practice_area %}
+        <div class="d-flex flex-wrap gap-1 mb-3">
+          {% if camp.target_country %}<span style="background:#e8f0fe;color:#0d1b4b;font-size:.7rem;font-weight:600;padding:.15rem .5rem;border-radius:50px;"><i class="fas fa-map-marker-alt me-1"></i>{{ camp.target_country }}</span>{% endif %}
+          {% if camp.target_practice_area %}<span style="background:#f3e8ff;color:#6f42c1;font-size:.7rem;font-weight:600;padding:.15rem .5rem;border-radius:50px;"><i class="fas fa-gavel me-1"></i>{{ camp.target_practice_area }}</span>{% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Stats grid -->
+        <div class="row g-2 mb-3">
+          {% set stats = [('building','Leads',camp.total_leads,'#0d1b4b'),('envelope','Sent',camp.emails_sent,'#0d6efd'),('reply','Replies',camp.replies_received,'#198754'),('trophy','Won',camp.conversions,'#b8860b')] %}
+          {% for icon, label, val, color in stats %}
+          <div class="col-6">
+            <div style="background:#f8fafc;border-radius:9px;padding:.5rem .75rem;text-align:center;">
+              <div style="font-size:1.1rem;font-weight:800;color:{{ color }};">{{ val }}</div>
+              <div style="font-size:.68rem;color:#718096;font-weight:600;">{{ label }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Footer -->
+        <div class="d-flex align-items-center justify-content-between">
+          <div style="font-size:.72rem;color:#718096;">Created {{ camp.created_at.strftime('%b %d, %Y') }}</div>
+          <div class="d-flex gap-1" onclick="event.stopPropagation()">
+            {% if camp.status != 'active' %}
+            <button onclick="setCampStatus({{ camp.id }}, 'active', this)" class="btn btn-sm" style="background:#e8f5e9;color:#2e7d32;border-radius:7px;padding:.25rem .6rem;font-size:.73rem;font-weight:700;">Activate</button>
+            {% else %}
+            <button onclick="setCampStatus({{ camp.id }}, 'paused', this)" class="btn btn-sm" style="background:#fef9e7;color:#92400e;border-radius:7px;padding:.25rem .6rem;font-size:.73rem;font-weight:700;">Pause</button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+  <div style="font-size:3.5rem;margin-bottom:1rem;opacity:.2;">📣</div>
+  <h3 style="font-size:1.05rem;font-weight:700;color:#374151;margin-bottom:.5rem;">No campaigns yet</h3>
+  <p style="font-size:.88rem;color:#718096;max-width:340px;margin:0 auto 1.5rem;">Create campaigns to organize your outreach, track performance, and measure ROI.</p>
+  <button onclick="document.getElementById('newCampModal').classList.add('show');document.getElementById('newCampModal').style.display='block';" class="btn btn-crm-gold">
+    <i class="fas fa-plus me-2"></i>Create First Campaign
+  </button>
+</div>
+{% endif %}
+
+<!-- Create Campaign Modal -->
+<div id="newCampModal" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:16px;border:none;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+      <div class="modal-header" style="border-bottom:1px solid #e2e8f0;padding:1.25rem;">
+        <h5 class="modal-title fw-bold">Create Campaign</h5>
+        <button type="button" class="btn-close" onclick="document.getElementById('newCampModal').style.display='none'"></button>
+      </div>
+      <form action="{{ url_for('crm.create_campaign') }}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label fw-semibold" style="font-size:.83rem;">Campaign Name *</label>
+            <input name="name" class="form-control" style="border-radius:9px;" placeholder="e.g. Nigeria Law Firms Q3" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold" style="font-size:.83rem;">Description</label>
+            <textarea name="description" class="form-control" rows="2" style="border-radius:9px;" placeholder="Campaign goals and notes…"></textarea>
+          </div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold" style="font-size:.83rem;">Target Country</label>
+              <input name="target_country" class="form-control" style="border-radius:9px;" placeholder="Nigeria, UK, Canada…">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold" style="font-size:.83rem;">Target Practice Area</label>
+              <input name="target_practice_area" class="form-control" style="border-radius:9px;" placeholder="Corporate, Family Law…">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer" style="border-top:1px solid #e2e8f0;">
+          <button type="button" class="btn btn-crm-outline" onclick="document.getElementById('newCampModal').style.display='none'">Cancel</button>
+          <button type="submit" class="btn btn-crm-primary"><i class="fas fa-plus me-1"></i>Create Campaign</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function setCampStatus(id, status, btn){
+  const r = await apiPost(`/superadmin/crm/campaigns/${id}/status`, {status});
+  if(r.success){ showToast(`Campaign ${status}`); setTimeout(()=>location.reload(),700); }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends "crm/base_crm.html" %}
+{% block title %}{{ campaign.name }} — LAWCOLAB CRM{% endblock %}
+{% block page_title %}{{ campaign.name }}{% endblock %}
+
+{% block topbar_actions %}
+<a href="{{ url_for('crm.campaigns') }}" class="btn btn-crm-outline btn-sm"><i class="fas fa-arrow-left me-1"></i>Campaigns</a>
+<button onclick="setCampStatus('{{ campaign.id }}', '{{ 'paused' if campaign.status=='active' else 'active' }}')"
+  class="btn btn-sm ms-2 {% if campaign.status == 'active' %}btn-warning{% else %}btn-crm-gold{% endif %}">
+  {{ '⏸ Pause' if campaign.status == 'active' else '▶ Activate' }}
+</button>
+{% endblock %}
+
+{% block content %}
+<!-- Stats row -->
+<div class="row g-3 mb-4">
+  {% for icon, color, bg, label, val in [
+    ('building','#0d1b4b','#e8f0fe','Total Leads', leads|length),
+    ('paper-plane','#0d6efd','#e8f0fe','Sent', sent),
+    ('envelope-open','#198754','#e8f5e9','Opened', opened),
+    ('reply','#6f42c1','#f3e8ff','Replies', replied),
+    ('chart-line','#198754','#e8f5e9','Open Rate', open_rate|string + '%'),
+    ('percentage','#b8860b','#fef9e7','Reply Rate', reply_rate|string + '%'),
+  ] %}
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="stat-tile">
+      <div class="stat-icon" style="background:{{ bg }};color:{{ color }};"><i class="fas fa-{{ icon }}"></i></div>
+      <div><div class="stat-val">{{ val }}</div><div class="stat-label">{{ label }}</div></div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="row g-4">
+  <!-- Campaign info -->
+  <div class="col-lg-4">
+    <div class="crm-card mb-4">
+      <div class="crm-card-header"><h3 class="crm-card-title"><i class="fas fa-info-circle me-2"></i>Campaign Details</h3></div>
+      <div class="crm-card-body">
+        <div class="mb-3">
+          <div style="font-size:.72rem;color:#718096;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Status</div>
+          <span style="font-size:.85rem;font-weight:700;padding:.3rem .8rem;border-radius:50px;
+            background:{% if campaign.status=='active' %}#e8f5e9;color:#2e7d32{% elif campaign.status=='paused' %}#fef9e7;color:#92400e{% else %}#f8fafc;color:#718096{% endif %};">
+            {{ campaign.status|capitalize }}
+          </span>
+        </div>
+        {% if campaign.description %}
+        <div class="mb-3">
+          <div style="font-size:.72rem;color:#718096;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Description</div>
+          <div style="font-size:.83rem;color:#374151;">{{ campaign.description }}</div>
+        </div>
+        {% endif %}
+        {% if campaign.target_country %}
+        <div class="mb-3">
+          <div style="font-size:.72rem;color:#718096;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Target Country</div>
+          <div style="font-size:.83rem;font-weight:600;">{{ campaign.target_country }}</div>
+        </div>
+        {% endif %}
+        {% if campaign.target_practice_area %}
+        <div class="mb-3">
+          <div style="font-size:.72rem;color:#718096;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Target Practice Area</div>
+          <div style="font-size:.83rem;font-weight:600;">{{ campaign.target_practice_area }}</div>
+        </div>
+        {% endif %}
+        <div>
+          <div style="font-size:.72rem;color:#718096;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Created</div>
+          <div style="font-size:.83rem;">{{ campaign.created_at.strftime('%B %d, %Y') }}</div>
+        </div>
+        <div class="mt-3">
+          <a href="{{ url_for('crm.outreach') }}" class="btn btn-crm-gold w-100 btn-sm">
+            <i class="fas fa-paper-plane me-1"></i>Send Outreach to These Leads
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leads in campaign -->
+    <div class="crm-card">
+      <div class="crm-card-header"><h3 class="crm-card-title"><i class="fas fa-building me-2 text-primary"></i>Leads ({{ leads|length }})</h3></div>
+      <div class="crm-card-body p-0" style="max-height:400px;overflow-y:auto;">
+        {% for firm in leads %}
+        <a href="{{ url_for('crm.lead_detail', firm_id=firm.id) }}" class="d-flex align-items-center gap-2 px-3 py-2 border-bottom text-decoration-none"
+           style="color:inherit;" onmouseenter="this.style.background='#f8fafc'" onmouseleave="this.style.background=''">
+          <div style="width:28px;height:28px;border-radius:7px;background:#e8f0fe;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;color:#0d1b4b;flex-shrink:0;">
+            {{ firm.name[0] }}
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ firm.name }}</div>
+            <div style="font-size:.7rem;color:#718096;">{{ firm.city or firm.country or '' }}</div>
+          </div>
+          <span class="stage-badge" style="font-size:.62rem;color:{{ firm.pipeline_stage_color }};background:{{ firm.pipeline_stage_color }}18;border-color:{{ firm.pipeline_stage_color }}40;">
+            {{ firm.pipeline_stage_label }}
+          </span>
+        </a>
+        {% else %}
+        <div class="text-center py-4 text-muted" style="font-size:.83rem;">No leads in this campaign yet</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Messages log -->
+  <div class="col-lg-8">
+    <div class="crm-card">
+      <div class="crm-card-header">
+        <h3 class="crm-card-title"><i class="fas fa-envelope me-2 text-info"></i>Outreach Messages ({{ messages|length }})</h3>
+      </div>
+      <div class="crm-card-body p-0">
+        {% for msg in messages %}
+        <div class="px-4 py-3 border-bottom">
+          <div class="d-flex align-items-start gap-3">
+            <div style="width:36px;height:36px;border-radius:9px;flex-shrink:0;
+                 background:{% if msg.channel=='email' %}#e8f0fe{% elif msg.channel=='whatsapp' %}#e8f5e9{% else %}#f8fafc{% endif %};
+                 display:flex;align-items:center;justify-content:center;">
+              <i class="fa{% if msg.channel=='whatsapp' %}b{% else %}s{% endif %} fa-{% if msg.channel=='whatsapp' %}whatsapp text-success{% elif msg.channel=='email' %}envelope text-primary{% else %}comment text-muted{% endif %}"></i>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span style="font-size:.85rem;font-weight:700;">{{ msg.firm.name if msg.firm else '—' }}</span>
+                {% if msg.ai_generated %}<span style="font-size:.65rem;background:linear-gradient(135deg,#0d1b4b,#6610f2);color:#fff;padding:.1rem .4rem;border-radius:50px;">✨ AI</span>{% endif %}
+                <span style="font-size:.7rem;font-weight:700;padding:.15rem .45rem;border-radius:50px;margin-left:auto;
+                  background:{% if msg.status in ('sent','delivered') %}#e8f5e9;color:#2e7d32{% elif msg.status=='replied' %}#fef9e7;color:#92400e{% elif msg.status=='draft' %}#f0f4ff;color:#0d1b4b{% else %}#f8fafc;color:#718096{% endif %};">
+                  {{ msg.status|capitalize }}
+                </span>
+              </div>
+              {% if msg.subject %}<div style="font-size:.78rem;font-weight:600;color:#374151;margin-bottom:.25rem;">{{ msg.subject }}</div>{% endif %}
+              <div style="font-size:.78rem;color:#718096;white-space:pre-line;">{{ msg.body[:200] }}{% if msg.body|length > 200 %}…{% endif %}</div>
+              <div class="d-flex gap-3 mt-2">
+                <span style="font-size:.72rem;color:#718096;">{{ msg.created_at.strftime('%b %d, %Y %H:%M') }}</span>
+                {% if msg.sent_at %}<span style="font-size:.72rem;color:#718096;">Sent: {{ msg.sent_at.strftime('%b %d') }}</span>{% endif %}
+                {% if msg.status == 'draft' %}
+                <button onclick="markSent({{ msg.id }}, this)" style="font-size:.72rem;background:none;border:none;color:#0d1b4b;font-weight:700;cursor:pointer;padding:0;">Mark Sent ✓</button>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted" style="font-size:.85rem;">
+          No messages yet. <a href="{{ url_for('crm.outreach') }}">Generate AI outreach →</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function setCampStatus(id, status){
+  const r = await apiPost(`/superadmin/crm/campaigns/${id}/status`, {status});
+  if(r.success){ showToast(`Campaign ${status}`); setTimeout(()=>location.reload(),700); }
+}
+async function markSent(id, btn){
+  const r = await apiPost(`/superadmin/crm/outreach/mark-sent/${id}`);
+  if(r.success){ btn.textContent='✓ Sent'; btn.disabled=true; showToast('Marked as sent'); }
+}
+</script>
+{% endblock %}

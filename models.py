@@ -912,6 +912,97 @@ class LawFirmShowcase(db.Model):
         return locs[0] if locs else None
 
 
+# ─── v2 CRM Supporting Models (must be defined BEFORE DirectoryLawFirm) ──────
+
+PIPELINE_STAGES = [
+    'new', 'discovered', 'verified', 'contacted', 'email_sent',
+    'whatsapp_sent', 'interested', 'meeting_scheduled', 'demo_completed',
+    'negotiating', 'won', 'lost', 'customer',
+]
+
+
+class CrmCampaign(db.Model):
+    """Outreach campaign — groups leads and tracks performance."""
+    __tablename__ = 'crm_campaigns'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(30), default='draft')  # draft, active, paused, completed
+    target_country = db.Column(db.String(100), nullable=True)
+    target_practice_area = db.Column(db.String(200), nullable=True)
+    created_by_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+
+    total_leads = db.Column(db.Integer, default=0)
+    emails_sent = db.Column(db.Integer, default=0)
+    replies_received = db.Column(db.Integer, default=0)
+    meetings_booked = db.Column(db.Integer, default=0)
+    conversions = db.Column(db.Integer, default=0)
+
+    leads = db.relationship('DirectoryLawFirm', back_populates='campaign', foreign_keys='DirectoryLawFirm.campaign_id')
+    messages = db.relationship('OutreachMessage', back_populates='campaign', cascade='all, delete-orphan')
+    created_by = db.relationship('User', foreign_keys=[created_by_id])
+
+
+class OutreachMessage(db.Model):
+    """Single outreach message sent to (or drafted for) a lead."""
+    __tablename__ = 'outreach_messages'
+
+    id = db.Column(db.Integer, primary_key=True)
+    firm_id = db.Column(db.Integer, db.ForeignKey('directory_law_firms.id'), nullable=False)
+    campaign_id = db.Column(db.Integer, db.ForeignKey('crm_campaigns.id'), nullable=True)
+    created_by_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=True)
+
+    channel = db.Column(db.String(30), default='email')
+    message_type = db.Column(db.String(50), default='cold_outreach')
+    subject = db.Column(db.String(300), nullable=True)
+    body = db.Column(db.Text, nullable=False)
+    recipient_name = db.Column(db.String(200), nullable=True)
+    recipient_email = db.Column(db.String(200), nullable=True)
+    recipient_phone = db.Column(db.String(100), nullable=True)
+
+    status = db.Column(db.String(30), default='draft')
+    ai_generated = db.Column(db.Boolean, default=False)
+
+    scheduled_at = db.Column(db.DateTime, nullable=True)
+    sent_at = db.Column(db.DateTime, nullable=True)
+    opened_at = db.Column(db.DateTime, nullable=True)
+    replied_at = db.Column(db.DateTime, nullable=True)
+    reply_text = db.Column(db.Text, nullable=True)
+    reply_classification = db.Column(db.String(50), nullable=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.now)
+
+    firm = db.relationship('DirectoryLawFirm', back_populates='outreach_messages')
+    campaign = db.relationship('CrmCampaign', back_populates='messages')
+    created_by = db.relationship('User', foreign_keys=[created_by_id])
+
+
+class LeadTask(db.Model):
+    """Task / reminder attached to a lead."""
+    __tablename__ = 'lead_tasks'
+
+    id = db.Column(db.Integer, primary_key=True)
+    firm_id = db.Column(db.Integer, db.ForeignKey('directory_law_firms.id'), nullable=False)
+    assigned_to_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=True)
+    created_by_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=True)
+
+    title = db.Column(db.String(300), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    task_type = db.Column(db.String(50), default='follow_up')
+    priority = db.Column(db.String(20), default='normal')
+    status = db.Column(db.String(30), default='open')
+    due_at = db.Column(db.DateTime, nullable=True)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+
+    firm = db.relationship('DirectoryLawFirm', back_populates='lead_tasks')
+    assigned_to = db.relationship('User', foreign_keys=[assigned_to_id])
+    created_by = db.relationship('User', foreign_keys=[created_by_id])
+
+
 # ─── Public Law Firm Directory (External / Scraped Firms) ────────────────────
 
 class DirectoryLawFirm(db.Model):
@@ -973,6 +1064,91 @@ class DirectoryLawFirm(db.Model):
             except Exception:
                 return []
         return []
+
+
+    # ── v2 CRM fields ─────────────────────────────────────────────────────────
+    # Pipeline & scoring
+    pipeline_stage = db.Column(db.String(50), default='new')
+    lead_score = db.Column(db.Integer, default=0)
+    confidence_score = db.Column(db.Integer, default=0)
+
+    # Extended contact
+    whatsapp = db.Column(db.String(100), nullable=True)
+    founding_year = db.Column(db.Integer, nullable=True)
+    firm_size = db.Column(db.String(50), nullable=True)  # solo, 2-5, 6-20, 21-50, 50+
+    num_lawyers = db.Column(db.Integer, nullable=True)
+
+    # Rich JSON blobs
+    decision_makers_json = db.Column(db.Text, nullable=True)  # [{name,title,linkedin,phone,email}]
+    social_links_json = db.Column(db.Text, nullable=True)     # {facebook,linkedin,twitter,instagram}
+    opening_hours_json = db.Column(db.Text, nullable=True)
+
+    # Enrichment tracking
+    website_status = db.Column(db.String(20), default='unknown')  # active, inactive, no_website, unknown
+    enriched_at = db.Column(db.DateTime, nullable=True)
+    enrichment_source = db.Column(db.String(100), nullable=True)
+
+    # CRM workflow
+    assigned_to_id = db.Column(db.String, db.ForeignKey('users.id'), nullable=True)
+    next_followup_at = db.Column(db.DateTime, nullable=True)
+    last_contacted_at = db.Column(db.DateTime, nullable=True)
+    tags_json = db.Column(db.Text, nullable=True)  # ["tag1","tag2"]
+    campaign_id = db.Column(db.Integer, db.ForeignKey('crm_campaigns.id'), nullable=True)
+
+    # Relationships
+    assigned_to = db.relationship('User', foreign_keys=[assigned_to_id])
+    campaign = db.relationship('CrmCampaign', foreign_keys=[campaign_id], back_populates='leads')
+    outreach_messages = db.relationship('OutreachMessage', back_populates='firm', cascade='all, delete-orphan')
+    lead_tasks = db.relationship('LeadTask', back_populates='firm', cascade='all, delete-orphan')
+
+    @property
+    def decision_makers(self):
+        if self.decision_makers_json:
+            try:
+                return json.loads(self.decision_makers_json)
+            except Exception:
+                return []
+        return []
+
+    @property
+    def social_links(self):
+        if self.social_links_json:
+            try:
+                return json.loads(self.social_links_json)
+            except Exception:
+                return {}
+        return {}
+
+    @property
+    def tags(self):
+        if self.tags_json:
+            try:
+                return json.loads(self.tags_json)
+            except Exception:
+                return []
+        return []
+
+    @property
+    def pipeline_stage_label(self):
+        _labels = {
+            'new': 'New Lead', 'discovered': 'Discovered', 'verified': 'Verified',
+            'contacted': 'Contacted', 'email_sent': 'Email Sent', 'whatsapp_sent': 'WhatsApp Sent',
+            'interested': 'Interested', 'meeting_scheduled': 'Meeting Scheduled',
+            'demo_completed': 'Demo Completed', 'negotiating': 'Negotiating',
+            'won': 'Won', 'lost': 'Lost', 'customer': 'Customer',
+        }
+        return _labels.get(self.pipeline_stage or 'new', 'New Lead')
+
+    @property
+    def pipeline_stage_color(self):
+        _colors = {
+            'new': '#6c757d', 'discovered': '#0d6efd', 'verified': '#6610f2',
+            'contacted': '#fd7e14', 'email_sent': '#ffc107', 'whatsapp_sent': '#20c997',
+            'interested': '#198754', 'meeting_scheduled': '#6f42c1',
+            'demo_completed': '#0dcaf0', 'negotiating': '#d63384',
+            'won': '#0d6832', 'lost': '#dc3545', 'customer': '#FFD700',
+        }
+        return _colors.get(self.pipeline_stage or 'new', '#6c757d')
 
 
 class DirectoryNote(db.Model):
