@@ -1,0 +1,1 @@
+- [Showcase migrations pattern](showcase-migrations.md) — new LawFirmShowcase/Directory columns must always be added via utils/migrations.py or they crash production
