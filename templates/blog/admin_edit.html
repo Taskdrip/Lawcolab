@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block title %}{% if action=='new' %}New Post{% else %}Edit Post{% endif %} — Blog Admin{% endblock %}
+
+{% block additional_css %}
+<style>
+.blog-editor .form-control{border-radius:10px;border:1.5px solid #e2e8f0;font-size:.9rem;}
+.blog-editor .form-control:focus{border-color:#0d1b4b;box-shadow:0 0 0 3px rgba(13,27,75,.1);}
+.blog-editor label{font-size:.8rem;font-weight:600;color:#3d4c6e;margin-bottom:.35rem;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lc-page-header lc-ph-bg-analytics">
+  <div class="lc-ph-accent"></div>
+  <div class="container lc-ph-inner">
+    <div class="d-flex align-items-center gap-3">
+      <div class="lc-ph-icon"><i class="fas fa-pen-nib"></i></div>
+      <div>
+        <h1>{% if action=='new' %}New Blog Post{% else %}Edit: {{ post.title }}{% endif %}</h1>
+        <p class="lc-ph-sub">{% if action=='new' %}Create a new article{% else %}Update this article{% endif %}</p>
+      </div>
+      <a href="{{ url_for('blog.admin_list') }}" class="btn btn-outline-light ms-auto" style="border-radius:10px;font-size:.84rem;">
+        <i class="fas fa-arrow-left me-1"></i>Back
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="container py-4">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+    <div class="alert alert-{% if cat=='success' %}success{% else %}danger{% endif %} mb-3" style="border-radius:10px;">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <form method="POST" class="blog-editor">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <div class="card mb-3">
+          <div class="card-body p-4">
+            <div class="mb-3">
+              <label>Post Title *</label>
+              <input type="text" name="title" class="form-control form-control-lg" value="{{ post.get('title','') }}" placeholder="Write a compelling headline…" required>
+            </div>
+            <div class="mb-3">
+              <label>Excerpt (shown in listings)</label>
+              <textarea name="excerpt" class="form-control" rows="2" maxlength="300" placeholder="A short summary of the article (max 300 chars)…">{{ post.get('excerpt','') }}</textarea>
+            </div>
+            <div class="mb-3">
+              <label>Article Content (HTML supported) *</label>
+              <textarea name="content" class="form-control" rows="20" style="font-family:monospace;font-size:.85rem;" required placeholder="Write your article here. HTML tags like &lt;h2&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;strong&gt;, &lt;a&gt; are supported.">{{ post.get('content','') }}</textarea>
+              <div class="form-text">Use HTML: &lt;h2&gt;, &lt;h3&gt;, &lt;p&gt;, &lt;ul&gt;&lt;li&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;a href=""&gt;, &lt;blockquote&gt;</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="card mb-3">
+          <div class="card-header"><strong style="font-size:.88rem;">Publish Settings</strong></div>
+          <div class="card-body">
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" name="published" id="published" {% if post.get('published') %}checked{% endif %}>
+              <label class="form-check-label" for="published" style="font-size:.88rem;font-weight:600;">Published (visible to public)</label>
+            </div>
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" name="featured" id="featured" {% if post.get('featured') %}checked{% endif %}>
+              <label class="form-check-label" for="featured" style="font-size:.88rem;">⭐ Featured (shown at top)</label>
+            </div>
+            <button type="submit" class="btn btn-warning w-100 fw-bold" style="color:#0d1b4b;border-radius:10px;">
+              <i class="fas fa-save me-2"></i>{% if action=='new' %}Publish Post{% else %}Save Changes{% endif %}
+            </button>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-header"><strong style="font-size:.88rem;">Post Details</strong></div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label>Category</label>
+              <select name="category" class="form-select form-control">
+                {% for cat in ['Legal Tech','Practice Management','Directory','Nigeria Law','Client Relations','Billing & Finance','Court Procedures','Team Management','Industry News'] %}
+                <option value="{{ cat }}" {% if post.get('category','Legal Tech')==cat %}selected{% endif %}>{{ cat }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label>Author</label>
+              <input type="text" name="author" class="form-control" value="{{ post.get('author','LAWCOLAB Team') }}" placeholder="Author name">
+            </div>
+            <div class="mb-3">
+              <label>Tags (comma-separated)</label>
+              <input type="text" name="tags" class="form-control" value="{{ post.get('tags','') }}" placeholder="Nigeria, legal tech, case management">
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><strong style="font-size:.88rem;">Hero Image</strong></div>
+          <div class="card-body">
+            <label>Image URL</label>
+            <input type="url" name="hero_image" class="form-control mb-2" value="{{ post.get('hero_image','') }}" placeholder="https://images.unsplash.com/…" id="heroInput">
+            <div id="heroPreview" style="display:{% if post.get('hero_image') %}block{% else %}none{% endif %};">
+              <img id="heroImg" src="{{ post.get('hero_image','') }}" style="width:100%;border-radius:8px;aspect-ratio:16/9;object-fit:cover;" alt="Preview">
+            </div>
+            <div class="form-text mt-1">Paste any image URL. Free images: <a href="https://unsplash.com" target="_blank">unsplash.com</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('heroInput').addEventListener('input', function(){
+  const url=this.value.trim();
+  const prev=document.getElementById('heroPreview');
+  const img=document.getElementById('heroImg');
+  if(url){prev.style.display='block';img.src=url;}
+  else{prev.style.display='none';}
+});
+</script>
+{% endblock %}

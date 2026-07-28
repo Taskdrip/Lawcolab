@@ -1,0 +1,405 @@
+{% extends 'base.html' %}
+{% block title %}SEO & Analytics Dashboard — LAWCOLAB Super Admin{% endblock %}
+
+{% block additional_css %}
+<style>
+.ana-stat{background:#fff;border-radius:14px;padding:1.25rem 1.5rem;box-shadow:0 2px 10px rgba(0,0,0,.07);position:relative;overflow:hidden;}
+.ana-stat .as-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+.ana-stat .as-val{font-size:2rem;font-weight:800;line-height:1;color:#0d1b4b;}
+.ana-stat .as-label{font-size:.78rem;color:#6c757d;margin-top:.25rem;}
+.ana-stat .as-change{font-size:.75rem;font-weight:600;margin-top:.3rem;}
+.ana-stat .as-change.up{color:#198754;}.ana-stat .as-change.down{color:#dc3545;}
+.change-badge{display:inline-flex;align-items:center;gap:.2rem;}
+
+.rec-card{border-radius:14px;padding:1.1rem 1.25rem;margin-bottom:.85rem;border-left:4px solid;}
+.rec-card.high{border-color:#dc3545;background:#fff5f5;}
+.rec-card.medium{border-color:#fd7e14;background:#fff8f0;}
+.rec-card.low{border-color:#198754;background:#f0fdf4;}
+.rec-card.seo{border-color:#0d1b4b;background:#f0f4ff;}
+.rec-card.gtm{border-color:#6610f2;background:#f8f0ff;}
+.rec-card.success{border-color:#198754;background:#f0fdf4;}
+.rec-card.info{border-color:#0dcaf0;background:#f0fbff;}
+.rec-card.warning{border-color:#ffc107;background:#fffbf0;}
+.rec-card h6{font-size:.88rem;font-weight:700;color:#0d1b4b;margin-bottom:.35rem;}
+.rec-card p{font-size:.8rem;color:#4a5568;line-height:1.6;margin-bottom:.5rem;}
+.rec-card .actions{list-style:none;padding:0;margin:0;}
+.rec-card .actions li{font-size:.76rem;color:#5a6474;padding:.15rem 0;}
+.rec-card .actions li::before{content:"→ ";color:#0d1b4b;font-weight:700;}
+
+.chart-wrap{background:#fff;border-radius:14px;padding:1.25rem;box-shadow:0 2px 10px rgba(0,0,0,.07);}
+.chart-wrap .chart-title{font-size:.85rem;font-weight:700;color:#0d1b4b;margin-bottom:1rem;}
+
+.period-pill{display:inline-flex;border:1.5px solid #e2e8f0;border-radius:50px;overflow:hidden;}
+.period-pill a{padding:.35rem .85rem;font-size:.78rem;font-weight:600;color:#5a6474;text-decoration:none;transition:all .15s;}
+.period-pill a.active,.period-pill a:hover{background:#0d1b4b;color:#fff;}
+
+.prog-bar-wrap{display:flex;align-items:center;gap:.75rem;margin-bottom:.6rem;}
+.prog-bar-wrap .pb-label{font-size:.8rem;color:#3d4c6e;white-space:nowrap;width:130px;overflow:hidden;text-overflow:ellipsis;}
+.prog-bar-wrap .pb-bar{flex:1;height:8px;border-radius:50px;background:#f0f2f7;overflow:hidden;}
+.prog-bar-wrap .pb-bar-fill{height:100%;border-radius:50px;background:#0d1b4b;transition:width .8s ease;}
+.prog-bar-wrap .pb-cnt{font-size:.78rem;color:#9aa3b0;white-space:nowrap;width:50px;text-align:right;}
+
+.device-ring{position:relative;display:inline-flex;align-items:center;justify-content:center;}
+.ai-header{background:linear-gradient(135deg,#0d1b4b,#1a2d6b);border-radius:14px;padding:1.25rem;color:#fff;margin-bottom:1.25rem;}
+.ai-header h5{color:#FFD700;font-size:1rem;margin-bottom:.25rem;}
+.ai-header p{font-size:.82rem;color:rgba(255,255,255,.75);margin:0;}
+.ai-refresh-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;font-size:.8rem;padding:.4rem 1rem;cursor:pointer;transition:background .15s;}
+.ai-refresh-btn:hover{background:rgba(255,255,255,.25);}
+
+.gtm-banner{background:linear-gradient(90deg,#6610f2,#8b5cf6);border-radius:12px;padding:.85rem 1.25rem;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;gap:1rem;}
+.gtm-banner .gtm-id{font-family:monospace;background:rgba(255,255,255,.2);padding:.2rem .6rem;border-radius:6px;font-size:.9rem;}
+
+@media(max-width:576px){.ana-stat .as-val{font-size:1.5rem;}.pb-label{width:90px;}}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page header -->
+<div class="lc-page-header lc-ph-bg-analytics">
+  <div class="lc-ph-accent"></div>
+  <div class="container lc-ph-inner">
+    <div class="d-flex align-items-start gap-3 flex-wrap">
+      <div class="lc-ph-icon"><i class="fas fa-chart-line"></i></div>
+      <div class="flex-grow-1">
+        <h1>SEO & Analytics Dashboard</h1>
+        <p class="lc-ph-sub">Real-time traffic, SEO health, and AI-powered growth recommendations.</p>
+      </div>
+      <div class="period-pill">
+        {% for p,l in [('7','7D'),('30','30D'),('90','90D')] %}
+        <a href="?period={{ p }}" class="{% if period==p %}active{% endif %}">{{ l }}</a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container py-4">
+
+  <!-- GTM Banner -->
+  <div class="gtm-banner">
+    <i class="fas fa-tag" style="font-size:1.4rem;opacity:.85;"></i>
+    <div class="flex-grow-1">
+      <div style="font-weight:700;font-size:.9rem;">Google Tag Manager Active</div>
+      <div style="font-size:.8rem;opacity:.82;">Container <span class="gtm-id">{{ gtm_id }}</span> is installed on all pages. To enable GA4, add a GA4 Configuration tag inside GTM.</div>
+    </div>
+    <a href="https://tagmanager.google.com" target="_blank" class="btn btn-sm" style="background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:8px;font-size:.8rem;">
+      Open GTM <i class="fas fa-external-link-alt ms-1"></i>
+    </a>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="ana-stat">
+        <div class="d-flex align-items-start gap-3">
+          <div class="as-icon" style="background:#f0f4ff;color:#0d1b4b;"><i class="fas fa-eye"></i></div>
+          <div>
+            <div class="as-val">{{ "{:,}".format(total_views) }}</div>
+            <div class="as-label">Total Page Views</div>
+            <div class="as-change {% if views_change >= 0 %}up{% else %}down{% endif %}">
+              <span class="change-badge"><i class="fas fa-{% if views_change >= 0 %}arrow-up{% else %}arrow-down{% endif %}"></i>{{ views_change|abs }}%</span>
+              <span style="font-weight:400;color:#9aa3b0;"> vs prev period</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ana-stat">
+        <div class="d-flex align-items-start gap-3">
+          <div class="as-icon" style="background:#f0fff4;color:#198754;"><i class="fas fa-users"></i></div>
+          <div>
+            <div class="as-val">{{ "{:,}".format(unique_sess) }}</div>
+            <div class="as-label">Unique Sessions</div>
+            <div class="as-change {% if unique_change >= 0 %}up{% else %}down{% endif %}">
+              <span class="change-badge"><i class="fas fa-{% if unique_change >= 0 %}arrow-up{% else %}arrow-down{% endif %}"></i>{{ unique_change|abs }}%</span>
+              <span style="font-weight:400;color:#9aa3b0;"> vs prev period</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ana-stat">
+        <div class="d-flex align-items-start gap-3">
+          <div class="as-icon" style="background:#fff5f5;color:#dc3545;"><i class="fas fa-sign-out-alt"></i></div>
+          <div>
+            <div class="as-val">{{ bounce_rate }}%</div>
+            <div class="as-label">Bounce Rate</div>
+            <div class="as-change {% if bounce_rate < 50 %}up{% else %}down{% endif %}">
+              <span style="font-size:.72rem;color:#9aa3b0;">{% if bounce_rate < 40 %}Excellent{% elif bounce_rate < 60 %}Average{% else %}Needs work{% endif %}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="ana-stat">
+        <div class="d-flex align-items-start gap-3">
+          <div class="as-icon" style="background:#fff8f0;color:#fd7e14;"><i class="fas fa-file-alt"></i></div>
+          <div>
+            <div class="as-val">{{ avg_pages }}</div>
+            <div class="as-label">Pages / Session</div>
+            <div class="as-change">
+              <span style="font-size:.72rem;color:#9aa3b0;">{{ "{:,}".format(blog_posts) }} posts · {{ "{:,}".format(blog_views) }} blog views</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left column -->
+    <div class="col-lg-8">
+
+      <!-- Daily trend chart -->
+      <div class="chart-wrap mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="chart-title"><i class="fas fa-chart-area me-2" style="color:#0d1b4b;"></i>Traffic Trend — Last {{ period }} Days</div>
+        </div>
+        <canvas id="trendChart" height="90"></canvas>
+      </div>
+
+      <!-- Top pages -->
+      <div class="chart-wrap mb-4">
+        <div class="chart-title"><i class="fas fa-trophy me-2" style="color:#FFD700;"></i>Top Pages</div>
+        {% if top_pages %}
+          {% set max_v = top_pages[0].views %}
+          {% for p in top_pages %}
+          <div class="prog-bar-wrap">
+            <div class="pb-label" title="{{ p.path }}">{{ p.path }}</div>
+            <div class="pb-bar"><div class="pb-bar-fill" style="width:{{ (p.views / max(max_v, 1) * 100)|int }}%;"></div></div>
+            <div class="pb-cnt">{{ p.views }}</div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-muted" style="font-size:.85rem;">No data yet. Traffic will appear here as visitors arrive.</p>
+        {% endif %}
+      </div>
+
+      <!-- Devices + Referrers side by side -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <div class="chart-wrap h-100">
+            <div class="chart-title"><i class="fas fa-mobile-alt me-2" style="color:#0d1b4b;"></i>Devices</div>
+            <canvas id="deviceChart" height="180"></canvas>
+            <div class="mt-3">
+              {% set device_colors = {'mobile':'#0d1b4b','desktop':'#FFD700','tablet':'#198754'} %}
+              {% set total_dev = devices | sum(attribute='cnt') or 1 %}
+              {% for d in devices %}
+              <div class="prog-bar-wrap">
+                <div class="pb-label" style="text-transform:capitalize;">{{ d.device_type or 'other' }}</div>
+                <div class="pb-bar"><div class="pb-bar-fill" style="width:{{ (d.cnt / total_dev * 100)|int }}%;background:{{ device_colors.get(d.device_type,'#9aa3b0') }};"></div></div>
+                <div class="pb-cnt">{{ (d.cnt / total_dev * 100)|int }}%</div>
+              </div>
+              {% endfor %}
+              {% if not devices %}
+              <p class="text-muted" style="font-size:.82rem;">No data yet.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="chart-wrap h-100">
+            <div class="chart-title"><i class="fas fa-share-alt me-2" style="color:#0d1b4b;"></i>Traffic Sources</div>
+            {% if referrers %}
+              {% set max_r = referrers[0].cnt %}
+              {% for r in referrers %}
+              <div class="prog-bar-wrap">
+                <div class="pb-label">{{ r.src[:28] }}</div>
+                <div class="pb-bar"><div class="pb-bar-fill" style="width:{{ (r.cnt / max(max_r, 1) * 100)|int }}%;"></div></div>
+                <div class="pb-cnt">{{ r.cnt }}</div>
+              </div>
+              {% endfor %}
+            {% else %}
+              <p class="text-muted" style="font-size:.82rem;">No referrer data yet.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Countries -->
+      <div class="chart-wrap mb-4">
+        <div class="chart-title"><i class="fas fa-globe-africa me-2" style="color:#0d1b4b;"></i>Top Countries</div>
+        {% if countries %}
+          {% set max_c = countries[0].cnt %}
+          {% for c in countries %}
+          <div class="prog-bar-wrap">
+            <div class="pb-label">{{ c.country }}</div>
+            <div class="pb-bar"><div class="pb-bar-fill" style="width:{{ (c.cnt / max(max_c, 1) * 100)|int }}%;background:#198754;"></div></div>
+            <div class="pb-cnt">{{ c.cnt }}</div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-muted" style="font-size:.82rem;">Country data will appear once visitors arrive.</p>
+        {% endif %}
+      </div>
+
+      <!-- Browser breakdown -->
+      <div class="chart-wrap">
+        <div class="chart-title"><i class="fas fa-browser me-2" style="color:#0d1b4b;"></i>Browsers</div>
+        {% set bcolors = {'Chrome':'#4285f4','Firefox':'#ff6d00','Safari':'#606fff','Edge':'#0078d4','Opera':'#ff1b2d','Other':'#9aa3b0'} %}
+        {% set total_b = browsers | sum(attribute='cnt') or 1 %}
+        {% for b in browsers %}
+        <div class="prog-bar-wrap">
+          <div class="pb-label">{{ b.browser }}</div>
+          <div class="pb-bar"><div class="pb-bar-fill" style="width:{{ (b.cnt / total_b * 100)|int }}%;background:{{ bcolors.get(b.browser, '#0d1b4b') }};"></div></div>
+          <div class="pb-cnt">{{ (b.cnt / total_b * 100)|int }}%</div>
+        </div>
+        {% endfor %}
+        {% if not browsers %}
+        <p class="text-muted" style="font-size:.82rem;">No data yet.</p>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <!-- Right column: AI recommendations -->
+    <div class="col-lg-4">
+      <div class="ai-header">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h5><i class="fas fa-robot me-2"></i>AI Growth Analyst</h5>
+            <p>Automated analysis of your traffic data with actionable recommendations.</p>
+          </div>
+          <button class="ai-refresh-btn" onclick="refreshAI()"><i class="fas fa-sync-alt me-1"></i>Refresh</button>
+        </div>
+      </div>
+
+      <div id="ai-recs-container">
+        {% for rec in ai_recs %}
+        <div class="rec-card {{ rec.type }} {{ rec.priority }}">
+          <h6><i class="{{ rec.icon }} me-2"></i>{{ rec.title }}
+            <span class="badge ms-1" style="font-size:.65rem;{% if rec.priority=='high' %}background:#dc3545{% elif rec.priority=='medium' %}background:#fd7e14{% else %}background:#198754{% endif %};color:#fff;">{{ rec.priority }}</span>
+          </h6>
+          <p>{{ rec.detail }}</p>
+          {% if rec.actions %}
+          <ul class="actions">
+            {% for a in rec.actions %}<li>{{ a }}</li>{% endfor %}
+          </ul>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Blog stats sidebar -->
+      <div class="chart-wrap mt-3">
+        <div class="chart-title"><i class="fas fa-blog me-2" style="color:#0d1b4b;"></i>Blog Performance</div>
+        <div class="d-flex justify-content-between py-2 border-bottom" style="border-color:#f0f2f7!important;">
+          <span style="font-size:.82rem;color:#5a6474;">Published posts</span>
+          <strong style="font-size:.88rem;color:#0d1b4b;">{{ blog_posts }}</strong>
+        </div>
+        <div class="d-flex justify-content-between py-2 border-bottom" style="border-color:#f0f2f7!important;">
+          <span style="font-size:.82rem;color:#5a6474;">Total blog views</span>
+          <strong style="font-size:.88rem;color:#0d1b4b;">{{ "{:,}".format(blog_views) }}</strong>
+        </div>
+        <div class="d-flex justify-content-between py-2">
+          <span style="font-size:.82rem;color:#5a6474;">Comments</span>
+          <strong style="font-size:.88rem;color:#0d1b4b;">{{ blog_comments }}</strong>
+        </div>
+        <a href="{{ url_for('blog.admin_list') }}" class="btn btn-sm btn-outline-primary w-100 mt-2" style="border-radius:8px;font-size:.8rem;">
+          <i class="fas fa-edit me-1"></i>Manage Blog Posts
+        </a>
+      </div>
+
+      <!-- SEO Checklist -->
+      <div class="chart-wrap mt-3">
+        <div class="chart-title"><i class="fas fa-search me-2" style="color:#0d1b4b;"></i>SEO Checklist</div>
+        {% for item, done in [
+          ('GTM installed on all pages', True),
+          ('Sitemap.xml submitted', False),
+          ('robots.txt configured', True),
+          ('Open Graph tags', True),
+          ('Structured data (JSON-LD)', True),
+          ('Mobile-optimised', True),
+          ('Canonical URLs', True),
+          ('Blog content published', blog_posts > 0),
+        ] %}
+        <div class="d-flex align-items-center gap-2 py-1" style="border-bottom:1px solid #f8f9fa;">
+          <i class="fas fa-{% if done %}check-circle text-success{% else %}circle{% endif %}" style="font-size:.9rem;{% if not done %}color:#dee2e6;{% endif %}"></i>
+          <span style="font-size:.8rem;color:{% if done %}#198754{% else %}#9aa3b0{% endif %};">{{ item }}</span>
+          {% if not done %}<a href="https://search.google.com/search-console/sitemaps" target="_blank" style="font-size:.72rem;color:#0d1b4b;margin-left:auto;">Fix →</a>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const trend = {{ daily_trend | safe }};
+const labels = trend.map(d => d.date);
+const views  = trend.map(d => d.views);
+const uniq   = trend.map(d => d.unique);
+
+// Trend chart
+new Chart(document.getElementById('trendChart'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [
+      { label: 'Page Views', data: views, borderColor: '#0d1b4b', backgroundColor: 'rgba(13,27,75,.08)', tension: .4, fill: true, pointRadius: 3 },
+      { label: 'Unique Sessions', data: uniq, borderColor: '#FFD700', backgroundColor: 'rgba(255,215,0,.07)', tension: .4, fill: false, pointRadius: 3 }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: true,
+    plugins: { legend: { labels: { font: { size: 11 } } } },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } },
+      y: { beginAtZero: true, ticks: { font: { size: 10 } } }
+    }
+  }
+});
+
+// Device donut
+const devData  = {{ devices | tojson }};
+const devLabels = devData.map(d => d.device_type || 'other');
+const devCounts = devData.map(d => d.cnt);
+const devColors = devLabels.map(l => ({mobile:'#0d1b4b',desktop:'#FFD700',tablet:'#198754'}[l] || '#9aa3b0'));
+
+if (document.getElementById('deviceChart') && devData.length) {
+  new Chart(document.getElementById('deviceChart'), {
+    type: 'doughnut',
+    data: { labels: devLabels, datasets: [{ data: devCounts, backgroundColor: devColors, borderWidth: 2 }] },
+    options: {
+      responsive: true, maintainAspectRatio: true, cutout: '65%',
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 12 } } }
+    }
+  });
+}
+
+// AI refresh
+async function refreshAI() {
+  const btn = document.querySelector('.ai-refresh-btn');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Analysing…';
+  btn.disabled = true;
+  try {
+    const r = await fetch('{{ url_for("seo_analytics.ai_refresh") }}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}' },
+      body: JSON.stringify({ days: {{ period }} })
+    });
+    const data = await r.json();
+    const container = document.getElementById('ai-recs-container');
+    container.innerHTML = data.recommendations.map(rec => `
+      <div class="rec-card ${rec.type} ${rec.priority}">
+        <h6><i class="${rec.icon} me-2"></i>${rec.title}
+          <span class="badge ms-1" style="font-size:.65rem;background:${rec.priority==='high'?'#dc3545':rec.priority==='medium'?'#fd7e14':'#198754'};color:#fff;">${rec.priority}</span>
+        </h6>
+        <p>${rec.detail}</p>
+        ${rec.actions ? '<ul class="actions">' + rec.actions.map(a=>`<li>${a}</li>`).join('') + '</ul>' : ''}
+      </div>
+    `).join('');
+  } catch(e) { console.error(e); }
+  btn.innerHTML = '<i class="fas fa-sync-alt me-1"></i>Refresh';
+  btn.disabled = false;
+}
+</script>
+{% endblock %}

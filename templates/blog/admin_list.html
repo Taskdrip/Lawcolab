@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Blog Posts — Admin{% endblock %}
+
+{% block content %}
+<div class="lc-page-header lc-ph-bg-dashboard">
+  <div class="lc-ph-accent"></div>
+  <div class="container lc-ph-inner">
+    <div class="d-flex align-items-center gap-3">
+      <div class="lc-ph-icon"><i class="fas fa-newspaper"></i></div>
+      <div>
+        <h1>Blog Posts</h1>
+        <p class="lc-ph-sub">Manage all LAWCOLAB blog articles.</p>
+      </div>
+      <a href="{{ url_for('blog.admin_new') }}" class="btn btn-warning ms-auto fw-bold" style="color:#0d1b4b;border-radius:10px;">
+        <i class="fas fa-plus me-1"></i>New Post
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="container py-4">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+    <div class="alert alert-{% if cat=='success' %}success{% else %}danger{% endif %} mb-3" style="border-radius:10px;">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Title</th><th>Category</th><th>Status</th><th>Featured</th><th>Views</th><th>Comments</th><th>Published</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in posts %}
+          <tr>
+            <td style="max-width:280px;">
+              <a href="{{ url_for('blog.post', slug=p.slug) }}" target="_blank" style="color:#0d1b4b;font-weight:600;font-size:.88rem;">{{ p.title }}</a>
+            </td>
+            <td><span class="badge" style="background:#f0f4ff;color:#0d1b4b;font-size:.75rem;">{{ p.category }}</span></td>
+            <td>
+              {% if p.published %}
+              <span class="badge bg-success">Published</span>
+              {% else %}
+              <span class="badge bg-secondary">Draft</span>
+              {% endif %}
+            </td>
+            <td>{% if p.featured %}<i class="fas fa-star" style="color:#FFD700;"></i>{% endif %}</td>
+            <td>{{ p.view_count or 0 }}</td>
+            <td>{{ p.comment_count or 0 }}</td>
+            <td style="font-size:.8rem;color:#6c757d;">
+              {{ p.published_at.strftime('%b %d, %Y') if p.published_at else '—' }}
+            </td>
+            <td>
+              <div class="d-flex gap-1">
+                <a href="{{ url_for('blog.admin_edit', post_id=p.id) }}" class="btn btn-sm btn-outline-primary" style="border-radius:7px;font-size:.78rem;">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <a href="{{ url_for('blog.post', slug=p.slug) }}" target="_blank" class="btn btn-sm btn-outline-secondary" style="border-radius:7px;font-size:.78rem;">
+                  <i class="fas fa-eye"></i>
+                </a>
+                <form method="POST" action="{{ url_for('blog.admin_delete', post_id=p.id) }}" onsubmit="return confirm('Delete this post?')">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius:7px;font-size:.78rem;">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="8" class="text-center py-4 text-muted">No posts yet. <a href="{{ url_for('blog.admin_new') }}">Create your first post →</a></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
