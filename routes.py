@@ -39,6 +39,10 @@ from simple_checkout import simple_checkout_bp
 # Import calendar blueprint
 from blueprints.calendar import calendar_bp
 
+# Import CRM & social communities blueprints
+from blueprints.crm import crm_bp
+from blueprints.social_communities import social_communities_bp
+
 # Import payment models
 import models_payment  # noqa: F401
 
@@ -65,6 +69,8 @@ app.register_blueprint(payment_mgmt_bp)  # Payment management
 app.register_blueprint(escrow_bp)  # Escrow system
 app.register_blueprint(simple_checkout_bp, url_prefix="/payment")  # Simple payment checkout
 app.register_blueprint(calendar_bp, url_prefix="/calendar")  # Calendar & scheduling
+app.register_blueprint(crm_bp, url_prefix="/superadmin/crm")  # CRM
+app.register_blueprint(social_communities_bp, url_prefix="/superadmin/crm/communities")  # Social communities CRM
 
 # Make session permanent
 @app.before_request

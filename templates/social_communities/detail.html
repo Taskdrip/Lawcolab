@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+{% block title %}{{ community.community_name }} — Community CRM{% endblock %}
+{% block content %}
+{% set pcolor = {'facebook':'#1877f2','linkedin':'#0077b5','reddit':'#ff4500','twitter':'#000','whatsapp':'#25d366','telegram':'#0088cc','youtube':'#ff0000','instagram':'#e4405f'} %}
+{% set pc = pcolor.get(community.platform, '#6c757d') %}
+<div class="container py-4" style="max-width:1100px;">
+
+  <!-- Back + Title -->
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{{ url_for('social_communities.index') }}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;"><i class="fas fa-arrow-left"></i></a>
+    <div style="width:48px;height:48px;border-radius:12px;background:{{ pc }};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <i class="{{ community.platform_icon }} fa-lg" style="color:#fff;"></i>
+    </div>
+    <div>
+      <h3 class="mb-0 fw-bold" style="color:#0d1b4b;">{{ community.community_name }}</h3>
+      <span class="text-muted small">{{ community.platform|title }} • {{ community.category or '—' }} • {{ community.country_focus or 'Global' }}</span>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left: Info + Outreach Messages -->
+    <div class="col-lg-8">
+
+      <!-- Community Info Card -->
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.75rem;margin-bottom:1.5rem;">
+        <h5 class="fw-bold mb-3" style="color:#0d1b4b;"><i class="fas fa-info-circle me-2"></i>Community Information</h5>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="text-muted small fw-semibold d-block">PLATFORM</label>
+            <span style="background:{{ pc }};color:#fff;padding:.25rem .75rem;border-radius:50px;font-size:.82rem;font-weight:700;">
+              <i class="{{ community.platform_icon }} me-1"></i>{{ community.platform|title }}
+            </span>
+          </div>
+          <div class="col-md-6">
+            <label class="text-muted small fw-semibold d-block">MEMBERS</label>
+            <div class="fw-bold fs-5" style="color:#0d1b4b;">{{ community.member_count_display or ('{:,}'.format(community.member_count) if community.member_count else 'Unknown') }}</div>
+          </div>
+          <div class="col-md-6">
+            <label class="text-muted small fw-semibold d-block">CATEGORY</label>
+            <div>{{ community.category or '—' }}</div>
+          </div>
+          <div class="col-md-6">
+            <label class="text-muted small fw-semibold d-block">COUNTRY FOCUS</label>
+            <div>{{ community.country_focus or 'Global' }}</div>
+          </div>
+          <div class="col-md-6">
+            <label class="text-muted small fw-semibold d-block">LANGUAGE</label>
+            <div>{{ community.language or 'English' }}</div>
+          </div>
+          <div class="col-md-6">
+            <label class="text-muted small fw-semibold d-block">DISCOVERED</label>
+            <div>{{ community.created_at.strftime('%b %d, %Y') }}</div>
+          </div>
+          {% if community.url %}
+          <div class="col-12">
+            <label class="text-muted small fw-semibold d-block">COMMUNITY URL</label>
+            <a href="{{ community.url }}" target="_blank" class="text-primary">{{ community.url }}</a>
+          </div>
+          {% endif %}
+        </div>
+        {% if community.description %}
+        <div class="mt-3 pt-3" style="border-top:1px solid #f0f0f0;">
+          <label class="text-muted small fw-semibold d-block mb-1">ABOUT THIS COMMUNITY</label>
+          <div style="font-size:.9rem;color:#444;line-height:1.7;">{{ community.description }}</div>
+        </div>
+        {% endif %}
+        {% if community.join_instructions %}
+        <div class="mt-3 pt-3" style="border-top:1px solid #f0f0f0;">
+          <label class="text-muted small fw-semibold d-block mb-1">HOW TO JOIN</label>
+          <div style="background:#f0f7ff;border-radius:10px;padding:1rem;font-size:.875rem;color:#1a3a6b;line-height:1.65;">
+            <i class="fas fa-sign-in-alt me-2 text-primary"></i>{{ community.join_instructions }}
+          </div>
+        </div>
+        {% endif %}
+        {% if community.join_link %}
+        <div class="mt-3">
+          <a href="{{ community.join_link }}" target="_blank" class="btn btn-sm fw-bold" style="background:{{ pc }};color:#fff;border:none;border-radius:8px;">
+            <i class="{{ community.platform_icon }} me-1"></i>Join {{ community.platform|title }} Community
+          </a>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- AI Outreach Messages -->
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.75rem;">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h5 class="fw-bold mb-0" style="color:#0d1b4b;"><i class="fas fa-magic me-2" style="color:#FFD700;"></i>AI Outreach Messages</h5>
+          <div class="d-flex gap-2">
+            {% for ch, label in [('post','Community Post'),('comment','Comment'),('dm','DM to Admin'),('email','Email to Admin')] %}
+            <button class="btn btn-sm gen-btn fw-semibold" data-channel="{{ ch }}"
+              style="background:#f0f4ff;color:#0d1b4b;border:none;border-radius:8px;font-size:.78rem;">
+              <i class="fas fa-magic me-1"></i>{{ label }}
+            </button>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div id="genSpinner" style="display:none;text-align:center;padding:2rem;">
+          <div class="spinner-border text-primary" role="status" style="width:2rem;height:2rem;"></div>
+          <div class="text-muted small mt-2">Generating personalized message…</div>
+        </div>
+
+        <div id="messagesList">
+          {% if community.ai_outreach_messages %}
+            {% for msg in community.ai_outreach_messages|reverse %}
+            <div class="message-card" style="border:1px solid #e8ecf0;border-radius:12px;padding:1.25rem;margin-bottom:1rem;position:relative;">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <span style="background:#0d1b4b;color:#FFD700;font-size:.72rem;font-weight:700;padding:.2rem .65rem;border-radius:50px;text-transform:uppercase;">{{ msg.channel or 'post' }}</span>
+                {% if msg.generated_at %}<span class="text-muted" style="font-size:.72rem;">{{ msg.generated_at[:10] }}</span>{% endif %}
+                <button class="btn btn-sm copy-msg-btn ms-auto" style="background:#f0f4ff;border:none;border-radius:6px;padding:.25rem .6rem;font-size:.75rem;" title="Copy">
+                  <i class="fas fa-copy me-1"></i>Copy
+                </button>
+              </div>
+              {% if msg.subject %}
+              <div class="fw-semibold small mb-1" style="color:#555;">Subject: {{ msg.subject }}</div>
+              {% endif %}
+              <div class="msg-body" style="font-size:.875rem;color:#333;line-height:1.7;white-space:pre-wrap;">{{ msg.body }}</div>
+            </div>
+            {% endfor %}
+          {% else %}
+          <div id="emptyMessages" class="text-center text-muted py-4">
+            <i class="fas fa-magic fa-2x mb-2 d-block" style="color:#e0e0e0;"></i>
+            No messages yet — click a button above to generate a customized outreach message for this community.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="col-lg-4">
+      <!-- Status Card -->
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.5rem;margin-bottom:1.5rem;position:sticky;top:80px;">
+        <h6 class="fw-bold mb-3">Outreach Status</h6>
+        <select id="statusSelect" class="form-select mb-3" style="border-radius:10px;">
+          {% for s, label in [('not_contacted','Not Contacted'),('draft','Draft Ready'),('contacted','Contacted'),('replied','Replied')] %}
+          <option value="{{ s }}" {% if community.outreach_status == s %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+
+        <div style="font-size:.82rem;color:#555;line-height:1.9;">
+          <div><strong>Platform:</strong> {{ community.platform|title }}</div>
+          <div><strong>Members:</strong> {{ community.member_count_display or '—' }}</div>
+          <div><strong>Source:</strong> {{ community.source|title }}</div>
+          <div><strong>Added:</strong> {{ community.created_at.strftime('%b %d, %Y') }}</div>
+          {% if community.last_outreach_at %}
+          <div><strong>Last Outreach:</strong> {{ community.last_outreach_at.strftime('%b %d, %Y') }}</div>
+          {% endif %}
+          <div><strong>Messages:</strong> {{ community.ai_outreach_messages|length }}</div>
+        </div>
+
+        {% if community.join_link %}
+        <hr>
+        <a href="{{ community.join_link }}" target="_blank" class="btn w-100 btn-sm fw-bold mb-2" style="background:{{ pc }};color:#fff;border:none;border-radius:8px;">
+          <i class="{{ community.platform_icon }} me-1"></i>Open {{ community.platform|title }}
+        </a>
+        {% endif %}
+
+        <hr>
+        <!-- Notes -->
+        <div class="fw-semibold small mb-2" style="color:#0d1b4b;">Admin Notes</div>
+        <textarea id="notesArea" class="form-control mb-2" rows="3" placeholder="Add notes about this community…" style="border-radius:8px;font-size:.82rem;">{{ community.notes or '' }}</textarea>
+        <button id="saveNoteBtn" class="btn btn-sm btn-outline-primary w-100" style="border-radius:8px;">
+          <i class="fas fa-save me-1"></i>Save Notes
+        </button>
+
+        <hr>
+        <form method="POST" action="{{ url_for('social_communities.delete_community', community_id=community.id) }}" onsubmit="return confirm('Remove this community from the CRM?')">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-outline-danger btn-sm w-100" style="border-radius:8px;"><i class="fas fa-trash me-1"></i>Remove</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const communityId = {{ community.id }};
+const csrfToken = '{{ csrf_token() }}';
+
+// Status update
+document.getElementById('statusSelect').addEventListener('change', async function() {
+  const resp = await fetch(`/superadmin/crm/communities/${communityId}/update-status`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+    body: JSON.stringify({status: this.value})
+  });
+  const d = await resp.json();
+  if (d.success) showToast('Status updated', '#10b981');
+});
+
+// Save notes
+document.getElementById('saveNoteBtn').addEventListener('click', async function() {
+  const note = document.getElementById('notesArea').value;
+  const resp = await fetch(`/superadmin/crm/communities/${communityId}/save-note`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+    body: JSON.stringify({note})
+  });
+  const d = await resp.json();
+  if (d.success) showToast('Notes saved', '#10b981');
+});
+
+// Generate message buttons
+document.querySelectorAll('.gen-btn').forEach(btn => {
+  btn.addEventListener('click', async function() {
+    const channel = this.dataset.channel;
+    document.getElementById('genSpinner').style.display = 'block';
+    document.querySelectorAll('.gen-btn').forEach(b => b.disabled = true);
+
+    const resp = await fetch(`/superadmin/crm/communities/${communityId}/generate-message`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+      body: JSON.stringify({channel})
+    });
+    const d = await resp.json();
+    document.getElementById('genSpinner').style.display = 'none';
+    document.querySelectorAll('.gen-btn').forEach(b => b.disabled = false);
+
+    if (d.success) {
+      const msg = d.message;
+      const empty = document.getElementById('emptyMessages');
+      if (empty) empty.remove();
+
+      const html = `<div class="message-card" style="border:1px solid #e8ecf0;border-radius:12px;padding:1.25rem;margin-bottom:1rem;position:relative;animation:fadeIn .3s ease;">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <span style="background:#0d1b4b;color:#FFD700;font-size:.72rem;font-weight:700;padding:.2rem .65rem;border-radius:50px;text-transform:uppercase;">${msg.channel||channel}</span>
+          <span style="color:#888;font-size:.72rem;">${(msg.generated_at||'').slice(0,10)}</span>
+          <button class="btn btn-sm copy-msg-btn ms-auto" style="background:#f0f4ff;border:none;border-radius:6px;padding:.25rem .6rem;font-size:.75rem;"><i class="fas fa-copy me-1"></i>Copy</button>
+        </div>
+        ${msg.subject ? `<div class="fw-semibold small mb-1" style="color:#555;">Subject: ${msg.subject}</div>` : ''}
+        <div class="msg-body" style="font-size:.875rem;color:#333;line-height:1.7;white-space:pre-wrap;">${msg.body}</div>
+      </div>`;
+      document.getElementById('messagesList').insertAdjacentHTML('afterbegin', html);
+      attachCopyHandlers();
+      showToast('Message generated!', '#10b981');
+    } else {
+      showToast('Generation failed — check OPENAI_API_KEY or try again', '#dc3545');
+    }
+  });
+});
+
+// Copy handlers
+function attachCopyHandlers() {
+  document.querySelectorAll('.copy-msg-btn').forEach(btn => {
+    btn.onclick = function() {
+      const card = this.closest('.message-card');
+      const subject = card.querySelector('.fw-semibold.small')?.textContent || '';
+      const body = card.querySelector('.msg-body')?.textContent || '';
+      const text = subject ? `${subject}\n\n${body}` : body;
+      navigator.clipboard.writeText(text).then(() => {
+        const orig = this.innerHTML;
+        this.innerHTML = '<i class="fas fa-check me-1"></i>Copied!';
+        setTimeout(() => this.innerHTML = orig, 1800);
+      });
+    };
+  });
+}
+attachCopyHandlers();
+
+function showToast(msg, bg) {
+  const t = document.createElement('div');
+  t.style.cssText = `position:fixed;bottom:20px;right:20px;background:${bg};color:#fff;padding:.75rem 1.25rem;border-radius:10px;font-weight:600;z-index:9999;box-shadow:0 4px 15px rgba(0,0,0,.15);`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+</script>
+<style>
+@keyframes fadeIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+</style>
+{% endblock %}

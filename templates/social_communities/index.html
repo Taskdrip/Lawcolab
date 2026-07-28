@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+{% block title %}Social Communities CRM{% endblock %}
+{% block content %}
+<div class="container-fluid py-4 px-4">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+      <h3 class="mb-0 fw-bold" style="color:#0d1b4b;">Social Communities CRM</h3>
+      <p class="text-muted mb-0 small">Discover and reach legal communities on Facebook, LinkedIn, Reddit, WhatsApp & more</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button id="runRobotBtn" class="btn fw-bold" style="background:#0d1b4b;color:#FFD700;border-radius:10px;border:none;">
+        <i class="fas fa-robot me-2"></i>Run Discovery Robot
+      </button>
+      <button class="btn btn-outline-secondary fw-bold" data-bs-toggle="modal" data-bs-target="#addCommunityModal" style="border-radius:10px;">
+        <i class="fas fa-plus me-2"></i>Add Manually
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Bar -->
+  <div class="row g-3 mb-4">
+    {% for label, val, color, icon in [
+      ('Total Communities', total, '#0d1b4b', 'users'),
+      ('To Import', seed_count, '#6610f2', 'robot'),
+      ('Contacted', contacted, '#fd7e14', 'paper-plane'),
+      ('With AI Messages', with_messages, '#198754', 'magic'),
+    ] %}
+    <div class="col-6 col-md-3">
+      <div style="background:#fff;border-radius:14px;border:1px solid #e8ecf0;padding:1.25rem;text-align:center;">
+        <div style="font-size:1.75rem;font-weight:800;color:{{ color }};">{{ val }}</div>
+        <div class="text-muted small fw-semibold"><i class="fas fa-{{ icon }} me-1"></i>{{ label }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Robot Log -->
+  <div id="robotLog" style="display:none;background:#0d1b4b;border-radius:12px;padding:1.25rem;font-family:monospace;font-size:.82rem;color:#a8ff78;margin-bottom:1.5rem;min-height:70px;white-space:pre-wrap;"></div>
+
+  <!-- Filters -->
+  <form method="GET" class="row g-2 mb-4" id="filterForm">
+    <div class="col-12 col-md-4">
+      <div class="input-group" style="border-radius:10px;overflow:hidden;">
+        <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+        <input type="text" name="q" value="{{ q }}" class="form-control border-start-0" placeholder="Search communities…" style="border-radius:0;">
+      </div>
+    </div>
+    <div class="col-6 col-md-2">
+      <select name="platform" class="form-select" style="border-radius:10px;" onchange="this.form.submit()">
+        <option value="">All Platforms</option>
+        {% for p in platforms %}
+        <option value="{{ p }}" {% if platform_filter == p %}selected{% endif %}>{{ p|title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-3">
+      <select name="category" class="form-select" style="border-radius:10px;" onchange="this.form.submit()">
+        <option value="">All Categories</option>
+        {% for c in categories %}
+        <option value="{{ c }}" {% if category_filter == c %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-2">
+      <select name="status" class="form-select" style="border-radius:10px;" onchange="this.form.submit()">
+        <option value="">All Statuses</option>
+        <option value="not_contacted" {% if status_filter == 'not_contacted' %}selected{% endif %}>Not Contacted</option>
+        <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>Draft Ready</option>
+        <option value="contacted" {% if status_filter == 'contacted' %}selected{% endif %}>Contacted</option>
+        <option value="replied" {% if status_filter == 'replied' %}selected{% endif %}>Replied</option>
+      </select>
+    </div>
+    <div class="col-6 col-md-1">
+      <button type="submit" class="btn btn-primary w-100" style="border-radius:10px;background:#0d1b4b;border-color:#0d1b4b;">Go</button>
+    </div>
+  </form>
+
+  <!-- Communities Grid -->
+  {% if not communities %}
+  <div style="text-align:center;padding:4rem 2rem;background:#fff;border-radius:16px;border:1px solid #e8ecf0;">
+    <i class="fas fa-users fa-3x mb-3" style="color:#e0e0e0;"></i>
+    <h5 class="fw-bold text-muted">No communities yet</h5>
+    <p class="text-muted">Run the robot to discover {{ seed_count }} pre-loaded legal communities, or add one manually.</p>
+    <button id="runRobotBtn2" class="btn fw-bold" style="background:#0d1b4b;color:#FFD700;border-radius:10px;border:none;">
+      <i class="fas fa-robot me-2"></i>Run Discovery Robot
+    </button>
+  </div>
+  {% else %}
+  <div class="row g-3">
+    {% for c in communities %}
+    {% set pcolor = {'facebook':'#1877f2','linkedin':'#0077b5','reddit':'#ff4500','twitter':'#000','whatsapp':'#25d366','telegram':'#0088cc','youtube':'#ff0000','instagram':'#e4405f'} %}
+    {% set pc = pcolor.get(c.platform, '#6c757d') %}
+    <div class="col-12 col-md-6 col-xl-4">
+      <a href="{{ url_for('social_communities.detail', community_id=c.id) }}" style="text-decoration:none;">
+        <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.5rem;height:100%;transition:box-shadow .2s;cursor:pointer;" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow='none'">
+          <!-- Header row -->
+          <div class="d-flex align-items-start gap-3 mb-3">
+            <div style="width:46px;height:46px;border-radius:12px;background:{{ pc }};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="{{ c.platform_icon }} fa-lg" style="color:#fff;"></i>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div class="fw-bold" style="color:#0d1b4b;font-size:.95rem;line-height:1.3;word-break:break-word;">{{ c.community_name }}</div>
+              <div class="text-muted small">{{ c.platform|title }} • {{ c.category or '—' }}</div>
+            </div>
+            <!-- Status badge -->
+            {% set sbg = {'not_contacted':'#f0f4ff','draft':'#fff8e1','contacted':'#e8f5e9','replied':'#f3e5f5'} %}
+            {% set sclr = {'not_contacted':'#3b5bdb','draft':'#e65100','contacted':'#2e7d32','replied':'#6a1b9a'} %}
+            <span style="background:{{ sbg.get(c.outreach_status,'#f0f4ff') }};color:{{ sclr.get(c.outreach_status,'#3b5bdb') }};font-size:.7rem;font-weight:700;padding:.25rem .65rem;border-radius:50px;white-space:nowrap;">
+              {{ c.outreach_status|replace('_',' ')|title }}
+            </span>
+          </div>
+
+          <!-- Members -->
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <div style="background:#f8fafc;border-radius:8px;padding:.4rem .85rem;font-size:.82rem;font-weight:700;color:#0d1b4b;">
+              <i class="fas fa-users me-1 text-muted" style="font-size:.75rem;"></i>
+              {{ c.member_count_display or ('{:,}'.format(c.member_count) if c.member_count else 'N/A') }} members
+            </div>
+            {% if c.country_focus %}
+            <div class="text-muted small"><i class="fas fa-globe me-1"></i>{{ c.country_focus }}</div>
+            {% endif %}
+          </div>
+
+          <!-- Description snippet -->
+          {% if c.description %}
+          <div class="text-muted small" style="line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ c.description }}</div>
+          {% endif %}
+
+          <!-- AI messages count -->
+          {% if c.ai_outreach_messages %}
+          <div style="margin-top:.75rem;border-top:1px solid #f0f0f0;padding-top:.75rem;">
+            <span style="background:#e8f5e9;color:#2e7d32;font-size:.75rem;font-weight:600;padding:.25rem .6rem;border-radius:50px;">
+              <i class="fas fa-magic me-1"></i>{{ c.ai_outreach_messages|length }} AI message{{ 's' if c.ai_outreach_messages|length != 1 else '' }}
+            </span>
+            {% if c.last_outreach_at %}
+            <span class="text-muted ms-2" style="font-size:.72rem;">Last: {{ c.last_outreach_at.strftime('%b %d') }}</span>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+<!-- Add Community Modal -->
+<div class="modal fade" id="addCommunityModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" style="border-radius:16px;border:none;">
+      <div class="modal-header" style="border-bottom:1px solid #f0f0f0;">
+        <h5 class="modal-title fw-bold" style="color:#0d1b4b;"><i class="fas fa-plus me-2"></i>Add Community Manually</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('social_communities.add_community') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Platform *</label>
+              <select name="platform" class="form-select" style="border-radius:8px;" required>
+                <option value="">Select platform</option>
+                {% for p in ['facebook','linkedin','reddit','twitter','whatsapp','telegram','youtube','instagram','other'] %}
+                <option value="{{ p }}">{{ p|title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Community Name *</label>
+              <input type="text" name="community_name" class="form-control" placeholder="e.g. Nigerian Lawyers Forum" style="border-radius:8px;" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Community URL</label>
+              <input type="url" name="url" class="form-control" placeholder="https://..." style="border-radius:8px;">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Join Link</label>
+              <input type="url" name="join_link" class="form-control" placeholder="Direct join link" style="border-radius:8px;">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Member Count</label>
+              <input type="number" name="member_count" class="form-control" placeholder="e.g. 50000" style="border-radius:8px;">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Display (e.g. "50K")</label>
+              <input type="text" name="member_count_display" class="form-control" placeholder="50K" style="border-radius:8px;">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Category</label>
+              <input type="text" name="category" class="form-control" placeholder="Legal General" style="border-radius:8px;">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Country Focus</label>
+              <input type="text" name="country_focus" class="form-control" placeholder="Nigeria / Global" style="border-radius:8px;">
+            </div>
+            <div class="col-12">
+              <label class="form-label small fw-semibold">Description</label>
+              <textarea name="description" class="form-control" rows="2" style="border-radius:8px;" placeholder="What this community is about…"></textarea>
+            </div>
+            <div class="col-12">
+              <label class="form-label small fw-semibold">How to Join</label>
+              <textarea name="join_instructions" class="form-control" rows="2" style="border-radius:8px;" placeholder="Instructions for joining this community…"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius:8px;">Cancel</button>
+          <button type="submit" class="btn fw-bold" style="background:#0d1b4b;color:#fff;border:none;border-radius:8px;"><i class="fas fa-plus me-1"></i>Add Community</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function runRobot() {
+  const log = document.getElementById('robotLog');
+  log.style.display = 'block';
+  log.textContent = '> Initializing Social Media Legal Communities Robot...\n';
+  const platforms = ['Facebook','LinkedIn','Reddit','X/Twitter','WhatsApp','Telegram','YouTube','Instagram'];
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i < platforms.length) {
+      log.textContent += `> Scanning ${platforms[i]}...\n`;
+      log.scrollTop = log.scrollHeight;
+      i++;
+    } else {
+      clearInterval(interval);
+      fetch('{{ url_for("social_communities.robot_run") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'csrf_token={{ csrf_token() }}'
+      }).then(r => r.json()).then(d => {
+        log.textContent += d.success ? `\n✅ ${d.message}\n> Reload the page to see results.` : `\n❌ Error: ${d.message}`;
+        if (d.success && d.added > 0) setTimeout(() => location.reload(), 1800);
+      }).catch(() => { log.textContent += '\n❌ Network error.'; });
+    }
+  }, 160);
+}
+
+document.getElementById('runRobotBtn').addEventListener('click', runRobot);
+const btn2 = document.getElementById('runRobotBtn2');
+if (btn2) btn2.addEventListener('click', runRobot);
+</script>
+{% endblock %}

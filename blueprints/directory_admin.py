@@ -260,6 +260,24 @@ def add_note(firm_id):
         return jsonify({'success': False, 'message': str(e)})
 
 
+@dir_admin_bp.route('/external/<int:firm_id>/update-social', methods=['POST'])
+@require_super_admin
+def update_social(firm_id):
+    """Save social media links for a firm."""
+    firm = DirectoryLawFirm.query.get_or_404(firm_id)
+    raw = request.form.get('social_links_json', '{}')
+    try:
+        links = json.loads(raw)
+        # Only keep non-empty values
+        links = {k: v for k, v in links.items() if v and str(v).strip()}
+        firm.social_links_json = json.dumps(links) if links else None
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
+
 @dir_admin_bp.route('/external/<int:firm_id>/delete', methods=['POST'])
 @require_super_admin
 def delete_external(firm_id):
@@ -1161,11 +1179,255 @@ _SEED_FIRMS = [
 @dir_admin_bp.route('/robot')
 @require_super_admin
 def robot_dashboard():
-    """Google Maps discovery robot dashboard."""
+    """Discovery robots dashboard."""
+    from models import SocialCommunity
+    from blueprints.social_communities import _SEED_COMMUNITIES
     already_added = DirectoryLawFirm.query.count()
+    community_count = SocialCommunity.query.count()
     return render_template('directory_admin/robot.html',
                            already_added=already_added,
-                           seed_count=len(_SEED_FIRMS))
+                           seed_count=len(_SEED_FIRMS),
+                           community_count=community_count,
+                           community_seed=len(_SEED_COMMUNITIES))
+
+
+@dir_admin_bp.route('/external/<int:firm_id>/generate-pitch', methods=['POST'])
+@require_super_admin
+def generate_pitch(firm_id):
+    """Generate AI email pitch + call script for a single firm."""
+    import os
+    import requests as req_lib
+    firm = DirectoryLawFirm.query.get_or_404(firm_id)
+
+    openai_key = os.environ.get('OPENAI_API_KEY', '')
+    areas = ', '.join(firm.practice_areas[:4]) if firm.practice_areas else 'legal practice'
+    city  = firm.city or firm.country or 'your area'
+    has_web = 'Yes' if firm.has_website else 'No (no existing website)'
+    social  = json.dumps(firm.social_links) if firm.social_links else 'none found'
+    gmb_status = 'Unverified GMB listing' if not firm.gmb_verified else 'Verified GMB listing'
+    reviews = f"{firm.google_reviews_count} Google reviews, {firm.google_rating}★" if firm.google_rating else 'no Google rating found'
+
+    _LAWCOLAB_FEATURES = """
+LAWCOLAB features:
+• Case & Matter Management — track every case, deadline, and document
+• Client Portal — clients get 24/7 secure online access to their case updates
+• Billing & Invoicing — instant invoice generation, payment tracking, receipts
+• Court Calendar — deadline reminders, hearing alerts, court date history
+• Team Collaboration — task assignment, internal messaging, document sharing
+• Analytics Dashboard — firm performance, revenue, case statistics at a glance
+• Client Acquisition Tools — digital intake forms, referral tracking, leads
+• Integrations — works alongside existing websites, email, and firm tools
+• Custom Feature Development — our developer team builds features on request
+• Mobile-Friendly — works on any device, anywhere
+"""
+
+    if openai_key:
+        try:
+            # Email pitch
+            prompt_email = f"""You are a top legal software sales writer for LAWCOLAB.
+
+Write a personalized cold-outreach email to this law firm to pitch LAWCOLAB:
+- Firm: {firm.name}
+- Location: {city}, {firm.state or ''}, {firm.country or 'Nigeria'}
+- Practice Areas: {areas}
+- Website: {has_web}
+- Social Media: {social}
+- Google Maps status: {gmb_status}
+- Google presence: {reviews}
+- Source: Found on Google Maps / public directory
+
+{_LAWCOLAB_FEATURES}
+
+Email structure:
+1. Warm, specific greeting referencing how you found them (Google Maps / directory, mention their location/speciality)
+2. Brief intro of LAWCOLAB as a Legal Operating System
+3. List 4-5 features most relevant to their practice area
+4. Emphasize: works WITH or WITHOUT their existing website / current systems
+5. Highlight: our developer team readily adds new custom features for their firm
+6. Emphasize how LAWCOLAB helps them acquire more clients and grow revenue
+7. Clear CTA: free trial / 20-min demo call at https://lawcolab.com
+8. Professional sign-off from "LAWCOLAB Growth Team"
+
+Rules:
+- Reference their specific practice areas and location naturally
+- If no website — position LAWCOLAB as the solution to their digital presence gap
+- If unverified GMB — mention we can help them look more professional online
+- Sound personal and research-based, never generic or spammy
+- Concise and professional: 250-350 words max
+
+Return JSON: {{"subject": "...", "body": "..."}}"""
+
+            r1 = req_lib.post(
+                'https://api.openai.com/v1/chat/completions',
+                headers={'Authorization': f'Bearer {openai_key}', 'Content-Type': 'application/json'},
+                json={'model': 'gpt-4o-mini', 'messages': [{'role': 'user', 'content': prompt_email}],
+                      'response_format': {'type': 'json_object'}, 'max_tokens': 700, 'temperature': 0.82},
+                timeout=25,
+            )
+            email_result = json.loads(r1.json()['choices'][0]['message']['content'])
+
+            # Call script
+            prompt_call = f"""You are a legal software sales trainer for LAWCOLAB.
+
+Write a complete phone call script for calling this law firm cold:
+- Firm: {firm.name}
+- Location: {city}, {firm.state or ''}, {firm.country or 'Nigeria'}
+- Practice Areas: {areas}
+- Website: {has_web}
+- Google status: {gmb_status} — {reviews}
+
+{_LAWCOLAB_FEATURES}
+
+Script structure (use clear headers):
+1. OPENING — Warm greeting, introduce yourself by name as "from LAWCOLAB team", state you're calling because you came across their firm on Google Maps / online directories
+2. PERMISSION CHECK — Ask if they have 2 minutes (respect their time)
+3. PROBLEM STATEMENT — Reference a specific pain most law firms in {city} face (managing cases, billing manually, missing deadlines, no client portal)
+4. SOLUTION INTRO — Briefly introduce LAWCOLAB as a legal operating system built for Nigerian / African law firms
+5. KEY FEATURES — Mention 3-4 features most relevant to {areas} practice
+6. WEBSITE BRIDGE — Whether or not they have a website, LAWCOLAB integrates with their current setup
+7. CUSTOM DEVELOPMENT — Mention our developer team can add features specific to their firm
+8. SOCIAL PROOF — Mention firms using LAWCOLAB improved client retention and billing efficiency
+9. CTA — Offer a free 20-minute screen-share demo, ask for a good time
+10. OBJECTION HANDLERS — 3 common objections with confident, respectful responses
+11. CLOSING — Thank them, confirm next step, share website https://lawcolab.com
+
+Keep each section practical. Use [PAUSE], [LISTEN], [SMILE] stage directions where helpful."""
+
+            r2 = req_lib.post(
+                'https://api.openai.com/v1/chat/completions',
+                headers={'Authorization': f'Bearer {openai_key}', 'Content-Type': 'application/json'},
+                json={'model': 'gpt-4o-mini', 'messages': [{'role': 'user', 'content': prompt_call}],
+                      'max_tokens': 900, 'temperature': 0.75},
+                timeout=25,
+            )
+            call_script = r2.json()['choices'][0]['message']['content']
+
+        except Exception as e:
+            email_result, call_script = _build_template_pitch(firm, areas, city, has_web, gmb_status)
+    else:
+        email_result, call_script = _build_template_pitch(firm, areas, city, has_web, gmb_status)
+
+    firm.ai_pitch_email = f"Subject: {email_result.get('subject','')}\n\n{email_result.get('body','')}"
+    firm.ai_call_script = call_script
+    firm.ai_pitch_generated_at = datetime.now()
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+        'email_subject': email_result.get('subject', ''),
+        'email_body': email_result.get('body', ''),
+        'call_script': call_script,
+    })
+
+
+def _build_template_pitch(firm, areas, city, has_web, gmb_status):
+    """Fallback template pitch when OpenAI is not configured."""
+    name = firm.name
+    no_web_line = (
+        "\n\nI also noticed your firm doesn't yet have a dedicated website — LAWCOLAB "
+        "includes a built-in client portal and public profile page, giving you a professional "
+        "digital presence from day one."
+        if not firm.has_website else ""
+    )
+    unverified_line = (
+        "\n\nI noticed your Google Maps listing appears unverified — LAWCOLAB helps your firm "
+        "look polished and credible online, which directly impacts how potential clients find you."
+        if not firm.gmb_verified else ""
+    )
+
+    email_body = f"""Dear {name} Team,
+
+I came across {name} while researching law firms in {city} on Google Maps and public directories — your reputation in {areas} caught my attention.
+
+My name is [Your Name] from the LAWCOLAB team. We've built LAWCOLAB — a modern Legal Operating System designed specifically for law firms like yours to run like world-class businesses.
+
+Here's what LAWCOLAB can do for {name}:
+• 📁 Case Management — track every matter, deadline, and document in one place
+• 👥 Client Portal — clients get 24/7 secure online access to their case updates
+• 💰 Billing & Invoicing — generate invoices instantly, track every payment
+• 📅 Court Calendar — never miss a hearing with smart deadline alerts
+• 📊 Analytics — know your firm's revenue and performance at a glance
+{no_web_line}{unverified_line}
+
+Whether {name} already has an existing website and tools or is starting fresh, LAWCOLAB integrates seamlessly with your current setup — no disruption to your practice.
+
+Our developer team is also on standby to add custom features tailored specifically to {name}'s workflow — helping you serve more clients and grow your firm's revenue.
+
+I'd love to offer you a free 20-minute demo. No commitment required.
+
+Would you be available for a quick call this week?
+
+Best regards,
+[Your Name]
+LAWCOLAB Growth Team
+https://lawcolab.com"""
+
+    _divider = '\u2500' * 60
+    _web_angle = 'No website \u2014 lead with digital presence angle' if not firm.has_website else 'Has website \u2014 lead with efficiency angle'
+    if firm.has_website:
+        _bridge = "'Even though you already have a website \u2014 LAWCOLAB integrates alongside it, adding the backend systems your firm needs to operate efficiently.'"
+    else:
+        _bridge = f"'I also noticed {name} doesn't yet have a dedicated website. LAWCOLAB includes a built-in public profile page and client portal \u2014 giving your firm a professional digital presence from day one, alongside all the practice management tools.'"
+
+    call_script = f"""LAWCOLAB CALL SCRIPT \u2014 {name}
+Location: {city} | Practice: {areas} | {gmb_status}
+{_web_angle}
+{_divider}
+
+1. OPENING
+"Good [morning/afternoon], may I please speak with the managing partner or firm administrator at {name}?"
+[When connected]
+"Hello, my name is [Your Name] calling from LAWCOLAB. I'm reaching out because I came across {name} on Google Maps while researching leading law firms in {city} \u2014 particularly in {areas}. I have a very quick question if you have two minutes?"
+[PAUSE] [LISTEN]
+
+2. PERMISSION CHECK
+"I promise to be brief. Is now a good time for just two minutes?"
+[If YES \u2192 continue. If NO \u2192 "No problem at all \u2014 when would be a better time to call back?"]
+
+3. PROBLEM STATEMENT
+"I speak with law firms in {city} daily, and the most common challenge I hear is managing cases, client follow-ups, and billing across different tools \u2014 often spreadsheets, WhatsApp, and manual invoices \u2014 which costs the firm hours every week and creates gaps."
+[PAUSE] "Does that sound familiar at {name}?"
+[LISTEN \u2014 note their response]
+
+4. SOLUTION INTRO
+"That's exactly why we built LAWCOLAB \u2014 a complete Legal Operating System for law firms. It brings case management, billing, client communication, and calendars into one platform designed specifically for firms like {name}."
+
+5. KEY FEATURES FOR {areas.upper()}
+"For a firm specialising in {areas}, the most valuable features are usually:
+\u2014 Case tracking so nothing falls through the cracks
+\u2014 Instant invoice generation with payment follow-ups built in
+\u2014 A client portal so clients can check their case status anytime
+\u2014 Court deadline alerts so you never miss a hearing date"
+
+6. WEBSITE BRIDGE
+{_bridge}
+
+7. CUSTOM DEVELOPMENT
+"What makes LAWCOLAB unique is that our developer team is always available to build features specific to your firm \u2014 if there's something you wish your current tools could do, we can add it."
+
+8. SOCIAL PROOF
+"Firms using LAWCOLAB report spending 60% less time on admin, billing more consistently, and \u2014 importantly \u2014 winning more clients because they present more professionally."
+
+9. CALL TO ACTION
+"I'd love to show you exactly what LAWCOLAB looks like for {name} \u2014 it's a free 20-minute screen-share, no commitment at all. What day works best for you this week?"
+[PAUSE] [LISTEN]
+
+10. OBJECTION HANDLERS
+Q: "We already have a system."
+\u2192 "That's great \u2014 LAWCOLAB works alongside your existing tools. Most firms tell us within 30 days they've consolidated everything into LAWCOLAB because it's so much simpler. Can I show you the integration in the demo?"
+
+Q: "We're too busy right now."
+\u2192 "I completely understand \u2014 that's actually why LAWCOLAB is so valuable. It's designed to save your team at least 5 hours a week by automating the admin work. The demo is only 20 minutes \u2014 would [specific day/time] work?"
+
+Q: "We can't afford another software."
+\u2192 "Totally fair question. LAWCOLAB starts at less than the cost of one billable hour per month \u2014 and most firms recover that in the first week from billing efficiency alone. I'd love to show you the ROI in the demo."
+
+11. CLOSING
+"Wonderful \u2014 I'll send a calendar invite to [their email] for [date/time]. The meeting link and a short overview of LAWCOLAB will be in the invite. Have a great day, and I look forward to speaking with you!"
+[Note: follow up with intro email after the call]
+Website: https://lawcolab.com"""
+
+    return {'subject': f"Running {name} Like a World-Class Law Firm — LAWCOLAB", 'body': email_body}, call_script
 
 
 @dir_admin_bp.route('/robot/run', methods=['POST'])

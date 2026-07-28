@@ -2,3 +2,4 @@
 - [Global CSS design system](design-system.md) — simple.css is the single global stylesheet; dark sections use .lc-dark / .dir-hero / .cta-banner selectors to enforce white text
 - [Directory auto-seed](directory-autoseed.md) — DirectoryLawFirm is auto-seeded from _SEED_FIRMS in app.py startup if table is empty; robot admin can re-run to add more
 - [Super admin Railway fix](super-admin-railway.md) — app.py syncs super admin password/role from SUPER_ADMIN_EMAIL + SUPER_ADMIN_PASSWORD env vars on every startup; both must be set on Railway
+- [Social Communities & Robot feature](social-communities-feature.md) — SocialCommunity model + blueprint at /superadmin/crm/communities; robot seeds 20 legal communities; per-firm AI pitch email + call script on law firm CRM profile page

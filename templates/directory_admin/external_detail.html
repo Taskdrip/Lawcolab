@@ -1,48 +1,170 @@
 {% extends "base.html" %}
-{% block title %}{{ firm.name }} — CRM{% endblock %}
+{% block title %}{{ firm.name }} — CRM Profile{% endblock %}
 {% block content %}
-<div class="container py-4">
-  <div class="d-flex align-items-center gap-3 mb-4">
+<div class="container-fluid py-4 px-4" style="max-width:1200px;margin:0 auto;">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
     <a href="{{ url_for('dir_admin.external_firms') }}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;"><i class="fas fa-arrow-left"></i></a>
-    <h3 class="mb-0 fw-bold">{{ firm.name }}</h3>
+    <h3 class="mb-0 fw-bold" style="color:#0d1b4b;">{{ firm.name }}</h3>
     {% if firm.source == 'google_maps' %}<span style="background:#e8f5e9;color:#2e7d32;font-size:.78rem;font-weight:700;padding:.3rem .8rem;border-radius:50px;"><i class="fab fa-google me-1"></i>Google Maps</span>{% endif %}
-    {% if not firm.has_website %}<span style="background:#fef3c7;color:#92400e;font-size:.78rem;font-weight:700;padding:.3rem .8rem;border-radius:50px;"><i class="fas fa-exclamation-triangle me-1"></i>No Website</span>{% endif %}
+    {% if firm.gmb_verified %}<span style="background:#e8f5e9;color:#2e7d32;font-size:.78rem;font-weight:700;padding:.3rem .8rem;border-radius:50px;"><i class="fas fa-check-circle me-1"></i>GMB Verified</span>
+    {% else %}<span style="background:#fef3c7;color:#92400e;font-size:.78rem;font-weight:700;padding:.3rem .8rem;border-radius:50px;"><i class="fas fa-exclamation-triangle me-1"></i>GMB Unverified</span>{% endif %}
+    {% if not firm.has_website %}<span style="background:#fee2e2;color:#b91c1c;font-size:.78rem;font-weight:700;padding:.3rem .8rem;border-radius:50px;"><i class="fas fa-globe me-1"></i>No Website</span>{% endif %}
+    <span style="background:{{ firm.pipeline_stage_color }}22;color:{{ firm.pipeline_stage_color }};font-size:.78rem;font-weight:700;padding:.3rem .8rem;border-radius:50px;margin-left:auto;">
+      {{ firm.pipeline_stage_label }}
+    </span>
   </div>
 
+  <!-- Main grid -->
   <div class="row g-4">
     <div class="col-lg-8">
-      <!-- Firm Info -->
+
+      <!-- ── Firm Information ──────────────────────────────────────────── -->
       <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.75rem;margin-bottom:1.5rem;">
-        <h5 class="fw-bold mb-3">Firm Information</h5>
+        <h5 class="fw-bold mb-3" style="color:#0d1b4b;"><i class="fas fa-building me-2"></i>Firm Information</h5>
         <div class="row g-3">
-          <div class="col-md-6"><label class="text-muted small fw-semibold">Name</label><div>{{ firm.name }}</div></div>
-          <div class="col-md-6"><label class="text-muted small fw-semibold">Phone</label><div>{{ firm.phone or '—' }}</div></div>
-          <div class="col-md-6"><label class="text-muted small fw-semibold">Email</label><div>{{ firm.email or '—' }}</div></div>
-          <div class="col-md-6"><label class="text-muted small fw-semibold">Website</label><div>{% if firm.website %}<a href="{{ firm.website }}" target="_blank">{{ firm.website }}</a>{% else %}<span class="text-danger fw-semibold">No website</span>{% endif %}</div></div>
-          <div class="col-md-6"><label class="text-muted small fw-semibold">City</label><div>{{ firm.city or '—' }}</div></div>
-          <div class="col-md-6"><label class="text-muted small fw-semibold">State</label><div>{{ firm.state or '—' }}</div></div>
+          <div class="col-md-6"><label class="text-muted small fw-semibold">Name</label><div class="fw-semibold">{{ firm.name }}</div></div>
+          <div class="col-md-6"><label class="text-muted small fw-semibold">Phone</label><div>{% if firm.phone %}<a href="tel:{{ firm.phone }}" class="text-dark">{{ firm.phone }}</a>{% else %}—{% endif %}</div></div>
+          <div class="col-md-6"><label class="text-muted small fw-semibold">WhatsApp</label><div>{% if firm.whatsapp %}<a href="https://wa.me/{{ firm.whatsapp|replace('+','') }}" target="_blank" class="text-success">{{ firm.whatsapp }}</a>{% else %}—{% endif %}</div></div>
+          <div class="col-md-6"><label class="text-muted small fw-semibold">Email</label><div>{% if firm.email %}<a href="mailto:{{ firm.email }}" class="text-dark">{{ firm.email }}</a>{% else %}—{% endif %}</div></div>
+          <div class="col-md-6"><label class="text-muted small fw-semibold">Website</label><div>{% if firm.website %}<a href="{{ firm.website }}" target="_blank" class="text-primary">{{ firm.website }}</a>{% else %}<span class="text-danger fw-semibold">No website</span>{% endif %}</div></div>
+          <div class="col-md-6"><label class="text-muted small fw-semibold">City / State</label><div>{{ firm.city or '—' }}{% if firm.state %}, {{ firm.state }}{% endif %}</div></div>
           <div class="col-md-6"><label class="text-muted small fw-semibold">Country</label><div>{{ firm.country or '—' }}</div></div>
           <div class="col-md-6"><label class="text-muted small fw-semibold">Address</label><div>{{ firm.address or '—' }}</div></div>
           {% if firm.google_rating %}
-          <div class="col-md-6"><label class="text-muted small fw-semibold">Google Rating</label><div style="color:#ffc107;"><i class="fas fa-star"></i> {{ firm.google_rating }} ({{ firm.google_reviews_count }} reviews)</div></div>
+          <div class="col-md-6"><label class="text-muted small fw-semibold">Google Rating</label>
+            <div style="color:#ffc107;font-weight:600;"><i class="fas fa-star me-1"></i>{{ firm.google_rating }} <span class="text-muted fw-normal">({{ firm.google_reviews_count }} reviews)</span></div>
+          </div>
           {% endif %}
           {% if firm.google_maps_url %}
-          <div class="col-12"><label class="text-muted small fw-semibold">Google Maps</label><div><a href="{{ firm.google_maps_url }}" target="_blank" class="btn btn-sm btn-outline-secondary" style="border-radius:8px;"><i class="fab fa-google me-1"></i>View on Maps</a></div></div>
+          <div class="col-md-6"><label class="text-muted small fw-semibold">Google Maps</label>
+            <div><a href="{{ firm.google_maps_url }}" target="_blank" class="btn btn-sm btn-outline-secondary" style="border-radius:8px;font-size:.8rem;"><i class="fab fa-google me-1"></i>View Listing</a>
+            {% if not firm.gmb_verified %}<span class="ms-2 text-warning small fw-semibold"><i class="fas fa-exclamation-triangle me-1"></i>Unverified</span>{% endif %}
+            </div>
+          </div>
           {% endif %}
         </div>
+
         {% if firm.practice_areas %}
-        <div class="mt-3">
+        <div class="mt-3 pt-3" style="border-top:1px solid #f0f0f0;">
           <div class="text-muted small fw-semibold mb-2">PRACTICE AREAS</div>
           <div class="d-flex flex-wrap gap-2">{% for a in firm.practice_areas %}<span style="background:#f0f4ff;color:#0d1b4b;font-size:.78rem;font-weight:600;padding:.3rem .8rem;border-radius:50px;">{{ a }}</span>{% endfor %}</div>
         </div>
         {% endif %}
+
+        {% if firm.description %}
+        <div class="mt-3 pt-3" style="border-top:1px solid #f0f0f0;">
+          <div class="text-muted small fw-semibold mb-1">DESCRIPTION</div>
+          <div style="font-size:.88rem;color:#444;line-height:1.7;">{{ firm.description }}</div>
+        </div>
+        {% endif %}
       </div>
 
-      <!-- CRM Notes -->
-      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.75rem;">
-        <h5 class="fw-bold mb-3"><i class="fas fa-sticky-note me-2" style="color:#0d1b4b;"></i>CRM Notes</h5>
+      <!-- ── Social Media Links ───────────────────────────────────────── -->
+      {% set slinks = firm.social_links %}
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.75rem;margin-bottom:1.5rem;">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h5 class="fw-bold mb-0" style="color:#0d1b4b;"><i class="fas fa-share-alt me-2"></i>Social Media Presence</h5>
+          <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#editSocialLinks" style="border-radius:8px;font-size:.8rem;"><i class="fas fa-edit me-1"></i>Edit</button>
+        </div>
 
-        <!-- Add note form -->
+        {% if slinks %}
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          {% for platform, url in slinks.items() if url %}
+          {% set picons = {'facebook':'fab fa-facebook','linkedin':'fab fa-linkedin','twitter':'fab fa-x-twitter','instagram':'fab fa-instagram','youtube':'fab fa-youtube','tiktok':'fab fa-tiktok'} %}
+          {% set pcolors = {'facebook':'#1877f2','linkedin':'#0077b5','twitter':'#000','instagram':'#e4405f','youtube':'#ff0000','tiktok':'#000'} %}
+          <a href="{{ url }}" target="_blank" class="btn btn-sm fw-bold" style="background:{{ pcolors.get(platform,'#6c757d') }};color:#fff;border:none;border-radius:8px;font-size:.8rem;">
+            <i class="{{ picons.get(platform,'fas fa-link') }} me-1"></i>{{ platform|title }}
+          </a>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-muted small mb-3"><i class="fas fa-info-circle me-1"></i>No social media links found for this firm yet.</div>
+        {% endif %}
+
+        <!-- Edit social links (collapsed) -->
+        <div class="collapse" id="editSocialLinks">
+          <div style="background:#f8fafc;border-radius:10px;padding:1.25rem;">
+            <div class="row g-2" id="socialLinksForm">
+              {% set platforms = ['facebook','linkedin','twitter','instagram','youtube','tiktok'] %}
+              {% for p in platforms %}
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold mb-1"><i class="{{ {'facebook':'fab fa-facebook','linkedin':'fab fa-linkedin','twitter':'fab fa-x-twitter','instagram':'fab fa-instagram','youtube':'fab fa-youtube','tiktok':'fab fa-tiktok'}.get(p,'fas fa-link') }} me-1"></i>{{ p|title }}</label>
+                <input type="url" class="form-control form-control-sm social-input" data-platform="{{ p }}" value="{{ slinks.get(p,'') }}" placeholder="https://…" style="border-radius:8px;">
+              </div>
+              {% endfor %}
+            </div>
+            <button id="saveSocialBtn" class="btn btn-sm fw-bold mt-3" style="background:#0d1b4b;color:#fff;border:none;border-radius:8px;">
+              <i class="fas fa-save me-1"></i>Save Social Links
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── AI Pitch Email ──────────────────────────────────────────── -->
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.75rem;margin-bottom:1.5rem;" id="pitchSection">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h5 class="fw-bold mb-0" style="color:#0d1b4b;"><i class="fas fa-envelope-open-text me-2" style="color:#FFD700;"></i>AI Pitch Email</h5>
+          <button id="generatePitchBtn" class="btn btn-sm fw-bold" style="background:#0d1b4b;color:#FFD700;border:none;border-radius:8px;">
+            <i class="fas fa-magic me-1"></i>{% if firm.ai_pitch_email %}Regenerate{% else %}Generate Pitch{% endif %}
+          </button>
+        </div>
+
+        <div id="pitchSpinner" style="display:none;text-align:center;padding:2rem;">
+          <div class="spinner-border text-primary" role="status" style="width:2rem;height:2rem;"></div>
+          <div class="text-muted small mt-2">Crafting personalized pitch…</div>
+        </div>
+
+        <div id="pitchContent">
+          {% if firm.ai_pitch_email %}
+          <div style="background:#f8f9ff;border-radius:10px;padding:1.25rem;position:relative;">
+            <button id="copyEmailBtn" class="btn btn-sm" style="position:absolute;top:.75rem;right:.75rem;background:#f0f4ff;border:none;border-radius:6px;font-size:.75rem;">
+              <i class="fas fa-copy me-1"></i>Copy
+            </button>
+            {% if firm.ai_pitch_generated_at %}
+            <div class="text-muted small mb-2"><i class="fas fa-clock me-1"></i>Generated {{ firm.ai_pitch_generated_at.strftime('%b %d, %Y %H:%M') }}</div>
+            {% endif %}
+            <pre id="pitchEmailText" style="white-space:pre-wrap;font-family:inherit;font-size:.875rem;color:#333;line-height:1.75;margin:0;">{{ firm.ai_pitch_email }}</pre>
+          </div>
+          {% else %}
+          <div id="pitchPlaceholder" class="text-center text-muted py-4">
+            <i class="fas fa-envelope-open-text fa-2x mb-2 d-block" style="color:#e0e0e0;"></i>
+            <div>No pitch email generated yet.</div>
+            <div class="small mt-1">Click "Generate Pitch" to create a personalized email for this firm — referencing their location, practice areas, and digital presence.</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- ── AI Call Script ──────────────────────────────────────────── -->
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.75rem;margin-bottom:1.5rem;">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h5 class="fw-bold mb-0" style="color:#0d1b4b;"><i class="fas fa-phone-alt me-2" style="color:#10b981;"></i>Call Script</h5>
+          {% if firm.ai_call_script %}
+          <button id="copyCallBtn" class="btn btn-sm" style="background:#f0f4ff;border:none;border-radius:6px;font-size:.78rem;">
+            <i class="fas fa-copy me-1"></i>Copy Script
+          </button>
+          {% endif %}
+        </div>
+
+        <div id="callScriptContent">
+          {% if firm.ai_call_script %}
+          <div style="background:#f0fff8;border-radius:10px;padding:1.25rem;">
+            <pre id="callScriptText" style="white-space:pre-wrap;font-family:inherit;font-size:.84rem;color:#1a4731;line-height:1.75;margin:0;">{{ firm.ai_call_script }}</pre>
+          </div>
+          {% else %}
+          <div id="callPlaceholder" class="text-center text-muted py-3">
+            <i class="fas fa-phone-alt fa-2x mb-2 d-block" style="color:#e0e0e0;"></i>
+            <div class="small">Call script will appear here after generating the pitch above.</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- ── CRM Notes ───────────────────────────────────────────────── -->
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.75rem;">
+        <h5 class="fw-bold mb-3" style="color:#0d1b4b;"><i class="fas fa-sticky-note me-2"></i>CRM Notes</h5>
         <div style="background:#f8fafc;border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;">
           <div class="fw-semibold small mb-2">Add Note</div>
           <div class="row g-2">
@@ -58,21 +180,15 @@
               <textarea class="form-control" id="noteText" rows="2" placeholder="Add a note about this firm…" style="border-radius:8px;font-size:.85rem;"></textarea>
             </div>
             <div class="col-12 text-end">
-              <button class="btn btn-primary fw-bold" id="addNoteBtn" style="background:#0d1b4b;border-color:#0d1b4b;border-radius:8px;font-size:.85rem;">
-                <i class="fas fa-plus me-1"></i>Add Note
-              </button>
+              <button class="btn btn-primary fw-bold" id="addNoteBtn" style="background:#0d1b4b;border-color:#0d1b4b;border-radius:8px;font-size:.85rem;"><i class="fas fa-plus me-1"></i>Add Note</button>
             </div>
           </div>
         </div>
-
-        <!-- Existing notes -->
         <div id="notesList">
           {% for note in firm.crm_notes %}
           <div style="border-left:3px solid {% if note.note_type == 'call' %}#10b981{% elif note.note_type == 'email' %}#3b82f6{% elif note.note_type == 'visit' %}#f59e0b{% else %}#0d1b4b{% endif %};padding:.85rem 1.1rem;background:#f8fafc;border-radius:0 10px 10px 0;margin-bottom:.75rem;">
             <div class="d-flex align-items-center gap-2 mb-1">
-              <span style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:#888;">
-                {% if note.note_type == 'call' %}📞 Call{% elif note.note_type == 'email' %}📧 Email{% elif note.note_type == 'visit' %}🏢 Visit{% else %}📝 Note{% endif %}
-              </span>
+              <span style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:#888;">{% if note.note_type == 'call' %}📞 Call{% elif note.note_type == 'email' %}📧 Email{% elif note.note_type == 'visit' %}🏢 Visit{% else %}📝 Note{% endif %}</span>
               <span class="text-muted" style="font-size:.75rem;">{{ note.created_at.strftime('%b %d, %Y %H:%M') }}</span>
               <span class="text-muted" style="font-size:.75rem;">— {{ note.created_by.full_name }}</span>
             </div>
@@ -88,26 +204,56 @@
     <!-- Sidebar -->
     <div class="col-lg-4">
       <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.5rem;margin-bottom:1.5rem;position:sticky;top:80px;">
-        <h6 class="fw-bold mb-3">CRM Status</h6>
+
+        <!-- CRM Status -->
+        <h6 class="fw-bold mb-2">CRM Status</h6>
         <select class="form-select mb-3 crm-status-select" data-firm-id="{{ firm.id }}" style="border-radius:10px;">
           {% for s in ['new','contacted','converted','inactive'] %}
           <option value="{{ s }}" {% if firm.crm_status == s %}selected{% endif %}>{{ s|capitalize }}</option>
           {% endfor %}
         </select>
 
-        <div style="font-size:.82rem;color:#555;line-height:1.7;">
+        <!-- Pipeline Stage -->
+        <h6 class="fw-bold mb-2">Pipeline Stage</h6>
+        <select class="form-select mb-3 pipeline-select" data-firm-id="{{ firm.id }}" style="border-radius:10px;">
+          {% for s, label in [('new','New Lead'),('discovered','Discovered'),('verified','Verified'),('contacted','Contacted'),('email_sent','Email Sent'),('whatsapp_sent','WhatsApp Sent'),('interested','Interested'),('meeting_scheduled','Meeting Scheduled'),('demo_completed','Demo Completed'),('negotiating','Negotiating'),('won','Won 🏆'),('lost','Lost'),('customer','Customer 👑')] %}
+          <option value="{{ s }}" {% if firm.pipeline_stage == s %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+
+        <div style="font-size:.82rem;color:#555;line-height:1.9;">
           <div><strong>Source:</strong> {{ firm.source|replace('_',' ')|title }}</div>
+          <div><strong>Lead Score:</strong> <span style="font-weight:700;color:{% if firm.lead_score >= 60 %}#198754{% elif firm.lead_score >= 30 %}#fd7e14{% else %}#dc3545{% endif %};">{{ firm.lead_score }}/100</span></div>
           <div><strong>Added:</strong> {{ firm.created_at.strftime('%b %d, %Y') }}</div>
-          <div><strong>Has Website:</strong> {% if firm.has_website %}<span class="text-success">Yes</span>{% else %}<span class="text-danger fw-bold">No</span>{% endif %}</div>
+          <div><strong>Has Website:</strong> {% if firm.has_website %}<span class="text-success fw-semibold">Yes</span>{% else %}<span class="text-danger fw-semibold">No</span>{% endif %}</div>
+          <div><strong>GMB Status:</strong> {% if firm.gmb_verified %}<span class="text-success fw-semibold">Verified</span>{% else %}<span class="text-warning fw-semibold">Unverified</span>{% endif %}</div>
           <div><strong>Is Claimed:</strong> {% if firm.is_claimed %}<span class="text-success">Yes</span>{% else %}No{% endif %}</div>
+          {% if firm.ai_pitch_generated_at %}<div><strong>Pitch Generated:</strong> {{ firm.ai_pitch_generated_at.strftime('%b %d') }}</div>{% endif %}
         </div>
 
         <hr>
-        <div class="d-grid gap-2 mt-2">
-          {% if firm.phone %}<a href="tel:{{ firm.phone }}" class="btn btn-outline-primary btn-sm" style="border-radius:8px;"><i class="fas fa-phone me-1"></i>Call</a>{% endif %}
+        <div class="d-grid gap-2">
+          {% if firm.phone %}<a href="tel:{{ firm.phone }}" class="btn btn-outline-success btn-sm" style="border-radius:8px;"><i class="fas fa-phone me-1"></i>Call {{ firm.phone }}</a>{% endif %}
+          {% if firm.whatsapp %}<a href="https://wa.me/{{ firm.whatsapp|replace('+','') }}" target="_blank" class="btn btn-sm fw-bold" style="background:#25d366;color:#fff;border:none;border-radius:8px;"><i class="fab fa-whatsapp me-1"></i>WhatsApp</a>{% endif %}
+          {% if firm.email %}<a href="mailto:{{ firm.email }}" class="btn btn-outline-primary btn-sm" style="border-radius:8px;"><i class="fas fa-envelope me-1"></i>Email</a>{% endif %}
           {% if firm.website %}<a href="{{ firm.website }}" target="_blank" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;"><i class="fas fa-globe me-1"></i>Website</a>{% endif %}
-          {% if firm.google_maps_url %}<a href="{{ firm.google_maps_url }}" target="_blank" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;"><i class="fab fa-google me-1"></i>Google Maps</a>{% endif %}
+          {% if firm.google_maps_url %}<a href="{{ firm.google_maps_url }}" target="_blank" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;"><i class="fab fa-google me-1"></i>Maps</a>{% endif %}
         </div>
+
+        <!-- Social media quick links from sidebar -->
+        {% if firm.social_links %}
+        <hr>
+        <div class="fw-semibold small mb-2" style="color:#0d1b4b;">Social Media</div>
+        <div class="d-flex flex-wrap gap-1">
+          {% for platform, url in firm.social_links.items() if url %}
+          {% set picons2 = {'facebook':'fab fa-facebook','linkedin':'fab fa-linkedin','twitter':'fab fa-x-twitter','instagram':'fab fa-instagram','youtube':'fab fa-youtube','tiktok':'fab fa-tiktok'} %}
+          {% set pcolors2 = {'facebook':'#1877f2','linkedin':'#0077b5','twitter':'#000','instagram':'#e4405f','youtube':'#ff0000','tiktok':'#000'} %}
+          <a href="{{ url }}" target="_blank" class="btn btn-sm" style="background:{{ pcolors2.get(platform,'#6c757d') }};color:#fff;border:none;border-radius:6px;padding:.25rem .6rem;font-size:.75rem;" title="{{ platform|title }}">
+            <i class="{{ picons2.get(platform,'fas fa-link') }}"></i>
+          </a>
+          {% endfor %}
+        </div>
+        {% endif %}
 
         <hr>
         <form method="POST" action="{{ url_for('dir_admin.delete_external', firm_id=firm.id) }}" onsubmit="return confirm('Delete this firm from the CRM? This cannot be undone.')">
@@ -120,55 +266,134 @@
 </div>
 
 <script>
-// CRM status update
+const firmId = {{ firm.id }};
+const csrfToken = '{{ csrf_token() }}';
+
+// CRM status
 document.querySelectorAll('.crm-status-select').forEach(sel => {
   sel.addEventListener('change', async function() {
-    const resp = await fetch(`/superadmin/directory/external/${this.dataset.firmId}/update-status`, {
+    await fetch(`/superadmin/directory/external/${this.dataset.firmId}/update-status`, {
       method: 'POST',
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: `crm_status=${this.value}&csrf_token={{ csrf_token() }}`
+      body: `crm_status=${this.value}&csrf_token=${csrfToken}`
     });
-    const d = await resp.json();
-    if (d.success) {
-      const toast = document.createElement('div');
-      toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#10b981;color:#fff;padding:.75rem 1.25rem;border-radius:10px;font-weight:600;z-index:9999;';
-      toast.textContent = 'Status updated';
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 2500);
-    }
+    showToast('Status updated', '#10b981');
   });
 });
+
+// Pipeline stage
+document.querySelectorAll('.pipeline-select').forEach(sel => {
+  sel.addEventListener('change', async function() {
+    await fetch(`/superadmin/crm/lead/${this.dataset.firmId}/stage`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+      body: JSON.stringify({stage: this.value})
+    });
+    showToast('Pipeline stage updated', '#10b981');
+  });
+});
+
+// Save social links
+document.getElementById('saveSocialBtn').addEventListener('click', async function() {
+  const links = {};
+  document.querySelectorAll('.social-input').forEach(inp => {
+    if (inp.value.trim()) links[inp.dataset.platform] = inp.value.trim();
+  });
+  const fd = new FormData();
+  fd.append('social_links_json', JSON.stringify(links));
+  fd.append('csrf_token', csrfToken);
+  const resp = await fetch(`/superadmin/directory/external/${firmId}/update-social`, {method:'POST', body:fd});
+  const d = await resp.json();
+  if (d.success) { showToast('Social links saved', '#10b981'); location.reload(); }
+  else showToast('Save failed', '#dc3545');
+});
+
+// Generate pitch
+document.getElementById('generatePitchBtn').addEventListener('click', async function() {
+  this.disabled = true;
+  document.getElementById('pitchSpinner').style.display = 'block';
+  document.getElementById('pitchContent').style.display = 'none';
+
+  const resp = await fetch(`/superadmin/directory/external/${firmId}/generate-pitch`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    body: `csrf_token=${csrfToken}`
+  });
+  const d = await resp.json();
+  document.getElementById('pitchSpinner').style.display = 'none';
+  document.getElementById('pitchContent').style.display = 'block';
+  this.disabled = false;
+
+  if (d.success) {
+    const ph = document.getElementById('pitchPlaceholder');
+    const callPh = document.getElementById('callPlaceholder');
+    const fullEmail = d.email_subject ? `Subject: ${d.email_subject}\n\n${d.email_body}` : d.email_body;
+
+    document.getElementById('pitchContent').innerHTML = `
+      <div style="background:#f8f9ff;border-radius:10px;padding:1.25rem;position:relative;">
+        <button id="copyEmailBtn" class="btn btn-sm" style="position:absolute;top:.75rem;right:.75rem;background:#f0f4ff;border:none;border-radius:6px;font-size:.75rem;" onclick="copyText('pitchEmailText')">
+          <i class="fas fa-copy me-1"></i>Copy
+        </button>
+        <pre id="pitchEmailText" style="white-space:pre-wrap;font-family:inherit;font-size:.875rem;color:#333;line-height:1.75;margin:0;">${fullEmail}</pre>
+      </div>`;
+
+    document.getElementById('callScriptContent').innerHTML = `
+      <div style="background:#f0fff8;border-radius:10px;padding:1.25rem;">
+        <button class="btn btn-sm mb-2" style="background:#f0f4ff;border:none;border-radius:6px;font-size:.75rem;" onclick="copyText('callScriptText')">
+          <i class="fas fa-copy me-1"></i>Copy Script
+        </button>
+        <pre id="callScriptText" style="white-space:pre-wrap;font-family:inherit;font-size:.84rem;color:#1a4731;line-height:1.75;margin:0;">${d.call_script}</pre>
+      </div>`;
+
+    document.getElementById('generatePitchBtn').innerHTML = '<i class="fas fa-magic me-1"></i>Regenerate';
+    showToast('Pitch + Call Script generated!', '#10b981');
+  } else {
+    showToast('Generation failed', '#dc3545');
+  }
+});
+
+function copyText(id) {
+  const text = document.getElementById(id)?.textContent || '';
+  navigator.clipboard.writeText(text).then(() => showToast('Copied!', '#10b981'));
+}
 
 // Add note
 document.getElementById('addNoteBtn').addEventListener('click', async function() {
   const text = document.getElementById('noteText').value.trim();
   const type = document.getElementById('noteType').value;
   if (!text) return;
-
   const fd = new FormData();
   fd.append('note_text', text);
   fd.append('note_type', type);
-  fd.append('csrf_token', '{{ csrf_token() }}');
-
-  const resp = await fetch(`/superadmin/directory/external/{{ firm.id }}/add-note`, { method: 'POST', body: fd });
+  fd.append('csrf_token', csrfToken);
+  const resp = await fetch(`/superadmin/directory/external/${firmId}/add-note`, {method:'POST', body:fd});
   const d = await resp.json();
   if (d.success) {
     const n = d.note;
-    const colors = {call:'#10b981', email:'#3b82f6', visit:'#f59e0b', general:'#0d1b4b'};
-    const icons = {call:'📞 Call', email:'📧 Email', visit:'🏢 Visit', general:'📝 Note'};
-    const html = `<div style="border-left:3px solid ${colors[n.type]};padding:.85rem 1.1rem;background:#f8fafc;border-radius:0 10px 10px 0;margin-bottom:.75rem;">
-      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;">
-        <span style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:#888;">${icons[n.type]}</span>
-        <span style="color:#888;font-size:.75rem;">${n.created_at}</span>
-        <span style="color:#888;font-size:.75rem;">— ${n.author}</span>
-      </div>
-      <div style="font-size:.88rem;color:#444;">${n.text}</div>
-    </div>`;
-    const empty = document.getElementById('emptyNotes');
+    const colors = {call:'#10b981',email:'#3b82f6',visit:'#f59e0b',general:'#0d1b4b'};
+    const icons  = {call:'📞 Call',email:'📧 Email',visit:'🏢 Visit',general:'📝 Note'};
+    const empty  = document.getElementById('emptyNotes');
     if (empty) empty.remove();
-    document.getElementById('notesList').insertAdjacentHTML('afterbegin', html);
+    document.getElementById('notesList').insertAdjacentHTML('afterbegin',
+      `<div style="border-left:3px solid ${colors[n.type]};padding:.85rem 1.1rem;background:#f8fafc;border-radius:0 10px 10px 0;margin-bottom:.75rem;">
+        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;">
+          <span style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:#888;">${icons[n.type]}</span>
+          <span style="color:#888;font-size:.75rem;">${n.created_at}</span>
+          <span style="color:#888;font-size:.75rem;">— ${n.author}</span>
+        </div>
+        <div style="font-size:.88rem;color:#444;">${n.text}</div>
+      </div>`);
     document.getElementById('noteText').value = '';
+    showToast('Note added', '#10b981');
   }
 });
+
+function showToast(msg, bg) {
+  const t = document.createElement('div');
+  t.style.cssText = `position:fixed;bottom:20px;right:20px;background:${bg};color:#fff;padding:.75rem 1.25rem;border-radius:10px;font-weight:600;z-index:9999;box-shadow:0 4px 15px rgba(0,0,0,.15);`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
 </script>
 {% endblock %}

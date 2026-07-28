@@ -1066,6 +1066,12 @@ class DirectoryLawFirm(db.Model):
         return []
 
 
+    # ── AI pitch / call script (generated per-firm by robot) ─────────────────
+    gmb_verified           = db.Column(db.Boolean, default=False)
+    ai_pitch_email         = db.Column(db.Text, nullable=True)
+    ai_call_script         = db.Column(db.Text, nullable=True)
+    ai_pitch_generated_at  = db.Column(db.DateTime, nullable=True)
+
     # ── v2 CRM fields ─────────────────────────────────────────────────────────
     # Pipeline & scoring
     pipeline_stage = db.Column(db.String(50), default='new')
@@ -1432,3 +1438,83 @@ class PlatformNotification(db.Model):
     # Relationships
     law_firm = db.relationship('LawFirm', foreign_keys=[law_firm_id])
     sent_by  = db.relationship('User', foreign_keys=[sent_by_id])
+
+
+# ─── Social Media Legal Communities ──────────────────────────────────────────
+
+class SocialCommunity(db.Model):
+    """Legal communities discovered on social media platforms (Facebook, LinkedIn,
+    Reddit, X/Twitter, WhatsApp, Telegram, YouTube etc.) for outreach targeting."""
+    __tablename__ = 'social_communities'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    # Identity
+    platform       = db.Column(db.String(50), nullable=False)   # facebook, linkedin, reddit, twitter, whatsapp, telegram, youtube
+    community_name = db.Column(db.String(300), nullable=False)
+    url            = db.Column(db.String(600), nullable=True)
+    join_link      = db.Column(db.String(600), nullable=True)
+
+    # Size & reach
+    member_count   = db.Column(db.Integer, nullable=True)
+    member_count_display = db.Column(db.String(50), nullable=True)  # "47.2K", "1.2M"
+
+    # Content
+    description    = db.Column(db.Text, nullable=True)
+    join_instructions = db.Column(db.Text, nullable=True)
+    category       = db.Column(db.String(100), nullable=True)   # Legal General, Corporate Law, etc.
+    country_focus  = db.Column(db.String(100), nullable=True)
+    language       = db.Column(db.String(50), default='English')
+
+    # Status & tracking
+    source         = db.Column(db.String(50), default='robot')  # robot, manual
+    is_active      = db.Column(db.Boolean, default=True)
+    is_verified    = db.Column(db.Boolean, default=False)       # manually confirmed still active
+    outreach_status = db.Column(db.String(50), default='not_contacted')  # not_contacted, draft, contacted, replied
+
+    # AI-generated outreach
+    ai_outreach_messages_json = db.Column(db.Text, nullable=True)  # [{channel, subject, body, generated_at}]
+    last_outreach_at = db.Column(db.DateTime, nullable=True)
+
+    # Admin notes
+    notes          = db.Column(db.Text, nullable=True)
+
+    created_at     = db.Column(db.DateTime, default=datetime.now)
+    updated_at     = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+
+    @property
+    def ai_outreach_messages(self):
+        if self.ai_outreach_messages_json:
+            try:
+                return json.loads(self.ai_outreach_messages_json)
+            except Exception:
+                return []
+        return []
+
+    @property
+    def platform_icon(self):
+        icons = {
+            'facebook':  'fab fa-facebook',
+            'linkedin':  'fab fa-linkedin',
+            'reddit':    'fab fa-reddit',
+            'twitter':   'fab fa-x-twitter',
+            'whatsapp':  'fab fa-whatsapp',
+            'telegram':  'fab fa-telegram',
+            'youtube':   'fab fa-youtube',
+            'instagram': 'fab fa-instagram',
+        }
+        return icons.get((self.platform or '').lower(), 'fas fa-users')
+
+    @property
+    def platform_color(self):
+        colors = {
+            'facebook':  '#1877f2',
+            'linkedin':  '#0077b5',
+            'reddit':    '#ff4500',
+            'twitter':   '#000000',
+            'whatsapp':  '#25d366',
+            'telegram':  '#0088cc',
+            'youtube':   '#ff0000',
+            'instagram': '#e4405f',
+        }
+        return colors.get((self.platform or '').lower(), '#6c757d')

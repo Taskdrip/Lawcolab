@@ -277,6 +277,41 @@ def run_migrations(db):
         "CREATE INDEX IF NOT EXISTS idx_dlf_lead_score ON directory_law_firms(lead_score DESC)",
         "CREATE INDEX IF NOT EXISTS idx_dlf_campaign ON directory_law_firms(campaign_id)",
         "CREATE INDEX IF NOT EXISTS idx_dlf_assigned ON directory_law_firms(assigned_to_id)",
+
+        # ── AI pitch fields on directory_law_firms ────────────────────────────
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS gmb_verified BOOLEAN DEFAULT FALSE",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS ai_pitch_email TEXT",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS ai_call_script TEXT",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS ai_pitch_generated_at TIMESTAMP",
+
+        # ── Social communities table ──────────────────────────────────────────
+        """
+        CREATE TABLE IF NOT EXISTS social_communities (
+            id SERIAL PRIMARY KEY,
+            platform VARCHAR(50) NOT NULL,
+            community_name VARCHAR(300) NOT NULL,
+            url VARCHAR(600),
+            join_link VARCHAR(600),
+            member_count INTEGER,
+            member_count_display VARCHAR(50),
+            description TEXT,
+            join_instructions TEXT,
+            category VARCHAR(100),
+            country_focus VARCHAR(100),
+            language VARCHAR(50) DEFAULT 'English',
+            source VARCHAR(50) DEFAULT 'robot',
+            is_active BOOLEAN DEFAULT TRUE,
+            is_verified BOOLEAN DEFAULT FALSE,
+            outreach_status VARCHAR(50) DEFAULT 'not_contacted',
+            ai_outreach_messages_json TEXT,
+            last_outreach_at TIMESTAMP,
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT NOW(),
+            updated_at TIMESTAMP DEFAULT NOW()
+        )
+        """,
+        "CREATE INDEX IF NOT EXISTS idx_sc_platform ON social_communities(platform)",
+        "CREATE INDEX IF NOT EXISTS idx_sc_outreach_status ON social_communities(outreach_status)",
     ]
 
     with db.engine.connect() as conn:
