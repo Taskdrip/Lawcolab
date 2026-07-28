@@ -111,7 +111,7 @@ def send_email(
     settings = get_settings() or {}
     provider  = settings.get("provider", os.environ.get("EMAIL_PROVIDER", "simulate"))
     from_name  = from_name  or settings.get("from_name",  "LAWCOLAB")
-    from_email = from_email or settings.get("from_email", "noreply@lawcolab.com")
+    from_email = from_email or settings.get("from_email", "noreply@mail.lawcolab.com")
     reply_to   = reply_to   or settings.get("reply_to", from_email)
 
     # Inject tracking if token provided

@@ -163,7 +163,83 @@ def run_email_migrations(db):
     # ── Seed default email templates (idempotent) ──────────────────────────────
     _seed_default_templates(db)
 
+    # ── Apply verified Resend domain to existing settings row ─────────────────
+    # Runs every boot; only updates rows still using the old unverified address
+    # or the simulate placeholder so Railway DB is always in sync.
+    _apply_resend_defaults(db)
+
     logger.info("Email CRM schema migrations complete.")
+
+
+def _apply_resend_defaults(db):
+    """
+    Idempotent: if email_settings exists with the old unverified from_email
+    (noreply@lawcolab.com) or provider 'simulate', update it to use Resend
+    with the verified mail.lawcolab.com subdomain.
+    Leaves rows already configured differently untouched.
+    """
+    import os
+    try:
+        row = db.session.execute(
+            text("SELECT id, provider, from_email, api_key FROM email_settings LIMIT 1")
+        ).fetchone()
+
+        resend_key = os.environ.get("RESEND_API_KEY", "")
+
+        if row is None:
+            # No settings row yet — create one with sensible Resend defaults
+            db.session.execute(text("""
+                INSERT INTO email_settings
+                (provider, from_name, from_email, reply_to,
+                 api_key, track_opens, track_clicks,
+                 daily_send_limit, updated_at)
+                VALUES ('resend', 'LAWCOLAB', 'noreply@mail.lawcolab.com',
+                        'noreply@mail.lawcolab.com',
+                        :key, TRUE, TRUE, 500, NOW())
+            """), {"key": resend_key or None})
+            db.session.commit()
+            logger.info("Email CRM: created default Resend settings row.")
+        else:
+            row = dict(row._mapping)
+            needs_update = (
+                row.get("from_email") in ("noreply@lawcolab.com", "", None)
+                or row.get("provider") in ("simulate", "", None)
+            )
+            if needs_update:
+                # Only overwrite fields that are still at the old/unset defaults
+                new_provider = "resend" if row.get("provider") in ("simulate", "", None) else row["provider"]
+                new_from = (
+                    "noreply@mail.lawcolab.com"
+                    if row.get("from_email") in ("noreply@lawcolab.com", "", None)
+                    else row["from_email"]
+                )
+                # Only write the env api_key if no key is stored yet
+                new_key_sql = (
+                    ":key" if (not row.get("api_key") and resend_key)
+                    else "api_key"          # keep existing DB value
+                )
+                db.session.execute(text(f"""
+                    UPDATE email_settings
+                    SET provider  = :provider,
+                        from_email = :from_email,
+                        reply_to   = COALESCE(NULLIF(reply_to,''), :from_email),
+                        api_key    = COALESCE({new_key_sql}, api_key),
+                        updated_at = NOW()
+                    WHERE id = :id
+                """), {
+                    "provider":   new_provider,
+                    "from_email": new_from,
+                    "key":        resend_key or None,
+                    "id":         row["id"],
+                })
+                db.session.commit()
+                logger.info(
+                    "Email CRM: updated settings → provider=%s from=%s",
+                    new_provider, new_from,
+                )
+    except Exception as e:
+        db.session.rollback()
+        logger.warning("Email CRM: could not apply Resend defaults: %s", e)
 
 
 def _seed_default_templates(db):

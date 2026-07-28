@@ -216,6 +216,7 @@ def signup():
                     subject=f'Welcome to LAWCOLAB, {new_firm.name}! Your 14-day trial is active 🎉',
                     body_html=welcome_html,
                     from_name='Abraham at LAWCOLAB',
+                    from_email='noreply@mail.lawcolab.com',
                 )
             except Exception as email_err:
                 logger.warning("Welcome email failed (signup still succeeded): %s", email_err)
