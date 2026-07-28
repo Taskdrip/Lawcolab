@@ -1,53 +1,50 @@
-# LawCoLab — Legal Practice OS
+# LawFirmOS — LAWCOLAB Platform
 
-A full-stack SaaS web application for law firms. Built with Python/Flask, PostgreSQL, and Jinja2 templates.
+## Project Overview
+LawFirmOS is a full-stack Python/Flask web application for law firm management. It provides multi-tenant law firm operations (case management, billing, client portals, team collaboration, calendar, invoicing) plus a public **Law Firm Directory & Showcase** system — a Google My Business-style listing hub for Nigerian and global law firms.
 
 ## Stack
+- **Backend**: Python 3 / Flask + SQLAlchemy (PostgreSQL)
+- **Auth**: Flask-Login with role-based access (super_admin, admin, lawyer, client)
+- **Frontend**: Jinja2 templates + Bootstrap 5 + vanilla JS
+- **PDF generation**: WeasyPrint / ReportLab
+- **Deployment**: Gunicorn on Railway (production) / Replit (development)
 
-- **Backend**: Python 3.11, Flask, SQLAlchemy (Flask-SQLAlchemy)
-- **Database**: PostgreSQL (via `DATABASE_URL` env var; provided by Replit's database integration)
-- **Auth**: Flask-Login with custom session management
-- **Frontend**: Jinja2 templates, Bootstrap, vanilla JS
-- **PDF generation**: WeasyPrint + ReportLab
-- **Background jobs / limits**: Flask-Limiter
-- **Server**: Gunicorn (port 5000)
-
-## How to run
-
-The app starts automatically via the **"Start application"** workflow:
-
+## How to Run
+The app starts via the `Start application` workflow:
 ```
 gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app
 ```
 
-Entry point: `main.py` → imports `app` from `app.py` and registers all routes via `routes.py`.
+## Key Feature Areas
+- `/` — Marketing homepage with featured firm showcases
+- `/directory` — Public law firm directory with smart filters (state, practice area, verified)
+- `/directory/firm/<id>` — Full firm profile with reviews (Google My Business style)
+- `/showcase-profile` — Firm admin self-service profile editor (logo, hero, practice areas, locations, team, social media)
+- `/showcase-profile/edit` — Edit & submit firm profile for super admin approval
+- `/superadmin/directory` — Super admin CRM (HubSpot-style): approve submissions, manage external firms, notes
+- `/superadmin/directory/robot` — Google Maps discovery robot (seeds Nigerian law firm data)
+- `/showcase` — Showcase admin routes (review/message moderation, verification)
+- `/auth` — Login / signup
+- `/dashboard` — Firm admin dashboard
+- `/admin` — Firm admin management panel
+- `/superadmin` — Platform super admin panel
 
-## Key environment variables
+## Architecture
+- **`app.py`** — Flask app factory, DB init, migrations run at startup
+- **`models.py`** — All SQLAlchemy models
+- **`routes.py`** — Blueprint registration + top-level routes
+- **`utils/migrations.py`** — Idempotent `ALTER TABLE … ADD COLUMN IF NOT EXISTS` migrations
+- **`blueprints/`** — Feature blueprints (showcase, directory, directory_admin, showcase_profile, etc.)
+- **`templates/`** — Jinja2 HTML templates mirroring blueprint structure
+- **`static/uploads/showcase/`** — User-uploaded firm logos and hero images
 
-| Variable | Required | Notes |
-|---|---|---|
-| `DATABASE_URL` | Yes | PostgreSQL connection string (set by Replit DB integration) |
-| `SESSION_SECRET` | Yes | Flask session signing key (set as Replit secret) |
-| `FLASK_ENV` | Yes | Set to `production` in `.replit` userenv |
-| `SUPER_ADMIN_EMAIL` | Optional | Auto-creates super admin on first boot if set with `SUPER_ADMIN_PASSWORD` |
-| `SUPER_ADMIN_PASSWORD` | Optional | See above |
-| `STRIPE_SECRET_KEY` | Optional | Needed for Stripe payment flows |
+## Environment Variables / Secrets
+- `SESSION_SECRET` — Flask session secret key (required)
+- `DATABASE_URL` — PostgreSQL connection string (required in production)
+- `SUPER_ADMIN_EMAIL` / `SUPER_ADMIN_PASSWORD` — Auto-creates super admin on first deploy
 
-## Project structure
-
-```
-app.py          — Flask app factory, DB, login manager setup
-main.py         — Entry point (imports app + routes)
-routes.py       — All route registrations
-models.py       — Core SQLAlchemy models
-models_*.py     — Additional model modules (chat, payment, audit)
-auth.py         — Authentication routes/logic
-utils/          — Decorators, forms, migrations, notifications, security
-templates/      — Jinja2 HTML templates (organized by feature)
-uploads/        — User-uploaded files (profiles, payment evidence)
-```
-
-## User preferences
-
-- Keep the existing Flask/SQLAlchemy/Jinja2 stack — do not migrate to another framework.
-- Maintain existing file structure; add new features as separate modules.
+## User Preferences
+- Keep existing project structure and stack — do not migrate or restructure
+- Migrations are idempotent (`IF NOT EXISTS`) — always add new columns via `utils/migrations.py`
+- Templates use Bootstrap 5 with LAWCOLAB brand colors (`#0d1b4b` navy, `#FFD700` gold)
