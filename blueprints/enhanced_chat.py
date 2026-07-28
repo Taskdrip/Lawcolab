@@ -147,6 +147,84 @@ def support_send():
     
     return redirect(url_for('enhanced_chat.support_chat'))
 
+@enhanced_chat_bp.route('/firm-chat')
+@require_login
+def firm_chat():
+    """In-house firm messaging hub — team, clients, projects (not support)."""
+    if not current_user.law_firm_id and not current_user.is_super_admin():
+        flash('You are not associated with a law firm.', 'error')
+        return redirect(url_for('index'))
+
+    chat_list = []
+    now = datetime.now()
+
+    # All rooms where the user is an active participant, skip support rooms
+    participations = ChatParticipant.query.filter_by(
+        user_id=current_user.id,
+        is_active=True
+    ).all()
+
+    for part in participations:
+        room = part.room
+        if not room or room.room_type == 'support':
+            continue
+
+        last_msg = (ChatMessage.query
+                    .filter_by(room_id=room.id)
+                    .order_by(ChatMessage.created_at.desc())
+                    .first())
+
+        if part.last_read_at:
+            unread = ChatMessage.query.filter(
+                ChatMessage.room_id == room.id,
+                ChatMessage.created_at > part.last_read_at,
+                ChatMessage.sender_id != current_user.id
+            ).count()
+        else:
+            unread = ChatMessage.query.filter(
+                ChatMessage.room_id == room.id,
+                ChatMessage.sender_id != current_user.id
+            ).count()
+
+        item = {
+            'type': room.room_type,
+            'name': room.room_name or 'Chat',
+            'last_message': last_msg.message_content[:80] if last_msg else 'No messages yet',
+            'last_time': last_msg.created_at if last_msg else None,
+            'unread_count': unread,
+            'room': room,
+            'other_user_id': None,
+        }
+
+        if room.room_type == 'direct':
+            other_part = ChatParticipant.query.filter(
+                ChatParticipant.room_id == room.id,
+                ChatParticipant.user_id != current_user.id
+            ).first()
+            if other_part:
+                item['other_user_id'] = other_part.user_id
+                other_user = User.query.get(other_part.user_id)
+                if other_user:
+                    item['name'] = other_user.full_name
+
+        chat_list.append(item)
+
+    # Sort by recency
+    chat_list.sort(key=lambda x: x['last_time'] or datetime.min, reverse=True)
+
+    # Firm members for "New Chat" capability
+    firm_members = []
+    if current_user.law_firm_id:
+        firm_members = (User.query
+                        .filter_by(law_firm_id=current_user.law_firm_id, active=True)
+                        .filter(User.id != current_user.id)
+                        .all())
+
+    return render_template('chat/index.html',
+                           chat_list=chat_list,
+                           firm_members=firm_members)
+
+
 @enhanced_chat_bp.route('/support')
 @require_login
 def support_chat():

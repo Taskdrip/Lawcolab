@@ -1,292 +1,444 @@
 {% extends "base.html" %}
 
-{% block title %}Chat - All Conversations{% endblock %}
+{% block title %}Firm Chat — LAWCOLAB{% endblock %}
 
 {% block content %}
 
 <!-- Page Header -->
 <div class="lc-page-header lc-ph-bg-chat">
     <div class="container-fluid px-3 px-lg-4">
-        <div class="lc-ph-inner d-flex align-items-center gap-3">
-            <div class="lc-ph-icon"><i class="fas fa-comments"></i></div>
-            <div>
-                <h1>Messages</h1>
-                <p class="lc-ph-sub mb-0">Conversations with your team, clients and firm members</p>
+        <div class="lc-ph-inner d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="lc-ph-icon lc-anim-pulse">
+                    <span class="lc-anim-float"><i class="fas fa-comments"></i></span>
+                </div>
+                <div>
+                    <h1>Firm Chat</h1>
+                    <p class="lc-ph-sub mb-0">In-house messaging — team, clients &amp; management</p>
+                </div>
+            </div>
+            {% if firm_members %}
+            <div class="lc-ph-actions d-flex gap-2 flex-wrap">
+                <button class="btn btn-warning btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#newChatModal">
+                    <i class="fas fa-plus me-1"></i>New Message
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <span class="lc-ph-accent"></span>
+</div>
+
+<style>
+/* ── Firm Chat Hub ── */
+.fc-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+}
+
+/* Tab pills */
+.fc-tabs {
+    display: flex;
+    gap: .5rem;
+    overflow-x: auto;
+    padding: .75rem 0 .25rem;
+    scrollbar-width: none;
+}
+.fc-tabs::-webkit-scrollbar { display: none; }
+.fc-tab {
+    flex-shrink: 0;
+    padding: .4rem 1rem;
+    border-radius: 20px;
+    font-size: .8rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid #dee2e6;
+    background: #fff;
+    color: #6c757d;
+    transition: all .18s;
+    white-space: nowrap;
+}
+.fc-tab.active, .fc-tab:hover {
+    background: #0d1b4b;
+    color: #fff;
+    border-color: #0d1b4b;
+}
+.fc-tab .badge {
+    font-size: .6rem;
+    padding: .2rem .45rem;
+    border-radius: 10px;
+    vertical-align: middle;
+    margin-left: .3rem;
+    background: #e74c3c !important;
+}
+
+/* Conversation list card */
+.fc-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    overflow: hidden;
+    margin-top: .75rem;
+}
+
+.fc-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    text-decoration: none;
+    color: inherit;
+    transition: background .15s;
+    cursor: pointer;
+}
+.fc-item:last-child { border-bottom: none; }
+.fc-item:hover { background: #f8f9fc; text-decoration: none; color: inherit; }
+
+.fc-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: #fff;
+    flex-shrink: 0;
+    margin-right: 14px;
+    position: relative;
+}
+.fc-avatar.type-direct  { background: linear-gradient(135deg,#4f46e5,#7c3aed); }
+.fc-avatar.type-project { background: linear-gradient(135deg,#059669,#10b981); }
+.fc-avatar.type-broadcast { background: linear-gradient(135deg,#d97706,#f59e0b); }
+.fc-avatar.type-default { background: linear-gradient(135deg,#0d1b4b,#1e3a8a); }
+
+.fc-unread-dot {
+    position: absolute;
+    top: -3px; right: -3px;
+    width: 12px; height: 12px;
+    background: #e74c3c;
+    border-radius: 50%;
+    border: 2px solid #fff;
+}
+
+.fc-info { flex: 1; min-width: 0; }
+.fc-name {
+    font-weight: 600;
+    font-size: .92rem;
+    color: #1a1a2e;
+    margin: 0 0 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.fc-preview {
+    font-size: .8rem;
+    color: #6c757d;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fc-meta {
+    flex-shrink: 0;
+    text-align: right;
+    margin-left: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+.fc-time { font-size: .72rem; color: #9ca3af; }
+.fc-badge {
+    background: #e74c3c;
+    color: #fff;
+    border-radius: 10px;
+    padding: 1px 7px;
+    font-size: .68rem;
+    font-weight: 700;
+    min-width: 18px;
+    text-align: center;
+}
+
+/* Type tag */
+.fc-type-tag {
+    font-size: .65rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 6px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+.fc-type-tag.direct    { background:#ede9fe; color:#6d28d9; }
+.fc-type-tag.project   { background:#d1fae5; color:#065f46; }
+.fc-type-tag.broadcast { background:#fef3c7; color:#92400e; }
+
+/* Empty state */
+.fc-empty {
+    text-align: center;
+    padding: 60px 24px;
+}
+.fc-empty-icon {
+    width: 80px; height: 80px;
+    border-radius: 20px;
+    background: linear-gradient(135deg,#f0f4ff,#e8ecff);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 2rem;
+    color: #0d1b4b;
+}
+.fc-empty h5 { color: #1a1a2e; font-weight: 700; margin-bottom: 8px; }
+.fc-empty p  { color: #6c757d; max-width: 360px; margin: 0 auto; }
+
+/* Animated law icons in empty state */
+.fc-law-icons {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    margin: 28px 0;
+}
+.fc-law-icon {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    background: #fff;
+    border: 1.5px solid #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    color: #0d1b4b;
+}
+
+/* Stats bar */
+.fc-stats {
+    display: flex;
+    gap: 1px;
+    background: #f3f4f6;
+    border-bottom: 1px solid #e9ecef;
+}
+.fc-stat {
+    flex: 1;
+    text-align: center;
+    padding: .65rem .5rem;
+    background: #fff;
+}
+.fc-stat-num { font-size: 1.25rem; font-weight: 800; color: #0d1b4b; line-height: 1; }
+.fc-stat-label { font-size: .68rem; color: #6c757d; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+
+@media (max-width: 576px) {
+    .fc-item { padding: 12px 14px; }
+    .fc-avatar { width: 40px; height: 40px; font-size: 1rem; margin-right: 10px; }
+}
+</style>
+
+<div class="container-fluid py-3 px-3 px-lg-4">
+<div class="fc-wrap">
+
+    <!-- Tabs -->
+    <div class="fc-tabs">
+        <div class="fc-tab active" data-filter="all">
+            <i class="fas fa-th-large me-1"></i>All
+            {% set total_unread = chat_list | selectattr('unread_count', 'gt', 0) | list | length %}
+            {% if total_unread > 0 %}<span class="badge">{{ total_unread }}</span>{% endif %}
+        </div>
+        <div class="fc-tab" data-filter="direct">
+            <i class="fas fa-user me-1"></i>Direct
+        </div>
+        <div class="fc-tab" data-filter="project">
+            <i class="fas fa-briefcase me-1"></i>Projects
+        </div>
+        <div class="fc-tab" data-filter="broadcast">
+            <i class="fas fa-bullhorn me-1"></i>Broadcasts
+        </div>
+    </div>
+
+    {% if chat_list %}
+    <!-- Stats bar -->
+    <div class="fc-card mb-0" style="border-radius:14px 14px 0 0; border-bottom:none;">
+        <div class="fc-stats">
+            {% set direct_count = chat_list | selectattr('type', 'equalto', 'direct') | list | length %}
+            {% set project_count = chat_list | selectattr('type', 'equalto', 'project') | list | length %}
+            {% set total_unread2 = namespace(n=0) %}
+            {% for c in chat_list %}{% set total_unread2.n = total_unread2.n + c.unread_count %}{% endfor %}
+            <div class="fc-stat">
+                <div class="fc-stat-num">{{ chat_list | length }}</div>
+                <div class="fc-stat-label">Conversations</div>
+            </div>
+            <div class="fc-stat">
+                <div class="fc-stat-num">{{ direct_count }}</div>
+                <div class="fc-stat-label">Direct</div>
+            </div>
+            <div class="fc-stat">
+                <div class="fc-stat-num">{{ project_count }}</div>
+                <div class="fc-stat-label">Projects</div>
+            </div>
+            <div class="fc-stat">
+                <div class="fc-stat-num {% if total_unread2.n > 0 %}text-danger{% endif %}">{{ total_unread2.n }}</div>
+                <div class="fc-stat-label">Unread</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conversation list -->
+    <div class="fc-card" style="border-radius:0 0 14px 14px; border-top:none;" id="fc-list">
+        {% for chat in chat_list %}
+        {% set chat_type = chat.type %}
+
+        {% if chat_type == 'project' %}
+            {% set link = url_for('enhanced_chat.project_chat', project_id=chat.room.project_id) %}
+        {% elif chat_type == 'direct' and chat.other_user_id %}
+            {% set link = url_for('chat.conversation', user_id=chat.other_user_id) %}
+        {% else %}
+            {% set link = '#' %}
+        {% endif %}
+
+        <a href="{{ link }}" class="fc-item" data-type="{{ chat_type }}">
+            <div class="fc-avatar type-{{ chat_type if chat_type in ['direct','project','broadcast'] else 'default' }}">
+                {% if chat.unread_count > 0 %}<span class="fc-unread-dot"></span>{% endif %}
+                {% if chat_type == 'direct' %}
+                    <i class="fas fa-user"></i>
+                {% elif chat_type == 'project' %}
+                    <i class="fas fa-gavel lc-anim-gavel" style="animation-duration:4s;"></i>
+                {% elif chat_type == 'broadcast' %}
+                    <i class="fas fa-bullhorn"></i>
+                {% else %}
+                    <i class="fas fa-comments"></i>
+                {% endif %}
+            </div>
+            <div class="fc-info">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h6 class="fc-name">{{ chat.name }}</h6>
+                    <span class="fc-type-tag {{ chat_type }}">
+                        {% if chat_type == 'direct' %}DM
+                        {% elif chat_type == 'project' %}Case
+                        {% elif chat_type == 'broadcast' %}Broadcast
+                        {% else %}{{ chat_type }}{% endif %}
+                    </span>
+                </div>
+                <p class="fc-preview">{{ chat.last_message }}</p>
+            </div>
+            <div class="fc-meta">
+                <div class="fc-time">
+                    {% if chat.last_time %}
+                        {% set today = chat.last_time.now().date() %}
+                        {% if chat.last_time.date() == today %}
+                            {{ chat.last_time.strftime('%I:%M %p') }}
+                        {% else %}
+                            {{ chat.last_time.strftime('%b %d') }}
+                        {% endif %}
+                    {% endif %}
+                </div>
+                {% if chat.unread_count > 0 %}
+                <span class="fc-badge">{{ chat.unread_count }}</span>
+                {% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- Empty state -->
+    <div class="fc-card">
+        <div class="fc-empty">
+            <div class="fc-empty-icon">
+                <span class="lc-anim-scale"><i class="fas fa-balance-scale"></i></span>
+            </div>
+            <h5>No conversations yet</h5>
+            <p>Start messaging your team, discuss case files and collaborate — all in one secure place.</p>
+
+            <!-- Animated law icon row -->
+            <div class="fc-law-icons">
+                <div class="fc-law-icon">
+                    <span class="lc-anim-scale" style="animation-delay:.2s;">
+                        <i class="fas fa-balance-scale text-warning"></i>
+                    </span>
+                </div>
+                <div class="fc-law-icon">
+                    <span class="lc-anim-gavel" style="animation-delay:.5s;">
+                        <i class="fas fa-gavel" style="color:#0d1b4b;"></i>
+                    </span>
+                </div>
+                <div class="fc-law-icon">
+                    <span class="lc-anim-float" style="animation-delay:.8s;">
+                        <i class="fas fa-scroll text-warning"></i>
+                    </span>
+                </div>
+                <div class="fc-law-icon">
+                    <span class="lc-anim-float" style="animation-delay:1.1s;">
+                        <i class="fas fa-landmark" style="color:#0d1b4b;"></i>
+                    </span>
+                </div>
+            </div>
+
+            {% if firm_members %}
+            <button class="btn btn-primary fw-semibold px-4" data-bs-toggle="modal" data-bs-target="#newChatModal">
+                <i class="fas fa-plus me-2"></i>Start a Conversation
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+</div><!-- /fc-wrap -->
+</div>
+
+<!-- New Chat Modal -->
+{% if firm_members %}
+<div class="modal fade" id="newChatModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:16px;overflow:hidden;">
+            <div class="modal-header" style="background:#0d1b4b;border:none;padding:1.25rem 1.5rem;">
+                <h5 class="modal-title text-white fw-bold">
+                    <span class="lc-anim-scale me-2"><i class="fas fa-comments text-warning"></i></span>
+                    New Firm Message
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted mb-3" style="font-size:.875rem;">
+                    <i class="fas fa-shield-alt text-success me-1"></i>
+                    All messages are encrypted and visible only to firm members.
+                </p>
+                <div class="mb-3">
+                    <label class="fw-semibold mb-2" style="font-size:.875rem;">Select team member:</label>
+                    <div style="max-height:280px;overflow-y:auto;">
+                        {% for member in firm_members %}
+                        <a href="{{ url_for('chat.conversation', user_id=member.id) }}"
+                           class="d-flex align-items-center gap-3 p-3 rounded-3 text-decoration-none mb-1"
+                           style="border:1px solid #e9ecef;transition:background .15s;"
+                           onmouseover="this.style.background='#f8f9fc'"
+                           onmouseout="this.style.background=''"
+                           data-bs-dismiss="modal">
+                            <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#0d1b4b,#1e40af);display:flex;align-items:center;justify-content:center;color:#FFD700;font-weight:700;font-size:.9rem;flex-shrink:0;">
+                                {{ member.full_name[0]|upper }}
+                            </div>
+                            <div>
+                                <div style="font-weight:600;color:#1a1a2e;font-size:.9rem;">{{ member.full_name }}</div>
+                                <div style="font-size:.75rem;color:#6c757d;">{{ member.role.replace('_',' ').title() }}</div>
+                            </div>
+                            <i class="fas fa-chevron-right ms-auto text-muted" style="font-size:.75rem;"></i>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+{% endif %}
 
-<style>
-/* Clean White Chat List Interface */
-.clean-chat-container {
-    max-width: 900px;
-    margin: 0 auto;
-    background: #ffffff;
-    border-radius: 8px;
-    border: 1px solid #e1e4e8;
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-.clean-chat-header {
-    background: #ffffff;
-    border-bottom: 1px solid #e1e4e8;
-    padding: 24px;
-    text-align: center;
-}
-
-.clean-chat-header h2 {
-    margin: 0;
-    font-weight: 600;
-    font-size: 24px;
-    color: #24292e;
-}
-
-.clean-chat-header p {
-    margin: 8px 0 0 0;
-    color: #6a737d;
-    font-size: 16px;
-}
-
-.clean-chat-list {
-    max-height: 70vh;
-    overflow-y: auto;
-}
-
-.clean-chat-item {
-    display: flex;
-    align-items: center;
-    padding: 16px 24px;
-    border-bottom: 1px solid #f6f8fa;
-    transition: all 0.2s ease;
-    cursor: pointer;
-    text-decoration: none;
-    color: inherit;
-}
-
-.clean-chat-item:hover {
-    background-color: #f6f8fa;
-    text-decoration: none;
-    color: inherit;
-}
-
-.clean-chat-item:last-child {
-    border-bottom: none;
-}
-
-.clean-chat-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    color: white;
-    margin-right: 16px;
-    flex-shrink: 0;
-    border: 1px solid rgba(255,255,255,0.2);
-}
-
-.clean-chat-avatar.support {
-    background: #0366d6;
-}
-
-.clean-chat-avatar.project {
-    background: #28a745;
-}
-
-.clean-chat-avatar.direct {
-    background: #6f42c1;
-}
-
-.clean-chat-avatar.broadcast {
-    background: #fd7e14;
-}
-
-.clean-chat-info {
-    flex-grow: 1;
-    min-width: 0;
-}
-
-.clean-chat-name {
-    font-weight: 600;
-    font-size: 16px;
-    color: #24292e;
-    margin: 0 0 4px 0;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-.clean-chat-last-message {
-    font-size: 14px;
-    color: #6a737d;
-    margin: 0;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-.clean-chat-meta {
-    text-align: right;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    justify-content: center;
-    margin-left: 16px;
-}
-
-.clean-chat-time {
-    font-size: 12px;
-    color: #6a737d;
-    margin-bottom: 4px;
-}
-
-.clean-chat-badge {
-    background-color: #d73a49;
-    color: white;
-    border-radius: 12px;
-    padding: 2px 8px;
-    font-size: 11px;
-    font-weight: 600;
-    min-width: 18px;
-    text-align: center;
-    line-height: 1.4;
-}
-
-.clean-empty-state {
-    text-align: center;
-    padding: 60px 24px;
-    color: #6a737d;
-}
-
-.clean-empty-state i {
-    font-size: 48px;
-    color: #d1d5da;
-    margin-bottom: 20px;
-}
-
-.clean-empty-state h3 {
-    color: #24292e;
-    margin-bottom: 10px;
-    font-weight: 600;
-}
-
-.clean-empty-state p {
-    color: #6a737d;
-    margin-bottom: 0;
-}
-
-/* Scrollbar styling */
-.clean-chat-list::-webkit-scrollbar {
-    width: 8px;
-}
-
-.clean-chat-list::-webkit-scrollbar-track {
-    background: #f6f8fa;
-}
-
-.clean-chat-list::-webkit-scrollbar-thumb {
-    background: #d1d5da;
-    border-radius: 4px;
-}
-
-.clean-chat-list::-webkit-scrollbar-thumb:hover {
-    background: #959da5;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-    .clean-chat-container {
-        margin: 10px;
-        border-radius: 6px;
-    }
-    
-    .clean-chat-item {
-        padding: 12px 16px;
-    }
-    
-    .clean-chat-avatar {
-        width: 40px;
-        height: 40px;
-        font-size: 16px;
-        margin-right: 12px;
-    }
-    
-    .clean-chat-name {
-        font-size: 15px;
-    }
-    
-    .clean-chat-last-message {
-        font-size: 13px;
-    }
-}
-</style>
-
-<div class="container py-4">
-    <div class="clean-chat-container">
-        <div class="clean-chat-header">
-            <h2><i class="fas fa-comments me-2"></i>Messages</h2>
-            <p>All your conversations in one place</p>
-        </div>
-        
-        {% if chat_list %}
-        <div class="clean-chat-list">
-            {% for chat in chat_list %}
-            {% if chat.type == 'support' %}
-                <a href="{{ url_for('enhanced_chat.support_chat') }}" class="clean-chat-item">
-            {% elif chat.type == 'project' %}
-                <a href="{{ url_for('enhanced_chat.project_chat', project_id=chat.room.project_id) }}" class="clean-chat-item">
-            {% elif chat.type == 'direct' %}
-                <a href="{{ url_for('chat.conversation', user_id=chat.other_user_id) }}" class="clean-chat-item">
-            {% elif chat.type == 'broadcast' %}
-                <a href="{{ url_for('enhanced_chat.support_chat') }}" class="clean-chat-item">
-            {% else %}
-                <a href="#" class="clean-chat-item">
-            {% endif %}
-                <div class="clean-chat-avatar {{ chat.type }}">
-                    {% if chat.type == 'support' %}
-                        <i class="fas fa-headset"></i>
-                    {% elif chat.type == 'project' %}
-                        <i class="fas fa-folder-open"></i>
-                    {% elif chat.type == 'direct' %}
-                        <i class="fas fa-user"></i>
-                    {% elif chat.type == 'broadcast' %}
-                        <i class="fas fa-bullhorn"></i>
-                    {% endif %}
-                </div>
-                <div class="clean-chat-info">
-                    <h6 class="clean-chat-name">{{ chat.name }}</h6>
-                    <p class="clean-chat-last-message">{{ chat.last_message }}</p>
-                </div>
-                <div class="clean-chat-meta">
-                    <div class="clean-chat-time">
-                        {% if chat.last_time %}
-                            {% set today = chat.last_time.now().date() %}
-                            {% if chat.last_time.date() == today %}
-                                {{ chat.last_time.strftime('%I:%M %p') }}
-                            {% else %}
-                                {{ chat.last_time.strftime('%m/%d') }}
-                            {% endif %}
-                        {% endif %}
-                    </div>
-                    {% if chat.unread_count > 0 %}
-                    <span class="clean-chat-badge">{{ chat.unread_count }}</span>
-                    {% endif %}
-                </div>
-            </a>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="clean-empty-state">
-            <i class="fas fa-comments"></i>
-            <h3>No conversations yet</h3>
-            <p>Start chatting with your team members or create a new conversation.</p>
-        </div>
-        {% endif %}
-    </div>
-</div>
+<script>
+// Tab filter
+document.querySelectorAll('.fc-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.fc-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const filter = tab.dataset.filter;
+        document.querySelectorAll('.fc-item').forEach(item => {
+            item.style.display = (filter === 'all' || item.dataset.type === filter) ? 'flex' : 'none';
+        });
+    });
+});
+</script>
 {% endblock %}

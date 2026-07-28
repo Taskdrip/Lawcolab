@@ -214,18 +214,18 @@
         content:'';position:absolute;inset:0;
         background-image:url('/static/images/sections/hero_lobby.jpg');
         background-size:cover;background-position:center 30%;
-        opacity:.22;
+        opacity:.38;
         transition:opacity .4s ease;
     }
-    /* Cinematic gradient overlay */
+    /* Cinematic gradient overlay — less opaque so image shows through */
     .lc-page-header::after{
         content:'';position:absolute;inset:0;
         background:
             linear-gradient(135deg,
-                rgba(5,12,45,0.97) 0%,
-                rgba(8,20,65,0.91) 50%,
-                rgba(5,12,45,0.84) 100%),
-            linear-gradient(to right, rgba(255,215,0,0.04) 0%, transparent 60%);
+                rgba(5,12,45,0.88) 0%,
+                rgba(8,20,65,0.78) 50%,
+                rgba(5,12,45,0.70) 100%),
+            linear-gradient(to right, rgba(255,215,0,0.06) 0%, transparent 60%);
     }
     /* Gold accent line at bottom of header */
     .lc-page-header .lc-ph-accent{
@@ -671,8 +671,8 @@
                             <span class="lc-badge" id="nav-unread-count" style="display:none;">0</span>
                         </a>
                         {% else %}
-                        <a class="nav-link lc-link{% if 'chat' in (request.endpoint or '') %} active{% endif %}"
-                           href="{{ url_for('enhanced_chat.support_chat') }}">
+                        <a class="nav-link lc-link{% if request.endpoint == 'enhanced_chat.firm_chat' %} active{% endif %}"
+                           href="{{ url_for('enhanced_chat.firm_chat') }}">
                             <i class="fas fa-comments"></i><span>Chat</span>
                             <span class="lc-badge" id="nav-unread-count" style="display:none;">0</span>
                         </a>
@@ -681,7 +681,8 @@
 
                     {% if not current_user.is_super_admin() %}
                     <li class="nav-item">
-                        <a class="nav-link lc-link" href="{{ url_for('chat_support') }}">
+                        <a class="nav-link lc-link{% if request.endpoint == 'enhanced_chat.support_chat' %} active{% endif %}"
+                           href="{{ url_for('enhanced_chat.support_chat') }}">
                             <i class="fas fa-headset"></i><span>Support</span>
                         </a>
                     </li>

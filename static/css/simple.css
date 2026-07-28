@@ -527,3 +527,61 @@ p {
 #heroSlider .hs-content h1,
 #heroSlider .hs-content p,
 #heroSlider .hs-content div { color: #ffffff !important; }
+
+/* ── Page Header text — MUST be white (beat generic h1/p !important above) ── */
+.lc-page-header h1,
+.lc-page-header h2,
+.lc-page-header h3,
+.lc-page-header h4,
+.lc-page-header h5,
+.lc-page-header h6 {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    text-shadow: 0 2px 14px rgba(0,0,0,.55) !important;
+}
+.lc-page-header p,
+.lc-page-header .lc-ph-sub,
+.lc-page-header small {
+    color: rgba(255,255,255,0.88) !important;
+    font-weight: 400 !important;
+    text-shadow: 0 1px 6px rgba(0,0,0,.35) !important;
+}
+.lc-page-header .breadcrumb-item,
+.lc-page-header .breadcrumb-item a {
+    color: rgba(255,255,255,0.60) !important;
+}
+.lc-page-header .breadcrumb-item.active { color: rgba(255,255,255,0.85) !important; }
+
+/* ── Chat & support internal text (inside containers, not page header) ── */
+.support-chat-header h2,
+.support-chat-header p,
+.chat-firm-header h2,
+.chat-firm-header p { color: #ffffff !important; }
+
+/* ── Legal icon animation keyframes ── */
+@keyframes lc-scale-tip {
+    0%,100% { transform: rotate(0deg); }
+    25%      { transform: rotate(-4deg); }
+    75%      { transform: rotate(4deg); }
+}
+@keyframes lc-gavel-tap {
+    0%,100% { transform: rotate(0deg) translateY(0); }
+    40%     { transform: rotate(-20deg) translateY(-4px); }
+    60%     { transform: rotate(5deg) translateY(1px); }
+}
+@keyframes lc-pulse-gold {
+    0%,100% { box-shadow: 0 0 0 0 rgba(255,215,0,0); }
+    50%     { box-shadow: 0 0 0 8px rgba(255,215,0,0.18); }
+}
+@keyframes lc-float {
+    0%,100% { transform: translateY(0); }
+    50%     { transform: translateY(-5px); }
+}
+@keyframes lc-shimmer {
+    0%   { background-position: -200% center; }
+    100% { background-position: 200% center; }
+}
+.lc-anim-scale { animation: lc-scale-tip 3.5s ease-in-out infinite; display:inline-block; }
+.lc-anim-gavel { animation: lc-gavel-tap 2.8s ease-in-out infinite; display:inline-block; transform-origin: bottom right; }
+.lc-anim-float { animation: lc-float 3s ease-in-out infinite; display:inline-block; }
+.lc-anim-pulse { animation: lc-pulse-gold 2.5s ease-in-out infinite; }
