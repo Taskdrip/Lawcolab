@@ -1,0 +1,391 @@
+{% extends 'email_crm/base.html' %}
+{% block title %}Compose — Communications{% endblock %}
+{% block page_title %}Compose Email{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<style>
+.ql-container{font-size:.88rem;min-height:260px;border-radius:0 0 10px 10px!important;}
+.ql-toolbar{border-radius:10px 10px 0 0!important;background:#f8fafc;}
+.ql-editor{min-height:240px;padding:1rem;}
+.ai-btn{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:9px;padding:.45rem 1rem;font-size:.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:.45rem;transition:all .15s;}
+.ai-btn:hover{opacity:.9;box-shadow:0 4px 12px rgba(102,126,234,.4);}
+.merge-tag{display:inline-block;background:#e8f0fe;color:#1a56db;border:1px solid #c7d7fb;border-radius:6px;padding:.1rem .45rem;font-size:.74rem;font-weight:600;cursor:pointer;margin:.2rem;transition:all .12s;}
+.merge-tag:hover{background:#1a56db;color:#fff;}
+.ai-panel{background:#f8faff;border:1.5px solid #c7d7fb;border-radius:12px;padding:1.1rem;margin-bottom:.85rem;}
+.ai-panel-title{font-size:.84rem;font-weight:700;color:#1a56db;margin-bottom:.75rem;display:flex;align-items:center;gap:.45rem;}
+.tone-btn{background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:.35rem .75rem;font-size:.78rem;font-weight:500;cursor:pointer;transition:all .12s;}
+.tone-btn:hover,.tone-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+.field-label{font-size:.78rem;font-weight:600;color:var(--muted);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.05em;}
+.compose-input{border:1.5px solid var(--border);border-radius:10px;padding:.55rem .9rem;font-size:.86rem;width:100%;transition:all .2s;}
+.compose-input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(13,27,75,.06);}
+.compose-field-row{padding:.65rem 1.1rem;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:.7rem;}
+.compose-field-label{font-size:.78rem;font-weight:600;color:var(--muted);width:38px;flex-shrink:0;}
+.compose-field-input{flex:1;border:none;outline:none;font-size:.86rem;background:transparent;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <!-- Compose area -->
+  <div class="col-lg-8">
+    <form id="composeForm" method="POST" action="{{ url_for('email_crm.send_message') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="body_html" id="bodyHtml">
+      <input type="hidden" name="body_text" id="bodyText">
+      <input type="hidden" name="ai_generated" id="aiGeneratedFlag" value="">
+
+      <div class="ec-card mb-3" style="overflow:hidden;">
+        <!-- To field -->
+        <div class="compose-field-row">
+          <span class="compose-field-label">To</span>
+          <div class="flex-1 d-flex align-items-center gap-2" style="flex:1;">
+            <input type="email" name="to_email" id="toEmail" class="compose-field-input"
+                   placeholder="recipient@lawfirm.com" required
+                   value="{{ (reply_msg.recipient_email if reply_msg) or (firm.email if firm) or '' }}">
+            <div class="position-relative">
+              <button type="button" class="btn btn-sm btn-light" style="border-radius:7px;font-size:.76rem;" onclick="document.getElementById('firmPickerDrop').classList.toggle('show')">
+                <i class="fas fa-address-book"></i> Firms
+              </button>
+              <div id="firmPickerDrop" style="position:absolute;right:0;top:100%;margin-top:4px;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:500;width:300px;max-height:260px;overflow-y:auto;display:none;">
+                <div class="p-2">
+                  <input type="text" id="firmSearch" class="form-control form-control-sm" placeholder="Search firms…" oninput="filterFirms(this.value)">
+                </div>
+                <div id="firmList">
+                  {% for f in recent_firms %}
+                  <div class="firm-pick-item px-3 py-2 d-flex align-items-center gap-2" style="cursor:pointer;font-size:.82rem;border-top:1px solid #f1f5f9;"
+                       onclick="pickFirm('{{ f.email }}','{{ f.name|replace("'","\'") }}','{{ f.id }}')"
+                       data-name="{{ f.name|lower }}" data-email="{{ f.email|lower }}">
+                    <div style="width:28px;height:28px;border-radius:7px;background:var(--navy);display:flex;align-items:center;justify-content:center;color:#fff;font-size:.68rem;font-weight:700;flex-shrink:0;">
+                      {{ f.name[:2]|upper }}
+                    </div>
+                    <div>
+                      <div style="font-weight:600;">{{ f.name[:30] }}</div>
+                      <div style="font-size:.74rem;color:var(--muted);">{{ f.email }}</div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Name field -->
+        <div class="compose-field-row">
+          <span class="compose-field-label">Name</span>
+          <input type="text" name="to_name" id="toName" class="compose-field-input"
+                 placeholder="Recipient name"
+                 value="{{ (reply_msg.recipient_name if reply_msg) or (firm.name if firm) or '' }}">
+        </div>
+        <!-- CC / BCC -->
+        <div id="ccRow" class="compose-field-row" style="display:none!important;">
+          <span class="compose-field-label">CC</span>
+          <input type="text" name="cc" class="compose-field-input" placeholder="cc@example.com, …">
+        </div>
+        <div id="bccRow" class="compose-field-row" style="display:none!important;">
+          <span class="compose-field-label">BCC</span>
+          <input type="text" name="bcc" class="compose-field-input" placeholder="bcc@example.com, …">
+        </div>
+        <!-- Show CC/BCC button -->
+        <div class="compose-field-row" style="border-bottom:none;">
+          <span class="compose-field-label"></span>
+          <button type="button" class="btn btn-sm btn-link p-0 me-2" style="font-size:.76rem;" onclick="toggleRow('ccRow')">CC</button>
+          <button type="button" class="btn btn-sm btn-link p-0 me-3" style="font-size:.76rem;" onclick="toggleRow('bccRow')">BCC</button>
+        </div>
+        <!-- Subject -->
+        <div class="compose-field-row" style="border-top:1px solid #f1f5f9;">
+          <span class="compose-field-label">Re</span>
+          <input type="text" name="subject" id="subject" class="compose-field-input"
+                 placeholder="Subject" required
+                 value="{{ (reply_msg.subject if reply_msg and reply_msg.subject and 'Re:' not in reply_msg.subject else ('Re: '+(reply_msg.subject or '') if reply_msg else '')) or (tmpl.subject if tmpl else '') or (draft.subject if draft else '') }}">
+        </div>
+        <!-- Hidden fields -->
+        <input type="hidden" name="firm_id" id="firmIdInput" value="{{ (firm.id if firm) or (draft.firm_id if draft) or '' }}">
+        <input type="hidden" name="campaign_id" id="campaignIdInput" value="">
+        <input type="hidden" name="template_id" id="templateIdInput" value="{{ (tmpl.id if tmpl) or '' }}">
+        <input type="hidden" name="priority" id="priorityInput" value="normal">
+        <input type="hidden" name="schedule_at" id="scheduleAtInput" value="">
+        <input type="hidden" name="action" id="actionInput" value="send">
+
+        <!-- Editor -->
+        <div style="padding:.65rem 1.1rem .3rem;border-top:1px solid #f1f5f9;">
+          <div id="quillEditor">{% if draft %}{{ draft.body|safe }}{% elif tmpl %}{{ tmpl.body_html|safe }}{% elif reply_msg %}<br><br><blockquote style="border-left:3px solid #e2e8f0;padding-left:1rem;color:#718096;margin:1rem 0;">{{ reply_msg.body|striptags|truncate(500) }}</blockquote>{% endif %}</div>
+        </div>
+
+        <!-- Merge tags bar -->
+        <div style="padding:.5rem 1rem;border-top:1px solid #f1f5f9;background:#f8fafc;display:flex;flex-wrap:wrap;align-items:center;gap:.2rem;">
+          <span style="font-size:.72rem;color:var(--muted);font-weight:600;margin-right:.25rem;">Tags:</span>
+          {% for tag in ['{{FirmName}}','{{ContactName}}','{{City}}','{{Country}}','{{PracticeArea}}','{{Website}}','{{FreeTrialLink}}','{{CurrentDate}}'] %}
+          <span class="merge-tag" onclick="insertTag('{{ tag }}')">{{ tag }}</span>
+          {% endfor %}
+        </div>
+
+        <!-- Action bar -->
+        <div style="padding:.75rem 1.1rem;border-top:1px solid #f1f5f9;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;">
+          <button type="submit" class="btn-gold" onclick="setAction('send')">
+            <i class="fas fa-paper-plane me-1"></i>Send
+          </button>
+          <button type="button" class="btn-outline-ec" onclick="saveDraft()">
+            <i class="fas fa-save me-1"></i>Draft
+          </button>
+          <div class="d-flex align-items-center gap-1">
+            <input type="datetime-local" id="scheduleInput" class="form-control form-control-sm" style="width:180px;border-radius:8px;font-size:.78rem;" oninput="document.getElementById('scheduleAtInput').value=this.value">
+            <button type="submit" class="btn-outline-ec" onclick="setAction('schedule')">
+              <i class="fas fa-clock me-1"></i>Schedule
+            </button>
+          </div>
+          <div class="ms-auto d-flex align-items-center gap-2">
+            <select name="priority" id="prioritySel" class="form-select form-select-sm" style="width:110px;border-radius:8px;font-size:.78rem;" onchange="document.getElementById('priorityInput').value=this.value">
+              <option value="normal">Normal</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </select>
+            <select id="campaignSel" class="form-select form-select-sm" style="width:160px;border-radius:8px;font-size:.78rem;" onchange="document.getElementById('campaignIdInput').value=this.value">
+              <option value="">No campaign</option>
+              {% for c in campaigns %}
+              <option value="{{ c.id }}">{{ c.name[:25] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- AI sidebar -->
+  <div class="col-lg-4">
+    <!-- AI Writer -->
+    <div class="ai-panel mb-3">
+      <div class="ai-panel-title"><i class="fas fa-robot"></i> AI Email Writer</div>
+      <div class="mb-2">
+        <label class="field-label">Email Type</label>
+        <select id="aiEmailType" class="form-select form-select-sm" style="border-radius:8px;font-size:.82rem;">
+          <option value="cold_outreach">Cold Outreach</option>
+          <option value="follow_up">Follow-up</option>
+          <option value="meeting_request">Meeting Request</option>
+          <option value="demo_invitation">Demo Invitation</option>
+          <option value="trial_reminder">Trial Reminder</option>
+          <option value="renewal_reminder">Renewal Reminder</option>
+          <option value="thank_you">Thank You</option>
+          <option value="re_engagement">Re-engagement</option>
+        </select>
+      </div>
+      <div class="mb-2">
+        <label class="field-label">Tone</label>
+        <div class="d-flex flex-wrap gap-1">
+          {% for t in ['Professional','Friendly','Persuasive','Formal'] %}
+          <button type="button" class="tone-btn {% if t=='Professional' %}active{% endif %}"
+                  data-tone="{{ t|lower }}"
+                  onclick="setTone(this,'{{ t|lower }}')">{{ t }}</button>
+          {% endfor %}
+        </div>
+      </div>
+      <button type="button" class="ai-btn w-100 justify-content-center" onclick="generateAI()">
+        <i class="fas fa-magic"></i> Generate with AI
+      </button>
+      <div class="mt-2 d-flex gap-1 flex-wrap" style="display:none" id="rewriteBtns">
+        <button type="button" class="btn btn-xs btn-outline-secondary" style="font-size:.74rem;border-radius:6px;padding:.2rem .55rem;" onclick="rewriteAI('shorten')">Shorten</button>
+        <button type="button" class="btn btn-xs btn-outline-secondary" style="font-size:.74rem;border-radius:6px;padding:.2rem .55rem;" onclick="rewriteAI('expand')">Expand</button>
+        <button type="button" class="btn btn-xs btn-outline-secondary" style="font-size:.74rem;border-radius:6px;padding:.2rem .55rem;" onclick="generateAI()">Regenerate</button>
+      </div>
+    </div>
+
+    <!-- Templates picker -->
+    <div class="ec-card mb-3">
+      <div class="ec-card-header">
+        <span class="ec-card-title"><i class="fas fa-layer-group me-2"></i>Templates</span>
+        <a href="{{ url_for('email_crm.templates_list') }}" style="font-size:.75rem;color:var(--navy);">Manage</a>
+      </div>
+      <div class="ec-card-body p-0" style="max-height:220px;overflow-y:auto;">
+        {% if templates %}
+        {% set cats = templates|groupby('category') %}
+        {% for cat, tmpls in cats %}
+        <div class="px-3 pt-2 pb-1" style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;">{{ cat }}</div>
+        {% for t in tmpls %}
+        <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom" style="cursor:pointer;transition:background .1s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''" onclick="loadTemplate({{ t.id }})">
+          <i class="fas fa-file-alt" style="color:var(--muted);font-size:.78rem;"></i>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ t.name }}</div>
+            {% if t.subject %}<div style="font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ t.subject }}</div>{% endif %}
+          </div>
+        </div>
+        {% endfor %}
+        {% endfor %}
+        {% else %}
+        <div class="p-3 text-center" style="font-size:.82rem;color:var(--muted);">
+          No templates yet. <a href="{{ url_for('email_crm.templates_list') }}">Create one</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Firm context -->
+    {% if firm %}
+    <div class="ec-card">
+      <div class="ec-card-header">
+        <span class="ec-card-title"><i class="fas fa-building me-2"></i>Firm Context</span>
+      </div>
+      <div class="ec-card-body">
+        <div style="font-size:.88rem;font-weight:700;margin-bottom:.3rem;">{{ firm.name }}</div>
+        <div style="font-size:.78rem;color:var(--muted);">
+          {% if firm.city %}📍 {{ firm.city }}, {{ firm.country or '' }}<br>{% endif %}
+          {% if firm.practice_areas %}⚖️ {{ firm.practice_areas[:2]|join(', ') }}<br>{% endif %}
+          {% if firm.pipeline_stage %}📊 Stage: {{ firm.pipeline_stage|replace('_',' ')|title }}<br>{% endif %}
+          {% if firm.lead_score %}⭐ Score: {{ firm.lead_score }}{% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- AI loading overlay -->
+<div id="aiOverlay" style="display:none;position:fixed;inset:0;background:rgba(13,27,75,.35);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;padding:2rem 2.5rem;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+    <div class="spinner-border text-primary mb-3" role="status"></div>
+    <div style="font-size:.9rem;font-weight:600;color:var(--navy);">Generating with AI…</div>
+    <div style="font-size:.78rem;color:var(--muted);margin-top:.25rem;">Llama 3.3 70B via Groq</div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+<script>
+const quill = new Quill('#quillEditor', {
+  theme: 'snow',
+  placeholder: 'Write your email here, or use AI to generate it…',
+  modules: {
+    toolbar: [
+      [{ header: [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ color: [] }, { background: [] }],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      [{ align: [] }],
+      ['link', 'image'],
+      ['blockquote', 'code-block'],
+      ['clean']
+    ]
+  }
+});
+
+// Pre-fill if draft body exists
+{% if draft and draft.body %}
+quill.root.innerHTML = {{ draft.body|tojson }};
+{% endif %}
+
+let currentTone = 'professional';
+const firmId = {{ (firm.id if firm) or 'null' }};
+
+function setAction(a){
+  document.getElementById('actionInput').value = a;
+  prepareForm();
+}
+function saveDraft(){
+  setAction('draft');
+  document.getElementById('composeForm').submit();
+}
+function prepareForm(){
+  document.getElementById('bodyHtml').value = quill.root.innerHTML;
+  document.getElementById('bodyText').value = quill.getText();
+}
+document.getElementById('composeForm').addEventListener('submit', e=>{
+  prepareForm();
+  if(!quill.getText().trim()){ e.preventDefault(); alert('Email body cannot be empty.'); }
+});
+
+function insertTag(tag){
+  const range = quill.getSelection(true);
+  quill.insertText(range.index, tag);
+}
+
+function toggleRow(id){
+  const el=document.getElementById(id);
+  el.style.setProperty('display', el.style.display==='none'?'flex':'none','important');
+}
+
+function setTone(btn, tone){
+  document.querySelectorAll('.tone-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); currentTone=tone;
+}
+
+function pickFirm(email, name, id){
+  document.getElementById('toEmail').value = email;
+  document.getElementById('toName').value = name;
+  document.getElementById('firmIdInput').value = id;
+  document.getElementById('firmPickerDrop').classList.remove('show');
+}
+
+function filterFirms(q){
+  const ql = q.toLowerCase();
+  document.querySelectorAll('.firm-pick-item').forEach(el=>{
+    const match = el.dataset.name.includes(ql)||el.dataset.email.includes(ql);
+    el.style.display = match?'flex':'none';
+  });
+}
+
+document.addEventListener('click', e=>{
+  if(!e.target.closest('#firmPickerDrop') && !e.target.closest('[onclick*="firmPickerDrop"]'))
+    document.getElementById('firmPickerDrop').classList.remove('show');
+});
+
+async function generateAI(){
+  const overlay = document.getElementById('aiOverlay');
+  overlay.style.display='flex';
+  try {
+    const r = await api('{{ url_for("email_crm.ai_generate") }}', {
+      firm_id: firmId,
+      email_type: document.getElementById('aiEmailType').value,
+      tone: currentTone,
+    });
+    if(r.success){
+      if(r.subject) document.getElementById('subject').value = r.subject;
+      quill.root.innerHTML = r.body || '';
+      document.getElementById('aiGeneratedFlag').value = '1';
+      document.getElementById('rewriteBtns').style.display = 'flex';
+      showToast('AI email generated!');
+    } else { showToast(r.error||'AI generation failed','error'); }
+  } catch(e){ showToast('Request failed','error'); }
+  finally { overlay.style.display='none'; }
+}
+
+async function rewriteAI(mode){
+  const currentBody = quill.getText().trim();
+  if(!currentBody){ showToast('Nothing to rewrite','error'); return; }
+  const overlay=document.getElementById('aiOverlay'); overlay.style.display='flex';
+  try {
+    const r = await api('{{ url_for("email_crm.ai_generate") }}', {
+      firm_id: firmId,
+      email_type: document.getElementById('aiEmailType').value,
+      tone: currentTone,
+      custom_prompt: mode + ': ' + currentBody.substring(0,500),
+    });
+    if(r.success){ quill.root.innerHTML = r.body || ''; showToast('Email rewritten!'); }
+    else showToast(r.error||'Failed','error');
+  } catch(e){ showToast('Request failed','error'); }
+  finally { overlay.style.display='none'; }
+}
+
+async function loadTemplate(id){
+  try {
+    const r = await fetch('{{ url_for("email_crm.templates_list") }}'.replace('templates','templates/'+id+'/get'));
+    const d = await r.json();
+    if(d.subject) document.getElementById('subject').value = d.subject;
+    if(d.body_html) quill.root.innerHTML = d.body_html;
+    document.getElementById('templateIdInput').value = id;
+    showToast('Template loaded');
+  } catch(e){ showToast('Failed to load template','error'); }
+}
+// Fix template load URL
+async function loadTemplate(id){
+  try {
+    const r = await fetch(`/superadmin/crm/email/templates/${id}/get`);
+    const d = await r.json();
+    if(d.subject) document.getElementById('subject').value = d.subject;
+    if(d.body_html) quill.root.innerHTML = d.body_html;
+    document.getElementById('templateIdInput').value = id;
+    showToast('Template loaded');
+  } catch(e){ showToast('Failed to load template','error'); }
+}
+</script>
+{% endblock %}

@@ -973,6 +973,28 @@ class OutreachMessage(db.Model):
     reply_text = db.Column(db.Text, nullable=True)
     reply_classification = db.Column(db.String(50), nullable=True)
 
+    # Email CRM extended tracking fields
+    delivered_at = db.Column(db.DateTime, nullable=True)
+    bounced_at = db.Column(db.DateTime, nullable=True)
+    spam_at = db.Column(db.DateTime, nullable=True)
+    clicked_at = db.Column(db.DateTime, nullable=True)
+    forwarded_at = db.Column(db.DateTime, nullable=True)
+    tracking_token = db.Column(db.String(64), nullable=True, index=True)
+    provider = db.Column(db.String(50), default='simulate')
+    provider_message_id = db.Column(db.String(200), nullable=True)
+    is_deleted = db.Column(db.Boolean, default=False, nullable=False)
+    deleted_at = db.Column(db.DateTime, nullable=True)
+    scheduled_timezone = db.Column(db.String(100), nullable=True)
+    reply_to = db.Column(db.String(200), nullable=True)
+    cc_emails = db.Column(db.Text, nullable=True)
+    bcc_emails = db.Column(db.Text, nullable=True)
+    internal_note = db.Column(db.Text, nullable=True)
+    template_id = db.Column(db.Integer, nullable=True)
+    open_count = db.Column(db.Integer, default=0)
+    click_count = db.Column(db.Integer, default=0)
+    priority = db.Column(db.String(20), default='normal')
+    tags = db.Column(db.Text, nullable=True)
+
     created_at = db.Column(db.DateTime, default=datetime.now)
 
     firm = db.relationship('DirectoryLawFirm', back_populates='outreach_messages')

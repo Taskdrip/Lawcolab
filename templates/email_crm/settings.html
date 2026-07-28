@@ -1,0 +1,193 @@
+{% extends 'email_crm/base.html' %}
+{% block title %}Settings — Communications{% endblock %}
+{% block page_title %}Email Settings{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-8">
+    <form method="POST" action="{{ url_for('email_crm.save_settings') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <!-- Provider -->
+      <div class="ec-card mb-3">
+        <div class="ec-card-header">
+          <span class="ec-card-title"><i class="fas fa-plug me-2"></i>Email Provider</span>
+        </div>
+        <div class="ec-card-body">
+          <div class="row g-3 mb-3">
+            {% for prov, icon, label, desc in [
+              ('simulate','flask','Simulate (Dev)','Logs to database only — no real emails sent. Perfect for testing.'),
+              ('smtp','server','SMTP','Send via any SMTP server (Gmail, Zoho, custom).'),
+              ('resend','bolt','Resend','Modern email API — fast, reliable, 3000 free emails/month.'),
+              ('mailgun','mail-bulk','Mailgun','Reliable transactional email with webhooks.'),
+              ('postmark','rocket','Postmark','Excellent deliverability for transactional email.'),
+            ] %}
+            <div class="col-6 col-md-4">
+              <label style="cursor:pointer;">
+                <input type="radio" name="provider" value="{{ prov }}" {% if (s.get('provider','simulate') or 'simulate') == prov %}checked{% endif %} style="display:none;" onchange="showProvider('{{ prov }}')">
+                <div class="provider-card {% if (s.get('provider','simulate') or 'simulate') == prov %}selected{% endif %}" onclick="selectProvider('{{ prov }}',this)">
+                  <i class="fas fa-{{ icon }} mb-1" style="font-size:1.2rem;display:block;"></i>
+                  <div style="font-size:.82rem;font-weight:700;">{{ label }}</div>
+                  <div style="font-size:.7rem;color:var(--muted);margin-top:.2rem;line-height:1.4;">{{ desc }}</div>
+                </div>
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+
+          <!-- SMTP fields -->
+          <div id="cfg-smtp" class="provider-cfg" style="display:{{ 'block' if s.get('provider')=='smtp' else 'none' }};">
+            <div class="row g-3">
+              <div class="col-8"><label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">SMTP Host</label><input type="text" name="smtp_host" class="form-control" style="border-radius:9px;" value="{{ s.get('smtp_host','') }}" placeholder="smtp.gmail.com"></div>
+              <div class="col-4"><label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Port</label><input type="number" name="smtp_port" class="form-control" style="border-radius:9px;" value="{{ s.get('smtp_port',587) }}"></div>
+              <div class="col-6"><label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">SMTP Username</label><input type="text" name="smtp_user" class="form-control" style="border-radius:9px;" value="{{ s.get('smtp_user','') }}" placeholder="your@email.com"></div>
+              <div class="col-6"><label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">SMTP Password</label><input type="password" name="smtp_password" class="form-control" style="border-radius:9px;" placeholder="Leave blank to keep current"></div>
+              <div class="col-12"><div class="form-check"><input type="checkbox" class="form-check-input" name="smtp_use_tls" id="useTls" {% if s.get('smtp_use_tls',True) %}checked{% endif %}><label class="form-check-label" for="useTls" style="font-size:.82rem;">Use STARTTLS (recommended)</label></div></div>
+            </div>
+          </div>
+
+          <!-- API key fields (Resend, Mailgun, Postmark) -->
+          <div id="cfg-api" class="provider-cfg" style="display:{{ 'block' if s.get('provider') in ('resend','mailgun','postmark') else 'none' }};">
+            <div class="mb-3">
+              <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">API Key</label>
+              <input type="password" name="api_key" class="form-control" style="border-radius:9px;" placeholder="Enter your API key (leave blank to keep current)">
+              <div class="form-text" style="font-size:.75rem;">Get your key from the provider dashboard. Stored securely.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sender identity -->
+      <div class="ec-card mb-3">
+        <div class="ec-card-header">
+          <span class="ec-card-title"><i class="fas fa-user me-2"></i>Sender Identity</span>
+        </div>
+        <div class="ec-card-body">
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">From Name</label>
+              <input type="text" name="from_name" class="form-control" style="border-radius:9px;" value="{{ s.get('from_name','LAWCOLAB') }}" placeholder="LAWCOLAB">
+            </div>
+            <div class="col-6">
+              <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">From Email</label>
+              <input type="email" name="from_email" class="form-control" style="border-radius:9px;" value="{{ s.get('from_email','noreply@lawcolab.com') }}">
+            </div>
+            <div class="col-6">
+              <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Reply-To</label>
+              <input type="email" name="reply_to" class="form-control" style="border-radius:9px;" value="{{ s.get('reply_to','') }}" placeholder="Same as From Email">
+            </div>
+            <div class="col-6">
+              <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Daily Send Limit</label>
+              <input type="number" name="daily_send_limit" class="form-control" style="border-radius:9px;" value="{{ s.get('daily_send_limit',500) }}" min="1" max="10000">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Signature & footer -->
+      <div class="ec-card mb-3">
+        <div class="ec-card-header">
+          <span class="ec-card-title"><i class="fas fa-signature me-2"></i>Signature & Footer</span>
+        </div>
+        <div class="ec-card-body">
+          <div class="mb-3">
+            <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Email Signature (HTML)</label>
+            <textarea name="signature_html" class="form-control" rows="4" style="border-radius:9px;font-size:.83rem;font-family:monospace;">{{ s.get('signature_html','') or '' }}</textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Email Footer Text</label>
+            <input type="text" name="email_footer" class="form-control" style="border-radius:9px;" value="{{ s.get('email_footer','') or '' }}" placeholder="© 2025 LAWCOLAB. All rights reserved.">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Unsubscribe Footer</label>
+            <input type="text" name="unsubscribe_footer" class="form-control" style="border-radius:9px;" value="{{ s.get('unsubscribe_footer','') or '' }}" placeholder="To unsubscribe, reply with STOP">
+          </div>
+        </div>
+      </div>
+
+      <!-- Tracking -->
+      <div class="ec-card mb-3">
+        <div class="ec-card-header">
+          <span class="ec-card-title"><i class="fas fa-chart-line me-2"></i>Tracking</span>
+        </div>
+        <div class="ec-card-body">
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="track_opens" id="trackOpens" {% if s.get('track_opens', True) %}checked{% endif %}>
+            <label class="form-check-label" for="trackOpens" style="font-size:.84rem;">Track email opens (invisible 1×1 pixel)</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="track_clicks" id="trackClicks" {% if s.get('track_clicks', True) %}checked{% endif %}>
+            <label class="form-check-label" for="trackClicks" style="font-size:.84rem;">Track link clicks (redirect-based)</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn-navy">
+          <i class="fas fa-save me-1"></i> Save Settings
+        </button>
+        <button type="button" class="btn-outline-ec" onclick="testSend()">
+          <i class="fas fa-vial me-1"></i> Send Test Email
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Side info -->
+  <div class="col-lg-4">
+    <div class="ec-card mb-3">
+      <div class="ec-card-header"><span class="ec-card-title"><i class="fas fa-info-circle me-2"></i>Provider Guides</span></div>
+      <div class="ec-card-body p-0">
+        {% for name, url, desc in [
+          ('Resend', 'https://resend.com', 'Free 3,000 emails/month. Best for startups.'),
+          ('Mailgun', 'https://mailgun.com', '5,000 free emails/3 months. Great webhooks.'),
+          ('Postmark', 'https://postmarkapp.com', 'Best deliverability. $15/month starter.'),
+          ('Gmail SMTP', 'https://support.google.com/mail/answer/7126229', 'Free via Gmail — 500/day limit.'),
+        ] %}
+        <div class="px-3 py-2 {% if not loop.last %}border-bottom{% endif %}" style="border-color:#f1f5f9;">
+          <div style="font-size:.82rem;font-weight:600;">{{ name }}</div>
+          <div style="font-size:.76rem;color:var(--muted);margin-bottom:.2rem;">{{ desc }}</div>
+          <a href="{{ url }}" target="_blank" style="font-size:.74rem;color:var(--navy);">Get started →</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="ec-card">
+      <div class="ec-card-header"><span class="ec-card-title"><i class="fas fa-shield-alt me-2"></i>Security</span></div>
+      <div class="ec-card-body" style="font-size:.82rem;color:var(--muted);line-height:1.7;">
+        <p>API keys and SMTP passwords are stored in the database. For production, we recommend using Railway environment variables instead and referencing them via <code>os.environ</code>.</p>
+        <p>Leave password/key fields blank to keep the current stored value.</p>
+        <p>Supported env vars: <code>RESEND_API_KEY</code>, <code>MAILGUN_API_KEY</code>, <code>POSTMARK_SERVER_TOKEN</code></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.provider-card{border:2px solid var(--border);border-radius:12px;padding:.85rem;text-align:center;cursor:pointer;transition:all .15s;height:100%;}
+.provider-card:hover,.provider-card.selected{border-color:var(--navy);background:#f0f4ff;}
+.provider-card.selected{background:#f0f4ff;}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function selectProvider(prov, el){
+  document.querySelectorAll('.provider-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.querySelectorAll('input[name=provider]').forEach(r=>r.checked = r.value===prov);
+  document.querySelectorAll('.provider-cfg').forEach(c=>c.style.display='none');
+  if(prov==='smtp') document.getElementById('cfg-smtp').style.display='block';
+  else if(['resend','mailgun','postmark'].includes(prov)) document.getElementById('cfg-api').style.display='block';
+}
+
+async function testSend(){
+  const email = prompt('Send test to (your email):', '{{ current_user.email }}');
+  if(!email) return;
+  const r = await api('{{ url_for("email_crm.test_send") }}', {email});
+  if(r.success) showToast(`Test email sent via ${r.provider}!`);
+  else showToast(r.error||'Send failed','error');
+}
+</script>
+{% endblock %}

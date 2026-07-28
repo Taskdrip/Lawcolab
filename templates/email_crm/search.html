@@ -1,0 +1,66 @@
+{% extends 'email_crm/base.html' %}
+{% block title %}Search — Communications{% endblock %}
+{% block page_title %}Search Emails{% endblock %}
+
+{% block content %}
+<div class="ec-card mb-3">
+  <div class="ec-card-body">
+    <form method="GET" action="{{ url_for('email_crm.search') }}" class="d-flex gap-2">
+      <input type="search" name="q" value="{{ q }}" class="ec-search flex-1" style="width:auto;flex:1;"
+             placeholder="Search by subject, recipient, email address, keyword…" autofocus>
+      <button type="submit" class="btn-navy" style="padding:.42rem 1.2rem;border-radius:9px;font-size:.83rem;">
+        <i class="fas fa-search me-1"></i>Search
+      </button>
+    </form>
+  </div>
+</div>
+
+{% if q %}
+<div class="mb-2" style="font-size:.82rem;color:var(--muted);">
+  {% if messages %}{{ messages|length }} result{{ 's' if messages|length != 1 }} for "{{ q }}"{% else %}No results for "{{ q }}"{% endif %}
+</div>
+
+{% if messages %}
+<div class="ec-card" style="overflow:hidden;">
+  {% for msg in messages %}
+  {% set initials = (msg.recipient_name or 'U')[:2]|upper %}
+  <a href="{{ url_for('email_crm.view_message', msg_id=msg.id) }}"
+     class="msg-item" style="color:inherit;display:flex;">
+    <div class="msg-avatar" style="background:{{ loop.cycle('#0d1b4b','#1a3a8f','#2c5282') }};">{{ initials }}</div>
+    <div class="msg-meta">
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <span class="msg-from">{{ msg.recipient_name or 'Unknown' }}</span>
+        <span style="font-size:.76rem;color:var(--muted);">{{ msg.recipient_email }}</span>
+        <span class="status-badge badge-{{ msg.status }} ms-auto">{{ msg.status|title }}</span>
+        <span class="msg-time">{{ msg.created_at.strftime('%b %d, %Y') if msg.created_at }}</span>
+      </div>
+      <div class="msg-subject">{{ msg.subject or '(no subject)' }}</div>
+      <div class="msg-preview">{{ msg.body|striptags|truncate(100) }}</div>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="ec-card">
+  <div class="text-center py-5">
+    <i class="fas fa-search fa-3x mb-3" style="color:#cbd5e0;"></i>
+    <p style="font-size:.9rem;color:var(--muted);">No emails found matching "{{ q }}"</p>
+    <p style="font-size:.82rem;color:var(--muted);">Try searching by recipient name, email address, or subject line.</p>
+  </div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="ec-card">
+  <div class="text-center py-5">
+    <i class="fas fa-search fa-3x mb-3" style="color:#cbd5e0;"></i>
+    <p style="font-size:.9rem;color:var(--muted);">Enter a search term to find emails</p>
+    <div class="d-flex flex-wrap gap-2 justify-content-center mt-2">
+      {% for hint in ['cold outreach', 'follow up', 'Lagos', 'Nigeria', 'demo', 'LAWCOLAB'] %}
+      <a href="{{ url_for('email_crm.search', q=hint) }}" style="font-size:.78rem;background:#f1f5f9;color:var(--navy);border-radius:8px;padding:.25rem .7rem;text-decoration:none;">{{ hint }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

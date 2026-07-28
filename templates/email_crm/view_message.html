@@ -1,0 +1,260 @@
+{% extends 'email_crm/base.html' %}
+{% block title %}{{ msg.subject or '(no subject)' }} — Communications{% endblock %}
+{% block page_title %}Message Detail{% endblock %}
+
+{% block topbar_actions %}
+<div class="d-flex gap-2">
+  <form method="POST" action="{{ url_for('email_crm.delete_message', msg_id=msg.id) }}" onsubmit="return confirm('Move to trash?')">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn-outline-ec" type="submit"><i class="fas fa-trash me-1"></i>Delete</button>
+  </form>
+  <a href="{{ url_for('email_crm.compose', firm_id=msg.firm_id, reply_to=msg.id) }}" class="btn-gold" style="text-decoration:none;padding:.38rem .85rem;border-radius:9px;font-size:.8rem;font-weight:700;">
+    <i class="fas fa-reply me-1"></i>Reply
+  </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <!-- Message column -->
+  <div class="col-lg-8">
+    <div class="ec-card mb-3">
+      <div class="ec-card-header" style="flex-wrap:wrap;gap:.5rem;">
+        <div>
+          <h5 style="font-size:1rem;font-weight:700;margin:0 0 .25rem;">{{ msg.subject or '(no subject)' }}</h5>
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="status-badge badge-{{ msg.status }}">{{ msg.status|title }}</span>
+            {% if msg.priority and msg.priority != 'normal' %}
+            <span class="status-badge" style="background:#fff3cd;color:#856404;">{{ msg.priority|title }} Priority</span>
+            {% endif %}
+            {% if msg.ai_generated %}
+            <span class="status-badge" style="background:#e8f5e9;color:#2e7d32;"><i class="fas fa-robot me-1"></i>AI Generated</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="ms-auto text-end" style="font-size:.78rem;color:var(--muted);">
+          {% if msg.sent_at %}Sent {{ msg.sent_at.strftime('%B %d, %Y at %H:%M') }}
+          {% elif msg.created_at %}Created {{ msg.created_at.strftime('%B %d, %Y at %H:%M') }}{% endif %}
+        </div>
+      </div>
+      <div class="ec-card-body">
+        <!-- Header row -->
+        <div class="d-flex align-items-start gap-3 mb-3 pb-3" style="border-bottom:1px solid var(--border);">
+          <div class="msg-avatar" style="width:44px;height:44px;font-size:.9rem;">
+            {{ (msg.recipient_name or 'U')[:2]|upper }}
+          </div>
+          <div class="flex-1">
+            <div style="font-size:.88rem;font-weight:600;">{{ msg.recipient_name or 'Recipient' }}</div>
+            <div style="font-size:.8rem;color:var(--muted);">{{ msg.recipient_email }}</div>
+            {% if msg.cc_emails %}
+            <div style="font-size:.76rem;color:var(--muted);">CC: {{ msg.cc_emails }}</div>
+            {% endif %}
+          </div>
+        </div>
+        <!-- Body -->
+        <div style="font-size:.87rem;line-height:1.7;color:var(--text);">
+          {{ msg.body|safe }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Reply text if any -->
+    {% if msg.reply_text %}
+    <div class="ec-card mb-3">
+      <div class="ec-card-header">
+        <span class="ec-card-title"><i class="fas fa-reply me-2 text-success"></i>Reply Received</span>
+        <span style="font-size:.75rem;color:var(--muted);">{{ msg.replied_at.strftime('%b %d, %Y %H:%M') if msg.replied_at }}</span>
+      </div>
+      <div class="ec-card-body">
+        <div style="font-size:.86rem;line-height:1.7;">{{ msg.reply_text|nl2br|safe }}</div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Internal notes -->
+    <div class="ec-card mb-3">
+      <div class="ec-card-header">
+        <span class="ec-card-title"><i class="fas fa-sticky-note me-2" style="color:var(--gold-dark);"></i>Internal Notes</span>
+      </div>
+      <div class="ec-card-body">
+        {% if msg.internal_note %}
+        <div style="font-size:.84rem;line-height:1.7;color:var(--text);white-space:pre-wrap;background:#fffdf0;border-radius:8px;padding:.75rem 1rem;border:1px solid #fef3c7;margin-bottom:.85rem;">{{ msg.internal_note }}</div>
+        {% endif %}
+        <div class="d-flex gap-2">
+          <input type="text" id="noteInput" class="form-control form-control-sm" placeholder="Add internal note (never sent to recipient)…" style="border-radius:9px;font-size:.83rem;">
+          <button class="btn-navy" onclick="addNote()" style="white-space:nowrap;padding:.38rem .8rem;">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conversation thread -->
+    {% if thread|length > 1 %}
+    <div class="ec-card">
+      <div class="ec-card-header">
+        <span class="ec-card-title"><i class="fas fa-comments me-2"></i>Thread ({{ thread|length }} messages)</span>
+      </div>
+      <div>
+        {% for t in thread %}
+        <a href="{{ url_for('email_crm.view_message', msg_id=t.id) }}"
+           class="msg-item {% if t.id == msg.id %}{% endif %}" style="color:inherit;{% if t.id == msg.id %}background:#f0f4ff;{% endif %}">
+          <div class="msg-avatar" style="width:34px;height:34px;font-size:.74rem;background:{{ '#0d1b4b' if t.id != msg.id else '#1e40af' }};">
+            {{ (t.recipient_name or 'U')[:2]|upper }}
+          </div>
+          <div class="msg-meta">
+            <div class="d-flex gap-2 align-items-center">
+              <span class="msg-subject" style="font-size:.82rem;">{{ t.subject or '(no subject)' }}</span>
+              <span class="status-badge badge-{{ t.status }} ms-auto" style="font-size:.66rem;">{{ t.status }}</span>
+              <span class="msg-time">{{ t.created_at.strftime('%b %d') if t.created_at }}</span>
+            </div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Sidebar column -->
+  <div class="col-lg-4">
+    <!-- Tracking -->
+    <div class="ec-card mb-3">
+      <div class="ec-card-header">
+        <span class="ec-card-title"><i class="fas fa-chart-line me-2"></i>Tracking</span>
+      </div>
+      <div class="ec-card-body p-0">
+        {% set track_items = [
+          ('sent', 'Sent', msg.sent_at, 'paper-plane', '#3b82f6'),
+          ('delivered', 'Delivered', msg.delivered_at, 'check', '#10b981'),
+          ('opened', 'Opened', msg.opened_at, 'envelope-open', '#8b5cf6'),
+          ('clicked', 'Clicked', msg.clicked_at, 'mouse-pointer', '#f59e0b'),
+          ('replied', 'Replied', msg.replied_at, 'reply', '#06b6d4'),
+          ('bounced', 'Bounced', msg.bounced_at, 'exclamation-triangle', '#ef4444'),
+        ] %}
+        {% for status, label, ts, icon, color in track_items %}
+        <div class="d-flex align-items-center gap-3 px-3 py-2" style="border-bottom:1px solid #f1f5f9;">
+          <div style="width:28px;height:28px;border-radius:7px;background:{{ color }}22;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="fas fa-{{ icon }}" style="font-size:.72rem;color:{{ color }};"></i>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:.8rem;font-weight:600;color:{{ '#1a202c' if ts else '#a0aec0' }};">{{ label }}</div>
+            {% if ts %}<div style="font-size:.72rem;color:var(--muted);">{{ ts.strftime('%b %d, %Y %H:%M') }}</div>{% endif %}
+          </div>
+          {% if ts %}<i class="fas fa-check-circle" style="color:{{ color }};font-size:.8rem;"></i>{% endif %}
+        </div>
+        {% endfor %}
+        <div class="px-3 py-2 d-flex gap-3">
+          <div class="text-center">
+            <div style="font-size:1.1rem;font-weight:800;color:var(--navy);">{{ msg.open_count or 0 }}</div>
+            <div style="font-size:.7rem;color:var(--muted);">Opens</div>
+          </div>
+          <div class="text-center">
+            <div style="font-size:1.1rem;font-weight:800;color:var(--navy);">{{ msg.click_count or 0 }}</div>
+            <div style="font-size:.7rem;color:var(--muted);">Clicks</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Manual status update -->
+    <div class="ec-card mb-3">
+      <div class="ec-card-header">
+        <span class="ec-card-title"><i class="fas fa-tag me-2"></i>Update Status</span>
+      </div>
+      <div class="ec-card-body">
+        <div class="d-flex flex-wrap gap-2">
+          {% for s in ['sent','delivered','opened','replied','bounced','failed'] %}
+          <button class="btn btn-sm {% if msg.status==s %}btn-dark{% else %}btn-outline-secondary{% endif %}"
+                  style="border-radius:8px;font-size:.74rem;"
+                  onclick="markStatus('{{ s }}')">{{ s|title }}</button>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Firm info -->
+    {% if firm %}
+    <div class="ec-card mb-3">
+      <div class="ec-card-header">
+        <span class="ec-card-title"><i class="fas fa-building me-2"></i>Firm</span>
+        <a href="{{ url_for('crm.lead_detail', firm_id=firm.id) }}" class="btn-outline-ec" style="padding:.2rem .6rem;font-size:.75rem;text-decoration:none;">View</a>
+      </div>
+      <div class="ec-card-body">
+        <div style="font-size:.88rem;font-weight:600;margin-bottom:.4rem;">{{ firm.name }}</div>
+        {% if firm.city or firm.country %}
+        <div style="font-size:.78rem;color:var(--muted);margin-bottom:.25rem;">
+          <i class="fas fa-map-marker-alt me-1"></i>{{ firm.city }}{% if firm.city and firm.country %}, {% endif %}{{ firm.country }}
+        </div>
+        {% endif %}
+        {% if firm.phone %}
+        <div style="font-size:.78rem;color:var(--muted);margin-bottom:.25rem;">
+          <i class="fas fa-phone me-1"></i>{{ firm.phone }}
+        </div>
+        {% endif %}
+        <div class="mt-2">
+          <span class="status-badge badge-{{ firm.pipeline_stage or 'draft' }}" style="font-size:.68rem;">{{ (firm.pipeline_stage or 'new')|replace('_',' ')|title }}</span>
+          <span class="ms-2" style="font-size:.75rem;color:var(--muted);">Score: <strong>{{ firm.lead_score or 0 }}</strong></span>
+        </div>
+        <div class="mt-3">
+          <a href="{{ url_for('email_crm.compose', firm_id=firm.id) }}" class="btn-navy" style="text-decoration:none;padding:.38rem .9rem;border-radius:9px;font-size:.78rem;display:inline-flex;align-items:center;gap:.4rem;">
+            <i class="fas fa-envelope"></i> New Email to Firm
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Contacts -->
+    {% if contacts %}
+    <div class="ec-card">
+      <div class="ec-card-header">
+        <span class="ec-card-title"><i class="fas fa-users me-2"></i>Contacts</span>
+        {% if firm %}<a href="{{ url_for('email_crm.firm_contacts', firm_id=firm.id) }}" style="font-size:.75rem;color:var(--navy);">Manage</a>{% endif %}
+      </div>
+      <div class="ec-card-body p-0">
+        {% for c in contacts %}
+        <div class="d-flex align-items-center gap-2 px-3 py-2 {% if not loop.last %}border-bottom{% endif %}" style="border-color:#f1f5f9;">
+          <div class="msg-avatar" style="width:32px;height:32px;font-size:.72rem;">{{ c.name[:2]|upper }}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:.82rem;font-weight:600;">{{ c.name }}</div>
+            <div style="font-size:.74rem;color:var(--muted);">{{ c.job_title or '' }}</div>
+          </div>
+          {% if c.email %}
+          <a href="{{ url_for('email_crm.compose', firm_id=msg.firm_id) }}" style="font-size:.72rem;color:var(--navy);">
+            <i class="fas fa-envelope"></i>
+          </a>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function addNote(){
+  const note = document.getElementById('noteInput').value.trim();
+  if(!note) return;
+  api('{{ url_for("email_crm.add_internal_note", msg_id=msg.id) }}', {note})
+    .then(d=>{
+      if(d.success){ showToast('Note saved'); location.reload(); }
+      else showToast(d.error||'Error','error');
+    });
+}
+document.getElementById('noteInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter') addNote();
+});
+
+function markStatus(status){
+  api('{{ url_for("email_crm.mark_status", msg_id=msg.id) }}', {status})
+    .then(d=>{
+      if(d.success){ showToast('Status updated to '+status); location.reload(); }
+      else showToast(d.error||'Error','error');
+    });
+}
+</script>
+{% endblock %}

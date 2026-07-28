@@ -1,0 +1,145 @@
+{% extends 'email_crm/base.html' %}
+{% block title %}Contacts — {{ firm.name }}{% endblock %}
+{% block page_title %}Contacts: {{ firm.name }}{% endblock %}
+
+{% block topbar_actions %}
+<a href="{{ url_for('email_crm.compose', firm_id=firm.id) }}" class="btn-gold" style="text-decoration:none;padding:.38rem .85rem;border-radius:9px;font-size:.8rem;font-weight:700;display:flex;align-items:center;gap:.4rem;">
+  <i class="fas fa-envelope me-1"></i>Email Firm
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="ec-card mb-3">
+      <div class="ec-card-header">
+        <span class="ec-card-title"><i class="fas fa-users me-2"></i>Contacts ({{ contacts|length }})</span>
+        <button class="btn-navy" onclick="document.getElementById('addModal').style.display='flex'" style="padding:.35rem .75rem;border-radius:8px;font-size:.78rem;border:none;cursor:pointer;">
+          <i class="fas fa-plus me-1"></i>Add Contact
+        </button>
+      </div>
+      {% if contacts %}
+      <div>
+        {% for c in contacts %}
+        <div class="d-flex align-items-start gap-3 p-3 {% if not loop.last %}border-bottom{% endif %}" style="border-color:#f1f5f9;">
+          <div class="msg-avatar" style="width:44px;height:44px;font-size:.9rem;flex-shrink:0;">
+            {{ c.name[:2]|upper }}
+          </div>
+          <div style="flex:1;">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <span style="font-size:.9rem;font-weight:700;">{{ c.name }}</span>
+              {% if c.is_primary %}<span style="font-size:.68rem;background:#e8f0fe;color:#1a56db;border-radius:6px;padding:.1rem .45rem;font-weight:700;">Primary</span>{% endif %}
+            </div>
+            {% if c.job_title %}<div style="font-size:.78rem;color:var(--muted);">{{ c.job_title }}{% if c.department %} · {{ c.department }}{% endif %}</div>{% endif %}
+            <div class="d-flex flex-wrap gap-3 mt-1">
+              {% if c.email %}<a href="{{ url_for('email_crm.compose', firm_id=firm.id) }}" style="font-size:.78rem;color:var(--navy);" title="Email"><i class="fas fa-envelope me-1"></i>{{ c.email }}</a>{% endif %}
+              {% if c.phone %}<span style="font-size:.78rem;color:var(--muted);"><i class="fas fa-phone me-1"></i>{{ c.phone }}</span>{% endif %}
+              {% if c.whatsapp %}<a href="https://wa.me/{{ c.whatsapp|replace('+','') }}" target="_blank" style="font-size:.78rem;color:#25d366;"><i class="fab fa-whatsapp me-1"></i>{{ c.whatsapp }}</a>{% endif %}
+            </div>
+            {% if c.notes %}<div style="font-size:.76rem;color:var(--muted);margin-top:.3rem;font-style:italic;">{{ c.notes }}</div>{% endif %}
+          </div>
+          <div class="d-flex gap-2">
+            {% if c.email %}
+            <a href="{{ url_for('email_crm.compose', firm_id=firm.id) }}" class="btn btn-sm btn-outline-primary" style="border-radius:7px;font-size:.72rem;" title="Compose email to this contact">
+              <i class="fas fa-envelope"></i>
+            </a>
+            {% endif %}
+            <button class="btn btn-sm btn-outline-danger" style="border-radius:7px;font-size:.72rem;"
+                    onclick="deleteContact({{ c.id }}, this)"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-5">
+        <i class="fas fa-users fa-3x mb-3" style="color:#cbd5e0;"></i>
+        <p style="font-size:.85rem;color:var(--muted);">No contacts added yet for {{ firm.name }}.</p>
+        <button class="btn-gold" onclick="document.getElementById('addModal').style.display='flex'" style="padding:.45rem 1.2rem;border-radius:9px;font-size:.82rem;font-weight:700;border:none;cursor:pointer;">
+          Add first contact
+        </button>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <!-- Firm summary -->
+    <div class="ec-card mb-3">
+      <div class="ec-card-header">
+        <span class="ec-card-title"><i class="fas fa-building me-2"></i>Firm Info</span>
+        <a href="{{ url_for('crm.lead_detail', firm_id=firm.id) }}" class="btn-outline-ec" style="padding:.2rem .6rem;font-size:.74rem;text-decoration:none;">CRM Profile</a>
+      </div>
+      <div class="ec-card-body">
+        <div style="font-size:.92rem;font-weight:700;margin-bottom:.5rem;">{{ firm.name }}</div>
+        {% if firm.email %}<div style="font-size:.8rem;color:var(--muted);margin-bottom:.25rem;"><i class="fas fa-envelope me-1"></i>{{ firm.email }}</div>{% endif %}
+        {% if firm.phone %}<div style="font-size:.8rem;color:var(--muted);margin-bottom:.25rem;"><i class="fas fa-phone me-1"></i>{{ firm.phone }}</div>{% endif %}
+        {% if firm.city or firm.country %}<div style="font-size:.8rem;color:var(--muted);margin-bottom:.25rem;"><i class="fas fa-map-marker-alt me-1"></i>{{ firm.city }}{% if firm.city and firm.country %}, {% endif %}{{ firm.country }}</div>{% endif %}
+        {% if firm.website %}<div style="font-size:.8rem;margin-bottom:.5rem;"><a href="{{ firm.website }}" target="_blank" style="color:var(--navy);">{{ firm.website[:40] }}</a></div>{% endif %}
+        <div class="mt-2">
+          <span class="status-badge badge-{{ firm.pipeline_stage or 'draft' }}">{{ (firm.pipeline_stage or 'new')|replace('_',' ')|title }}</span>
+          {% if firm.lead_score %}<span class="ms-2" style="font-size:.75rem;color:var(--muted);">Score: <strong>{{ firm.lead_score }}</strong></span>{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add contact modal -->
+<div id="addModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:#fff;border-radius:16px;width:min(560px,100%);max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+    <div style="padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:1rem;font-weight:700;">Add Contact</span>
+      <button onclick="document.getElementById('addModal').style.display='none'" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);">×</button>
+    </div>
+    <div style="padding:1.2rem;">
+      <div class="row g-3">
+        <div class="col-6"><label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Full Name *</label><input type="text" id="cName" class="form-control" style="border-radius:9px;" required></div>
+        <div class="col-6"><label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Job Title</label><input type="text" id="cTitle" class="form-control" style="border-radius:9px;"></div>
+        <div class="col-6"><label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Email</label><input type="email" id="cEmail" class="form-control" style="border-radius:9px;"></div>
+        <div class="col-6"><label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Phone</label><input type="tel" id="cPhone" class="form-control" style="border-radius:9px;"></div>
+        <div class="col-6"><label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">WhatsApp</label><input type="tel" id="cWA" class="form-control" style="border-radius:9px;" placeholder="+234…"></div>
+        <div class="col-6"><label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Department</label><input type="text" id="cDept" class="form-control" style="border-radius:9px;"></div>
+        <div class="col-12"><label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Notes</label><textarea id="cNotes" class="form-control" rows="2" style="border-radius:9px;font-size:.84rem;"></textarea></div>
+        <div class="col-12"><div class="form-check"><input class="form-check-input" type="checkbox" id="cPrimary"><label class="form-check-label" for="cPrimary" style="font-size:.84rem;">Primary contact</label></div></div>
+      </div>
+    </div>
+    <div style="padding:.85rem 1.2rem;border-top:1px solid var(--border);display:flex;gap:.6rem;justify-content:flex-end;">
+      <button type="button" onclick="document.getElementById('addModal').style.display='none'" class="btn-outline-ec">Cancel</button>
+      <button type="button" onclick="addContact()" class="btn-navy">Add Contact</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function addContact(){
+  const name = document.getElementById('cName').value.trim();
+  if(!name){ alert('Name is required.'); return; }
+  const fd = new FormData();
+  fd.append('name', name);
+  fd.append('email', document.getElementById('cEmail').value);
+  fd.append('phone', document.getElementById('cPhone').value);
+  fd.append('whatsapp', document.getElementById('cWA').value);
+  fd.append('job_title', document.getElementById('cTitle').value);
+  fd.append('department', document.getElementById('cDept').value);
+  fd.append('notes', document.getElementById('cNotes').value);
+  if(document.getElementById('cPrimary').checked) fd.append('is_primary','1');
+  fd.append('csrf_token', CSRF_TOKEN);
+  const r = await fetch('{{ url_for("email_crm.add_contact", firm_id=firm.id) }}', {method:'POST', body:fd});
+  const d = await r.json();
+  if(d.success){ showToast('Contact added'); location.reload(); }
+  else showToast(d.error||'Error','error');
+}
+
+async function deleteContact(id, btn){
+  if(!confirm('Remove this contact?')) return;
+  const fd = new FormData();
+  fd.append('csrf_token', CSRF_TOKEN);
+  const r = await fetch(`/superadmin/crm/email/contacts/delete/${id}`, {method:'POST', body:fd});
+  const d = await r.json();
+  if(d.success){ showToast('Contact removed'); location.reload(); }
+  else showToast(d.error||'Error','error');
+}
+</script>
+{% endblock %}

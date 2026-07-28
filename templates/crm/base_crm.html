@@ -284,6 +284,23 @@
     </a></li>
   </ul>
 
+  <div class="sidebar-section">Communications</div>
+  <ul class="sidebar-nav">
+    <li><a href="{{ url_for('email_crm.inbox') }}" class="{% if 'email_crm' in request.endpoint %}active{% endif %}">
+      <i class="fas fa-envelope nav-icon"></i> Email CRM
+      <span class="nav-badge" style="background:rgba(255,215,0,.25);color:#FFD700;">New</span>
+    </a></li>
+    <li><a href="{{ url_for('email_crm.bulk_send') }}">
+      <i class="fas fa-bullhorn nav-icon"></i> Bulk Send
+    </a></li>
+    <li><a href="{{ url_for('email_crm.templates_list') }}">
+      <i class="fas fa-layer-group nav-icon"></i> Templates
+    </a></li>
+    <li><a href="{{ url_for('email_crm.analytics') }}">
+      <i class="fas fa-chart-bar nav-icon"></i> Email Analytics
+    </a></li>
+  </ul>
+
   <div class="sidebar-section">Platform</div>
   <ul class="sidebar-nav">
     <li><a href="{{ url_for('dir_admin.submissions') }}">

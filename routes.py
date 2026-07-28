@@ -46,6 +46,9 @@ from blueprints.social_communities import social_communities_bp
 # Import claim blueprint
 from blueprints.claim import claim_bp
 
+# Import Email CRM blueprint
+from blueprints.email_crm import email_crm_bp
+
 # Import payment models
 import models_payment  # noqa: F401
 
@@ -75,6 +78,7 @@ app.register_blueprint(calendar_bp, url_prefix="/calendar")  # Calendar & schedu
 app.register_blueprint(crm_bp, url_prefix="/superadmin/crm")  # CRM
 app.register_blueprint(social_communities_bp, url_prefix="/superadmin/crm/communities")  # Social communities CRM
 app.register_blueprint(claim_bp, url_prefix="/directory/claim")  # Listing claim flow
+app.register_blueprint(email_crm_bp, url_prefix="/superadmin/crm/email")  # Email CRM
 
 # Make session permanent
 @app.before_request

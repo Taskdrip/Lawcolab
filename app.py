@@ -130,6 +130,10 @@ with app.app_context():
     from utils.migrations import run_migrations
     run_migrations(db)
 
+    # Apply Email CRM schema migrations
+    from utils.email_migrations import run_email_migrations
+    run_email_migrations(db)
+
     _sa_email = os.environ.get("SUPER_ADMIN_EMAIL", "").strip().lower()
     _sa_password = os.environ.get("SUPER_ADMIN_PASSWORD", "").strip()
     _sa_first = os.environ.get("SUPER_ADMIN_FIRST_NAME", "Super").strip()

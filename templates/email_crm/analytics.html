@@ -1,0 +1,218 @@
+{% extends 'email_crm/base.html' %}
+{% block title %}Analytics — Communications{% endblock %}
+{% block page_title %}Email Analytics{% endblock %}
+
+{% block content %}
+<!-- Stat tiles -->
+<div class="row g-3 mb-3">
+  {% set tiles = [
+    ('Sent Today', sent_today, 'paper-plane', '#3b82f6', '#eff6ff'),
+    ('Total Sent', total_sent, 'envelope', '#6366f1', '#eef2ff'),
+    ('Open Rate', open_rate|string + '%', 'envelope-open', '#10b981', '#ecfdf5'),
+    ('Click Rate', click_rate|string + '%', 'mouse-pointer', '#f59e0b', '#fffbeb'),
+    ('Reply Rate', reply_rate|string + '%', 'reply', '#06b6d4', '#ecfeff'),
+    ('Bounce Rate', bounce_rate|string + '%', 'exclamation-triangle', '#ef4444', '#fef2f2'),
+  ] %}
+  {% for label, val, icon, color, bg in tiles %}
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="stat-tile">
+      <div class="stat-icon" style="background:{{ bg }};color:{{ color }};">
+        <i class="fas fa-{{ icon }}"></i>
+      </div>
+      <div>
+        <div class="stat-val" style="font-size:1.3rem;">{{ val }}</div>
+        <div class="stat-label">{{ label }}</div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="row g-3 mb-3">
+  <!-- Daily trend chart -->
+  <div class="col-lg-8">
+    <div class="ec-card">
+      <div class="ec-card-header">
+        <span class="ec-card-title"><i class="fas fa-chart-line me-2"></i>Emails Sent (Last 14 Days)</span>
+      </div>
+      <div class="ec-card-body">
+        <canvas id="trendChart" height="80"></canvas>
+      </div>
+    </div>
+  </div>
+  <!-- Status breakdown -->
+  <div class="col-lg-4">
+    <div class="ec-card">
+      <div class="ec-card-header">
+        <span class="ec-card-title"><i class="fas fa-chart-pie me-2"></i>Status Breakdown</span>
+      </div>
+      <div class="ec-card-body">
+        <canvas id="statusChart" height="180"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <!-- Funnel -->
+  <div class="col-lg-6">
+    <div class="ec-card">
+      <div class="ec-card-header">
+        <span class="ec-card-title"><i class="fas fa-filter me-2"></i>Engagement Funnel</span>
+      </div>
+      <div class="ec-card-body">
+        {% set funnel = [
+          ('Sent', total_sent, '#3b82f6'),
+          ('Delivered', total_sent - total_bounced, '#6366f1'),
+          ('Opened', total_opened, '#10b981'),
+          ('Clicked', total_clicked, '#f59e0b'),
+          ('Replied', total_replied, '#06b6d4'),
+        ] %}
+        {% for label, val, color in funnel %}
+        {% set pct = (val / total_sent * 100)|round(1) if total_sent else 0 %}
+        <div class="mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span style="font-size:.8rem;font-weight:600;">{{ label }}</span>
+            <span style="font-size:.8rem;color:var(--muted);">{{ val }} <span style="font-size:.72rem;">({{ pct }}%)</span></span>
+          </div>
+          <div style="height:8px;background:#f1f5f9;border-radius:99px;overflow:hidden;">
+            <div style="height:100%;width:{{ pct }}%;background:{{ color }};border-radius:99px;transition:width .5s ease;"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Region performance -->
+  <div class="col-lg-6">
+    <div class="ec-card">
+      <div class="ec-card-header">
+        <span class="ec-card-title"><i class="fas fa-globe me-2"></i>Top Regions</span>
+      </div>
+      <div class="ec-card-body p-0">
+        {% if region_data %}
+        {% set max_cnt = region_data[0][1] if region_data else 1 %}
+        {% for country, cnt in region_data %}
+        <div class="d-flex align-items-center gap-3 px-4 py-2 {% if not loop.last %}border-bottom{% endif %}" style="border-color:#f1f5f9;">
+          <div style="font-size:.82rem;font-weight:600;width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ country or 'Unknown' }}</div>
+          <div style="flex:1;height:6px;background:#f1f5f9;border-radius:99px;overflow:hidden;">
+            <div style="height:100%;width:{{ (cnt/max_cnt*100)|round }}%;background:var(--navy);border-radius:99px;"></div>
+          </div>
+          <div style="font-size:.8rem;font-weight:700;color:var(--navy);width:30px;text-align:right;">{{ cnt }}</div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="p-4 text-center" style="color:var(--muted);font-size:.85rem;">No regional data yet</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Top campaigns -->
+  <div class="col-lg-6">
+    <div class="ec-card">
+      <div class="ec-card-header">
+        <span class="ec-card-title"><i class="fas fa-bullhorn me-2"></i>Top Campaigns</span>
+      </div>
+      <div class="ec-card-body p-0">
+        {% if top_campaigns %}
+        {% for name, cnt in top_campaigns %}
+        <div class="d-flex align-items-center gap-3 px-4 py-2 {% if not loop.last %}border-bottom{% endif %}" style="border-color:#f1f5f9;">
+          <div style="font-size:.82rem;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ name }}</div>
+          <span style="font-size:.8rem;font-weight:700;background:#e8f0fe;color:#1a56db;border-radius:6px;padding:.15rem .55rem;">{{ cnt }} msgs</span>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="p-4 text-center" style="color:var(--muted);font-size:.85rem;">No campaign data yet</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Top templates -->
+  <div class="col-lg-6">
+    <div class="ec-card">
+      <div class="ec-card-header">
+        <span class="ec-card-title"><i class="fas fa-layer-group me-2"></i>Top Templates</span>
+        <a href="{{ url_for('email_crm.templates_list') }}" style="font-size:.75rem;color:var(--navy);">View all</a>
+      </div>
+      <div class="ec-card-body p-0">
+        {% if top_templates %}
+        {% for t in top_templates %}
+        <div class="d-flex align-items-center gap-3 px-4 py-2 {% if not loop.last %}border-bottom{% endif %}" style="border-color:#f1f5f9;">
+          <i class="fas fa-file-alt" style="color:var(--muted);font-size:.8rem;"></i>
+          <div style="font-size:.82rem;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ t.name }}</div>
+          <span style="font-size:.8rem;font-weight:700;background:#f0fdf4;color:#16a34a;border-radius:6px;padding:.15rem .55rem;">{{ t.use_count or 0 }} uses</span>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="p-4 text-center" style="color:var(--muted);font-size:.85rem;">No template usage yet</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const trendData = {{ daily_trend|safe }};
+const statusData = {{ status_data|safe }};
+
+// Trend chart
+new Chart(document.getElementById('trendChart'), {
+  type: 'line',
+  data: {
+    labels: trendData.map(d => d.date),
+    datasets: [{
+      label: 'Emails Sent',
+      data: trendData.map(d => d.count),
+      borderColor: '#0d1b4b',
+      backgroundColor: 'rgba(13,27,75,.07)',
+      borderWidth: 2,
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: '#FFD700',
+      pointBorderColor: '#0d1b4b',
+      pointRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+      y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 }, stepSize: 1 } }
+    }
+  }
+});
+
+// Status donut
+const statusLabels = Object.keys(statusData);
+const statusVals   = Object.values(statusData);
+const statusColors = {
+  draft: '#94a3b8', sent: '#3b82f6', delivered: '#6366f1',
+  opened: '#10b981', clicked: '#f59e0b', replied: '#06b6d4',
+  scheduled: '#fbbf24', failed: '#ef4444', bounced: '#f87171',
+};
+new Chart(document.getElementById('statusChart'), {
+  type: 'doughnut',
+  data: {
+    labels: statusLabels.map(l => l.charAt(0).toUpperCase()+l.slice(1)),
+    datasets: [{
+      data: statusVals,
+      backgroundColor: statusLabels.map(l => statusColors[l] || '#94a3b8'),
+      borderWidth: 0,
+      hoverOffset: 4,
+    }]
+  },
+  options: {
+    cutout: '65%',
+    plugins: { legend: { position: 'right', labels: { font: { size: 11 }, padding: 10 } } }
+  }
+});
+</script>
+{% endblock %}

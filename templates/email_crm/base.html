@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Communications — LAWCOLAB{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  {% block extra_css %}{% endblock %}
+  <style>
+    *{font-family:'Inter',sans-serif;box-sizing:border-box;}
+    :root{
+      --navy:#0d1b4b;--gold:#FFD700;--gold-dark:#b8860b;
+      --sidebar-w:260px;--sidebar-bg:#0d1b4b;
+      --sidebar-text:rgba(255,255,255,.72);--sidebar-hover:rgba(255,255,255,.07);
+      --sidebar-active:rgba(255,215,0,.15);
+      --bg:#f0f2f7;--card:#fff;--border:#e2e8f0;
+      --text:#1a202c;--muted:#718096;
+    }
+    body{background:var(--bg);color:var(--text);min-height:100vh;display:flex;overflow-x:hidden;}
+
+    /* ── Sidebar ── */
+    .ec-sidebar{
+      position:fixed;top:0;left:0;height:100vh;width:var(--sidebar-w);
+      background:var(--sidebar-bg);z-index:200;overflow-y:auto;
+      display:flex;flex-direction:column;
+      transition:transform .25s ease;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.15) transparent;
+    }
+    .ec-sidebar::-webkit-scrollbar{width:4px;}
+    .ec-sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:2px;}
+
+    .sidebar-logo{padding:1.1rem 1.1rem .9rem;border-bottom:1px solid rgba(255,255,255,.08);
+      display:flex;align-items:center;gap:.6rem;}
+    .sidebar-logo-icon{width:34px;height:34px;background:var(--gold);border-radius:8px;
+      display:flex;align-items:center;justify-content:center;color:var(--navy);font-size:.9rem;
+      font-weight:800;flex-shrink:0;}
+    .sidebar-logo-text{color:#fff;font-weight:700;font-size:.88rem;line-height:1.2;}
+    .sidebar-logo-text span{color:var(--gold);}
+    .sidebar-logo-sub{color:rgba(255,255,255,.4);font-size:.62rem;font-weight:500;
+      letter-spacing:.07em;text-transform:uppercase;}
+
+    .compose-btn{
+      margin:.85rem .75rem .5rem;
+      background:var(--gold);color:var(--navy);border:none;border-radius:10px;
+      padding:.55rem 1rem;font-size:.82rem;font-weight:700;
+      display:flex;align-items:center;gap:.5rem;cursor:pointer;
+      transition:all .15s ease;text-decoration:none;
+    }
+    .compose-btn:hover{background:#e6c700;color:var(--navy);box-shadow:0 4px 12px rgba(255,215,0,.35);}
+
+    .sidebar-section{padding:.65rem 1rem .2rem;color:rgba(255,255,255,.3);
+      font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;}
+    .sidebar-nav{list-style:none;margin:0;padding:0 .5rem;}
+    .sidebar-nav li a{
+      display:flex;align-items:center;gap:.6rem;
+      padding:.48rem .75rem;border-radius:8px;
+      color:var(--sidebar-text);text-decoration:none;
+      font-size:.81rem;font-weight:500;
+      transition:all .12s ease;margin-bottom:.08rem;
+    }
+    .sidebar-nav li a:hover{background:var(--sidebar-hover);color:#fff;}
+    .sidebar-nav li a.active{background:var(--sidebar-active);color:var(--gold);font-weight:600;}
+    .sidebar-nav li a .ni{width:17px;text-align:center;font-size:.8rem;flex-shrink:0;}
+    .sidebar-nav li a .nb{
+      margin-left:auto;background:rgba(255,255,255,.12);color:rgba(255,255,255,.65);
+      font-size:.62rem;font-weight:700;padding:.1rem .4rem;border-radius:50px;min-width:20px;
+      text-align:center;
+    }
+    .sidebar-nav li a .nb.gold{background:rgba(255,215,0,.25);color:var(--gold);}
+
+    .sidebar-footer{margin-top:auto;padding:.85rem;border-top:1px solid rgba(255,255,255,.07);}
+    .sidebar-footer a{color:rgba(255,255,255,.45);font-size:.76rem;text-decoration:none;
+      display:flex;align-items:center;gap:.5rem;}
+    .sidebar-footer a:hover{color:#fff;}
+
+    /* ── Main ── */
+    .ec-main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+    .ec-topbar{
+      background:#fff;border-bottom:1px solid var(--border);
+      padding:.65rem 1.5rem;display:flex;align-items:center;gap:.75rem;
+      position:sticky;top:0;z-index:100;
+    }
+    .ec-topbar h1{font-size:1rem;font-weight:700;color:var(--text);margin:0;}
+    .ec-content{padding:1.25rem 1.5rem;flex:1;}
+
+    /* ── Cards ── */
+    .ec-card{background:var(--card);border-radius:14px;border:1px solid var(--border);
+      box-shadow:0 1px 3px rgba(0,0,0,.04);}
+    .ec-card-header{padding:.85rem 1.2rem;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;}
+    .ec-card-title{font-size:.86rem;font-weight:700;color:var(--text);margin:0;}
+    .ec-card-body{padding:1.2rem;}
+
+    /* ── Stat tiles ── */
+    .stat-tile{background:var(--card);border-radius:14px;border:1px solid var(--border);
+      padding:1rem 1.2rem;display:flex;align-items:center;gap:.85rem;}
+    .stat-icon{width:42px;height:42px;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+    .stat-val{font-size:1.55rem;font-weight:800;line-height:1;color:var(--text);}
+    .stat-label{font-size:.72rem;font-weight:500;color:var(--muted);margin-top:.15rem;}
+
+    /* ── Message list ── */
+    .msg-item{
+      display:flex;align-items:flex-start;gap:.85rem;
+      padding:.85rem 1.1rem;border-bottom:1px solid #f1f5f9;
+      cursor:pointer;transition:background .1s ease;text-decoration:none;
+    }
+    .msg-item:hover{background:#fafbff;}
+    .msg-item.unread{background:#fffdf0;}
+    .msg-item:last-child{border-bottom:none;}
+    .msg-avatar{width:38px;height:38px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font-size:.82rem;font-weight:700;color:#fff;flex-shrink:0;background:var(--navy);}
+    .msg-meta{flex:1;min-width:0;}
+    .msg-from{font-size:.83rem;font-weight:600;color:var(--text);
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .msg-subject{font-size:.81rem;color:var(--text);font-weight:500;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .msg-preview{font-size:.77rem;color:var(--muted);
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:.1rem;}
+    .msg-time{font-size:.71rem;color:var(--muted);white-space:nowrap;flex-shrink:0;}
+    .msg-status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:.4rem;}
+
+    /* ── Status badges ── */
+    .badge-sent{background:#e8f5e9;color:#2e7d32;}
+    .badge-delivered{background:#e3f2fd;color:#1565c0;}
+    .badge-opened{background:#e8f5e9;color:#1b5e20;}
+    .badge-clicked{background:#f3e5f5;color:#6a1b9a;}
+    .badge-replied{background:#e0f7fa;color:#006064;}
+    .badge-draft{background:#f1f5f9;color:#64748b;}
+    .badge-scheduled{background:#fff8e1;color:#f57f17;}
+    .badge-failed{background:#ffeef0;color:#c0392b;}
+    .badge-bounced{background:#fdecea;color:#b71c1c;}
+    .status-badge{font-size:.7rem;font-weight:600;padding:.2rem .6rem;border-radius:50px;}
+
+    /* ── Buttons ── */
+    .btn-navy{background:var(--navy);color:#fff;border:none;border-radius:9px;
+      padding:.42rem 1rem;font-size:.82rem;font-weight:600;transition:all .15s;}
+    .btn-navy:hover{background:#162654;color:#fff;box-shadow:0 4px 12px rgba(13,27,75,.2);}
+    .btn-gold{background:var(--gold);color:var(--navy);border:none;border-radius:9px;
+      padding:.42rem 1rem;font-size:.82rem;font-weight:700;transition:all .15s;}
+    .btn-gold:hover{background:#e6c700;color:var(--navy);}
+    .btn-outline-ec{background:transparent;color:var(--navy);border:1.5px solid var(--border);
+      border-radius:9px;padding:.42rem 1rem;font-size:.82rem;font-weight:500;transition:all .15s;}
+    .btn-outline-ec:hover{border-color:var(--navy);background:#f8fafc;}
+
+    /* ── Search ── */
+    .ec-search{background:#f8fafc;border:1.5px solid var(--border);border-radius:10px;
+      padding:.5rem .9rem;font-size:.84rem;transition:all .2s;}
+    .ec-search:focus{outline:none;border-color:var(--navy);background:#fff;
+      box-shadow:0 0 0 3px rgba(13,27,75,.06);}
+
+    /* ── Toast ── */
+    .ec-toast{
+      position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;
+      background:#fff;border-radius:12px;border:1px solid var(--border);
+      box-shadow:0 8px 30px rgba(0,0,0,.12);padding:.8rem 1.1rem;
+      min-width:260px;max-width:360px;display:flex;align-items:center;gap:.7rem;
+      transform:translateY(20px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);
+    }
+    .ec-toast.show{transform:translateY(0);opacity:1;}
+
+    /* ── Pagination ── */
+    .ec-pagination .page-link{border-radius:8px!important;font-size:.8rem;
+      color:var(--navy);border-color:var(--border);}
+    .ec-pagination .page-item.active .page-link{background:var(--navy);border-color:var(--navy);}
+
+    /* ── Mobile ── */
+    @media(max-width:768px){
+      .ec-sidebar{transform:translateX(-100%);}
+      .ec-sidebar.open{transform:none;}
+      .ec-main{margin-left:0;}
+      .ec-content{padding:.9rem;}
+      .ec-topbar{padding:.6rem 1rem;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav class="ec-sidebar" id="ecSidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-icon"><i class="fas fa-scale-balanced"></i></div>
+    <div>
+      <div class="sidebar-logo-text">LAW<span>COLAB</span></div>
+      <div class="sidebar-logo-sub">Communications</div>
+    </div>
+  </div>
+
+  <a href="{{ url_for('email_crm.compose') }}" class="compose-btn">
+    <i class="fas fa-pen"></i> Compose
+  </a>
+
+  <div class="sidebar-section">Inbox</div>
+  <ul class="sidebar-nav">
+    <li><a href="{{ url_for('email_crm.inbox') }}"
+           class="{% if request.endpoint=='email_crm.inbox' and request.args.get('folder','all')=='all' %}active{% endif %}">
+      <i class="fas fa-inbox ni"></i> All Mail
+      {% if counts.total %}<span class="nb">{{ counts.total }}</span>{% endif %}
+    </a></li>
+    <li><a href="{{ url_for('email_crm.inbox', folder='replied') }}"
+           class="{% if request.args.get('folder')=='replied' %}active{% endif %}">
+      <i class="fas fa-reply ni"></i> Replies
+      {% if counts.replies %}<span class="nb gold">{{ counts.replies }}</span>{% endif %}
+    </a></li>
+    <li><a href="{{ url_for('email_crm.inbox', folder='sent') }}"
+           class="{% if request.args.get('folder')=='sent' %}active{% endif %}">
+      <i class="fas fa-paper-plane ni"></i> Sent
+      {% if counts.sent %}<span class="nb">{{ counts.sent }}</span>{% endif %}
+    </a></li>
+    <li><a href="{{ url_for('email_crm.inbox', folder='drafts') }}"
+           class="{% if request.args.get('folder')=='drafts' %}active{% endif %}">
+      <i class="fas fa-file-alt ni"></i> Drafts
+      {% if counts.drafts %}<span class="nb">{{ counts.drafts }}</span>{% endif %}
+    </a></li>
+    <li><a href="{{ url_for('email_crm.inbox', folder='scheduled') }}"
+           class="{% if request.args.get('folder')=='scheduled' %}active{% endif %}">
+      <i class="fas fa-clock ni"></i> Scheduled
+      {% if counts.scheduled %}<span class="nb">{{ counts.scheduled }}</span>{% endif %}
+    </a></li>
+    <li><a href="{{ url_for('email_crm.inbox', folder='trash') }}"
+           class="{% if request.args.get('folder')=='trash' %}active{% endif %}">
+      <i class="fas fa-trash ni"></i> Trash
+    </a></li>
+  </ul>
+
+  <div class="sidebar-section">Campaigns</div>
+  <ul class="sidebar-nav">
+    <li><a href="{{ url_for('email_crm.bulk_send') }}"
+           class="{% if request.endpoint=='email_crm.bulk_send' %}active{% endif %}">
+      <i class="fas fa-bullhorn ni"></i> Bulk Send
+    </a></li>
+    <li><a href="{{ url_for('email_crm.templates_list') }}"
+           class="{% if 'template' in request.endpoint %}active{% endif %}">
+      <i class="fas fa-layer-group ni"></i> Templates
+    </a></li>
+    <li><a href="{{ url_for('email_crm.automation') }}"
+           class="{% if 'automation' in request.endpoint %}active{% endif %}">
+      <i class="fas fa-robot ni"></i> Automation
+    </a></li>
+  </ul>
+
+  <div class="sidebar-section">Insights</div>
+  <ul class="sidebar-nav">
+    <li><a href="{{ url_for('email_crm.analytics') }}"
+           class="{% if request.endpoint=='email_crm.analytics' %}active{% endif %}">
+      <i class="fas fa-chart-bar ni"></i> Analytics
+    </a></li>
+    <li><a href="{{ url_for('email_crm.search') }}"
+           class="{% if request.endpoint=='email_crm.search' %}active{% endif %}">
+      <i class="fas fa-search ni"></i> Search
+    </a></li>
+    <li><a href="{{ url_for('email_crm.settings') }}"
+           class="{% if request.endpoint=='email_crm.settings' %}active{% endif %}">
+      <i class="fas fa-cog ni"></i> Settings
+    </a></li>
+  </ul>
+
+  <div class="sidebar-footer">
+    <a href="{{ url_for('crm.index') }}"><i class="fas fa-arrow-left"></i> Back to CRM</a>
+  </div>
+</nav>
+
+<!-- Main -->
+<div class="ec-main">
+  <!-- Topbar -->
+  <div class="ec-topbar">
+    <button class="btn btn-sm btn-light d-md-none me-1" onclick="document.getElementById('ecSidebar').classList.toggle('open')">
+      <i class="fas fa-bars"></i>
+    </button>
+    <h1>{% block page_title %}Communications{% endblock %}</h1>
+    <div class="ms-auto d-flex align-items-center gap-2">
+      {% block topbar_actions %}{% endblock %}
+      <a href="{{ url_for('email_crm.search') }}" class="btn btn-sm btn-light" style="border-radius:8px;font-size:.78rem;">
+        <i class="fas fa-search"></i>
+      </a>
+      <a href="{{ url_for('email_crm.compose') }}" class="btn-gold d-none d-md-flex align-items-center gap-1" style="text-decoration:none;border-radius:9px;padding:.38rem .85rem;font-size:.8rem;font-weight:700;">
+        <i class="fas fa-pen"></i> Compose
+      </a>
+    </div>
+  </div>
+
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="px-4 pt-3">
+      {% for cat, msg in messages %}
+      <div class="alert alert-{{ 'success' if cat == 'success' else 'danger' if cat == 'error' else 'warning' }} alert-dismissible fade show" style="border-radius:10px;font-size:.84rem;" role="alert">
+        {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="ec-content">
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="ecToast" class="ec-toast">
+  <i id="ecToastIcon" class="fas fa-check-circle text-success"></i>
+  <span id="ecToastMsg"></span>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const CSRF_TOKEN = '{{ csrf_token() }}';
+function showToast(msg, type='success'){
+  const t=document.getElementById('ecToast'),i=document.getElementById('ecToastIcon');
+  document.getElementById('ecToastMsg').textContent=msg;
+  i.className='fas '+(type==='success'?'fa-check-circle text-success':type==='error'?'fa-times-circle text-danger':'fa-info-circle text-info');
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);
+}
+function api(url,data={}){
+  return fetch(url,{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':CSRF_TOKEN},body:JSON.stringify(data)}).then(r=>r.json());
+}
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

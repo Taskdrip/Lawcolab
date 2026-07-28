@@ -1,0 +1,202 @@
+{% extends 'email_crm/base.html' %}
+{% block title %}Templates — Communications{% endblock %}
+{% block page_title %}Email Templates{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<style>
+.ql-container{min-height:200px;font-size:.86rem;border-radius:0 0 8px 8px!important;}
+.ql-toolbar{border-radius:8px 8px 0 0!important;background:#f8fafc;}
+.cat-badge{display:inline-block;background:#e8f0fe;color:#1a56db;border-radius:6px;padding:.15rem .55rem;font-size:.72rem;font-weight:700;}
+.tmpl-card{background:#fff;border-radius:12px;border:1px solid var(--border);padding:1rem;transition:all .15s;cursor:pointer;}
+.tmpl-card:hover{border-color:var(--navy);box-shadow:0 4px 12px rgba(13,27,75,.08);}
+</style>
+{% endblock %}
+
+{% block topbar_actions %}
+<button class="btn-gold" onclick="document.getElementById('createModal').style.display='flex'" style="padding:.38rem .85rem;border-radius:9px;font-size:.8rem;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;gap:.4rem;">
+  <i class="fas fa-plus"></i> New Template
+</button>
+{% endblock %}
+
+{% block content %}
+<!-- Filter bar -->
+<div class="d-flex gap-2 mb-3 flex-wrap">
+  {% for cat in ['','welcome','onboarding','trial','demo','sales','support','renewal','follow_up','newsletter','announcements','custom'] %}
+  <a href="{{ url_for('email_crm.templates_list', category=cat) }}"
+     class="btn btn-sm {% if category_f==cat %}btn-dark{% else %}btn-outline-secondary{% endif %}"
+     style="border-radius:8px;font-size:.78rem;">
+    {{ cat.replace('_',' ').title() if cat else 'All' }}
+    {% if cat in cat_counts %}<span class="ms-1 badge bg-secondary">{{ cat_counts[cat] }}</span>{% endif %}
+  </a>
+  {% endfor %}
+</div>
+
+{% if templates %}
+<div class="row g-3">
+  {% for t in templates %}
+  <div class="col-md-6 col-xl-4">
+    <div class="tmpl-card" onclick="editTemplate({{ t.id }}, {{ t|tojson }})">
+      <div class="d-flex align-items-start gap-2 mb-2">
+        <i class="fas fa-file-alt mt-1" style="color:var(--navy);font-size:.9rem;flex-shrink:0;"></i>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.88rem;font-weight:700;margin-bottom:.15rem;">{{ t.name }}</div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="cat-badge">{{ t.category }}</span>
+            <span style="font-size:.72rem;color:var(--muted);">{{ t.use_count or 0 }} uses</span>
+          </div>
+        </div>
+      </div>
+      {% if t.subject %}
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:.4rem;font-style:italic;">"{{ t.subject[:60] }}{% if t.subject|length > 60 %}…{% endif %}"</div>
+      {% endif %}
+      <div style="font-size:.76rem;color:var(--muted);line-height:1.5;">
+        {{ t.body_html|striptags|truncate(80) }}
+      </div>
+      <div class="d-flex gap-2 mt-2">
+        <a href="{{ url_for('email_crm.compose') }}?template_id={{ t.id }}" class="btn btn-sm btn-outline-primary" style="border-radius:7px;font-size:.74rem;" onclick="event.stopPropagation()">
+          <i class="fas fa-pen me-1"></i>Use
+        </a>
+        <button class="btn btn-sm btn-outline-secondary" style="border-radius:7px;font-size:.74rem;" onclick="event.stopPropagation();editTemplate({{ t.id }}, {{ t|tojson }})">
+          <i class="fas fa-edit me-1"></i>Edit
+        </button>
+        <form method="POST" action="{{ url_for('email_crm.delete_template', tmpl_id=t.id) }}" onsubmit="return confirm('Delete this template?')" onclick="event.stopPropagation()">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius:7px;font-size:.74rem;"><i class="fas fa-trash"></i></button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="ec-card">
+  <div class="text-center py-5">
+    <i class="fas fa-layer-group fa-3x mb-3" style="color:#cbd5e0;"></i>
+    <p style="color:var(--muted);font-size:.9rem;">No templates yet{% if category_f %} in "{{ category_f }}"{% endif %}.</p>
+    <button class="btn-gold" onclick="document.getElementById('createModal').style.display='flex'" style="padding:.45rem 1.2rem;border-radius:9px;font-size:.82rem;font-weight:700;border:none;cursor:pointer;">
+      Create your first template
+    </button>
+  </div>
+</div>
+{% endif %}
+
+<!-- Create modal -->
+<div id="createModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:#fff;border-radius:16px;width:min(760px,100%);max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+    <div style="padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:1rem;font-weight:700;">Create Template</span>
+      <button onclick="document.getElementById('createModal').style.display='none'" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);">×</button>
+    </div>
+    <form method="POST" action="{{ url_for('email_crm.create_template') }}" onsubmit="return prepareCreate()">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="body_html" id="createBody">
+      <div style="padding:1.2rem;">
+        <div class="row g-3 mb-3">
+          <div class="col-8">
+            <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Template Name *</label>
+            <input type="text" name="name" class="form-control" style="border-radius:9px;" placeholder="e.g. Cold Outreach — Nigeria" required>
+          </div>
+          <div class="col-4">
+            <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Category</label>
+            <select name="category" class="form-select" style="border-radius:9px;">
+              {% for c in ['welcome','onboarding','trial','demo','sales','support','renewal','follow_up','newsletter','announcements','custom'] %}
+              <option value="{{ c }}">{{ c.replace('_',' ')|title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Subject</label>
+          <input type="text" name="subject" class="form-control" style="border-radius:9px;" placeholder="Email subject line (supports merge tags)">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Body *</label>
+          <div id="createEditor"></div>
+        </div>
+        <div style="font-size:.75rem;color:var(--muted);">
+          Merge tags: {{FirmName}} {{ContactName}} {{City}} {{Country}} {{PracticeArea}} {{FreeTrialLink}} {{CurrentDate}}
+        </div>
+      </div>
+      <div style="padding:.85rem 1.2rem;border-top:1px solid var(--border);display:flex;gap:.6rem;justify-content:flex-end;">
+        <button type="button" onclick="document.getElementById('createModal').style.display='none'" class="btn-outline-ec">Cancel</button>
+        <button type="submit" class="btn-navy">Save Template</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div id="editModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:#fff;border-radius:16px;width:min(760px,100%);max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+    <div style="padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:1rem;font-weight:700;">Edit Template</span>
+      <button onclick="document.getElementById('editModal').style.display='none'" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);">×</button>
+    </div>
+    <div style="padding:1.2rem;">
+      <div class="row g-3 mb-3">
+        <div class="col-8">
+          <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Name</label>
+          <input type="text" id="editName" class="form-control" style="border-radius:9px;">
+        </div>
+        <div class="col-4">
+          <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Category</label>
+          <select id="editCategory" class="form-select" style="border-radius:9px;">
+            {% for c in ['welcome','onboarding','trial','demo','sales','support','renewal','follow_up','newsletter','announcements','custom'] %}
+            <option value="{{ c }}">{{ c.replace('_',' ')|title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Subject</label>
+        <input type="text" id="editSubject" class="form-control" style="border-radius:9px;">
+      </div>
+      <div>
+        <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Body</label>
+        <div id="editEditor"></div>
+      </div>
+    </div>
+    <div style="padding:.85rem 1.2rem;border-top:1px solid var(--border);display:flex;gap:.6rem;justify-content:flex-end;">
+      <button type="button" onclick="document.getElementById('editModal').style.display='none'" class="btn-outline-ec">Cancel</button>
+      <button type="button" onclick="saveEdit()" class="btn-navy">Save Changes</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+<script>
+const createQ = new Quill('#createEditor', {theme:'snow',modules:{toolbar:[['bold','italic','underline'],[{list:'ordered'},{list:'bullet'}],['link'],['clean']]}});
+const editQ   = new Quill('#editEditor',   {theme:'snow',modules:{toolbar:[['bold','italic','underline'],[{list:'ordered'},{list:'bullet'}],['link'],['clean']]}});
+let editId = null;
+
+function prepareCreate(){
+  document.getElementById('createBody').value = createQ.root.innerHTML;
+  return true;
+}
+
+function editTemplate(id, data){
+  editId = id;
+  document.getElementById('editName').value = data.name || '';
+  document.getElementById('editCategory').value = data.category || 'custom';
+  document.getElementById('editSubject').value = data.subject || '';
+  editQ.root.innerHTML = data.body_html || '';
+  document.getElementById('editModal').style.display = 'flex';
+}
+
+async function saveEdit(){
+  const fd = new FormData();
+  fd.append('name', document.getElementById('editName').value);
+  fd.append('category', document.getElementById('editCategory').value);
+  fd.append('subject', document.getElementById('editSubject').value);
+  fd.append('body_html', editQ.root.innerHTML);
+  fd.append('csrf_token', CSRF_TOKEN);
+  const r = await fetch(`/superadmin/crm/email/templates/${editId}/edit`, {method:'POST', body:fd});
+  const d = await r.json();
+  if(d.success){ showToast('Template saved'); location.reload(); }
+  else showToast(d.error||'Error','error');
+}
+</script>
+{% endblock %}

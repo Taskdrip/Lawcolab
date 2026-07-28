@@ -1,0 +1,113 @@
+{% extends 'email_crm/base.html' %}
+{% block title %}{{ folder|title }} — Communications{% endblock %}
+{% block page_title %}
+  {% if folder == 'sent' %}Sent{% elif folder == 'drafts' %}Drafts{% elif folder == 'scheduled' %}Scheduled{% elif folder == 'trash' %}Trash{% elif folder == 'replied' %}Replies{% else %}All Mail{% endif %}
+{% endblock %}
+
+{% block topbar_actions %}
+<form class="d-flex gap-2" method="GET" action="{{ url_for('email_crm.inbox') }}">
+  <input type="hidden" name="folder" value="{{ folder }}">
+  <input class="ec-search" type="search" name="q" value="{{ q }}" placeholder="Search emails…" style="width:240px;">
+  <select name="status" class="form-select form-select-sm" style="width:130px;font-size:.8rem;border-radius:9px;">
+    <option value="">All status</option>
+    {% for s in ['draft','sent','delivered','opened','clicked','replied','scheduled','failed','bounced'] %}
+    <option value="{{ s }}" {% if status_f==s %}selected{% endif %}>{{ s|title }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="btn-navy" style="padding:.38rem .8rem;">
+    <i class="fas fa-search"></i>
+  </button>
+</form>
+{% endblock %}
+
+{% block content %}
+<div class="ec-card" style="overflow:hidden;">
+  <div class="ec-card-header">
+    <span class="ec-card-title">
+      {{ messages.total }} message{{ 's' if messages.total != 1 }}
+      {% if q %}<span class="text-muted fw-normal"> for "{{ q }}"</span>{% endif %}
+    </span>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('email_crm.compose') }}" class="btn-gold" style="text-decoration:none;padding:.35rem .85rem;border-radius:9px;font-size:.8rem;font-weight:700;">
+        <i class="fas fa-pen me-1"></i>Compose
+      </a>
+    </div>
+  </div>
+
+  {% if messages.items %}
+  <div>
+    {% for msg in messages.items %}
+    {% set firm = firms_map.get(msg.firm_id) %}
+    {% set initials = (msg.recipient_name or firm.name if firm else 'U')[:2]|upper %}
+    {% set is_unread = msg.status in ('draft',) %}
+    <a href="{{ url_for('email_crm.view_message', msg_id=msg.id) }}"
+       class="msg-item {% if is_unread %}unread{% endif %}" style="color:inherit;display:flex;">
+      <div class="msg-avatar" style="background:{{ loop.cycle('#0d1b4b','#1a3a8f','#2c5282','#1e40af') }};">
+        {{ initials }}
+      </div>
+      <div class="msg-meta">
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <span class="msg-from">{{ msg.recipient_name or (firm.name if firm else 'Unknown') }}</span>
+          <span class="msg-time ms-auto">
+            {% if msg.sent_at %}{{ msg.sent_at.strftime('%b %d') }}
+            {% elif msg.created_at %}{{ msg.created_at.strftime('%b %d') }}{% endif %}
+          </span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="msg-subject">{{ msg.subject or '(no subject)' }}</span>
+          <span class="status-badge badge-{{ msg.status }} ms-auto">{{ msg.status|title }}</span>
+        </div>
+        <div class="msg-preview">
+          {{ msg.recipient_email }}
+          {% if msg.body %} — {{ msg.body|striptags|truncate(80) }}{% endif %}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+  <!-- Pagination -->
+  {% if messages.pages > 1 %}
+  <div class="p-3 border-top d-flex justify-content-between align-items-center">
+    <span style="font-size:.78rem;color:var(--muted);">
+      Page {{ messages.page }} of {{ messages.pages }}
+    </span>
+    <nav>
+      <ul class="pagination pagination-sm mb-0 ec-pagination">
+        {% if messages.has_prev %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('email_crm.inbox', folder=folder, q=q, status=status_f, page=messages.prev_num) }}">←</a>
+        </li>
+        {% endif %}
+        {% for pn in messages.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+          {% if pn %}
+          <li class="page-item {% if pn==messages.page %}active{% endif %}">
+            <a class="page-link" href="{{ url_for('email_crm.inbox', folder=folder, q=q, status=status_f, page=pn) }}">{{ pn }}</a>
+          </li>
+          {% else %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+          {% endif %}
+        {% endfor %}
+        {% if messages.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('email_crm.inbox', folder=folder, q=q, status=status_f, page=messages.next_num) }}">→</a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="text-center py-5">
+    <i class="fas fa-inbox fa-3x mb-3" style="color:#cbd5e0;"></i>
+    <p style="color:var(--muted);font-size:.9rem;">
+      {% if q %}No messages matching "{{ q }}"{% else %}No messages in this folder{% endif %}
+    </p>
+    <a href="{{ url_for('email_crm.compose') }}" class="btn-gold" style="text-decoration:none;padding:.45rem 1.2rem;border-radius:9px;font-size:.82rem;font-weight:700;display:inline-flex;align-items:center;gap:.4rem;">
+      <i class="fas fa-pen"></i> Compose your first email
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
