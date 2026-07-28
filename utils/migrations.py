@@ -38,6 +38,8 @@ def run_migrations(db):
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS state_province VARCHAR(100)",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS postal_code VARCHAR(20)",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS country VARCHAR(100)",
+        # Full-access flag for team members (admin-granted firm-wide visibility)
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_full_access BOOLEAN NOT NULL DEFAULT FALSE",
 
         # ── law_firms table ───────────────────────────────────────────────────
         # Banking details for receiving payments

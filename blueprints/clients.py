@@ -6,6 +6,7 @@ from utils.trial_access import require_active_subscription
 from utils.forms import ClientNoteForm
 from app import db
 from models import User, ClientNote, Project, ProjectAssignment
+from sqlalchemy import false as sql_false
 from utils.profile_upload import save_profile_image
 
 clients_bp = Blueprint('clients', __name__)
@@ -37,6 +38,18 @@ def list_clients():
         User.law_firm_id == current_user.law_firm_id,
         User.law_firm_id.is_not(None)  # Ensure law_firm_id is not null
     )
+
+    # Limited-access team members only see clients on their assigned projects
+    if current_user.is_team_member() and not current_user.is_full_access:
+        from models import ProjectAssignment
+        assigned_project_ids = [pa.project_id for pa in current_user.assigned_projects]
+        if assigned_project_ids:
+            client_ids_in_projects = db.session.query(ProjectAssignment.user_id).filter(
+                ProjectAssignment.project_id.in_(assigned_project_ids)
+            ).subquery()
+            query = query.filter(User.id.in_(client_ids_in_projects))
+        else:
+            query = query.filter(sql_false())  # No assignments → no clients visible
     
     if search:
         query = query.filter(
@@ -56,11 +69,29 @@ def list_clients():
 def client_profile(client_id):
     """View client profile and notes"""
     client = User.query.filter_by(id=client_id, role='client').first_or_404()
-    
+
+    # ── Cross-firm isolation: never expose a client to a different law firm ──
+    if current_user.law_firm_id and client.law_firm_id:
+        if client.law_firm_id != current_user.law_firm_id:
+            flash('Access denied — you cannot view clients outside your firm.', 'error')
+            return redirect(url_for('clients.list_clients'))
+
     # Check permissions - clients can only view their own profile
     if current_user.is_client() and current_user.id != client_id:
         flash('You can only view your own profile.', 'error')
         return redirect(url_for('dashboard.client_dashboard'))
+
+    # Limited-access team members can only view clients on their assigned projects
+    if current_user.is_team_member() and not current_user.is_full_access:
+        from models import ProjectAssignment
+        assigned_project_ids = [pa.project_id for pa in current_user.assigned_projects]
+        client_in_assignments = ProjectAssignment.query.filter(
+            ProjectAssignment.project_id.in_(assigned_project_ids),
+            ProjectAssignment.user_id == client_id
+        ).first()
+        if not client_in_assignments:
+            flash('Access restricted — this client is not on any of your assigned cases.', 'warning')
+            return redirect(url_for('clients.list_clients'))
     
     # Get client's projects (from same law firm)
     projects = Project.query.filter_by(law_firm_id=current_user.law_firm_id).join(ProjectAssignment).filter_by(user_id=client_id).all()

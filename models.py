@@ -52,6 +52,10 @@ class User(UserMixin, db.Model):
     postal_code = db.Column(db.String(20))
     country = db.Column(db.String(100))
 
+    # Team member full-access flag — admins can grant a team member visibility
+    # of the entire firm (all clients, all projects) rather than only their assignments
+    is_full_access = db.Column(db.Boolean, default=False, nullable=False)
+
     # Security / brute-force protection
     failed_login_attempts = db.Column(db.Integer, default=0, nullable=False)
     locked_until = db.Column(db.DateTime, nullable=True)

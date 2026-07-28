@@ -1,35 +1,41 @@
-# LawCoLab (LawFirmOS)
+# LawCoLab — Law Firm OS
 
-A full-stack web application for law firms — client management, case tracking, billing, team collaboration, calendar, and analytics.
+A full-stack law firm management platform built with Python/Flask and PostgreSQL.
 
 ## Stack
-- **Backend:** Python / Flask
-- **Database:** SQLite (dev) / PostgreSQL (production via `DATABASE_URL`)
-- **Auth:** Flask-Login with session cookies; Flask-Dance for OAuth
-- **PDF generation:** WeasyPrint + ReportLab
-- **Frontend:** Jinja2 templates, Bootstrap
+- **Backend**: Python 3.11, Flask, SQLAlchemy, Flask-Login, Flask-WTF, Flask-Limiter
+- **Database**: PostgreSQL (Replit managed)
+- **Auth**: Email/password with rate-limiting and account lockout; super-admin role
+- **PDF/Docs**: WeasyPrint, ReportLab
+- **Run server**: Gunicorn
 
-## Running the app
+## How to run
+The `Start application` workflow runs:
 ```
 gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app
 ```
-The workflow "Start application" is already configured.
+The app auto-creates/migrates database tables on startup.
 
 ## Environment variables
 | Variable | Required | Notes |
 |---|---|---|
-| `SESSION_SECRET` | Yes (prod) | Flask session signing key |
-| `DATABASE_URL` | No | PostgreSQL URL; defaults to SQLite if unset |
-| `SUPER_ADMIN_EMAIL` | No | Auto-creates super admin on first deploy |
-| `SUPER_ADMIN_PASSWORD` | No | Paired with `SUPER_ADMIN_EMAIL` |
+| `SESSION_SECRET` | ✅ Secret | Random 64+ char string — already set |
+| `SUPER_ADMIN_EMAIL` | ✅ | Set to `admin@lawcolab.com` |
+| `SUPER_ADMIN_PASSWORD` | ✅ Secret | Must be set to create the super admin account |
+| `SUPER_ADMIN_FIRST_NAME` | Optional | Default: "Super" |
+| `SUPER_ADMIN_LAST_NAME` | Optional | Default: "Admin" |
+| `DATABASE_URL` | Auto | Managed by Replit |
+| `FLASK_ENV` | ✅ | Set to `production` |
+
+## First login
+After setting `SUPER_ADMIN_PASSWORD`, restart the app and navigate to `/auth/superadmin-access`.
+Log in with `SUPER_ADMIN_EMAIL` + `SUPER_ADMIN_PASSWORD`.
 
 ## Key entry points
-- `main.py` — WSGI entry; imports `app` and all routes
-- `app.py` — Flask app factory, DB setup, migrations
-- `routes/` — route blueprints
-- `models/` — SQLAlchemy models
-- `templates/` — Jinja2 HTML templates
-- `utils/` — decorators, forms, migrations helpers
+- `main.py` — WSGI entry point
+- `app.py` — Flask app factory, DB init, migrations
+- `routes.py` — Blueprint registration
+- `models.py` — Core SQLAlchemy models
+- `auth.py` — Authentication blueprint
 
 ## User preferences
-<!-- Add user preferences here -->

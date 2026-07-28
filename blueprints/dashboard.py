@@ -34,53 +34,52 @@ def _get_legal_news():
 @dashboard_bp.route('/admin')
 @require_admin
 def admin_dashboard():
-    """Admin dashboard with overview metrics"""
-    # Get overview statistics
-    total_projects = Project.query.count()
-    active_projects = Project.query.filter_by(status='active').count()
-    total_clients = User.query.filter_by(role='client').count()
-    total_team_members = User.query.filter_by(role='team_member').count()
-    
-    # Recent activity
-    recent_projects = Project.query.order_by(Project.created_at.desc()).limit(5).all()
-    recent_files = ProjectFile.query.order_by(ProjectFile.uploaded_at.desc()).limit(5).all()
-    recent_notes = ClientNote.query.order_by(ClientNote.created_at.desc()).limit(5).all()
-
-    sliders = _get_sliders(current_user.law_firm_id)
-    legal_news = _get_legal_news()
-
-    return render_template('dashboard/admin.html',
-                         total_projects=total_projects,
-                         active_projects=active_projects,
-                         total_clients=total_clients,
-                         total_team_members=total_team_members,
-                         recent_projects=recent_projects,
-                         recent_files=recent_files,
-                         recent_notes=recent_notes,
-                         sliders=sliders,
-                         legal_news=legal_news)
+    """Admin dashboard — redirects to the canonical admin dashboard (law-firm-scoped)."""
+    from flask import redirect, url_for
+    return redirect(url_for('admin.admin_dashboard'))
 
 @dashboard_bp.route('/team-member')
 @require_team_member_or_admin
 def team_member_dashboard():
-    """Team member dashboard"""
-    assigned_projects = Project.query.join(Project.assignments).filter_by(user_id=current_user.id).all()
+    """Team member dashboard — scope varies based on is_full_access flag."""
+    from datetime import datetime as _dt, timedelta as _td
+    law_firm_id = current_user.law_firm_id
 
-    client_ids = set()
-    for project in assigned_projects:
-        for assignment in project.assignments:
-            if assignment.user.is_client():
-                client_ids.add(assignment.user.id)
+    if current_user.is_full_access:
+        # Full-access members see all firm projects and clients
+        assigned_projects = (Project.query
+                             .filter_by(law_firm_id=law_firm_id)
+                             .order_by(Project.created_at.desc())
+                             .all())
+        clients = (User.query
+                   .filter_by(law_firm_id=law_firm_id, role='client')
+                   .order_by(User.created_at.desc())
+                   .limit(20)
+                   .all())
+    else:
+        # Limited — only directly assigned projects
+        assigned_projects = (Project.query
+                             .join(Project.assignments)
+                             .filter_by(user_id=current_user.id)
+                             .order_by(Project.created_at.desc())
+                             .all())
+        client_ids = set()
+        for project in assigned_projects:
+            for assignment in project.assignments:
+                if assignment.user and assignment.user.is_client():
+                    client_ids.add(assignment.user.id)
+        clients = (User.query
+                   .filter(User.id.in_(client_ids))
+                   .all()) if client_ids else []
 
-    clients = User.query.filter(User.id.in_(client_ids)).all() if client_ids else []
-    sliders = _get_sliders(current_user.law_firm_id)
+    sliders = _get_sliders(law_firm_id)
     legal_news = _get_legal_news()
 
     return render_template('dashboard/team_member.html',
-                         assigned_projects=assigned_projects,
-                         clients=clients,
-                         sliders=sliders,
-                         legal_news=legal_news)
+                           assigned_projects=assigned_projects,
+                           clients=clients,
+                           sliders=sliders,
+                           legal_news=legal_news)
 
 
 @dashboard_bp.route('/client')

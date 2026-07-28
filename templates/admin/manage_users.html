@@ -403,15 +403,28 @@
                             <div class="col-md-4">
                                 <div class="user-actions">
                                     <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=user.id) }}" style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="action-btn btn-toggle">
                                             <i class="fas fa-{{ 'pause' if user.active else 'play' }}"></i>
                                             {{ 'Deactivate' if user.active else 'Activate' }}
                                         </button>
                                     </form>
-                                    
+
+                                    {# Full-access toggle #}
+                                    <form method="POST" action="{{ url_for('admin.toggle_full_access', user_id=user.id) }}" style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="action-btn"
+                                            style="background:{{ '#d1fae5' if user.is_full_access else '#f3f4f6' }};color:{{ '#065f46' if user.is_full_access else '#374151' }};border:1px solid {{ '#6ee7b7' if user.is_full_access else '#d1d5db' }};"
+                                            title="{{ 'Revoke full firm access' if user.is_full_access else 'Grant full firm access (all clients & cases visible)' }}">
+                                            <i class="fas fa-{{ 'unlock-alt' if user.is_full_access else 'lock' }}"></i>
+                                            {{ 'Full Access' if user.is_full_access else 'Limited Access' }}
+                                        </button>
+                                    </form>
+
                                     <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" 
                                           onsubmit="return confirm('Are you sure you want to permanently delete {{ user.full_name or user.email }}?')" 
                                           style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="action-btn btn-delete">
                                             <i class="fas fa-trash"></i>
                                             Delete

@@ -561,6 +561,29 @@ def delete_slider(slider_id):
     return redirect(url_for('admin.manage_sliders'))
 
 
+@admin_bp.route('/toggle-full-access/<user_id>', methods=['POST'])
+@require_admin
+def toggle_full_access(user_id):
+    """Toggle full-access flag for a team member — grants firm-wide visibility."""
+    user = User.query.get_or_404(user_id)
+    # Security: only allow managing users in the same law firm
+    if user.law_firm_id != current_user.law_firm_id:
+        flash('Access denied — you can only manage members of your own firm.', 'error')
+        return redirect(url_for('admin.manage_users'))
+    if not user.is_team_member():
+        flash('Full-access toggle is only applicable to team members.', 'error')
+        return redirect(url_for('admin.manage_users'))
+    user.is_full_access = not user.is_full_access
+    status = 'granted' if user.is_full_access else 'revoked'
+    try:
+        db.session.commit()
+        flash(f'Full access {status} for {user.full_name}.', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('Could not update access. Please try again.', 'error')
+    return redirect(url_for('admin.manage_users'))
+
+
 @admin_bp.route('/sliders/<int:slider_id>/toggle', methods=['POST'])
 @require_super_admin
 def toggle_slider(slider_id):

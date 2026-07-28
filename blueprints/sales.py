@@ -924,7 +924,7 @@ def direct_checkout():
     import re as _re, time as _time
 
     plan = (request.args.get('plan') or request.form.get('plan') or 'starter').lower().strip()
-    valid_plans = ['starter', 'growth', 'enterprise', 'founders', 'founder']
+    valid_plans = ['trial', 'starter', 'growth', 'enterprise', 'founders', 'founder']
     if plan not in valid_plans:
         plan = 'starter'
 
@@ -989,7 +989,7 @@ def direct_checkout():
             else:
                 flash('Your free 2-week trial is active! Welcome back.', 'success')
 
-            return redirect(url_for('dashboard.admin_dashboard'))
+            return redirect(url_for('admin.admin_dashboard'))
 
         # Store lead record
         lead = SalesLead()

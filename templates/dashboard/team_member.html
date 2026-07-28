@@ -2,148 +2,464 @@
 
 {% block title %}Team Dashboard - LAWCOLAB{% endblock %}
 
+{% block additional_css %}
+<style>
+/* ═══════════════════════════════════════════════════════════
+   TEAM MEMBER DASHBOARD — PROFESSIONAL DESIGN
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Hero ── */
+.tm-hero {
+    position: relative; overflow: hidden;
+    background: #0d1f3c;
+    padding: 2.5rem 0 0;
+}
+.tm-hero::before {
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(135deg, #0d1f3c 0%, #1a3a6b 50%, #0d1f3c 100%);
+}
+.tm-hero::after {
+    content:''; position:absolute; top:0; right:0;
+    width:50%; height:100%;
+    background: radial-gradient(ellipse at 80% 50%, rgba(99,91,255,.12) 0%, transparent 65%);
+    pointer-events:none;
+}
+.tm-hero-inner { position:relative; z-index:2; }
+
+.tm-greeting-label {
+    font-size:.7rem; font-weight:700; letter-spacing:.14em;
+    text-transform:uppercase; color:#7dd3fc; margin-bottom:.3rem;
+}
+.tm-greeting-name {
+    font-size:clamp(1.4rem,3.5vw,2.1rem); font-weight:900; color:#fff;
+    line-height:1.15; margin:0 0 .35rem;
+}
+.tm-greeting-firm {
+    font-size:.85rem; color:rgba(255,255,255,.6);
+    display:flex; align-items:center; gap:.5rem;
+}
+.tm-greeting-firm i { color:#fbbf24; }
+
+.tm-access-badge {
+    display:inline-flex; align-items:center; gap:.4rem;
+    padding:.3rem .85rem; border-radius:100px;
+    font-size:.72rem; font-weight:700; letter-spacing:.04em;
+    margin-top:.6rem;
+}
+.tm-access-full  { background:rgba(34,197,94,.15); color:#4ade80; border:1px solid rgba(74,222,128,.25); }
+.tm-access-limit { background:rgba(251,191,36,.12); color:#fbbf24; border:1px solid rgba(251,191,36,.22); }
+
+/* ── Hero chips ── */
+.tm-chips {
+    display:flex; gap:1px; background:rgba(255,255,255,.07);
+    margin-top:2rem; overflow:hidden;
+}
+.tm-chip {
+    flex:1; padding:.95rem 1rem; text-align:center;
+    background:rgba(255,255,255,.04); border-right:1px solid rgba(255,255,255,.06);
+    transition:background .2s;
+}
+.tm-chip:last-child { border-right:none; }
+.tm-chip:hover { background:rgba(255,255,255,.09); }
+.tm-chip-num { font-size:1.7rem; font-weight:900; color:#fbbf24; line-height:1; }
+.tm-chip-label { font-size:.65rem; color:rgba(255,255,255,.55); font-weight:600;
+    text-transform:uppercase; letter-spacing:.05em; margin-top:.25rem; }
+@media(max-width:500px) {
+    .tm-chips { flex-wrap:wrap; }
+    .tm-chip { flex:1 1 50%; }
+    .tm-chip-num { font-size:1.4rem; }
+}
+
+/* ── Body ── */
+.tm-body { background:#f0f2f8; padding:2rem 0 3rem; min-height:70vh; }
+
+/* ── Section label ── */
+.tm-section-label {
+    font-size:.67rem; font-weight:800; letter-spacing:.12em;
+    text-transform:uppercase; color:#64748b; margin-bottom:.75rem;
+    display:flex; align-items:center; gap:.5rem;
+}
+.tm-section-label::after { content:''; flex:1; height:1px; background:#e2e8f0; }
+
+/* ── Cards ── */
+.tm-card {
+    background:#fff; border-radius:18px;
+    box-shadow:0 2px 10px rgba(0,0,0,.06); overflow:hidden;
+}
+.tm-card-head {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:1.1rem 1.4rem .65rem; border-bottom:1px solid #f1f5f9;
+}
+.tm-card-title {
+    font-size:.85rem; font-weight:800; color:#0f172a;
+    display:flex; align-items:center; gap:.5rem;
+}
+.tm-card-title i { color:#635bff; font-size:.95rem; }
+.tm-card-body { padding:1rem 1.4rem 1.25rem; }
+.tm-card-link {
+    font-size:.72rem; font-weight:700; color:#635bff;
+    text-decoration:none; display:flex; align-items:center; gap:.25rem;
+}
+.tm-card-link:hover { gap:.45rem; color:#635bff; text-decoration:none; }
+
+/* ── Project rows ── */
+.tm-proj-row {
+    display:flex; align-items:center; gap:.75rem;
+    padding:.7rem .5rem; border-bottom:1px solid #f1f5f9;
+    text-decoration:none; color:inherit; border-radius:10px;
+    margin:0 -.5rem; transition:background .15s;
+}
+.tm-proj-row:hover { background:#f8fafc; text-decoration:none; color:inherit; }
+.tm-proj-row:last-child { border-bottom:none; }
+.tm-proj-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.tm-proj-name { font-size:.84rem; font-weight:700; color:#0f172a; flex:1; }
+.tm-proj-status {
+    font-size:.64rem; font-weight:700; letter-spacing:.05em;
+    text-transform:uppercase; padding:.2rem .6rem; border-radius:100px;
+}
+.st-active    { background:#dcfce7; color:#166534; }
+.st-completed { background:#dbeafe; color:#1e40af; }
+.st-on_hold   { background:#fef9c3; color:#854d0e; }
+.st-other     { background:#f1f5f9; color:#475569; }
+
+/* ── Client rows ── */
+.tm-client-row {
+    display:flex; align-items:center; gap:.8rem;
+    padding:.65rem .5rem; border-bottom:1px solid #f1f5f9;
+    text-decoration:none; color:inherit; border-radius:10px;
+    margin:0 -.5rem; transition:background .15s;
+}
+.tm-client-row:hover { background:#f8fafc; text-decoration:none; color:inherit; }
+.tm-client-row:last-child { border-bottom:none; }
+.tm-avatar {
+    width:38px; height:38px; border-radius:11px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:.88rem; color:#fff;
+}
+.tm-client-name { font-size:.82rem; font-weight:700; color:#0f172a; }
+.tm-client-meta { font-size:.7rem; color:#64748b; }
+
+/* ── Quick actions ── */
+.tm-qa-grid {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:.6rem;
+}
+@media(max-width:500px) { .tm-qa-grid { grid-template-columns:repeat(2,1fr); } }
+.tm-qa-card {
+    display:flex; flex-direction:column; align-items:center;
+    justify-content:center; gap:.4rem; padding:.9rem .6rem;
+    border-radius:14px; text-decoration:none; text-align:center;
+    transition:transform .15s, box-shadow .15s;
+    border:1.5px solid transparent; background:#fff;
+}
+.tm-qa-card:hover {
+    transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,.1);
+    text-decoration:none;
+}
+.tm-qa-icon {
+    width:42px; height:42px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center; font-size:1rem;
+}
+.tm-qa-text { font-size:.7rem; font-weight:700; color:#374151; line-height:1.2; }
+.tm-qa-blue  .tm-qa-icon { background:#eff6ff; color:#1d4ed8; }
+.tm-qa-blue:hover  { border-color:#bfdbfe; }
+.tm-qa-green .tm-qa-icon { background:#f0fdf4; color:#15803d; }
+.tm-qa-green:hover { border-color:#bbf7d0; }
+.tm-qa-purple .tm-qa-icon { background:#f5f3ff; color:#6d28d9; }
+.tm-qa-purple:hover { border-color:#ddd6fe; }
+.tm-qa-amber .tm-qa-icon { background:#fffbeb; color:#b45309; }
+.tm-qa-amber:hover { border-color:#fde68a; }
+.tm-qa-teal  .tm-qa-icon { background:#f0fdfa; color:#0f766e; }
+.tm-qa-teal:hover  { border-color:#99f6e4; }
+.tm-qa-rose  .tm-qa-icon { background:#fff1f2; color:#be123c; }
+.tm-qa-rose:hover  { border-color:#fecdd3; }
+
+/* ── Empty state ── */
+.tm-empty { text-align:center; padding:2.5rem 1rem; color:#94a3b8; }
+.tm-empty i { font-size:2.4rem; margin-bottom:.75rem; display:block; opacity:.4; }
+.tm-empty p { font-size:.84rem; margin:0; }
+
+/* ── Deadline badge ── */
+.tm-deadline {
+    font-size:.68rem; font-weight:700; padding:.2rem .55rem;
+    border-radius:100px; white-space:nowrap;
+}
+.deadline-urgent  { background:#fee2e2; color:#991b1b; }
+.deadline-soon    { background:#fef3c7; color:#92400e; }
+.deadline-normal  { background:#f1f5f9; color:#475569; }
+
+/* ── Access-restricted notice ── */
+.tm-access-notice {
+    background:linear-gradient(135deg,#fef9c3,#fef08a);
+    border:1px solid #fde047; border-radius:14px;
+    padding:1rem 1.25rem; margin-bottom:1.5rem;
+    display:flex; align-items:center; gap:.75rem;
+    font-size:.82rem; color:#713f12;
+}
+.tm-access-notice i { font-size:1.2rem; color:#ca8a04; flex-shrink:0; }
+
+/* ── Entrance animation ── */
+.tm-fade-up { animation:tmFadeUp .4s ease both; }
+.tm-fade-up:nth-child(2) { animation-delay:.07s; }
+.tm-fade-up:nth-child(3) { animation-delay:.14s; }
+.tm-fade-up:nth-child(4) { animation-delay:.21s; }
+@keyframes tmFadeUp {
+    from { opacity:0; transform:translateY(14px); }
+    to   { opacity:1; transform:none; }
+}
+
+@media(max-width:991px) { .tm-hero { padding-top:1.75rem; } }
+@media(max-width:576px) { .tm-body { padding:1.25rem 0 2.5rem; } }
+</style>
+{% endblock %}
+
 {% block content %}
 
-<!-- Page Header -->
-<div class="lc-page-header lc-ph-bg-team">
-    <div class="container-fluid px-3 px-lg-4">
-        <div class="lc-ph-inner d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-            <div class="d-flex align-items-center gap-3">
-                <div class="lc-ph-icon"><i class="fas fa-user-tie"></i></div>
-                <div>
-                    <h1>Team Dashboard</h1>
-                    <p class="lc-ph-sub mb-0">Your assigned projects and upcoming tasks</p>
+<!-- ═══════════  HERO  ═══════════ -->
+<div class="tm-hero">
+    <div class="tm-hero-inner container-fluid px-3 px-lg-4">
+        <div class="row align-items-center gy-3">
+            <div class="col-md-8">
+                <div class="tm-greeting-label"><i class="fas fa-user-tie me-1"></i>Team Member Portal</div>
+                <h1 class="tm-greeting-name">
+                    Good {% set h = now.hour if now is defined else 9 %}{% if h < 12 %}Morning{% elif h < 17 %}Afternoon{% else %}Evening{% endif %},<br>
+                    {{ current_user.first_name }}
+                </h1>
+                <div class="tm-greeting-firm">
+                    <i class="fas fa-building"></i>
+                    <span>{{ current_user.law_firm.name if current_user.law_firm else 'Your Law Firm' }}</span>
+                </div>
+                {% if current_user.is_full_access %}
+                <div class="tm-access-badge tm-access-full">
+                    <i class="fas fa-unlock-alt"></i> Full Firm Access Granted
+                </div>
+                {% else %}
+                <div class="tm-access-badge tm-access-limit">
+                    <i class="fas fa-lock"></i> Limited Access — Assigned Cases Only
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div style="display:flex;gap:.6rem;justify-content:flex-end;flex-wrap:wrap;">
+                    <a href="{{ url_for('projects.create_project') }}" style="display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1.1rem;border-radius:10px;background:#fbbf24;color:#0d1f3c;font-size:.82rem;font-weight:700;text-decoration:none;transition:transform .15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                        <i class="fas fa-plus"></i> New Case
+                    </a>
+                    <a href="{{ url_for('calendar.index') }}" style="display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1.1rem;border-radius:10px;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);font-size:.82rem;font-weight:700;text-decoration:none;backdrop-filter:blur(6px);transition:transform .15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                        <i class="fas fa-calendar"></i> Calendar
+                    </a>
                 </div>
             </div>
-            <div class="lc-ph-actions">
-                <a href="{{ url_for('projects.create_project') }}" class="btn btn-warning btn-sm fw-semibold">
-                    <i class="fas fa-plus me-1"></i>New Project
-                </a>
+        </div>
+
+        <!-- Chips -->
+        <div class="tm-chips">
+            <div class="tm-chip">
+                <div class="tm-chip-num">{{ assigned_projects|length }}</div>
+                <div class="tm-chip-label">{% if current_user.is_full_access %}All{% else %}My{% endif %} Cases</div>
+            </div>
+            <div class="tm-chip">
+                <div class="tm-chip-num">{{ assigned_projects|selectattr('status','equalto','active')|list|length }}</div>
+                <div class="tm-chip-label">Active</div>
+            </div>
+            <div class="tm-chip">
+                <div class="tm-chip-num">{{ clients|length }}</div>
+                <div class="tm-chip-label">Clients</div>
+            </div>
+            <div class="tm-chip">
+                <div class="tm-chip-num">{{ assigned_projects|selectattr('deadline')|list|length }}</div>
+                <div class="tm-chip-label">With Deadline</div>
             </div>
         </div>
     </div>
 </div>
+<!-- ═══════════  END HERO  ═══════════ -->
 
-{# ── Legal News Banner ── #}
-<div class="container-fluid pt-3 px-3 px-lg-4">
-{% include 'components/legal_news_banner.html' %}
-</div>
+<!-- ═══════════  BODY  ═══════════ -->
+<div class="tm-body">
+<div class="container-fluid px-3 px-lg-4">
 
-{# ── Feature-ad slider ── #}
-{% include 'components/dashboard_slider.html' %}
+    <!-- Access notice for limited-access members -->
+    {% if not current_user.is_full_access %}
+    <div class="tm-access-notice">
+        <i class="fas fa-info-circle"></i>
+        <div>
+            <strong>Limited access mode.</strong> You can see cases and clients directly assigned to you.
+            Contact your firm administrator to request full firm access.
+        </div>
+    </div>
+    {% endif %}
 
-<div class="container-fluid py-3">
-    <div class="row">
-        <div class="col-12">
+    {# Legal news & slider #}
+    <div class="mb-3">{% include 'components/legal_news_banner.html' %}</div>
+    {% include 'components/dashboard_slider.html' %}
 
-    <div class="row g-4">
-        <!-- My Projects -->
+    <!-- ── Main grid ── -->
+    <div class="row g-3">
+
+        <!-- LEFT col: cases + clients -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent border-0">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-briefcase me-2"></i>My Assigned Projects
-                    </h5>
+
+            <!-- My Cases -->
+            <div class="tm-card mb-3 tm-fade-up">
+                <div class="tm-card-head">
+                    <div class="tm-card-title">
+                        <i class="fas fa-briefcase"></i>
+                        {% if current_user.is_full_access %}All Firm Cases{% else %}My Assigned Cases{% endif %}
+                    </div>
+                    <a href="{{ url_for('projects.list_projects') }}" class="tm-card-link">
+                        View all <i class="fas fa-chevron-right" style="font-size:.6rem;"></i>
+                    </a>
                 </div>
-                <div class="card-body">
+                <div class="tm-card-body">
                     {% if assigned_projects %}
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Project</th>
-                                        <th>Status</th>
-                                        <th>Priority</th>
-                                        <th>Deadline</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for project in assigned_projects %}
-                                    <tr>
-                                        <td>
-                                            <h6 class="mb-1">{{ project.title }}</h6>
-                                            <small class="text-muted">{{ project.description[:50] }}{% if project.description|length > 50 %}...{% endif %}</small>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-{{ 'success' if project.status == 'active' else 'secondary' }}">
-                                                {{ project.status.replace('_', ' ').title() }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-{{ 'danger' if project.priority == 'high' else 'warning' if project.priority == 'medium' else 'secondary' }}">
-                                                {{ project.priority.title() }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            {% if project.deadline %}
-                                                {{ project.deadline.strftime('%b %d, %Y') }}
-                                            {% else %}
-                                                <span class="text-muted">No deadline</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="btn btn-sm btn-outline-primary">
-                                                View
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                        {% set status_map = {'active':'st-active','completed':'st-completed','on_hold':'st-on_hold'} %}
+                        {% set dot_colors = {'active':'#22c55e','completed':'#3b82f6','on_hold':'#f59e0b'} %}
+                        {% for project in assigned_projects[:8] %}
+                        <a href="{{ url_for('projects.project_detail', project_id=project.id) }}" class="tm-proj-row">
+                            <div class="tm-proj-dot" style="background:{{ dot_colors.get(project.status,'#94a3b8') }};"></div>
+                            <div class="tm-proj-name flex-1">{{ project.title }}</div>
+                            {% if project.deadline %}
+                            {% set today = [] %}
+                            <span class="tm-deadline {% if project.deadline < now.date() if now is defined else false %}deadline-urgent{% elif project.deadline <= (now.date() + timedelta(7)) if now is defined else false %}deadline-soon{% else %}deadline-normal{% endif %}">
+                                {{ project.deadline.strftime('%b %d') }}
+                            </span>
+                            {% endif %}
+                            <div class="tm-proj-status {{ status_map.get(project.status,'st-other') }}">
+                                {{ project.status.replace('_',' ').title() }}
+                            </div>
+                        </a>
+                        {% endfor %}
+                        {% if assigned_projects|length > 8 %}
+                        <div style="text-align:center;padding:.75rem 0 .25rem;">
+                            <a href="{{ url_for('projects.list_projects') }}" class="tm-card-link" style="justify-content:center;">
+                                View {{ assigned_projects|length - 8 }} more <i class="fas fa-chevron-right" style="font-size:.6rem;"></i>
+                            </a>
                         </div>
+                        {% endif %}
                     {% else %}
-                        <div class="text-center py-5">
-                            <i class="fas fa-briefcase fa-3x text-muted mb-3"></i>
-                            <h5 class="text-muted">No projects assigned</h5>
-                            <p class="text-muted">You'll see your assigned projects here once an admin assigns them to you.</p>
-                        </div>
+                    <div class="tm-empty">
+                        <i class="fas fa-briefcase"></i>
+                        <p>No cases assigned to you yet.<br>Your admin will assign cases when available.</p>
+                    </div>
                     {% endif %}
                 </div>
             </div>
-        </div>
 
-        <!-- My Clients -->
-        <div class="col-lg-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent border-0">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-users me-2"></i>My Clients
-                    </h5>
+            <!-- My Clients -->
+            <div class="tm-card tm-fade-up">
+                <div class="tm-card-head">
+                    <div class="tm-card-title">
+                        <i class="fas fa-users"></i>
+                        {% if current_user.is_full_access %}Firm Clients{% else %}My Clients{% endif %}
+                    </div>
+                    {% if current_user.is_full_access %}
+                    <a href="{{ url_for('clients.list_clients') }}" class="tm-card-link">
+                        View all <i class="fas fa-chevron-right" style="font-size:.6rem;"></i>
+                    </a>
+                    {% endif %}
                 </div>
-                <div class="card-body">
+                <div class="tm-card-body">
                     {% if clients %}
-                        {% for client in clients %}
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="flex-shrink-0">
-                                {% if client.profile_image_url %}
-                                    <img src="{{ client.profile_image_url }}" alt="{{ client.full_name }}" class="rounded-circle" width="40" height="40">
-                                {% else %}
-                                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                        <i class="fas fa-user text-white"></i>
-                                    </div>
-                                {% endif %}
+                        {% set avatar_colors = ['#1d4ed8','#15803d','#b45309','#be123c','#7c3aed','#0f766e'] %}
+                        {% for client in clients[:6] %}
+                        {% set col = avatar_colors[loop.index0 % avatar_colors|length] %}
+                        <a href="{{ url_for('clients.client_profile', client_id=client.id) }}" class="tm-client-row">
+                            <div class="tm-avatar" style="background:{{ col }};">
+                                {{ (client.first_name[0] if client.first_name else 'C')|upper }}
                             </div>
-                            <div class="flex-grow-1 ms-3">
-                                <h6 class="mb-1">
-                                    <a href="{{ url_for('clients.client_profile', client_id=client.id) }}" class="text-decoration-none">
-                                        {{ client.full_name }}
-                                    </a>
-                                </h6>
-                                <small class="text-muted">{{ client.email }}</small>
+                            <div class="flex-grow-1 min-w-0">
+                                <div class="tm-client-name">{{ client.full_name }}</div>
+                                <div class="tm-client-meta">{{ client.email or 'No email' }}</div>
                             </div>
-                        </div>
+                            <i class="fas fa-chevron-right" style="color:#cbd5e1;font-size:.6rem;"></i>
+                        </a>
                         {% endfor %}
                     {% else %}
-                        <div class="text-center py-4">
-                            <i class="fas fa-users fa-2x text-muted mb-3"></i>
-                            <p class="text-muted mb-0">No clients assigned to your projects yet.</p>
-                        </div>
+                    <div class="tm-empty">
+                        <i class="fas fa-users"></i>
+                        <p>No clients linked to your assigned cases yet.</p>
+                    </div>
                     {% endif %}
                 </div>
             </div>
+
         </div>
-    </div>
+
+        <!-- RIGHT col: quick actions + navigation -->
+        <div class="col-lg-4">
+
+            <!-- Quick Actions -->
+            <div class="tm-card mb-3 tm-fade-up">
+                <div class="tm-card-head">
+                    <div class="tm-card-title"><i class="fas fa-bolt"></i> Quick Actions</div>
+                </div>
+                <div class="tm-card-body">
+                    <div class="tm-qa-grid">
+                        <a href="{{ url_for('projects.create_project') }}" class="tm-qa-card tm-qa-blue">
+                            <div class="tm-qa-icon"><i class="fas fa-plus-circle"></i></div>
+                            <div class="tm-qa-text">New Case</div>
+                        </a>
+                        <a href="{{ url_for('calendar.create_event') }}" class="tm-qa-card tm-qa-purple">
+                            <div class="tm-qa-icon"><i class="fas fa-calendar-plus"></i></div>
+                            <div class="tm-qa-text">Add Event</div>
+                        </a>
+                        <a href="{{ url_for('chat.chat_home') }}" class="tm-qa-card tm-qa-green">
+                            <div class="tm-qa-icon"><i class="fas fa-comments"></i></div>
+                            <div class="tm-qa-text">Messages</div>
+                        </a>
+                        <a href="{{ url_for('invoices.list_invoices') }}" class="tm-qa-card tm-qa-amber">
+                            <div class="tm-qa-icon"><i class="fas fa-file-invoice"></i></div>
+                            <div class="tm-qa-text">Invoices</div>
+                        </a>
+                        <a href="{{ url_for('calendar.court_docket') }}" class="tm-qa-card tm-qa-rose">
+                            <div class="tm-qa-icon"><i class="fas fa-gavel"></i></div>
+                            <div class="tm-qa-text">Court Docket</div>
+                        </a>
+                        <a href="{{ url_for('clients.list_clients') }}" class="tm-qa-card tm-qa-teal">
+                            <div class="tm-qa-icon"><i class="fas fa-users"></i></div>
+                            <div class="tm-qa-text">Clients</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Firm Info -->
+            <div class="tm-card tm-fade-up" style="background:linear-gradient(135deg,#0d1f3c 0%,#1a3a6b 100%);">
+                <div class="tm-card-body">
+                    <div style="display:flex;align-items:center;gap:.65rem;margin-bottom:.85rem;">
+                        <div style="width:44px;height:44px;border-radius:12px;background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.3);display:flex;align-items:center;justify-content:center;color:#fbbf24;font-size:1.1rem;flex-shrink:0;">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:1rem;font-weight:800;color:#fff;">
+                                {{ current_user.law_firm.name if current_user.law_firm else 'Your Firm' }}
+                            </div>
+                            <div style="font-size:.75rem;color:rgba(255,255,255,.55);">{{ current_user.specialization or 'Legal Professional' }}</div>
+                        </div>
+                    </div>
+                    {% set nav_links = [
+                        ('fas fa-briefcase',   'Projects',      url_for('projects.list_projects')),
+                        ('fas fa-calendar-alt','Calendar',      url_for('calendar.index')),
+                        ('fas fa-users',       'Clients',       url_for('clients.list_clients')),
+                        ('fas fa-file-invoice','Invoices',      url_for('invoices.list_invoices')),
+                        ('fas fa-comments',    'Chat',          url_for('chat.chat_home')),
+                    ] %}
+                    {% for icon, label, link in nav_links %}
+                    <a href="{{ link }}" style="display:flex;align-items:center;gap:.7rem;padding:.5rem .25rem;border-bottom:1px solid rgba(255,255,255,.07);text-decoration:none;color:rgba(255,255,255,.8);transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.8)'">
+                        <div style="width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.7);font-size:.8rem;flex-shrink:0;">
+                            <i class="{{ icon }}"></i>
+                        </div>
+                        <span style="font-size:.82rem;font-weight:600;flex:1;">{{ label }}</span>
+                        <i class="fas fa-chevron-right" style="font-size:.6rem;opacity:.4;"></i>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+    </div><!-- /row -->
+
 </div>
 </div>
+<!-- ═══════════  END BODY  ═══════════ -->
+
 {% endblock %}

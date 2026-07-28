@@ -269,6 +269,16 @@
           <p>🎉 <strong>Free 14-day trial</strong> — No credit card required. You'll get instant access to all Starter features. Your account is created immediately after clicking the button below.</p>
         </div>
 
+        <!-- Trial CTA — visible only for free trial plan, no payment needed -->
+        <div id="trialSubmitSection" {% if plan != 'trial' %}style="display:none"{% endif %}>
+          <input type="hidden" name="payment_method" id="trialPaymentInput" value="free_trial" {% if plan != 'trial' %}disabled{% endif %}>
+          <button type="submit" class="pay-btn" id="trialPayBtn" style="background:linear-gradient(135deg,#16a34a,#15803d);box-shadow:0 4px 18px rgba(22,163,74,.30);">
+            <i class="fas fa-gift"></i>
+            <span>Activate My Free 2-Week Trial — No Card Needed</span>
+          </button>
+          <div class="pay-btn-note"><i class="fas fa-shield-alt"></i> Instant access · No credit card · Cancel anytime</div>
+        </div>
+
         <!-- 3. Payment method (hidden for trial) -->
         <div id="paymentSection" {% if plan == 'trial' %}style="display:none"{% endif %}>
         <div class="section-head mt-3"><i class="fas fa-credit-card me-1"></i> Payment Method</div>
@@ -421,6 +431,21 @@
     if(tab) tab.classList.add('active');
     document.getElementById('planInput').value = planId;
     updateSummary(planId);
+
+    // Toggle trial vs paid sections
+    const isTrial = planId === 'trial';
+    const paySection = document.getElementById('paymentSection');
+    const trialSection = document.getElementById('trialSubmitSection');
+    const trialNotice = document.getElementById('trialNotice');
+    const trialInput = document.getElementById('trialPaymentInput');
+
+    if(paySection)    paySection.style.display    = isTrial ? 'none' : '';
+    if(trialSection)  trialSection.style.display  = isTrial ? '' : 'none';
+    if(trialNotice)   trialNotice.classList.toggle('show', isTrial);
+    // Only one payment_method input should be active
+    if(trialInput)    trialInput.disabled = !isTrial;
+    const paidInput = document.getElementById('paymentMethodInput');
+    if(paidInput)     paidInput.disabled = isTrial;
   }
 
   function updateSummary(planId){
