@@ -1,346 +1,339 @@
 {% extends "base.html" %}
+{% block title %}Contact LAWCOLAB — Talk to Our Team{% endblock %}
 
-{% block title %}Contact Us - LAWCOLAB by Taskdrip{% endblock %}
+{% block additional_css %}
+<style>
+.page-hero {
+  position:relative; min-height:460px; display:flex; align-items:center;
+  background:#0a1628; overflow:hidden;
+}
+.page-hero .hero-bg {
+  position:absolute; inset:0;
+  background:url('https://images.unsplash.com/photo-1423666639041-f56000c27a9a?w=1600&q=80') center/cover no-repeat;
+  opacity:.13;
+}
+.page-hero .hero-overlay {
+  position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(10,22,40,.95) 0%,rgba(13,27,75,.84) 60%,rgba(15,45,90,.72) 100%);
+  z-index:1;
+}
+.page-hero .hero-content { position:relative; z-index:2; }
+.hero-eyebrow {
+  display:inline-flex; align-items:center; gap:.5rem;
+  background:rgba(255,215,0,.15); border:1.5px solid rgba(255,215,0,.4);
+  color:#FFD700; font-size:.8rem; font-weight:700;
+  padding:.4rem 1rem; border-radius:50px; letter-spacing:.06em; margin-bottom:1.5rem;
+}
+.hero-title { font-family:'Playfair Display',serif; font-size:clamp(2.2rem,5vw,3.6rem); color:#fff; font-weight:800; line-height:1.1; }
+.hero-title span { color:#FFD700; }
+.hero-sub { color:rgba(255,255,255,.85); font-size:1.05rem; line-height:1.7; }
+
+@keyframes fadeInUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+.reveal { opacity:0; transform:translateY(28px); transition:opacity .7s ease,transform .7s ease; }
+.reveal.visible { opacity:1; transform:translateY(0); }
+.delay-1{transition-delay:.1s !important} .delay-2{transition-delay:.2s !important} .delay-3{transition-delay:.3s !important}
+
+.section-eyebrow { font-size:.75rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#FFD700; margin-bottom:.5rem; }
+.section-title { font-family:'Playfair Display',serif; font-size:clamp(1.9rem,3.5vw,2.4rem); color:#0d1b4b; font-weight:800; line-height:1.2; }
+
+/* Contact form card */
+.contact-form-card {
+  background:#fff; border-radius:22px; border:1.5px solid #e8eef4;
+  box-shadow:0 12px 50px rgba(13,27,75,.1);
+  padding:2.75rem;
+}
+.contact-form-card .form-control, .contact-form-card .form-select {
+  border-radius:10px; border:1.5px solid #e2e8f0; padding:.75rem 1rem;
+  font-size:.92rem; transition:border-color .2s, box-shadow .2s;
+}
+.contact-form-card .form-control:focus, .contact-form-card .form-select:focus {
+  border-color:#0d1b4b; box-shadow:0 0 0 3px rgba(13,27,75,.1);
+}
+.contact-form-card .form-label { font-weight:700; font-size:.82rem; color:#374151; text-transform:uppercase; letter-spacing:.04em; margin-bottom:.4rem; }
+.submit-btn {
+  background:linear-gradient(135deg,#0d1b4b,#1a3a6b); color:#fff;
+  border:none; border-radius:12px; padding:.9rem 2rem;
+  font-weight:800; font-size:1rem; width:100%; cursor:pointer;
+  transition:all .25s; position:relative; overflow:hidden;
+}
+.submit-btn:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(13,27,75,.3); }
+.submit-btn .btn-shine {
+  position:absolute; top:0; left:-100%; width:100%; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);
+  transition:left .4s;
+}
+.submit-btn:hover .btn-shine { left:100%; }
+
+/* Contact sidebar cards */
+.contact-info-card {
+  background:#fff; border-radius:18px; border:1.5px solid #e8eef4;
+  padding:1.75rem; margin-bottom:1.25rem;
+  box-shadow:0 4px 20px rgba(0,0,0,.05);
+  display:flex; align-items:flex-start; gap:1.1rem;
+  transition:all .25s;
+}
+.contact-info-card:hover { transform:translateY(-3px); box-shadow:0 12px 36px rgba(13,27,75,.1); }
+.contact-icon-box {
+  width:52px; height:52px; border-radius:14px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:1.25rem;
+}
+.contact-info-card h6 { font-weight:800; color:#0d1b4b; margin-bottom:.25rem; font-size:.95rem; }
+.contact-info-card p { color:#64748b; font-size:.84rem; margin:0; line-height:1.55; }
+.contact-info-card a { color:#0d1b4b; font-weight:600; font-size:.87rem; }
+
+/* Partnership cards */
+.partner-card {
+  background:#fff; border-radius:18px; border:1.5px solid #e8eef4;
+  padding:2rem 1.5rem; text-align:center;
+  box-shadow:0 4px 18px rgba(0,0,0,.05); transition:all .3s;
+}
+.partner-card:hover { transform:translateY(-5px); box-shadow:0 16px 42px rgba(13,27,75,.1); }
+.partner-icon { width:64px; height:64px; border-radius:18px; margin:0 auto 1.1rem; display:flex; align-items:center; justify-content:center; font-size:1.5rem; }
+
+/* CTA */
+.cta-section { background:linear-gradient(135deg,#0d1b4b,#163060); padding:5rem 0; position:relative; overflow:hidden; }
+.cta-section::before { content:''; position:absolute; inset:0; background:url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1400&q=60') center/cover; opacity:.05; }
+.cta-section .container { position:relative; z-index:2; }
+
+/* Progress indicator */
+.form-step-dot { width:10px; height:10px; border-radius:50%; background:#e2e8f0; transition:background .25s; }
+.form-step-dot.active { background:#0d1b4b; }
+.form-step-dot.done { background:#16a34a; }
+</style>
+{% endblock %}
 
 {% block content %}
-<!-- Prevent redirect on this page -->
 <script>
-    // Prevent any automatic redirects
-    if (typeof preventRedirect === 'undefined') {
-        var preventRedirect = true;
-    }
+  if (typeof preventRedirect === 'undefined') { var preventRedirect = true; }
 </script>
-<!-- Hero Section -->
-<section class="py-5 bg-light">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-4">Contact Taskdrip</h1>
-                <p class="lead mb-4">Ready to transform your legal practice? We're here to help you get started.</p>
-                <p class="text-muted">Whether you're interested in partnership opportunities, need technical support, or want to learn more about LAWCOLAB, our team is ready to assist you.</p>
-            </div>
-            <div class="col-lg-6">
-                <div class="text-center">
-                    <img src="{{ url_for('static', filename='images/contact_support.jpg') }}" 
-                         alt="Contact Support Team" 
-                         class="img-fluid rounded shadow"
-                         style="max-height: 400px; object-fit: cover;">
-                </div>
-            </div>
+
+<!-- ── Hero ── -->
+<section class="page-hero">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="container hero-content py-5">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7">
+        <div class="hero-eyebrow"><i class="fas fa-envelope"></i> We're Here to Help</div>
+        <h1 class="hero-title mb-4">Talk to the<br><span>LAWCOLAB Team</span></h1>
+        <p class="hero-sub mb-4">Whether you're ready to get started, exploring a partnership, or need help with your account — our team responds within 24 hours. We love hearing from legal professionals.</p>
+        <div class="d-flex gap-4 flex-wrap">
+          <div style="color:rgba(255,255,255,.9);font-size:.9rem;display:flex;align-items:center;gap:.5rem;">
+            <i class="fas fa-check-circle" style="color:#4ade80;"></i> Response within 24 hours
+          </div>
+          <div style="color:rgba(255,255,255,.9);font-size:.9rem;display:flex;align-items:center;gap:.5rem;">
+            <i class="fas fa-check-circle" style="color:#4ade80;"></i> Dedicated account support
+          </div>
+          <div style="color:rgba(255,255,255,.9);font-size:.9rem;display:flex;align-items:center;gap:.5rem;">
+            <i class="fas fa-check-circle" style="color:#4ade80;"></i> Live WhatsApp available
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </section>
 
-<!-- Contact Form Section -->
-<section class="py-5">
-    <div class="container">
-        <div class="row">
-            <!-- Contact Form -->
-            <div class="col-lg-8">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-5">
-                        <h2 class="h3 fw-bold mb-4">Send Us a Message</h2>
-                        <p class="text-muted mb-4">Fill out the form below and we'll get back to you within 24 hours.</p>
-                        
-                        <!-- Flash Messages -->
-                        {% with messages = get_flashed_messages(with_categories=true) %}
-                            {% if messages %}
-                                {% for category, message in messages %}
-                                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'warning' }} alert-dismissible fade show" role="alert">
-                                        {{ message }}
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                    </div>
-                                {% endfor %}
-                            {% endif %}
-                        {% endwith %}
-                        
-                        <form action="{{ url_for('contact') }}" method="post" class="contact-form">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label for="firstName" class="form-label">First Name *</label>
-                                    <input type="text" class="form-control" id="firstName" name="firstName" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="lastName" class="form-label">Last Name *</label>
-                                    <input type="text" class="form-control" id="lastName" name="lastName" required>
-                                </div>
-                            </div>
-                            
-                            <div class="row g-3 mt-3">
-                                <div class="col-md-6">
-                                    <label for="email" class="form-label">Email Address *</label>
-                                    <input type="email" class="form-control" id="email" name="email" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="phone" class="form-label">Phone Number</label>
-                                    <input type="tel" class="form-control" id="phone" name="phone">
-                                </div>
-                            </div>
-                            
-                            <div class="mt-3">
-                                <label for="company" class="form-label">Law Firm/Company</label>
-                                <input type="text" class="form-control" id="company" name="company">
-                            </div>
-                            
-                            <div class="mt-3">
-                                <label for="inquiryType" class="form-label">Type of Inquiry *</label>
-                                <select class="form-select" id="inquiryType" name="inquiryType" required>
-                                    <option value="">Select inquiry type...</option>
-                                    <option value="Partnership">Partnership Opportunities</option>
-                                    <option value="Demo">Schedule a Demo</option>
-                                    <option value="Pricing">Pricing Information</option>
-                                    <option value="Technical">Technical Support</option>
-                                    <option value="Integration">Integration Services</option>
-                                    <option value="General">General Questions</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-                            
-                            <div class="mt-3">
-                                <label for="message" class="form-label">Message *</label>
-                                <textarea class="form-control" id="message" name="message" rows="6" required 
-                                          placeholder="Tell us about your needs, questions, or how we can help your law firm..."></textarea>
-                            </div>
-                            
-                            <div class="mt-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="newsletter" name="newsletter">
-                                    <label class="form-check-label small text-muted" for="newsletter">
-                                        I'd like to receive updates about LAWCOLAB features and legal technology insights
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <div class="d-grid mt-4">
-                                <button type="submit" class="btn btn-primary btn-lg">
-                                    <i class="fas fa-paper-plane me-2"></i>Send Message
-                                </button>
-                            </div>
-                        </form>
-                        
-                        <div class="mt-4 p-3 bg-light rounded">
-                            <p class="text-muted small mb-0">
-                                <i class="fas fa-info-circle me-2"></i>
-                                <strong>Note:</strong> This form will open your default email client. You can also send us an email directly at 
-                                <a href="mailto:info@lawcolab.com" class="text-primary">info@lawcolab.com</a>
-                            </p>
-                        </div>
-                    </div>
+<!-- ── Main Section ── -->
+<section style="background:#f0f4f8;padding:5rem 0;">
+  <div class="container">
+    <div class="row g-5">
+
+      <!-- Form -->
+      <div class="col-lg-8 reveal">
+        <div class="contact-form-card">
+          <div class="mb-4">
+            <div class="section-eyebrow"><i class="fas fa-paper-plane me-1"></i> Send a Message</div>
+            <h2 class="section-title">How Can We Help You?</h2>
+            <p style="color:#64748b;font-size:.93rem;margin-top:.5rem;">Fill in the form below — your enquiry is delivered straight to our team and logged for fast follow-up.</p>
+          </div>
+
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'warning' }} alert-dismissible fade show mb-4" role="alert" style="border-radius:12px;">
+                  <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }} me-2"></i>{{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+
+          <form action="{{ url_for('contact') }}" method="post" id="contactForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <!-- Step 1: Personal Info -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label">First Name <span style="color:#dc2626">*</span></label>
+                <input type="text" name="firstName" class="form-control" placeholder="e.g. Abraham" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Last Name <span style="color:#dc2626">*</span></label>
+                <input type="text" name="lastName" class="form-control" placeholder="e.g. Okafor" required>
+              </div>
             </div>
-            
-            <!-- Contact Information -->
-            <div class="col-lg-4">
-                <div class="contact-info-section">
-                    <!-- Email Contact -->
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-body text-center p-4">
-                            <div class="contact-icon mb-3">
-                                <i class="fas fa-envelope fa-3x text-primary"></i>
-                            </div>
-                            <h5 class="card-title">Email Us</h5>
-                            <p class="text-muted mb-2">For general inquiries and support</p>
-                            <a href="mailto:info@lawcolab.com" class="btn btn-outline-primary">
-                                <i class="fas fa-envelope me-2"></i>info@lawcolab.com
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <!-- Live Chat Support -->
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-body text-center p-4">
-                            <div class="contact-icon mb-3">
-                                <i class="fas fa-comments fa-3x text-info"></i>
-                            </div>
-                            <h5 class="card-title">Live Chat Support</h5>
-                            <p class="text-muted mb-2">Chat with our support team in real-time</p>
-                            <a href="{{ url_for('enhanced_chat.support_chat') }}" class="btn btn-info">
-                                <i class="fas fa-comments me-2"></i>Start Live Chat
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <!-- WhatsApp Contact -->
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-body text-center p-4">
-                            <div class="contact-icon mb-3">
-                                <i class="fab fa-whatsapp fa-3x text-success"></i>
-                            </div>
-                            <h5 class="card-title">WhatsApp</h5>
-                            <p class="text-muted mb-2">Quick support and inquiries</p>
-                            <a href="https://wa.me/2348036622568?text=Hello%20LawColab%20Global!%20I'm%20interested%20in%20learning%20more%20about%20your%20legal%20practice%20management%20platform.%20Please%20add%20me%20to%20your%20contact%20list%20so%20I%20can%20receive%20updates%20and%20broadcast%20messages.%20Thank%20you!" target="_blank" class="btn btn-success">
-                                <i class="fab fa-whatsapp me-2"></i>Contact LawColab Global
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <!-- Social Media -->
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body text-center p-4">
-                            <h5 class="card-title mb-4">Connect With Us</h5>
-                            <div class="social-links d-flex justify-content-center gap-3">
-                                <a href="https://t.me/taskdrip" target="_blank" class="btn btn-outline-primary btn-sm">
-                                    <i class="fab fa-telegram-plane"></i> Telegram
-                                </a>
-                                <a href="https://www.instagram.com/taskdrip" target="_blank" class="btn btn-outline-primary btn-sm">
-                                    <i class="fab fa-instagram"></i> Instagram
-                                </a>
-                            </div>
-                            <div class="social-links d-flex justify-content-center gap-3 mt-3">
-                                <a href="https://www.tiktok.com/@taskdrip" target="_blank" class="btn btn-outline-primary btn-sm">
-                                    <i class="fab fa-tiktok"></i> TikTok
-                                </a>
-                                <a href="https://www.youtube.com/@Taskdriper" target="_blank" class="btn btn-outline-primary btn-sm">
-                                    <i class="fab fa-youtube"></i> YouTube
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Email Address <span style="color:#dc2626">*</span></label>
+                <input type="email" name="email" class="form-control" placeholder="you@lawfirm.com" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Phone / WhatsApp</label>
+                <input type="tel" name="phone" class="form-control" placeholder="+234 812 345 6789">
+              </div>
             </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Law Firm / Company</label>
+                <input type="text" name="company" class="form-control" placeholder="Your law firm name">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Country <span style="color:#dc2626">*</span></label>
+                <select name="country" class="form-select" required>
+                  <option value="">Select your country…</option>
+                  {% for c in ['Nigeria','Ghana','United States','United Kingdom','South Africa','Kenya','Canada','Australia','India','Other'] %}
+                  <option value="{{ c }}">{{ c }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Type of Enquiry <span style="color:#dc2626">*</span></label>
+              <select name="inquiryType" class="form-select" required>
+                <option value="">Select enquiry type…</option>
+                <option value="Demo">📅 Schedule a Demo</option>
+                <option value="Partnership">🤝 Partnership Opportunities</option>
+                <option value="Pricing">💰 Pricing & Plans</option>
+                <option value="WhiteLabel">🏷️ White-Label License</option>
+                <option value="Technical">🛠️ Technical Support</option>
+                <option value="Integration">🔌 Integration Services</option>
+                <option value="General">💬 General Questions</option>
+                <option value="Other">📝 Other</option>
+              </select>
+            </div>
+            <div class="mb-4">
+              <label class="form-label">Your Message <span style="color:#dc2626">*</span></label>
+              <textarea name="message" class="form-control" rows="6" placeholder="Tell us about your needs, your law firm size, and how we can help you…" required></textarea>
+            </div>
+            <div class="mb-4">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="newsletter" id="newsletter">
+                <label class="form-check-label" for="newsletter" style="font-size:.83rem;color:#64748b;font-weight:400;text-transform:none;letter-spacing:0;">
+                  I'd like to receive LAWCOLAB product updates, legal technology insights, and exclusive offers
+                </label>
+              </div>
+            </div>
+            <button type="submit" class="submit-btn">
+              <div class="btn-shine"></div>
+              <i class="fas fa-paper-plane me-2"></i>Send Message — We'll Reply Within 24 Hours
+            </button>
+          </form>
         </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="col-lg-4">
+        <div class="reveal delay-1">
+
+          <!-- Contact options -->
+          <div class="contact-info-card">
+            <div class="contact-icon-box" style="background:#eef2ff;color:#3730a3;"><i class="fas fa-envelope"></i></div>
+            <div>
+              <h6>Email Us</h6>
+              <p>For all general enquiries and support</p>
+              <a href="mailto:info@lawcolab.com">info@lawcolab.com</a>
+            </div>
+          </div>
+
+          <div class="contact-info-card">
+            <div class="contact-icon-box" style="background:#dcfce7;color:#16a34a;"><i class="fab fa-whatsapp"></i></div>
+            <div>
+              <h6>WhatsApp</h6>
+              <p>Quick support — active business hours</p>
+              <a href="https://wa.me/2348036622568?text=Hello%20LAWCOLAB!%20I%27d%20like%20to%20learn%20more%20about%20your%20platform." target="_blank">+234 803 662 2568</a>
+            </div>
+          </div>
+
+          <div class="contact-info-card">
+            <div class="contact-icon-box" style="background:#fff7ed;color:#c2410c;"><i class="fas fa-comments"></i></div>
+            <div>
+              <h6>Live Chat Support</h6>
+              <p>Chat with our team in real-time</p>
+              <a href="{{ url_for('enhanced_chat.support_chat') }}">Open Live Chat →</a>
+            </div>
+          </div>
+
+          <!-- Social -->
+          <div style="background:#fff;border-radius:18px;border:1.5px solid #e8eef4;padding:1.75rem;box-shadow:0 4px 18px rgba(0,0,0,.05);">
+            <h6 style="font-weight:800;color:#0d1b4b;margin-bottom:1rem;font-size:.93rem;">Connect With Us</h6>
+            <div class="d-grid gap-2">
+              {% for icon, label, url in [
+                ('fab fa-telegram-plane','Telegram','https://t.me/taskdrip'),
+                ('fab fa-instagram','Instagram','https://www.instagram.com/taskdrip'),
+                ('fab fa-youtube','YouTube','https://www.youtube.com/@Taskdriper'),
+                ('fab fa-tiktok','TikTok','https://www.tiktok.com/@taskdrip'),
+              ] %}
+              <a href="{{ url }}" target="_blank" style="display:flex;align-items:center;gap:.75rem;padding:.6rem .85rem;border-radius:10px;border:1.5px solid #e8eef4;color:#374151;font-size:.87rem;font-weight:600;text-decoration:none;transition:all .2s;" onmouseover="this.style.borderColor='#0d1b4b';this.style.background='#f8faff'" onmouseout="this.style.borderColor='#e8eef4';this.style.background=''">
+                <i class="{{ icon }}" style="color:#0d1b4b;width:16px;text-align:center;"></i>{{ label }}
+              </a>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </section>
 
-<!-- Partnership Section -->
-<section class="py-5 bg-light">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="text-center mb-5">
-                    <h2 class="h1 fw-bold mb-4">Partnership Opportunities</h2>
-                    <p class="lead">Join our growing network of legal technology partners</p>
-                </div>
-                
-                <div class="row g-4">
-                    <div class="col-lg-4 col-md-6">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-body text-center p-4">
-                                <div class="partnership-icon mb-3">
-                                    <i class="fas fa-handshake fa-3x text-primary"></i>
-                                </div>
-                                <h5 class="card-title">Law Firm Partners</h5>
-                                <p class="card-text">Partner with us to offer LAWCOLAB to your network and earn referral commissions while helping fellow legal professionals succeed.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-lg-4 col-md-6">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-body text-center p-4">
-                                <div class="partnership-icon mb-3">
-                                    <i class="fas fa-plug fa-3x text-primary"></i>
-                                </div>
-                                <h5 class="card-title">Integration Partners</h5>
-                                <p class="card-text">Build integrations with LAWCOLAB to expand your reach in the legal technology market and provide added value to your customers.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-lg-4 col-md-6">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-body text-center p-4">
-                                <div class="partnership-icon mb-3">
-                                    <i class="fas fa-graduation-cap fa-3x text-primary"></i>
-                                </div>
-                                <h5 class="card-title">Educational Partners</h5>
-                                <p class="card-text">Collaborate with law schools and continuing education providers to train the next generation of tech-savvy legal professionals.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<!-- ── Partnership Section ── -->
+<section style="background:#fff;padding:5rem 0;">
+  <div class="container">
+    <div class="text-center mb-5 reveal">
+      <div class="section-eyebrow"><i class="fas fa-handshake me-1"></i> Partnerships</div>
+      <h2 class="section-title">Partnership Opportunities</h2>
+      <p style="color:#64748b;max-width:560px;margin:.75rem auto 0;font-size:.97rem;">Join our growing network of legal technology partners and help bring LAWCOLAB to more legal professionals worldwide.</p>
     </div>
+    <div class="row g-4 justify-content-center">
+      {% for icon, bg, color, title, desc in [
+        ('fas fa-handshake','#eef2ff','#3730a3','Law Firm Partners','Refer fellow legal professionals and earn commissions while helping them transform their practice.'),
+        ('fas fa-plug','#ecfdf5','#15803d','Integration Partners','Build integrations with LAWCOLAB to expand your reach in the legal technology market.'),
+        ('fas fa-graduation-cap','#fff7ed','#c2410c','Educational Partners','Collaborate with law schools and CLE providers to train the next generation of tech-savvy lawyers.'),
+      ] %}
+      <div class="col-lg-4 col-md-6 reveal delay-{{ loop.index }}">
+        <div class="partner-card h-100">
+          <div class="partner-icon" style="background:{{ bg }};color:{{ color }};"><i class="{{ icon }}"></i></div>
+          <h5 style="font-weight:800;color:#0d1b4b;margin-bottom:.6rem;">{{ title }}</h5>
+          <p style="color:#64748b;font-size:.88rem;line-height:1.65;margin-bottom:1.25rem;">{{ desc }}</p>
+          <a href="{{ url_for('contact') }}" class="btn btn-outline-primary btn-sm" style="border-radius:8px;font-weight:700;">Learn More</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
 </section>
 
-<!-- FAQ Section -->
-<section class="py-5">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="text-center mb-5">
-                    <h2 class="h1 fw-bold mb-4">Frequently Asked Questions</h2>
-                    <p class="lead">Quick answers to common questions</p>
-                </div>
-                
-                <div class="accordion" id="faqAccordion">
-                    <div class="accordion-item border-0 shadow-sm mb-3">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
-                                How quickly can we get started with LAWCOLAB?
-                            </button>
-                        </h2>
-                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                Most law firms can be up and running within 24-48 hours. We provide comprehensive onboarding, data migration assistance, and training to ensure a smooth transition.
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="accordion-item border-0 shadow-sm mb-3">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                                What security measures protect our sensitive legal data?
-                            </button>
-                        </h2>
-                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                LAWCOLAB features enterprise-grade security including end-to-end encryption, secure cloud hosting, regular security audits, and compliance with legal industry standards including attorney-client privilege protection.
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="accordion-item border-0 shadow-sm mb-3">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
-                                Can LAWCOLAB integrate with our existing tools?
-                            </button>
-                        </h2>
-                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                Yes! LAWCOLAB offers robust integration capabilities with popular legal and business tools including calendar systems, accounting software, document management platforms, and communication tools.
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="accordion-item border-0 shadow-sm mb-3">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
-                                Do you offer training and support?
-                            </button>
-                        </h2>
-                        <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                Absolutely! We provide comprehensive training, 24/7 support, regular webinars, documentation, and a dedicated customer success team to ensure you get maximum value from our platform.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<!-- ── CTA ── -->
+<section class="cta-section lc-dark">
+  <div class="container text-center">
+    <div class="reveal">
+      <h2 style="font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:800;color:#fff;margin-bottom:1rem;">Ready to Get Started?</h2>
+      <p style="color:rgba(255,255,255,.82);font-size:1.05rem;max-width:520px;margin:0 auto 2rem;">Join thousands of legal professionals who trust LAWCOLAB to run their practice efficiently and securely — every single day.</p>
+      <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <a href="{{ url_for('auth.signup') }}" class="btn btn-warning btn-lg fw-bold px-5" style="border-radius:12px;padding:.9rem 2.5rem;">
+          <i class="fas fa-rocket me-2"></i>Start Free Trial
+        </a>
+        <a href="mailto:info@lawcolab.com" class="btn btn-outline-light btn-lg px-5" style="border-radius:12px;padding:.9rem 2.5rem;">
+          <i class="fas fa-envelope me-2"></i>Email Us Directly
+        </a>
+      </div>
     </div>
+  </div>
 </section>
+{% endblock %}
 
-<!-- CTA Section -->
-<section class="py-5 bg-primary text-white">
-    <div class="container">
-        <div class="row justify-content-center text-center">
-            <div class="col-lg-8">
-                <h2 class="h1 fw-bold mb-4">Ready to Get Started?</h2>
-                <p class="lead mb-4">Join thousands of legal professionals who trust LAWCOLAB to manage their practice efficiently and securely.</p>
-                
-                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
-                    <a href="{{ url_for('auth.signup') }}" class="btn btn-light btn-lg">
-                        <i class="fas fa-rocket me-2"></i>Start Free Trial
-                    </a>
-                    <a href="mailto:info@lawcolab.com" class="btn btn-outline-light btn-lg">
-                        <i class="fas fa-envelope me-2"></i>Schedule Demo
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+{% block scripts %}
+<script>
+const io = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('visible'); }), {threshold:.1});
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
 {% endblock %}

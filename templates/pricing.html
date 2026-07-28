@@ -1,468 +1,442 @@
 {% extends "base.html" %}
+{% block title %}Pricing Plans — LAWCOLAB Legal Practice Platform{% endblock %}
 
-{% block title %}Pricing Plans - LAWCOLAB{% endblock %}
+{% block additional_css %}
+<style>
+.page-hero {
+  position:relative; min-height:480px; display:flex; align-items:center;
+  background:#0a1628; overflow:hidden;
+}
+.page-hero .hero-bg {
+  position:absolute; inset:0;
+  background:url('https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1600&q=80') center/cover no-repeat;
+  opacity:.12;
+}
+.page-hero .hero-overlay {
+  position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(10,22,40,.95) 0%,rgba(13,27,75,.84) 60%,rgba(15,45,90,.72) 100%);
+  z-index:1;
+}
+.page-hero .hero-content { position:relative; z-index:2; }
+.hero-eyebrow {
+  display:inline-flex; align-items:center; gap:.5rem;
+  background:rgba(255,215,0,.15); border:1.5px solid rgba(255,215,0,.4);
+  color:#FFD700; font-size:.8rem; font-weight:700;
+  padding:.4rem 1rem; border-radius:50px; letter-spacing:.06em; margin-bottom:1.5rem;
+}
+.hero-title { font-family:'Playfair Display',serif; font-size:clamp(2.4rem,5vw,3.8rem); color:#fff; font-weight:800; line-height:1.1; text-shadow:0 2px 24px rgba(0,0,0,.4); }
+.hero-title span { color:#FFD700; }
+.hero-sub { color:rgba(255,255,255,.85); font-size:1.1rem; line-height:1.7; }
+
+@keyframes fadeInUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+.reveal { opacity:0; transform:translateY(28px); transition:opacity .7s ease,transform .7s ease; }
+.reveal.visible { opacity:1; transform:translateY(0); }
+.delay-1{transition-delay:.1s !important} .delay-2{transition-delay:.2s !important}
+.delay-3{transition-delay:.3s !important} .delay-4{transition-delay:.4s !important}
+.delay-5{transition-delay:.5s !important}
+
+.section-eyebrow { font-size:.75rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#FFD700; margin-bottom:.5rem; }
+.section-title { font-family:'Playfair Display',serif; font-size:clamp(1.9rem,3.5vw,2.6rem); color:#0d1b4b; font-weight:800; line-height:1.2; }
+
+/* August banner */
+.aug-banner {
+  background:linear-gradient(135deg,#ff6b35,#f7931e 50%,#ffcc02);
+  color:#fff; padding:14px 24px; border-radius:14px;
+  margin-bottom:2.5rem; display:none; align-items:center; gap:16px;
+  box-shadow:0 4px 20px rgba(255,107,53,.3);
+}
+.aug-pill {
+  background:rgba(255,255,255,.25); border:1.5px solid rgba(255,255,255,.5);
+  border-radius:50px; padding:5px 14px; font-size:.78rem; font-weight:800;
+  letter-spacing:.5px; white-space:nowrap;
+}
+.aug-banner p { margin:0; font-size:.9rem; line-height:1.45; }
+.aug-banner strong { font-size:.95rem; display:block; margin-bottom:2px; }
+.ngn-discount-badge { background:#e65c00; color:#fff; font-size:.62rem; font-weight:800; padding:2px 6px; border-radius:8px; margin-left:4px; vertical-align:middle; }
+
+/* Pricing cards */
+.pricing-card {
+  background:#fff; border:2px solid #e8eef4; border-radius:20px;
+  padding:2.25rem 1.75rem; position:relative; overflow:hidden;
+  transition:all .3s; height:100%;
+}
+.pricing-card:hover { transform:translateY(-6px); box-shadow:0 20px 50px rgba(13,27,75,.12); border-color:#0d1b4b33; }
+.pricing-card.featured {
+  border-color:#16a34a; background:linear-gradient(160deg,#fff 60%,#f0fdf4);
+}
+.pricing-card.enterprise-card {
+  border-color:#0d1b4b; background:linear-gradient(160deg,#fff 60%,#f0f4ff);
+}
+.pricing-card.whitelabel-card {
+  background:linear-gradient(135deg,#0d1b4b,#163060);
+  border-color:#FFD700; color:#fff;
+}
+.pricing-badge {
+  position:absolute; top:16px; right:16px;
+  font-size:.72rem; font-weight:800; padding:.3em .8em; border-radius:50px;
+}
+.badge-green  { background:#16a34a; color:#fff; }
+.badge-orange { background:#d97706; color:#fff; }
+.badge-navy   { background:#0d1b4b; color:#FFD700; }
+.badge-gold   { background:#FFD700; color:#0d1b4b; }
+
+.plan-icon { width:56px; height:56px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:1.4rem; margin-bottom:1rem; }
+.plan-name { font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:800; color:#0d1b4b; margin-bottom:.35rem; }
+.plan-name-light { color:#fff; }
+.plan-tagline { font-size:.82rem; color:#64748b; margin-bottom:1.25rem; }
+.plan-tagline-light { color:rgba(255,255,255,.7); }
+.plan-price { font-size:2.8rem; font-weight:900; color:#0d1b4b; line-height:1; margin-bottom:.2rem; }
+.plan-price-light { color:#FFD700; }
+.plan-price sup { font-size:1.2rem; vertical-align:top; margin-top:.5rem; }
+.plan-period { font-size:.82rem; color:#64748b; margin-bottom:1.5rem; }
+.plan-period-light { color:rgba(255,255,255,.65); }
+.plan-divider { border:none; border-top:1.5px solid #e8eef4; margin:1.25rem 0; }
+.plan-divider-light { border-top-color:rgba(255,255,255,.15); }
+.plan-features { list-style:none; padding:0; margin:0 0 1.75rem; }
+.plan-features li { display:flex; align-items:flex-start; gap:.55rem; font-size:.87rem; color:#374151; padding:.3rem 0; }
+.plan-features li i { color:#16a34a; flex-shrink:0; margin-top:.1rem; }
+.plan-features-light li { color:rgba(255,255,255,.88); }
+.plan-features-light li i { color:#4ade80; }
+.plan-btn { display:block; width:100%; text-align:center; padding:.85rem; border-radius:12px; font-weight:700; font-size:.93rem; transition:all .25s; text-decoration:none; cursor:pointer; border:none; }
+.plan-btn-primary { background:#0d1b4b; color:#fff; }
+.plan-btn-primary:hover { background:#1a3a6b; color:#fff; }
+.plan-btn-outline { background:transparent; color:#0d1b4b; border:2px solid #0d1b4b; }
+.plan-btn-outline:hover { background:#0d1b4b; color:#fff; }
+.plan-btn-gold { background:linear-gradient(135deg,#FFD700,#FFA500); color:#0d1b4b; }
+.plan-btn-gold:hover { background:linear-gradient(135deg,#ffe033,#ffb300); color:#0d1b4b; }
+.plan-btn-free { background:#16a34a; color:#fff; }
+.plan-btn-free:hover { background:#15803d; color:#fff; }
+.popular-glow { box-shadow:0 0 0 3px rgba(22,163,74,.25), 0 20px 50px rgba(22,163,74,.12); }
+
+/* FAQ */
+.faq-item { background:#fff; border:1.5px solid #e8eef4; border-radius:14px; margin-bottom:.85rem; overflow:hidden; }
+.faq-btn { width:100%; text-align:left; background:none; border:none; padding:1.1rem 1.5rem; font-weight:600; font-size:.93rem; color:#0d1b4b; display:flex; align-items:center; justify-content:space-between; cursor:pointer; }
+.faq-btn:hover { background:#f8faff; }
+.faq-body { padding:0 1.5rem 1.1rem; color:#64748b; font-size:.89rem; line-height:1.65; display:none; }
+.faq-icon { transition:transform .25s; }
+.faq-item.open .faq-icon { transform:rotate(45deg); }
+.faq-item.open .faq-body { display:block; }
+
+/* CTA */
+.cta-section { background:linear-gradient(135deg,#0d1b4b 0%,#0f2d5a 50%,#163060 100%); padding:5rem 0; position:relative; overflow:hidden; }
+.cta-section::before { content:''; position:absolute; inset:0; background:url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1400&q=60') center/cover; opacity:.05; }
+.cta-section .container { position:relative; z-index:2; }
+</style>
+{% endblock %}
 
 {% block content %}
-<style>
-/* August NGN discount banner */
-.aug-banner {
-    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ffcc02 100%);
-    color: #fff;
-    padding: 16px 24px;
-    border-radius: 14px;
-    margin-bottom: 32px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    box-shadow: 0 4px 20px rgba(255,107,53,0.3);
-}
-.aug-banner .aug-pill {
-    background: rgba(255,255,255,0.25);
-    border: 1.5px solid rgba(255,255,255,0.5);
-    border-radius: 50px;
-    padding: 5px 14px;
-    font-size: 0.8rem;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-}
-.aug-banner p { margin: 0; font-size: 0.92rem; line-height: 1.45; }
-.aug-banner strong { font-size: 1rem; display: block; margin-bottom: 2px; }
-.ngn-price { display: none; }
-.ngn-discount-badge {
-    background: #e65c00;
-    color: #fff;
-    font-size: 0.65rem;
-    font-weight: 800;
-    padding: 2px 7px;
-    border-radius: 10px;
-    margin-left: 5px;
-    vertical-align: middle;
-    letter-spacing: 0.3px;
-}
-</style>
 
-<!-- August 40% Discount Banner for Nigerian Law Firms -->
-<div class="aug-banner" id="aug-banner" style="display:none">
+<!-- ── Hero ── -->
+<section class="page-hero">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="container hero-content py-5 text-center">
+    <div class="hero-eyebrow"><i class="fas fa-tag"></i> Transparent Pricing</div>
+    <h1 class="hero-title mb-4">Simple Plans That<br>Scale with <span>Your Practice</span></h1>
+    <p class="hero-sub mx-auto mb-0" style="max-width:600px;">Start free. No credit card required. No hidden fees. Upgrade as your firm grows — or get the White-Label license and own the entire platform forever.</p>
+  </div>
+</section>
+
+<!-- ── August Banner ── -->
+<div class="container mt-4">
+  <div class="aug-banner" id="aug-banner">
     <div style="font-size:2rem">🎉</div>
     <div style="flex:1">
-        <strong>August Special — 40% Off for Nigerian Law Firms!</strong>
-        All subscription plans are 40% off throughout August. Prices below update automatically for Nigerian visitors.
+      <strong>August Special — 40% Off for Nigerian Law Firms!</strong>
+      All subscription plans are 40% off throughout August. Prices below update automatically for Nigerian visitors.
     </div>
     <div class="aug-pill">40% OFF</div>
+  </div>
 </div>
 
-<style>
-/* Clean Pricing Page Styling */
-.pricing-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 40px 20px;
-}
+<!-- ── Plans ── -->
+<section style="background:#f0f4f8;padding:4rem 0 5rem;">
+  <div class="container">
+    <div class="row g-4 align-items-stretch">
 
-.pricing-header {
-    text-align: center;
-    margin-bottom: 50px;
-}
-
-.pricing-header h1 {
-    font-size: 42px;
-    font-weight: 700;
-    color: #24292e;
-    margin-bottom: 16px;
-}
-
-.pricing-header p {
-    font-size: 20px;
-    color: #6a737d;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.pricing-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 30px;
-    margin-bottom: 50px;
-}
-
-.pricing-card {
-    background: #ffffff;
-    border: 2px solid #e1e4e8;
-    border-radius: 12px;
-    padding: 32px 24px;
-    text-align: center;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.pricing-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
-    border-color: #0366d6;
-}
-
-.pricing-card.featured {
-    border-color: #28a745;
-    background: linear-gradient(135deg, #ffffff, #f8fff9);
-    transform: scale(1.05);
-}
-
-.pricing-card.featured:hover {
-    transform: scale(1.05) translateY(-4px);
-}
-
-.pricing-badge {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    background: #28a745;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 16px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.pricing-badge.popular {
-    background: #28a745;
-}
-
-.pricing-badge.save {
-    background: #fd7e14;
-}
-
-.pricing-badge.best {
-    background: #d73a49;
-}
-
-.plan-name {
-    font-size: 24px;
-    font-weight: 700;
-    color: #24292e;
-    margin-bottom: 8px;
-}
-
-.plan-price {
-    font-size: 48px;
-    font-weight: 800;
-    color: #0366d6;
-    margin-bottom: 8px;
-}
-
-.plan-price .currency {
-    font-size: 24px;
-    vertical-align: top;
-}
-
-.plan-period {
-    font-size: 16px;
-    color: #6a737d;
-    margin-bottom: 24px;
-}
-
-.plan-features {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 32px 0;
-    text-align: left;
-}
-
-.plan-features li {
-    padding: 8px 0;
-    font-size: 16px;
-    color: #24292e;
-    display: flex;
-    align-items: center;
-}
-
-.plan-features li i {
-    color: #28a745;
-    margin-right: 12px;
-    font-size: 16px;
-}
-
-.plan-button {
-    width: 100%;
-    padding: 16px 24px;
-    font-size: 16px;
-    font-weight: 600;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    display: inline-block;
-}
-
-.plan-button.primary {
-    background: #0366d6;
-    color: white;
-}
-
-.plan-button.primary:hover {
-    background: #0550ae;
-    color: white;
-    text-decoration: none;
-}
-
-.plan-button.secondary {
-    background: #f6f8fa;
-    color: #24292e;
-    border: 2px solid #e1e4e8;
-}
-
-.plan-button.secondary:hover {
-    background: #e1e4e8;
-    color: #24292e;
-    text-decoration: none;
-}
-
-.pricing-footer {
-    text-align: center;
-    padding: 40px 20px;
-    background: #f6f8fa;
-    border-radius: 12px;
-}
-
-.pricing-footer h3 {
-    font-size: 24px;
-    font-weight: 600;
-    color: #24292e;
-    margin-bottom: 16px;
-}
-
-.pricing-footer p {
-    font-size: 16px;
-    color: #6a737d;
-    margin-bottom: 24px;
-}
-
-.contact-button {
-    background: #6f42c1;
-    color: white;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-block;
-    transition: all 0.3s ease;
-}
-
-.contact-button:hover {
-    background: #5a32a3;
-    color: white;
-    text-decoration: none;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-    .pricing-header h1 {
-        font-size: 32px;
-    }
-    
-    .pricing-header p {
-        font-size: 18px;
-    }
-    
-    .pricing-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-    
-    .pricing-card.featured {
-        transform: none;
-    }
-    
-    .pricing-card.featured:hover {
-        transform: translateY(-4px);
-    }
-}
-</style>
-
-<div class="pricing-container">
-    <!-- Header -->
-    <div class="pricing-header">
-        <h1>Choose Your LAWCOLAB Plan</h1>
-        <p>Select the perfect plan for your law firm and start managing cases efficiently</p>
-    </div>
-
-    <!-- Pricing Grid -->
-    <div class="pricing-grid">
-        <!-- Trial Plan -->
-        <div class="pricing-card featured">
-            <div class="pricing-badge popular">Most Popular</div>
-            <div class="plan-name">30-Day Trial</div>
-            <div class="plan-price">FREE</div>
-            <div class="plan-period">Perfect for testing all features</div>
-            <ul class="plan-features">
-                <li><i class="fas fa-check"></i> Up to 3 users (test with your team)</li>
-                <li><i class="fas fa-check"></i> 5 active cases maximum</li>
-                <li><i class="fas fa-check"></i> 500MB storage included</li>
-                <li><i class="fas fa-check"></i> Client portal access</li>
-                <li><i class="fas fa-check"></i> Document management</li>
-                <li><i class="fas fa-check"></i> Support chat</li>
-            </ul>
-            <a href="{{ url_for('auth.signup') }}" class="plan-button primary">
-                🆓 Start Free Trial
-            </a>
+      <!-- Free Trial -->
+      <div class="col-lg-4 col-md-6 reveal delay-1">
+        <div class="pricing-card featured popular-glow h-100">
+          <div class="pricing-badge badge-green"><i class="fas fa-star me-1"></i>Most Popular</div>
+          <div class="plan-icon" style="background:#dcfce7;color:#16a34a;"><i class="fas fa-gift"></i></div>
+          <div class="plan-name">30-Day Free Trial</div>
+          <div class="plan-tagline">Perfect for testing everything</div>
+          <div class="plan-price" style="color:#16a34a;">FREE</div>
+          <div class="plan-period">No credit card · Full access</div>
+          <hr class="plan-divider">
+          <ul class="plan-features">
+            <li><i class="fas fa-check"></i> Up to 3 team members</li>
+            <li><i class="fas fa-check"></i> 5 active cases</li>
+            <li><i class="fas fa-check"></i> 500MB secure storage</li>
+            <li><i class="fas fa-check"></i> Client portal access</li>
+            <li><i class="fas fa-check"></i> Document management</li>
+            <li><i class="fas fa-check"></i> Live support chat</li>
+          </ul>
+          <a href="{{ url_for('auth.signup') }}" class="plan-btn plan-btn-free">🚀 Start Free Trial</a>
         </div>
+      </div>
 
-        <!-- Starter Plan -->
-        <div class="pricing-card">
-            <div class="plan-name">Starter Plan</div>
-            <div class="plan-price" id="price-starter">
-                <span class="currency" id="sym-starter">$</span><span id="val-starter">{{ settings.starter_price or 39 }}</span>
-                <del class="ngn-price" id="orig-starter" style="font-size:0.55em;color:#aaa;display:none"></del>
-            </div>
-            <div class="plan-period">1 month • Essential features</div>
-            <ul class="plan-features">
-                <li><i class="fas fa-check"></i> Up to 5 users + unlimited clients</li>
-                <li><i class="fas fa-check"></i> Complete case & project management</li>
-                <li><i class="fas fa-check"></i> Email & chat support</li>
-                <li><i class="fas fa-check"></i> 20GB secure storage</li>
-                <li><i class="fas fa-check"></i> Basic team collaboration</li>
-                <li><i class="fas fa-check"></i> Client portal access</li>
-            </ul>
-            <a href="javascript:void(0)" onclick="selectPlan('starter', document.getElementById('val-starter').textContent)" class="plan-button secondary">
-                Choose Starter
-            </a>
+      <!-- Starter -->
+      <div class="col-lg-4 col-md-6 reveal delay-2">
+        <div class="pricing-card h-100">
+          <div class="plan-icon" style="background:#eff6ff;color:#1d4ed8;"><i class="fas fa-seedling"></i></div>
+          <div class="plan-name">Starter Plan</div>
+          <div class="plan-tagline">Essential tools for solo & small firms</div>
+          <div class="plan-price">
+            <sup id="sym-starter">$</sup><span id="val-starter">{{ settings.starter_price|int if settings else 39 }}</span>
+            <del id="orig-starter" style="font-size:.5em;color:#aaa;display:none;margin-left:4px;"></del>
+          </div>
+          <div class="plan-period">per month · billed monthly</div>
+          <hr class="plan-divider">
+          <ul class="plan-features">
+            <li><i class="fas fa-check"></i> Up to 5 users + unlimited clients</li>
+            <li><i class="fas fa-check"></i> Complete case management</li>
+            <li><i class="fas fa-check"></i> Email & chat support</li>
+            <li><i class="fas fa-check"></i> 20GB secure storage</li>
+            <li><i class="fas fa-check"></i> Client portal access</li>
+            <li><i class="fas fa-check"></i> Billing & invoices</li>
+          </ul>
+          <button onclick="selectPlan('starter', document.getElementById('val-starter').textContent)" class="plan-btn plan-btn-outline">Choose Starter</button>
         </div>
+      </div>
 
-        <!-- Growth Plan -->
-        <div class="pricing-card">
-            <div class="pricing-badge save">Most Popular</div>
-            <div class="plan-name">Growth Plan</div>
-            <div class="plan-price" id="price-growth">
-                <span class="currency" id="sym-growth">$</span><span id="val-growth">{{ settings.growth_price or 90 }}</span>
-                <del class="ngn-price" id="orig-growth" style="font-size:0.55em;color:#aaa;display:none"></del>
-            </div>
-            <div class="plan-period">3 months • Advanced features</div>
-            <ul class="plan-features">
-                <li><i class="fas fa-check"></i> Up to 20 users + unlimited clients</li>
-                <li><i class="fas fa-check"></i> Advanced team collaboration</li>
-                <li><i class="fas fa-check"></i> Priority support & training</li>
-                <li><i class="fas fa-check"></i> 100GB secure storage</li>
-                <li><i class="fas fa-check"></i> Advanced analytics & reporting</li>
-                <li><i class="fas fa-check"></i> All integrations + API access</li>
-            </ul>
-            <a href="javascript:void(0)" onclick="selectPlan('growth', document.getElementById('val-growth').textContent)" class="plan-button secondary">
-                Choose Growth
-            </a>
+      <!-- Growth -->
+      <div class="col-lg-4 col-md-6 reveal delay-3">
+        <div class="pricing-card h-100" style="border-color:#d97706;background:linear-gradient(160deg,#fff 60%,#fffbf0);">
+          <div class="pricing-badge badge-orange"><i class="fas fa-fire me-1"></i>Best Value</div>
+          <div class="plan-icon" style="background:#fff7ed;color:#c2410c;"><i class="fas fa-chart-line"></i></div>
+          <div class="plan-name">Growth Plan</div>
+          <div class="plan-tagline">Advanced tools for growing firms</div>
+          <div class="plan-price">
+            <sup id="sym-growth">$</sup><span id="val-growth">{{ settings.growth_price|int if settings else 90 }}</span>
+            <del id="orig-growth" style="font-size:.5em;color:#aaa;display:none;margin-left:4px;"></del>
+          </div>
+          <div class="plan-period">per quarter · 3-month access</div>
+          <hr class="plan-divider">
+          <ul class="plan-features">
+            <li><i class="fas fa-check"></i> Up to 20 users + unlimited clients</li>
+            <li><i class="fas fa-check"></i> Advanced team collaboration</li>
+            <li><i class="fas fa-check"></i> Priority support & training</li>
+            <li><i class="fas fa-check"></i> 100GB secure storage</li>
+            <li><i class="fas fa-check"></i> Advanced analytics & reports</li>
+            <li><i class="fas fa-check"></i> All integrations + API access</li>
+          </ul>
+          <button onclick="selectPlan('growth', document.getElementById('val-growth').textContent)" class="plan-btn plan-btn-primary">Choose Growth</button>
         </div>
+      </div>
 
-        <!-- Enterprise Plan -->
-        <div class="pricing-card">
-            <div class="pricing-badge">Premium</div>
-            <div class="plan-name">Enterprise Plan</div>
-            <div class="plan-price" id="price-enterprise">
-                <span class="currency" id="sym-enterprise">$</span><span id="val-enterprise">{{ settings.enterprise_price or 350 }}</span>
-                <del class="ngn-price" id="orig-enterprise" style="font-size:0.55em;color:#aaa;display:none"></del>
-            </div>
-            <div class="plan-period">1 year • Premium features</div>
-            <ul class="plan-features">
-                <li><i class="fas fa-check"></i> Everything in Growth + unlimited users</li>
-                <li><i class="fas fa-check"></i> Multi-office & branch management</li>
-                <li><i class="fas fa-check"></i> White-label client portal</li>
-                <li><i class="fas fa-check"></i> Custom integrations & SSO</li>
-                <li><i class="fas fa-check"></i> 24/7 priority support & training</li>
-                <li><i class="fas fa-check"></i> 500GB storage + daily backups</li>
-            </ul>
-            <a href="javascript:void(0)" onclick="selectPlan('enterprise', document.getElementById('val-enterprise').textContent)" class="plan-button secondary">
-                Choose Enterprise
-            </a>
+      <!-- Enterprise -->
+      <div class="col-lg-4 col-md-6 reveal delay-1">
+        <div class="pricing-card enterprise-card h-100">
+          <div class="pricing-badge badge-navy"><i class="fas fa-crown me-1"></i>Premium</div>
+          <div class="plan-icon" style="background:#eef2ff;color:#3730a3;"><i class="fas fa-building"></i></div>
+          <div class="plan-name">Enterprise Plan</div>
+          <div class="plan-tagline">Full power for large law firms</div>
+          <div class="plan-price">
+            <sup id="sym-enterprise">$</sup><span id="val-enterprise">{{ settings.enterprise_price|int if settings else 350 }}</span>
+            <del id="orig-enterprise" style="font-size:.5em;color:#aaa;display:none;margin-left:4px;"></del>
+          </div>
+          <div class="plan-period">per year · annual access</div>
+          <hr class="plan-divider">
+          <ul class="plan-features">
+            <li><i class="fas fa-check"></i> Everything in Growth</li>
+            <li><i class="fas fa-check"></i> Unlimited users</li>
+            <li><i class="fas fa-check"></i> Multi-office & branch management</li>
+            <li><i class="fas fa-check"></i> White-label client portal</li>
+            <li><i class="fas fa-check"></i> Custom integrations & SSO</li>
+            <li><i class="fas fa-check"></i> 500GB storage + daily backups</li>
+            <li><i class="fas fa-check"></i> 24/7 priority support</li>
+          </ul>
+          <button onclick="selectPlan('enterprise', document.getElementById('val-enterprise').textContent)" class="plan-btn plan-btn-primary">Choose Enterprise</button>
         </div>
+      </div>
 
-        <!-- White-Label SaaS License -->
-        <div class="pricing-card featured">
-            <div class="pricing-badge best">White-Label License</div>
-            <div class="plan-name">White-Label SaaS Forever License</div>
-            <div class="plan-price" id="price-founders">
-                <span class="currency" id="sym-founders">$</span><span id="val-founders">{{ settings.founders_price or 1745 }}</span>
-                <del class="ngn-price" id="orig-founders" style="font-size:0.55em;color:#aaa;display:none"></del>
-            </div>
-            <div class="plan-period">one-time forever • 6-Month Setup & Support</div>
-            <ul class="plan-features">
-                <li><i class="fas fa-rocket text-warning"></i> <strong>🏷️ COMPLETE WHITE-LABEL SaaS LICENSE</strong></li>
-                <li><i class="fas fa-rocket text-warning"></i> <strong>💰 Sell as YOUR OWN SaaS business forever</strong></li>
-                <li><i class="fas fa-rocket text-warning"></i> <strong>🏠 Self-host & control everything (your servers)</strong></li>
-                <li><i class="fas fa-rocket text-warning"></i> <strong>🚀 6-month white-glove setup & support included</strong></li>
-                <li><i class="fas fa-rocket text-warning"></i> <strong>⚡ Get ALL future updates & new features</strong></li>
-                <li><i class="fas fa-rocket text-warning"></i> <strong>🎯 Request new features on flexible pricing</strong></li>
-                <li><i class="fas fa-rocket text-warning"></i> <strong>🔥 Never pay licensing fees again</strong></li>
-            </ul>
-            <a href="/sales/popup" class="plan-button primary" id="btn-founders">
+      <!-- White-Label -->
+      <div class="col-lg-8 col-md-12 reveal delay-2">
+        <div class="pricing-card whitelabel-card h-100" style="display:flex;flex-direction:column;">
+          <div class="pricing-badge badge-gold"><i class="fas fa-infinity me-1"></i>Lifetime License</div>
+          <div class="row g-0 h-100 align-items-center">
+            <div class="col-lg-7 pe-lg-4">
+              <div class="plan-icon" style="background:rgba(255,215,0,.2);color:#FFD700;"><i class="fas fa-rocket"></i></div>
+              <div class="plan-name plan-name-light">White-Label SaaS<br>Forever License</div>
+              <div class="plan-tagline plan-tagline-light">Own the entire platform — once, forever</div>
+              <div class="plan-price plan-price-light">
+                <sup id="sym-founders" style="color:#FFD700;">$</sup><span id="val-founders">{{ settings.founders_price|int if settings else 1745 }}</span>
+                <del id="orig-founders" style="font-size:.5em;color:rgba(255,255,255,.4);display:none;margin-left:4px;"></del>
+              </div>
+              <div class="plan-period plan-period-light">one-time payment · own it forever</div>
+              <a href="/sales/popup" class="plan-btn plan-btn-gold mt-2" id="btn-founders">
                 👑 Secure White-Label License
-            </a>
+              </a>
+            </div>
+            <div class="col-lg-5 mt-4 mt-lg-0">
+              <hr class="plan-divider plan-divider-light d-lg-none">
+              <ul class="plan-features plan-features-light">
+                <li><i class="fas fa-check-circle"></i> <strong>Complete White-Label SaaS license</strong></li>
+                <li><i class="fas fa-check-circle"></i> <strong>Sell as YOUR OWN SaaS business forever</strong></li>
+                <li><i class="fas fa-check-circle"></i> <strong>Self-host on your own servers</strong></li>
+                <li><i class="fas fa-check-circle"></i> <strong>6-month white-glove setup &amp; support</strong></li>
+                <li><i class="fas fa-check-circle"></i> <strong>All future updates included</strong></li>
+                <li><i class="fas fa-check-circle"></i> <strong>Request custom features on flexible pricing</strong></li>
+                <li><i class="fas fa-check-circle"></i> <strong>Zero recurring licensing fees — ever</strong></li>
+              </ul>
+            </div>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <!-- Footer -->
-    <div class="pricing-footer">
-        <h3>Need a Custom Solution?</h3>
-        <p>We offer custom enterprise solutions for large law firms with specific requirements.</p>
-        <a href="{{ url_for('enhanced_chat.support_chat') }}" class="contact-button">
-            <i class="fas fa-envelope me-2"></i>Contact Sales
-        </a>
     </div>
-</div>
+  </div>
+</section>
 
+<!-- ── Feature Comparison ── -->
+<section style="background:#fff;padding:4rem 0;">
+  <div class="container">
+    <div class="text-center mb-4 reveal">
+      <div class="section-eyebrow"><i class="fas fa-table me-1"></i> Compare</div>
+      <h2 class="section-title">What's Included in Each Plan</h2>
+    </div>
+    <div class="table-responsive reveal">
+      <table class="table" style="font-size:.88rem;">
+        <thead>
+          <tr>
+            <th style="width:35%;">Feature</th>
+            <th class="text-center">Free Trial</th>
+            <th class="text-center">Starter</th>
+            <th class="text-center">Growth</th>
+            <th class="text-center">Enterprise</th>
+            <th class="text-center" style="background:#0d1b4b;color:#FFD700;border-radius:8px 8px 0 0;">White-Label</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% set rows = [
+            ('Case Management',        '✓','✓','✓','✓','✓'),
+            ('Client Portal',          '✓','✓','✓','✓','✓'),
+            ('Team Chat & Messaging',  '✓','✓','✓','✓','✓'),
+            ('Document Management',    '✓','✓','✓','✓','✓'),
+            ('Billing & Invoices',     '—','✓','✓','✓','✓'),
+            ('Court Calendar',         '—','✓','✓','✓','✓'),
+            ('Analytics & Reports',    '—','Basic','Advanced','Advanced','Full'),
+            ('Users',                  '3','5','20','Unlimited','Unlimited'),
+            ('Storage',                '500MB','20GB','100GB','500GB','Unlimited'),
+            ('Priority Support',       '—','—','✓','✓','✓'),
+            ('Multi-office',           '—','—','—','✓','✓'),
+            ('White-Label Branding',   '—','—','—','—','✓'),
+            ('Source Code Rights',     '—','—','—','—','✓'),
+          ] %}
+          {% for row in rows %}
+          <tr>
+            <td class="fw-500">{{ row[0] }}</td>
+            {% for cell in row[1:] %}
+            <td class="text-center" style="color:{{ '#16a34a' if cell == '✓' else '#dc2626' if cell == '—' else '#0d1b4b' }};font-weight:{{ '700' if cell in ('✓','—') else '600' }};">{{ cell }}</td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ── FAQ ── -->
+<section style="background:#f0f4f8;padding:4rem 0;">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="text-center mb-4 reveal">
+          <div class="section-eyebrow"><i class="fas fa-question-circle me-1"></i> FAQ</div>
+          <h2 class="section-title">Common Questions</h2>
+        </div>
+        {% for q,a in [
+          ('Can I upgrade or downgrade my plan?','Yes — you can switch plans at any time from your billing dashboard. Upgrades are prorated instantly.'),
+          ('Is there a setup or onboarding fee?','No. All plans include free onboarding, data migration assistance, and a comprehensive training session.'),
+          ('What payment methods do you accept?','We accept bank transfers, Paystack (Nigeria), Stripe (international), and manual payment for enterprise deals.'),
+          ('What happens after the 30-day free trial?','Your account stays active but pauses new case creation until you select a plan. All your existing data is safe.'),
+          ('Does the White-Label include the source code?','Yes — you receive full source rights, deployment guides, and 6-month support to get your SaaS business live.'),
+          ('Are there discounts for NGOs or legal aid firms?','Yes — contact us directly for special pricing for non-profit and pro-bono legal organisations.'),
+        ] %}
+        <div class="faq-item reveal">
+          <button class="faq-btn" onclick="toggleFaq(this)">
+            {{ q }} <i class="fas fa-plus faq-icon"></i>
+          </button>
+          <div class="faq-body">{{ a }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Custom / Enterprise footer ── -->
+<section style="background:#fff;padding:3rem 0;">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-7 text-center reveal">
+        <div style="background:#f0f4f8;border-radius:20px;padding:3rem 2rem;border:1.5px solid #e8eef4;">
+          <i class="fas fa-building fa-2x" style="color:#0d1b4b;margin-bottom:1rem;display:block;"></i>
+          <h3 style="font-family:'Playfair Display',serif;color:#0d1b4b;font-weight:800;">Need a Custom Solution?</h3>
+          <p style="color:#64748b;margin:.75rem 0 1.5rem;">Large law firms, bar associations, or legal publishers? We offer custom enterprise solutions with bespoke features, volume pricing, and dedicated infrastructure.</p>
+          <a href="{{ url_for('contact') }}" class="btn btn-primary btn-lg" style="border-radius:12px;padding:.85rem 2.5rem;font-weight:700;">
+            <i class="fas fa-envelope me-2"></i>Contact Sales Team
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="cta-section lc-dark">
+  <div class="container text-center">
+    <div class="reveal">
+      <h2 style="font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:800;color:#fff;margin-bottom:1rem;">Start Free Today</h2>
+      <p style="color:rgba(255,255,255,.82);font-size:1.05rem;max-width:520px;margin:0 auto 2rem;">No credit card. No commitment. Full platform access for 30 days — then choose the plan that fits.</p>
+      <a href="{{ url_for('auth.signup') }}" class="btn btn-warning btn-lg fw-bold px-5" style="border-radius:12px;padding:.9rem 2.5rem;font-size:1.05rem;">
+        <i class="fas fa-rocket me-2"></i>Start Free Trial
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
 <script>
-// Fetch geo-aware pricing from server and update the pricing cards
+// Scroll reveal
+const io = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('visible'); }), { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+// FAQ toggle
+function toggleFaq(btn) {
+  const item = btn.closest('.faq-item');
+  const wasOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+  if (!wasOpen) item.classList.add('open');
+}
+
+// Geo-aware pricing (NGN/August discount — same as before)
 (function () {
-    function fmt(n) {
-        return new Intl.NumberFormat().format(Math.round(n));
-    }
-
-    fetch('/sales/api/currency-settings')
-        .then(r => r.json())
-        .then(data => {
-            if (data.currency !== 'NGN') return; // USD — defaults already rendered server-side
-
-            const sym   = data.symbol || '₦';
-            const prices = data.prices;       // already discounted if august
-            const orig   = data.ngn;          // full NGN without discount
-            const isAug  = data.august_discount;
-
-            const plans = ['starter', 'growth', 'enterprise', 'founders'];
-            plans.forEach(p => {
-                const symEl  = document.getElementById('sym-' + p);
-                const valEl  = document.getElementById('val-' + p);
-                const origEl = document.getElementById('orig-' + p);
-                if (!symEl || !valEl) return;
-
-                symEl.textContent = sym;
-                valEl.textContent = fmt(prices[p]);
-
-                if (isAug && origEl && orig[p] !== prices[p]) {
-                    origEl.textContent = sym + fmt(orig[p]);
-                    origEl.style.display = 'inline';
-                    // Add discount badge next to value
-                    if (!valEl.nextElementSibling || !valEl.nextElementSibling.classList.contains('ngn-discount-badge')) {
-                        const badge = document.createElement('span');
-                        badge.className = 'ngn-discount-badge';
-                        badge.textContent = '40% OFF';
-                        valEl.after(badge);
-                    }
-                }
-            });
-
-            // Show August banner
-            if (isAug) {
-                const banner = document.getElementById('aug-banner');
-                if (banner) banner.style.display = 'flex';
-            }
-
-            // Update founders button text
-            const btnF = document.getElementById('btn-founders');
-            if (btnF && prices.founders) {
-                btnF.textContent = '👑 Secure White-Label License — ' + sym + fmt(prices.founders);
-            }
-        })
-        .catch(() => {}); // silently fail — server-side defaults remain
+  function fmt(n) { return new Intl.NumberFormat().format(Math.round(n)); }
+  fetch('/sales/api/currency-settings')
+    .then(r => r.json())
+    .then(data => {
+      if (data.currency !== 'NGN') return;
+      const sym = data.symbol || '₦', prices = data.prices, orig = data.ngn, isAug = data.august_discount;
+      ['starter','growth','enterprise','founders'].forEach(p => {
+        const se = document.getElementById('sym-'+p), ve = document.getElementById('val-'+p), oe = document.getElementById('orig-'+p);
+        if (!se || !ve) return;
+        se.textContent = sym; ve.textContent = fmt(prices[p]);
+        if (isAug && oe && orig[p] !== prices[p]) {
+          oe.textContent = sym + fmt(orig[p]); oe.style.display = 'inline';
+          if (!ve.nextElementSibling?.classList.contains('ngn-discount-badge')) {
+            const b = document.createElement('span'); b.className = 'ngn-discount-badge'; b.textContent = '40% OFF'; ve.after(b);
+          }
+        }
+      });
+      if (isAug) { const b = document.getElementById('aug-banner'); if(b) b.style.display='flex'; }
+      const bf = document.getElementById('btn-founders');
+      if (bf && prices.founders) bf.textContent = '👑 Secure White-Label License — ' + sym + fmt(prices.founders);
+    })
+    .catch(() => {});
 })();
 </script>
 {% endblock %}
