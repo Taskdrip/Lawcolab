@@ -1,158 +1,440 @@
 {% extends 'base.html' %}
-{% block title %}LAWCOLAB Blog — Legal Insights for African Law Firms{% endblock %}
-{% block meta_description %}Expert articles on legal technology, practice management, billing, and law firm growth in Nigeria and Africa. Updated weekly by the LAWCOLAB team.{% endblock %}
+{% block title %}LAWCOLAB Blog — Legal Insights, Tech & Growth for African Law Firms{% endblock %}
+{% block meta_description %}Expert articles on AI in legal practice, case management, billing, and law firm growth across Africa. Trending discussions the legal community is reading right now.{% endblock %}
 
 {% block structured_data %}
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Blog","name":"LAWCOLAB Blog","url":"https://lawcolab.com/blog","description":"Legal insights and practice management guides for Nigerian law firms.","publisher":{"@type":"Organization","name":"LAWCOLAB","url":"https://lawcolab.com"}}
+{"@context":"https://schema.org","@type":"Blog","name":"LAWCOLAB Blog","url":"https://lawcolab.com/blog","description":"Legal insights, technology, and practice management guides for African law firms.","publisher":{"@type":"Organization","name":"LAWCOLAB","url":"https://lawcolab.com","logo":{"@type":"ImageObject","url":"https://lawcolab.com/static/images/lawcolab-logo.png"}}}
 </script>
 {% endblock %}
 
 {% block additional_css %}
 <style>
+/* ── GOOGLE FONTS ── */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+
 /* ═══════════════════════════════════════════════════
-   HERO
+   VARIABLES
 ═══════════════════════════════════════════════════ */
-.blog-hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#060d24 0%,#0d1b4b 55%,#172a72 100%);padding:4rem 0 3rem;}
-.blog-hero::before{content:'';position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1600&q=60') center/cover;opacity:.08;}
+:root{
+  --navy:#060d24;--navy2:#0d1b4b;--navy3:#172a72;
+  --gold:#FFD700;--gold2:#e6c200;
+  --purple:#7c3aed;--pink:#db2777;
+  --green:#10b981;--amber:#f59e0b;
+  --white:#ffffff;
+  --text:#1e2533;--text2:#5a6474;--text3:#9aa3b0;
+  --border:#e2e8f0;--surface:#f8f9fd;
+  --shadow-sm:0 2px 12px rgba(0,0,0,.07);
+  --shadow-md:0 8px 32px rgba(0,0,0,.12);
+  --shadow-lg:0 16px 60px rgba(0,0,0,.18);
+  --radius-sm:10px;--radius-md:16px;--radius-lg:24px;
+}
+
+/* ═══════════════════════════════════════════════════
+   HERO — dramatic, marketing-grade
+═══════════════════════════════════════════════════ */
+.blog-hero{
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 45%,#1a0e3d 100%);
+  padding:5rem 0 4rem;
+}
+.blog-hero::before{
+  content:'';position:absolute;inset:0;
+  background:url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1800&q=50') center/cover;
+  opacity:.05;
+}
+/* Animated gradient orbs */
+.hero-orb{position:absolute;border-radius:50%;pointer-events:none;animation:orbFloat 8s ease-in-out infinite;}
+.hero-orb-1{width:500px;height:500px;background:radial-gradient(circle,rgba(124,58,237,.22) 0%,transparent 70%);top:-120px;right:-100px;animation-delay:0s;}
+.hero-orb-2{width:350px;height:350px;background:radial-gradient(circle,rgba(255,215,0,.12) 0%,transparent 70%);bottom:-80px;left:-80px;animation-delay:3s;}
+.hero-orb-3{width:250px;height:250px;background:radial-gradient(circle,rgba(219,39,119,.12) 0%,transparent 70%);top:30%;right:25%;animation-delay:5s;}
+@keyframes orbFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-25px) scale(1.04)}}
+
 .blog-hero .container{position:relative;z-index:2;}
-.blog-hero h1{font-family:'Playfair Display',Georgia,serif;color:#fff;font-size:clamp(1.6rem,5vw,2.8rem);font-weight:800;line-height:1.15;margin-bottom:.4rem;}
-.hero-badge{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,215,0,.15);border:1px solid rgba(255,215,0,.35);color:#FFD700;font-size:.72rem;font-weight:600;padding:.28rem .75rem;border-radius:50px;margin-bottom:1rem;}
-.blog-hero p{color:rgba(255,255,255,.72);font-size:.95rem;max-width:480px;line-height:1.6;}
-.blog-search-wrap{background:#fff;border-radius:50px;display:flex;align-items:center;padding:.3rem .35rem .3rem 1rem;max-width:480px;box-shadow:0 4px 28px rgba(0,0,0,.3);margin-top:1.5rem;}
-.blog-search-wrap input{border:none;outline:none;font-size:.9rem;flex:1;background:transparent;color:#0d1b4b;min-width:0;}
-.blog-search-wrap button{background:#FFD700;color:#0d1b4b;border:none;border-radius:50px;padding:.4rem 1rem;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .15s;flex-shrink:0;}
-.blog-search-wrap button:hover{background:#e6c200;}
+
+/* Live badge */
+.hero-live-badge{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:rgba(219,39,119,.18);border:1px solid rgba(219,39,119,.4);
+  color:#f9a8d4;font-size:.72rem;font-weight:700;padding:.32rem .9rem;
+  border-radius:50px;margin-bottom:1rem;letter-spacing:.04em;text-transform:uppercase;
+}
+.hero-live-dot{width:7px;height:7px;border-radius:50%;background:#db2777;animation:livePulse 1.5s ease-in-out infinite;}
+@keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+
+.blog-hero h1{
+  font-family:'Playfair Display',Georgia,serif;
+  color:#fff;font-size:clamp(2rem,5vw,3.4rem);font-weight:900;
+  line-height:1.1;margin-bottom:.65rem;letter-spacing:-.025em;
+}
+.blog-hero h1 .h1-accent{
+  background:linear-gradient(135deg,#FFD700,#f5a623);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.blog-hero-sub{
+  color:rgba(255,255,255,.72);font-size:1.05rem;max-width:520px;
+  line-height:1.7;margin-bottom:2rem;
+}
+
+/* Search bar */
+.hero-search-wrap{
+  background:rgba(255,255,255,.97);border-radius:60px;
+  display:flex;align-items:center;padding:.4rem .4rem .4rem 1.25rem;
+  max-width:520px;box-shadow:0 6px 40px rgba(0,0,0,.3),0 0 0 1px rgba(255,215,0,.25);
+}
+.hero-search-wrap input{
+  border:none;outline:none;font-size:.95rem;flex:1;background:transparent;
+  color:var(--navy2);min-width:0;font-family:'Inter',sans-serif;
+}
+.hero-search-wrap input::placeholder{color:#9aa3b0;}
+.hero-search-btn{
+  background:var(--gold);color:var(--navy2);border:none;
+  border-radius:50px;padding:.55rem 1.25rem;font-size:.85rem;font-weight:700;
+  cursor:pointer;white-space:nowrap;transition:all .18s;flex-shrink:0;
+  display:flex;align-items:center;gap:.4rem;
+}
+.hero-search-btn:hover{background:var(--gold2);transform:scale(1.03);}
+
+/* Stats strip */
+.hero-stats-strip{
+  display:flex;flex-wrap:wrap;gap:1.25rem;margin-top:2rem;align-items:center;
+}
+.hss-item{
+  display:flex;align-items:center;gap:.5rem;
+  color:rgba(255,255,255,.7);font-size:.82rem;
+}
+.hss-num{font-weight:800;color:#FFD700;font-size:1.05rem;}
+
+/* ── Hero Right — featured card (desktop) ── */
+.hero-featured-preview{
+  background:rgba(255,255,255,.06);backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.12);border-radius:var(--radius-lg);
+  overflow:hidden;height:100%;min-height:340px;
+  transition:transform .25s,box-shadow .25s;
+  text-decoration:none;display:block;
+}
+.hero-featured-preview:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+.hfp-img{height:195px;overflow:hidden;position:relative;}
+.hfp-img img{width:100%;height:100%;object-fit:cover;transition:transform .5s;}
+.hero-featured-preview:hover .hfp-img img{transform:scale(1.06);}
+.hfp-badge{
+  position:absolute;top:12px;left:12px;
+  background:var(--gold);color:var(--navy2);
+  font-size:.68rem;font-weight:800;padding:.22rem .65rem;
+  border-radius:50px;letter-spacing:.04em;text-transform:uppercase;
+}
+.hfp-trend{
+  position:absolute;top:12px;right:12px;
+  background:rgba(219,39,119,.9);color:#fff;
+  font-size:.68rem;font-weight:800;padding:.22rem .65rem;
+  border-radius:50px;letter-spacing:.04em;display:flex;align-items:center;gap:.3rem;
+}
+.hfp-body{padding:1.25rem;}
+.hfp-cat{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#a5b4fc;margin-bottom:.4rem;}
+.hfp-title{
+  font-family:'Playfair Display',Georgia,serif;
+  color:#fff;font-size:1.05rem;font-weight:700;line-height:1.3;margin-bottom:.5rem;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.hfp-meta{display:flex;gap:.65rem;flex-wrap:wrap;align-items:center;font-size:.74rem;color:rgba(255,255,255,.55);}
+.hfp-rt{background:rgba(255,215,0,.18);color:#FFD700;padding:.12rem .5rem;border-radius:50px;font-size:.68rem;font-weight:600;}
+
+/* ═══════════════════════════════════════════════════
+   TRENDING TICKER
+═══════════════════════════════════════════════════ */
+.trending-ticker{
+  background:linear-gradient(90deg,var(--navy2),var(--navy3));
+  border-bottom:1px solid rgba(255,215,0,.15);
+  padding:.6rem 0;overflow:hidden;
+}
+.ticker-label{
+  display:inline-flex;align-items:center;gap:.4rem;
+  background:var(--gold);color:var(--navy2);
+  font-size:.7rem;font-weight:800;padding:.28rem .75rem;
+  border-radius:50px;text-transform:uppercase;letter-spacing:.05em;
+  white-space:nowrap;flex-shrink:0;margin-right:.75rem;
+}
+.ticker-track{
+  display:flex;gap:2.5rem;animation:tickerScroll 30s linear infinite;
+  white-space:nowrap;
+}
+.ticker-track:hover{animation-play-state:paused;}
+@keyframes tickerScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ticker-item{
+  display:inline-flex;align-items:center;gap:.5rem;
+  color:rgba(255,255,255,.72);font-size:.8rem;
+  text-decoration:none;transition:color .15s;flex-shrink:0;
+}
+.ticker-item:hover{color:var(--gold);}
+.ticker-dot{width:5px;height:5px;border-radius:50%;background:#FFD700;flex-shrink:0;}
+
+/* ═══════════════════════════════════════════════════
+   VIDEO SPOTLIGHT SECTION
+═══════════════════════════════════════════════════ */
+.video-spotlight{
+  background:linear-gradient(135deg,var(--navy) 0%,#1a0e3d 100%);
+  padding:3.5rem 0;position:relative;overflow:hidden;
+}
+.video-spotlight::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 70% 50%,rgba(124,58,237,.18) 0%,transparent 65%);
+}
+.vs-container{position:relative;z-index:1;}
+.vs-label{
+  display:inline-flex;align-items:center;gap:.45rem;
+  background:rgba(124,58,237,.2);border:1px solid rgba(124,58,237,.4);
+  color:#c4b5fd;font-size:.72rem;font-weight:700;padding:.3rem .85rem;
+  border-radius:50px;margin-bottom:.85rem;letter-spacing:.04em;text-transform:uppercase;
+}
+.vs-title{
+  font-family:'Playfair Display',Georgia,serif;
+  color:#fff;font-size:clamp(1.5rem,3vw,2.2rem);font-weight:800;
+  margin-bottom:.65rem;line-height:1.2;
+}
+.vs-title span{color:#FFD700;}
+.vs-desc{color:rgba(255,255,255,.72);font-size:.95rem;line-height:1.75;margin-bottom:1.5rem;max-width:420px;}
+.vs-cta-group{display:flex;flex-wrap:wrap;gap:.75rem;}
+.vs-cta-primary{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:var(--gold);color:var(--navy2);font-weight:700;
+  padding:.65rem 1.5rem;border-radius:50px;text-decoration:none;
+  font-size:.88rem;transition:all .18s;
+}
+.vs-cta-primary:hover{background:var(--gold2);transform:translateY(-2px);color:var(--navy2);}
+.vs-cta-secondary{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);
+  color:#fff;font-weight:600;padding:.65rem 1.5rem;
+  border-radius:50px;text-decoration:none;font-size:.88rem;transition:all .18s;
+}
+.vs-cta-secondary:hover{background:rgba(255,255,255,.18);color:#fff;}
+.vs-video-wrap{
+  border-radius:var(--radius-md);overflow:hidden;
+  box-shadow:0 12px 60px rgba(0,0,0,.5),0 0 0 1px rgba(255,215,0,.12);
+  position:relative;
+}
+.vs-video-wrap::before{
+  content:'';position:absolute;inset:0;z-index:1;
+  background:linear-gradient(to bottom,transparent 70%,rgba(0,0,0,.4) 100%);
+  pointer-events:none;
+}
+.vs-video-inner{position:relative;padding-top:56.25%;}
+.vs-video-inner iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none;}
+.vs-social-proof{
+  display:flex;flex-wrap:wrap;gap:1rem;margin-top:1.25rem;
+}
+.vsp-item{
+  display:flex;align-items:center;gap:.45rem;
+  color:rgba(255,255,255,.65);font-size:.8rem;
+}
+.vsp-item strong{color:#FFD700;}
 
 /* ═══════════════════════════════════════════════════
    FEATURED SLIDER
 ═══════════════════════════════════════════════════ */
-.featured-slider{position:relative;margin-bottom:2rem;border-radius:20px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.18);}
-.fs-viewport{overflow:hidden;border-radius:20px;}
+.featured-slider{position:relative;margin-bottom:2rem;border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-lg);}
+.fs-viewport{overflow:hidden;border-radius:var(--radius-md);}
 .fs-track{display:flex;transition:transform .55s cubic-bezier(.4,0,.2,1);will-change:transform;}
 .fs-slide{flex:0 0 100%;width:100%;}
-.featured-post{position:relative;min-height:380px;display:flex;align-items:flex-end;text-decoration:none;cursor:pointer;}
-@media(min-width:768px){.featured-post{min-height:440px;}}
-.fp-bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform 6s ease;}
-.fs-slide.active .fp-bg{transform:scale(1.03);}
-.fp-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(4,10,38,.97) 0%,rgba(4,10,38,.5) 50%,rgba(4,10,38,.1) 100%);}
-.fp-content{position:relative;z-index:2;padding:1.5rem 1.5rem 1.25rem;width:100%;}
-@media(min-width:576px){.fp-content{padding:2rem 2rem 1.75rem;}}
-.fp-badge{background:#FFD700;color:#0d1b4b;font-size:.67rem;font-weight:800;padding:.2rem .65rem;border-radius:50px;letter-spacing:.05em;display:inline-block;margin-bottom:.65rem;text-transform:uppercase;}
-.fp-title{font-family:'Playfair Display',Georgia,serif;color:#fff;font-size:clamp(1.15rem,3vw,1.9rem);font-weight:700;line-height:1.25;margin-bottom:.4rem;}
-.fp-excerpt{color:rgba(255,255,255,.7);font-size:.85rem;margin-bottom:.65rem;line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.fp-meta{color:rgba(255,255,255,.6);font-size:.77rem;display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;}
-.fp-rt{display:inline-flex;align-items:center;gap:.25rem;background:rgba(255,215,0,.18);color:#FFD700;padding:.13rem .5rem;border-radius:50px;font-size:.69rem;font-weight:600;}
-
+.featured-post{position:relative;min-height:400px;display:flex;align-items:flex-end;text-decoration:none;cursor:pointer;}
+@media(min-width:768px){.featured-post{min-height:460px;}}
+.fp-bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform 7s ease;}
+.fs-slide.active .fp-bg{transform:scale(1.04);}
+.fp-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(4,10,38,.98) 0%,rgba(4,10,38,.55) 50%,rgba(4,10,38,.12) 100%);}
+.fp-content{position:relative;z-index:2;padding:1.75rem 1.75rem 1.5rem;width:100%;}
+@media(min-width:576px){.fp-content{padding:2.25rem 2.25rem 2rem;}}
+.fp-badge{background:var(--gold);color:var(--navy2);font-size:.68rem;font-weight:800;padding:.22rem .7rem;border-radius:50px;letter-spacing:.05em;display:inline-block;margin-bottom:.5rem;text-transform:uppercase;}
+.fp-trending-badge{background:rgba(219,39,119,.9);color:#fff;font-size:.68rem;font-weight:800;padding:.22rem .7rem;border-radius:50px;letter-spacing:.04em;display:inline-flex;align-items:center;gap:.3rem;margin-left:.4rem;}
+.fp-title{font-family:'Playfair Display',Georgia,serif;color:#fff;font-size:clamp(1.2rem,3vw,2rem);font-weight:800;line-height:1.22;margin-bottom:.5rem;}
+.fp-excerpt{color:rgba(255,255,255,.72);font-size:.88rem;margin-bottom:.75rem;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.fp-meta{color:rgba(255,255,255,.6);font-size:.77rem;display:flex;gap:.85rem;flex-wrap:wrap;align-items:center;}
+.fp-rt{display:inline-flex;align-items:center;gap:.25rem;background:rgba(255,215,0,.18);color:#FFD700;padding:.14rem .55rem;border-radius:50px;font-size:.69rem;font-weight:600;}
+.fp-read-btn{
+  display:inline-flex;align-items:center;gap:.35rem;
+  background:var(--gold);color:var(--navy2);font-weight:700;
+  padding:.4rem 1rem;border-radius:50px;font-size:.78rem;
+  margin-top:.75rem;transition:all .18s;
+}
+.featured-post:hover .fp-read-btn{background:#fff;}
 /* Slider controls */
-.fs-prev,.fs-next{position:absolute;top:50%;transform:translateY(-50%);z-index:10;width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,.15);backdrop-filter:blur(6px);color:#fff;font-size:.95rem;cursor:pointer;transition:background .18s,transform .18s;display:flex;align-items:center;justify-content:center;}
-@media(min-width:576px){.fs-prev,.fs-next{width:46px;height:46px;}}
-.fs-prev{left:12px;}
-@media(min-width:576px){.fs-prev{left:18px;}}
-.fs-next{right:12px;}
-@media(min-width:576px){.fs-next{right:18px;}}
-.fs-prev:hover,.fs-next:hover{background:rgba(255,215,0,.35);transform:translateY(-50%) scale(1.08);}
-.fs-dots{position:absolute;bottom:14px;right:18px;display:flex;gap:6px;z-index:10;}
-@media(min-width:576px){.fs-dots{bottom:20px;right:24px;}}
-.fs-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.35);border:none;cursor:pointer;padding:0;transition:all .25s;}
-.fs-dot.active{background:#FFD700;width:22px;border-radius:4px;}
-.fs-counter{position:absolute;top:14px;right:16px;z-index:10;background:rgba(0,0,0,.4);backdrop-filter:blur(6px);color:rgba(255,255,255,.75);font-size:.72rem;font-weight:600;padding:.25rem .6rem;border-radius:50px;}
-@media(min-width:576px){.fs-counter{top:18px;right:20px;}}
+.fs-prev,.fs-next{position:absolute;top:50%;transform:translateY(-50%);z-index:10;width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,.14);backdrop-filter:blur(8px);color:#fff;font-size:.95rem;cursor:pointer;transition:background .18s,transform .18s;display:flex;align-items:center;justify-content:center;}
+.fs-prev{left:14px;}.fs-next{right:14px;}
+.fs-prev:hover,.fs-next:hover{background:rgba(255,215,0,.4);transform:translateY(-50%) scale(1.08);}
+.fs-dots{position:absolute;bottom:18px;right:20px;display:flex;gap:7px;z-index:10;}
+.fs-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.32);border:none;cursor:pointer;padding:0;transition:all .25s;}
+.fs-dot.active{background:var(--gold);width:24px;border-radius:4px;}
+.fs-counter{position:absolute;top:16px;right:18px;z-index:10;background:rgba(0,0,0,.38);backdrop-filter:blur(6px);color:rgba(255,255,255,.72);font-size:.72rem;font-weight:600;padding:.26rem .65rem;border-radius:50px;}
 
 /* ═══════════════════════════════════════════════════
-   ADVANCED FILTER BAR
+   FILTER BAR
 ═══════════════════════════════════════════════════ */
-.adv-filter{background:#fff;border-radius:16px;padding:0;box-shadow:0 2px 16px rgba(0,0,0,.08);margin-bottom:1.75rem;overflow:hidden;}
-.adv-filter-header{padding:.85rem 1.1rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:.5rem;user-select:none;}
+.adv-filter{background:#fff;border-radius:var(--radius-md);padding:0;box-shadow:var(--shadow-sm);margin-bottom:1.75rem;overflow:hidden;border:1.5px solid var(--border);}
+.adv-filter-header{padding:.9rem 1.15rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:.5rem;user-select:none;}
 .adv-filter-header .afh-left{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;flex:1;min-width:0;}
-.afh-title{font-size:.8rem;font-weight:700;color:#0d1b4b;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;flex-shrink:0;}
+.afh-title{font-size:.8rem;font-weight:700;color:var(--navy2);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;flex-shrink:0;}
 .active-pills{display:flex;flex-wrap:wrap;gap:.35rem;min-width:0;}
-.active-tag{display:inline-flex;align-items:center;gap:.3rem;background:#0d1b4b;color:#fff;font-size:.72rem;font-weight:600;padding:.2rem .55rem;border-radius:50px;}
-.active-tag a{color:rgba(255,255,255,.7);text-decoration:none;font-size:.65rem;margin-left:.1rem;}
-.active-tag a:hover{color:#FFD700;}
-.toggle-filter-btn{display:flex;align-items:center;gap:.3rem;background:#f0f4ff;border:none;color:#0d1b4b;font-size:.78rem;font-weight:600;padding:.3rem .75rem;border-radius:50px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:background .15s;}
+.active-tag{display:inline-flex;align-items:center;gap:.3rem;background:var(--navy2);color:#fff;font-size:.72rem;font-weight:600;padding:.2rem .55rem;border-radius:50px;}
+.active-tag a{color:rgba(255,255,255,.65);text-decoration:none;font-size:.65rem;margin-left:.1rem;}
+.active-tag a:hover{color:var(--gold);}
+.toggle-filter-btn{display:flex;align-items:center;gap:.3rem;background:#f0f4ff;border:none;color:var(--navy2);font-size:.78rem;font-weight:600;padding:.3rem .75rem;border-radius:50px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:background .15s;}
 .toggle-filter-btn:hover{background:#e0e8ff;}
 .toggle-filter-btn .tf-icon{transition:transform .25s;}
 .toggle-filter-btn.open .tf-icon{transform:rotate(180deg);}
-
-.adv-filter-body{display:none;border-top:1px solid #f0f2f7;padding:1rem 1.1rem 1.1rem;}
+.adv-filter-body{display:none;border-top:1px solid var(--surface);padding:1rem 1.15rem 1.15rem;}
 .adv-filter-body.show{display:block;}
 .filter-section{margin-bottom:1rem;}
 .filter-section:last-child{margin-bottom:0;}
-.fs-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9aa3b0;margin-bottom:.5rem;display:block;}
+.fs-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:.5rem;display:block;}
 .filter-pills-row{display:flex;flex-wrap:wrap;gap:.35rem;}
-.filter-pill{display:inline-flex;align-items:center;gap:.25rem;font-size:.78rem;font-weight:600;padding:.28rem .7rem;border-radius:50px;border:1.5px solid #e2e8f0;color:#5a6474;text-decoration:none;white-space:nowrap;transition:all .14s;cursor:pointer;background:#fff;}
-.filter-pill:hover{border-color:#0d1b4b;color:#0d1b4b;}
-.filter-pill.active{background:#0d1b4b;color:#fff;border-color:#0d1b4b;}
-.filter-pill.gold.active{background:#FFD700;color:#0d1b4b;border-color:#FFD700;}
+.filter-pill{display:inline-flex;align-items:center;gap:.25rem;font-size:.78rem;font-weight:600;padding:.28rem .7rem;border-radius:50px;border:1.5px solid var(--border);color:var(--text2);text-decoration:none;white-space:nowrap;transition:all .14s;cursor:pointer;background:#fff;}
+.filter-pill:hover{border-color:var(--navy2);color:var(--navy2);}
+.filter-pill.active{background:var(--navy2);color:#fff;border-color:var(--navy2);}
+.filter-pill.gold.active{background:var(--gold);color:var(--navy2);border-color:var(--gold);}
 .filter-pill.rt-quick.active{background:#10b981;color:#fff;border-color:#10b981;}
-.filter-pill.rt-medium.active{background:#f59e0b;color:#fff;border-color:#f59e0b;}
+.filter-pill.rt-medium.active{background:var(--amber);color:#fff;border-color:var(--amber);}
 .filter-pill.rt-long.active{background:#6366f1;color:#fff;border-color:#6366f1;}
 .filter-pill.tag-pill.active{background:#0ea5e9;color:#fff;border-color:#0ea5e9;}
-
-/* Sort + quick actions row */
 .filter-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;}
-.sort-select{font-size:.8rem;font-weight:600;padding:.3rem .7rem;border-radius:50px;border:1.5px solid #e2e8f0;color:#5a6474;background:#fff;cursor:pointer;outline:none;transition:border-color .15s;}
-.sort-select:focus{border-color:#0d1b4b;}
+.sort-select{font-size:.8rem;font-weight:600;padding:.3rem .7rem;border-radius:50px;border:1.5px solid var(--border);color:var(--text2);background:#fff;cursor:pointer;outline:none;transition:border-color .15s;}
+.sort-select:focus{border-color:var(--navy2);}
 .clear-all-link{display:inline-flex;align-items:center;gap:.3rem;font-size:.78rem;color:#e11d48;text-decoration:none;font-weight:600;padding:.28rem .65rem;border-radius:50px;border:1.5px solid #fecdd3;transition:all .15s;}
-.clear-all-link:hover{background:#fef2f2;color:#be123c;}
+.clear-all-link:hover{background:#fef2f2;}
 
 /* Results header */
 .results-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:.5rem;}
 .results-count{font-size:.83rem;color:#6c757d;}
 .view-toggle{display:flex;gap:.3rem;}
-.vt-btn{width:32px;height:32px;border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;color:#9aa3b0;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.8rem;transition:all .15s;}
-.vt-btn.active{background:#0d1b4b;color:#fff;border-color:#0d1b4b;}
+.vt-btn{width:32px;height:32px;border-radius:8px;border:1.5px solid var(--border);background:#fff;color:var(--text3);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.8rem;transition:all .15s;}
+.vt-btn.active{background:var(--navy2);color:#fff;border-color:var(--navy2);}
 
 /* ═══════════════════════════════════════════════════
-   BLOG CARDS — grid & list views
+   BLOG CARDS
 ═══════════════════════════════════════════════════ */
-.blog-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.07);transition:transform .2s,box-shadow .2s;height:100%;display:flex;flex-direction:column;text-decoration:none;color:inherit;}
-.blog-card:hover{transform:translateY(-5px);box-shadow:0 14px 40px rgba(0,0,0,.13);}
-.bc-img{aspect-ratio:16/9;overflow:hidden;flex-shrink:0;background:#e8ecf5;}
-.bc-img img{width:100%;height:100%;object-fit:cover;transition:transform .4s;}
-.blog-card:hover .bc-img img{transform:scale(1.06);}
-.bc-img-placeholder{background:linear-gradient(135deg,#0d1b4b,#1a2d6b);height:100%;display:flex;align-items:center;justify-content:center;color:#FFD700;font-size:2rem;}
-.bc-body{padding:1rem;flex:1;display:flex;flex-direction:column;}
-.bc-cat{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#0d1b4b;margin-bottom:.35rem;}
-.bc-title{font-family:'Playfair Display',Georgia,serif;font-size:.95rem;font-weight:700;line-height:1.35;color:#0d1b4b;margin-bottom:.35rem;flex:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.bc-excerpt{font-size:.78rem;color:#5a6474;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:.6rem;}
-.bc-meta{font-size:.7rem;color:#9aa3b0;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:auto;}
-.bc-rt{background:#f0f4ff;color:#0d1b4b;padding:.1rem .4rem;border-radius:50px;font-size:.67rem;font-weight:600;}
-
+.blog-card{
+  background:#fff;border-radius:var(--radius-md);overflow:hidden;
+  box-shadow:var(--shadow-sm);transition:transform .2s,box-shadow .2s;
+  height:100%;display:flex;flex-direction:column;
+  text-decoration:none;color:inherit;
+  border:1.5px solid transparent;
+}
+.blog-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);border-color:rgba(13,27,75,.06);}
+.bc-img{aspect-ratio:16/9;overflow:hidden;flex-shrink:0;background:#e8ecf5;position:relative;}
+.bc-img img{width:100%;height:100%;object-fit:cover;transition:transform .45s;}
+.blog-card:hover .bc-img img{transform:scale(1.07);}
+.bc-img-placeholder{background:linear-gradient(135deg,var(--navy2),var(--navy3));height:100%;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:2rem;}
+.bc-trending-badge{
+  position:absolute;top:8px;left:8px;
+  background:rgba(219,39,119,.9);color:#fff;
+  font-size:.63rem;font-weight:800;padding:.18rem .55rem;
+  border-radius:50px;display:flex;align-items:center;gap:.25rem;letter-spacing:.04em;
+}
+.bc-body{padding:1.1rem;flex:1;display:flex;flex-direction:column;}
+.bc-cat{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy2);margin-bottom:.35rem;}
+.bc-title{font-family:'Playfair Display',Georgia,serif;font-size:.95rem;font-weight:700;line-height:1.35;color:var(--navy2);margin-bottom:.35rem;flex:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.bc-excerpt{font-size:.78rem;color:var(--text2);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:.65rem;}
+.bc-meta{font-size:.7rem;color:var(--text3);display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:auto;}
+.bc-rt{background:#f0f4ff;color:var(--navy2);padding:.1rem .4rem;border-radius:50px;font-size:.67rem;font-weight:600;}
 /* List view override */
 .posts-list .blog-card-wrap{margin-bottom:.75rem;}
 .posts-list .blog-card{flex-direction:row;height:auto;}
 .posts-list .bc-img{aspect-ratio:unset;width:110px;height:90px;flex-shrink:0;border-radius:0;}
 @media(min-width:576px){.posts-list .bc-img{width:140px;height:110px;}}
-.posts-list .bc-body{padding:.75rem .85rem;}
+.posts-list .bc-body{padding:.75rem .9rem;}
 .posts-list .bc-excerpt{display:none;}
 @media(min-width:576px){.posts-list .bc-excerpt{display:-webkit-box;}}
 
 /* ═══════════════════════════════════════════════════
    SIDEBAR
 ═══════════════════════════════════════════════════ */
-.blog-sidebar .sc{background:#fff;border-radius:14px;padding:1.1rem;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:1.25rem;}
-.blog-sidebar .sc h5{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#0d1b4b;margin-bottom:.85rem;padding-bottom:.5rem;border-bottom:2px solid #FFD700;}
-.cat-pill{display:inline-flex;align-items:center;gap:.25rem;background:#f0f4ff;color:#0d1b4b;font-size:.74rem;font-weight:600;padding:.26rem .65rem;border-radius:50px;margin:.18rem;text-decoration:none;transition:all .14s;}
-.cat-pill:hover,.cat-pill.active{background:#0d1b4b;color:#fff;}
-.pop-item{display:flex;gap:.6rem;align-items:flex-start;padding:.5rem 0;border-bottom:1px solid #f0f2f7;text-decoration:none;}
+.blog-sidebar .sc{background:#fff;border-radius:var(--radius-md);padding:1.2rem;box-shadow:var(--shadow-sm);margin-bottom:1.25rem;border:1.5px solid var(--border);}
+.blog-sidebar .sc h5{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--navy2);margin-bottom:.9rem;padding-bottom:.5rem;border-bottom:2.5px solid var(--gold);}
+.cat-pill{display:inline-flex;align-items:center;gap:.25rem;background:#f0f4ff;color:var(--navy2);font-size:.74rem;font-weight:600;padding:.26rem .68rem;border-radius:50px;margin:.18rem;text-decoration:none;transition:all .14s;}
+.cat-pill:hover,.cat-pill.active{background:var(--navy2);color:#fff;}
+.pop-item{display:flex;gap:.65rem;align-items:flex-start;padding:.55rem 0;border-bottom:1px solid var(--surface);text-decoration:none;}
 .pop-item:last-child{border-bottom:none;}
-.pop-item img{width:54px;height:42px;object-fit:cover;border-radius:7px;flex-shrink:0;}
-.pop-item .pi-ph{width:54px;height:42px;border-radius:7px;flex-shrink:0;background:linear-gradient(135deg,#0d1b4b,#1a2d6b);display:flex;align-items:center;justify-content:center;color:#FFD700;font-size:.85rem;}
-.pop-title{font-size:.75rem;font-weight:600;color:#0d1b4b;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.pop-meta{font-size:.67rem;color:#9aa3b0;margin-top:.15rem;}
+.pop-item img{width:54px;height:42px;object-fit:cover;border-radius:8px;flex-shrink:0;}
+.pop-item .pi-ph{width:54px;height:42px;border-radius:8px;flex-shrink:0;background:linear-gradient(135deg,var(--navy2),var(--navy3));display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:.85rem;}
+.pop-title{font-size:.76rem;font-weight:600;color:var(--navy2);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.pop-meta{font-size:.67rem;color:var(--text3);margin-top:.15rem;}
+
+/* ── Newsletter card ── */
+.newsletter-card{
+  background:linear-gradient(135deg,var(--navy2),var(--navy3));
+  border-radius:var(--radius-md);padding:1.4rem;margin-bottom:1.25rem;
+  border:none;
+}
+.newsletter-card h5{color:var(--gold);border-bottom-color:rgba(255,215,0,.22) !important;font-size:.78rem !important;}
+.nl-input-group{display:flex;gap:.4rem;margin-top:.7rem;}
+.nl-input{flex:1;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;border-radius:8px;padding:.5rem .7rem;font-size:.8rem;outline:none;min-width:0;}
+.nl-input::placeholder{color:rgba(255,255,255,.45);}
+.nl-input:focus{border-color:var(--gold);}
+.nl-btn{background:var(--gold);color:var(--navy2);border:none;border-radius:8px;padding:.5rem .8rem;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .15s;}
+.nl-btn:hover{background:var(--gold2);}
+
+/* ── Share-to-social card ── */
+.social-traffic-card{
+  background:var(--surface);border-radius:var(--radius-md);padding:1.25rem;
+  margin-bottom:1.25rem;border:1.5px solid var(--border);
+}
+.social-traffic-card h5{font-size:.78rem !important;font-weight:700 !important;text-transform:uppercase;letter-spacing:.06em;color:var(--navy2) !important;margin-bottom:.7rem;padding-bottom:.5rem;border-bottom:2.5px solid var(--gold);}
+.stc-platform{
+  display:flex;align-items:center;gap:.7rem;padding:.5rem .4rem;
+  border-radius:10px;text-decoration:none;transition:background .15s;margin-bottom:.15rem;
+}
+.stc-platform:hover{background:#fff;}
+.stc-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.85rem;flex-shrink:0;}
+.stc-label{font-size:.82rem;font-weight:600;color:var(--text);}
+.stc-sub{font-size:.7rem;color:var(--text3);}
+
+/* ═══════════════════════════════════════════════════
+   CHANNEL DISTRIBUTION BANNER
+═══════════════════════════════════════════════════ */
+.distribution-banner{
+  background:linear-gradient(135deg,var(--navy) 0%,#1a0e3d 100%);
+  padding:3rem 0;position:relative;overflow:hidden;
+}
+.distribution-banner::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(255,215,0,.06) 0%,transparent 65%);
+}
+.db-inner{position:relative;z-index:1;}
+.db-title{
+  font-family:'Playfair Display',Georgia,serif;
+  color:#fff;font-size:clamp(1.3rem,3vw,1.9rem);font-weight:800;
+  margin-bottom:.5rem;text-align:center;
+}
+.db-sub{color:rgba(255,255,255,.62);font-size:.9rem;text-align:center;margin-bottom:2rem;}
+.db-channels{display:flex;flex-wrap:wrap;justify-content:center;gap:.85rem;}
+.db-channel{
+  display:inline-flex;align-items:center;gap:.55rem;
+  padding:.65rem 1.25rem;border-radius:50px;
+  font-size:.82rem;font-weight:700;color:#fff;text-decoration:none;
+  transition:transform .18s,box-shadow .18s;border:1.5px solid rgba(255,255,255,.12);
+}
+.db-channel:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.3);color:#fff;}
+.db-channel.tw{background:#1da1f2;}.db-channel.li{background:#0077b5;}
+.db-channel.wa{background:#25d366;}.db-channel.fb{background:#1877f2;}
+.db-channel.tg{background:#229ed9;}.db-channel.rd{background:#ff4500;}
+.db-channel.yt{background:#ff0000;}.db-channel.em{background:#6c757d;}
+.db-cta{text-align:center;margin-top:2rem;}
+.db-cta a{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:var(--gold);color:var(--navy2);font-weight:700;
+  padding:.75rem 2rem;border-radius:50px;text-decoration:none;font-size:.92rem;
+  transition:all .2s;
+}
+.db-cta a:hover{background:var(--gold2);transform:translateY(-2px);}
 
 /* ═══════════════════════════════════════════════════
    PAGINATION
 ═══════════════════════════════════════════════════ */
-.blog-pagination .page-link{border-radius:8px!important;margin:0 2px;color:#0d1b4b;border:1px solid #e2e8f0;font-size:.83rem;padding:.35rem .65rem;}
-.blog-pagination .page-item.active .page-link{background:#0d1b4b;border-color:#0d1b4b;color:#fff;}
+.blog-pagination .page-link{border-radius:8px !important;margin:0 2px;color:var(--navy2);border:1.5px solid var(--border);font-size:.83rem;padding:.38rem .7rem;}
+.blog-pagination .page-item.active .page-link{background:var(--navy2);border-color:var(--navy2);color:#fff;}
 
 /* ═══════════════════════════════════════════════════
    ANIMATIONS
 ═══════════════════════════════════════════════════ */
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 .ani{animation:fadeUp .42s ease both;}
 .ani:nth-child(1){animation-delay:.04s}.ani:nth-child(2){animation-delay:.09s}.ani:nth-child(3){animation-delay:.14s}
 .ani:nth-child(4){animation-delay:.18s}.ani:nth-child(5){animation-delay:.22s}.ani:nth-child(6){animation-delay:.26s}
@@ -162,91 +444,221 @@
    MOBILE
 ═══════════════════════════════════════════════════ */
 @media(max-width:767px){
-  .blog-hero{padding:2.5rem 0 2rem;}
-  .col-lg-8,.col-lg-4{padding-left:.75rem;padding-right:.75rem;}
-  .featured-post{min-height:280px;}
+  .blog-hero{padding:3rem 0 2.5rem;}
+  .featured-post{min-height:300px;}
   .blog-sidebar{margin-top:.5rem;}
-  /* Slide sidebar cards into a horizontal scroll row on mobile */
   .blog-sidebar .sidebar-scroll{display:flex;gap:.75rem;overflow-x:auto;padding-bottom:.5rem;margin:0 -.75rem;padding-left:.75rem;padding-right:.75rem;}
   .blog-sidebar .sidebar-scroll::-webkit-scrollbar{height:4px;}
-  .blog-sidebar .sidebar-scroll::-webkit-scrollbar-track{background:#f0f2f7;border-radius:4px;}
   .blog-sidebar .sidebar-scroll::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px;}
-  .blog-sidebar .sidebar-scroll .sc{min-width:220px;flex-shrink:0;margin-bottom:0;}
+  .blog-sidebar .sidebar-scroll .sc,.blog-sidebar .sidebar-scroll .newsletter-card,.blog-sidebar .sidebar-scroll .social-traffic-card{min-width:230px;flex-shrink:0;margin-bottom:0;}
   .blog-sidebar .sc.no-scroll{min-width:unset;flex-shrink:unset;}
+  .hero-orb{display:none;}
+  .vs-desc{max-width:100%;}
 }
 @media(max-width:575px){
   .fs-prev,.fs-next{display:none;}
+  .hero-stats-strip .hss-item:nth-child(n+4){display:none;}
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- ── Hero ── -->
+
+<!-- ══════════════════════════════════════════════════════
+     HERO
+══════════════════════════════════════════════════════ -->
 <section class="blog-hero">
+  <div class="hero-orb hero-orb-1"></div>
+  <div class="hero-orb hero-orb-2"></div>
+  <div class="hero-orb hero-orb-3"></div>
+
   <div class="container">
-    <div class="hero-badge"><i class="fas fa-pen-nib me-1"></i>Legal Insights &amp; Tech</div>
-    <h1>The LAWCOLAB Blog</h1>
-    <p>Expert guides on legal technology, practice management, billing, and law firm growth across Africa.</p>
-    <form class="blog-search-wrap" method="GET" action="{{ url_for('blog.index') }}">
-      <i class="fas fa-search" style="color:#9aa3b0;margin-right:.5rem;flex-shrink:0;font-size:.85rem;"></i>
-      <input name="q" value="{{ search or '' }}" placeholder="Search articles, topics, categories…" autocomplete="off">
-      {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
-      {% if sort and sort != 'newest' %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
-      {% if read_time %}<input type="hidden" name="read_time" value="{{ read_time }}">{% endif %}
-      <button type="submit"><i class="fas fa-arrow-right me-1"></i>Search</button>
-    </form>
+    <div class="row align-items-center g-4">
+      <div class="col-lg-6">
+        <div class="hero-live-badge">
+          <span class="hero-live-dot"></span>
+          Live Discussions in the Legal Community
+        </div>
+        <h1>
+          The Legal<br>
+          Insights <span class="h1-accent">Hub</span><br>
+          <span style="font-size:.72em;font-weight:700;letter-spacing:-.01em;">for African Law Firms</span>
+        </h1>
+        <p class="blog-hero-sub">Trending articles on AI, practice management, billing, and the future of legal work. The discussions your chambers need to be having.</p>
+
+        <form class="hero-search-wrap" method="GET" action="{{ url_for('blog.index') }}">
+          <i class="fas fa-search" style="color:#9aa3b0;margin-right:.6rem;flex-shrink:0;font-size:.85rem;"></i>
+          <input name="q" value="{{ search or '' }}" placeholder="Search articles, topics, categories…" autocomplete="off">
+          {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+          {% if sort and sort != 'newest' %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+          {% if read_time %}<input type="hidden" name="read_time" value="{{ read_time }}">{% endif %}
+          <button type="submit" class="hero-search-btn"><i class="fas fa-arrow-right"></i>Search</button>
+        </form>
+
+        <div class="hero-stats-strip">
+          <div class="hss-item">
+            <span class="hss-num">{{ total or '10' }}+</span>
+            <span>articles published</span>
+          </div>
+          <div class="hss-item" style="width:1px;height:20px;background:rgba(255,255,255,.12);padding:0;margin:0;"></div>
+          <div class="hss-item">
+            <span class="hss-num">2K+</span>
+            <span>legal professionals reading</span>
+          </div>
+          <div class="hss-item" style="width:1px;height:20px;background:rgba(255,255,255,.12);padding:0;margin:0;"></div>
+          <div class="hss-item">
+            <span class="hss-num">Weekly</span>
+            <span>fresh insights</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero right: featured article preview (desktop) -->
+      <div class="col-lg-6 d-none d-lg-block">
+        {% if featured_list %}
+        {% set hf = featured_list[0] %}
+        <a class="hero-featured-preview" href="{{ url_for('blog.post', slug=hf.slug) }}">
+          <div class="hfp-img">
+            {% if hf.hero_image %}
+            <img src="{{ hf.hero_image }}" alt="{{ hf.title }}" loading="eager">
+            {% else %}
+            <div style="width:100%;height:100%;background:linear-gradient(135deg,var(--navy2),var(--purple));display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:3rem;"><i class="fas fa-balance-scale"></i></div>
+            {% endif %}
+            <span class="hfp-badge">⭐ Featured</span>
+            <span class="hfp-trend">🔥 Trending</span>
+          </div>
+          <div class="hfp-body">
+            <div class="hfp-cat">{{ hf.category }}</div>
+            <div class="hfp-title">{{ hf.title }}</div>
+            <div class="hfp-meta">
+              <span><i class="fas fa-user-circle me-1"></i>{{ hf.author }}</span>
+              {% if hf.read_time_minutes %}<span class="hfp-rt"><i class="fas fa-clock me-1"></i>{{ hf.read_time_minutes }} min read</span>{% endif %}
+              <span><i class="fas fa-eye me-1"></i>{{ hf.view_count or 0 | int }} views</span>
+            </div>
+          </div>
+        </a>
+        {% else %}
+        <div class="hero-featured-preview" style="display:flex;align-items:center;justify-content:center;min-height:340px;">
+          <div style="text-align:center;padding:2rem;">
+            <div style="font-size:3rem;margin-bottom:1rem;color:var(--gold);">⚖️</div>
+            <div style="color:rgba(255,255,255,.7);font-size:.9rem;line-height:1.6;">New articles published weekly.<br>Be the first to read them.</div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
   </div>
 </section>
 
+<!-- ══════════════════════════════════════════════════════
+     TRENDING TICKER
+══════════════════════════════════════════════════════ -->
+<div class="trending-ticker">
+  <div class="container d-flex align-items-center overflow-hidden" style="gap:.5rem;">
+    <span class="ticker-label flex-shrink-0"><i class="fas fa-fire me-1"></i>Trending Now</span>
+    <div style="overflow:hidden;flex:1;">
+      <div class="ticker-track">
+        <!-- Two copies for seamless loop -->
+        {% set ticker_posts = (featured_list or []) + (popular or []) %}
+        {% for tp in ticker_posts[:8] %}
+        <a class="ticker-item" href="{{ url_for('blog.post', slug=tp.slug) }}">
+          <span class="ticker-dot"></span>
+          {{ tp.title[:60] }}{% if tp.title|length > 60 %}…{% endif %}
+        </a>
+        {% endfor %}
+        {% for tp in ticker_posts[:8] %}
+        <a class="ticker-item" href="{{ url_for('blog.post', slug=tp.slug) }}">
+          <span class="ticker-dot"></span>
+          {{ tp.title[:60] }}{% if tp.title|length > 60 %}…{% endif %}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     VIDEO SPOTLIGHT (show on page 1, no filters)
+══════════════════════════════════════════════════════ -->
+{% if page == 1 and not search and not category and not tag %}
+<section class="video-spotlight">
+  <div class="container vs-container">
+    <div class="row align-items-center g-4 g-lg-5">
+      <div class="col-lg-5">
+        <div class="vs-label"><i class="fab fa-youtube me-1"></i>Watch the Demo</div>
+        <h2 class="vs-title">The Future of <span>Law Firms</span> Is Already Here</h2>
+        <p class="vs-desc">See how LawColab is transforming African law firm operations — from client intake to final invoice, in one AI-powered platform built specifically for how Nigerian lawyers actually work.</p>
+        <div class="vs-cta-group">
+          <a href="https://youtu.be/NopBJ0aCcgo?si=nmcHMEl64eBESei3" target="_blank" rel="noopener" class="vs-cta-primary">
+            <i class="fab fa-youtube"></i>Watch Full Video
+          </a>
+          <a href="/auth/signup" class="vs-cta-secondary">
+            <i class="fas fa-rocket"></i>Try LawColab Free
+          </a>
+        </div>
+        <div class="vs-social-proof">
+          <div class="vsp-item"><i class="fas fa-check-circle" style="color:#10b981;"></i><span><strong>500+</strong> law firms trust LawColab</span></div>
+          <div class="vsp-item"><i class="fas fa-check-circle" style="color:#10b981;"></i><span><strong>All-in-one</strong> practice management</span></div>
+          <div class="vsp-item"><i class="fas fa-check-circle" style="color:#10b981;"></i><span><strong>AI-powered</strong> legal assistant</span></div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="vs-video-wrap">
+          <div class="vs-video-inner">
+            <iframe
+              src="https://www.youtube.com/embed/NopBJ0aCcgo?si=nmcHMEl64eBESei3&rel=0&modestbranding=1&color=white"
+              title="LawColab — The Future of Law Firms | AI-Powered Practice Management"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen loading="lazy">
+            </iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ══════════════════════════════════════════════════════
+     MAIN CONTENT
+══════════════════════════════════════════════════════ -->
 <div class="container py-3 py-md-4">
   <div class="row g-3 g-md-4">
 
     <!-- ── Main Column ── -->
     <div class="col-lg-8">
 
-      <!-- ── FEATURED SLIDER ── -->
-      {% if featured_list %}
-      <div class="featured-slider mb-3 mb-md-4" id="featuredSlider"
-           data-count="{{ featured_list|length }}">
+      <!-- FEATURED SLIDER -->
+      {% if featured_list and page == 1 and not search and not category and not tag %}
+      <div class="featured-slider mb-3 mb-md-4" id="featuredSlider" data-count="{{ featured_list|length }}">
         <div class="fs-counter" id="fsCounter">1 / {{ featured_list|length }}</div>
 
         {% if featured_list|length > 1 %}
-        <button class="fs-prev" id="fsPrev" aria-label="Previous featured post">
-          <i class="fas fa-chevron-left"></i>
-        </button>
-        <button class="fs-next" id="fsNext" aria-label="Next featured post">
-          <i class="fas fa-chevron-right"></i>
-        </button>
+        <button class="fs-prev" id="fsPrev" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
+        <button class="fs-next" id="fsNext" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
         {% endif %}
 
         <div class="fs-viewport">
           <div class="fs-track" id="fsTrack">
             {% for fp in featured_list %}
             <div class="fs-slide {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}">
-              <a class="featured-post d-block"
-                 href="{{ url_for('blog.post', slug=fp.slug) }}">
-                <div class="fp-bg"
-                     style="background-image:url('{{ fp.hero_image or 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1200&q=70' }}')">
-                </div>
+              <a class="featured-post d-block" href="{{ url_for('blog.post', slug=fp.slug) }}">
+                <div class="fp-bg" style="background-image:url('{{ fp.hero_image or 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1400&q=70' }}')"></div>
                 <div class="fp-overlay"></div>
                 <div class="fp-content">
-                  <span class="fp-badge">⭐ Featured</span>
+                  <div>
+                    <span class="fp-badge">⭐ Featured</span>
+                    {% if loop.first %}<span class="fp-trending-badge">🔥 Trending</span>{% endif %}
+                  </div>
                   <div class="fp-title">{{ fp.title }}</div>
-                  {% if fp.excerpt %}
-                  <div class="fp-excerpt">{{ fp.excerpt }}</div>
-                  {% endif %}
+                  {% if fp.excerpt %}<div class="fp-excerpt">{{ fp.excerpt }}</div>{% endif %}
                   <div class="fp-meta">
                     <span><i class="fas fa-user-circle me-1"></i>{{ fp.author }}</span>
-                    {% if fp.published_at %}
-                    <span class="d-none d-sm-inline">
-                      <i class="fas fa-calendar me-1"></i>{{ fp.published_at.strftime('%b %d, %Y') }}
-                    </span>
-                    {% endif %}
+                    {% if fp.published_at %}<span class="d-none d-sm-inline"><i class="fas fa-calendar me-1"></i>{{ fp.published_at.strftime('%b %d, %Y') }}</span>{% endif %}
                     <span><i class="fas fa-eye me-1"></i>{{ fp.view_count or 0 | int }}</span>
-                    {% if fp.read_time_minutes %}
-                    <span class="fp-rt"><i class="fas fa-clock"></i>{{ fp.read_time_minutes }} min</span>
-                    {% endif %}
+                    {% if fp.read_time_minutes %}<span class="fp-rt"><i class="fas fa-clock"></i>{{ fp.read_time_minutes }} min</span>{% endif %}
                   </div>
+                  <div class="fp-read-btn"><i class="fas fa-arrow-right me-1"></i>Read Article</div>
                 </div>
               </a>
             </div>
@@ -257,107 +669,72 @@
         {% if featured_list|length > 1 %}
         <div class="fs-dots" id="fsDots">
           {% for fp in featured_list %}
-          <button class="fs-dot {% if loop.first %}active{% endif %}"
-                  data-index="{{ loop.index0 }}" aria-label="Go to slide {{ loop.index }}"></button>
+          <button class="fs-dot {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}" aria-label="Slide {{ loop.index }}"></button>
           {% endfor %}
         </div>
         {% endif %}
       </div>
       {% endif %}
 
-      <!-- ── ADVANCED FILTER BAR ── -->
+      <!-- ADVANCED FILTER BAR -->
       <div class="adv-filter">
         <div class="adv-filter-header" id="filterToggle" onclick="toggleFilter()">
           <div class="afh-left">
-            <span class="afh-title"><i class="fas fa-filter me-1"></i>Filter &amp; Sort</span>
+            <span class="afh-title"><i class="fas fa-sliders-h me-1"></i>Filter &amp; Sort</span>
             <div class="active-pills">
               {% if category %}
-              <span class="active-tag">
-                📁 {{ category }}
-                <a href="{{ url_for('blog.index', sort=sort, read_time=read_time, q=search) }}" title="Remove">×</a>
-              </span>
+              <span class="active-tag">📁 {{ category }}<a href="{{ url_for('blog.index', sort=sort, read_time=read_time, q=search) }}" title="Remove">×</a></span>
               {% endif %}
               {% if read_time %}
               <span class="active-tag" style="background:{% if read_time=='quick' %}#10b981{% elif read_time=='medium' %}#f59e0b{% else %}#6366f1{% endif %};">
-                ⏱ {% if read_time=='quick' %}Quick read{% elif read_time=='medium' %}Medium read{% else %}Deep read{% endif %}
+                ⏱ {% if read_time=='quick' %}Quick{% elif read_time=='medium' %}Medium{% else %}Deep{% endif %} read
                 <a href="{{ url_for('blog.index', category=category, sort=sort, q=search) }}" title="Remove">×</a>
               </span>
               {% endif %}
-              {% if tag %}
-              <span class="active-tag" style="background:#0ea5e9;">
-                # {{ tag }}
-                <a href="{{ url_for('blog.index', category=category, sort=sort, read_time=read_time, q=search) }}" title="Remove">×</a>
-              </span>
-              {% endif %}
-              {% if search %}
-              <span class="active-tag" style="background:#6b7280;">
-                🔍 "{{ search[:20] }}{% if search|length>20 %}…{% endif %}"
-                <a href="{{ url_for('blog.index', category=category, sort=sort, read_time=read_time) }}" title="Remove">×</a>
-              </span>
-              {% endif %}
+              {% if tag %}<span class="active-tag" style="background:#0ea5e9;">#{{ tag }}<a href="{{ url_for('blog.index', category=category, sort=sort, read_time=read_time, q=search) }}" title="Remove">×</a></span>{% endif %}
+              {% if search %}<span class="active-tag" style="background:#6b7280;">🔍 "{{ search[:20] }}{% if search|length>20 %}…{% endif %}"<a href="{{ url_for('blog.index', category=category, sort=sort, read_time=read_time) }}" title="Remove">×</a></span>{% endif %}
             </div>
           </div>
           <button class="toggle-filter-btn" id="toggleFilterBtn">
-            <span>Filters</span>
-            <i class="fas fa-chevron-down tf-icon"></i>
+            <span>Filters</span><i class="fas fa-chevron-down tf-icon"></i>
           </button>
         </div>
 
         <div class="adv-filter-body {% if category or read_time or tag or sort != 'newest' %}show{% endif %}" id="filterBody">
 
-          <!-- Category filter -->
           <div class="filter-section">
             <span class="fs-label"><i class="fas fa-folder me-1"></i>Category</span>
             <div class="filter-pills-row">
-              <a href="{{ url_for('blog.index', sort=sort, read_time=read_time, q=search) }}"
-                 class="filter-pill {% if not category %}active{% endif %}">All</a>
+              <a href="{{ url_for('blog.index', sort=sort, read_time=read_time, q=search) }}" class="filter-pill {% if not category %}active{% endif %}">All</a>
               {% for c in cats %}
-              <a href="{{ url_for('blog.index', category=c.category, sort=sort, read_time=read_time, q=search) }}"
-                 class="filter-pill {% if category==c.category %}active{% endif %}">
-                {{ c.category }}
-                <span style="opacity:.5;font-size:.65rem;">({{ c.cnt }})</span>
+              <a href="{{ url_for('blog.index', category=c.category, sort=sort, read_time=read_time, q=search) }}" class="filter-pill {% if category==c.category %}active{% endif %}">
+                {{ c.category }} <span style="opacity:.5;font-size:.65rem;">({{ c.cnt }})</span>
               </a>
               {% endfor %}
             </div>
           </div>
 
-          <!-- Read time filter -->
           <div class="filter-section">
             <span class="fs-label"><i class="fas fa-clock me-1"></i>Read Time</span>
             <div class="filter-pills-row">
-              <a href="{{ url_for('blog.index', category=category, sort=sort, q=search) }}"
-                 class="filter-pill {% if not read_time %}active{% endif %}">Any length</a>
-              <a href="{{ url_for('blog.index', category=category, sort=sort, read_time='quick', q=search) }}"
-                 class="filter-pill rt-quick {% if read_time=='quick' %}active{% endif %}">
-                ⚡ Quick (&lt;5 min)
-              </a>
-              <a href="{{ url_for('blog.index', category=category, sort=sort, read_time='medium', q=search) }}"
-                 class="filter-pill rt-medium {% if read_time=='medium' %}active{% endif %}">
-                📖 Medium (5–10 min)
-              </a>
-              <a href="{{ url_for('blog.index', category=category, sort=sort, read_time='long', q=search) }}"
-                 class="filter-pill rt-long {% if read_time=='long' %}active{% endif %}">
-                📚 Deep (&gt;10 min)
-              </a>
+              <a href="{{ url_for('blog.index', category=category, sort=sort, q=search) }}" class="filter-pill {% if not read_time %}active{% endif %}">Any length</a>
+              <a href="{{ url_for('blog.index', category=category, sort=sort, read_time='quick', q=search) }}" class="filter-pill rt-quick {% if read_time=='quick' %}active{% endif %}">⚡ Quick (&lt;5 min)</a>
+              <a href="{{ url_for('blog.index', category=category, sort=sort, read_time='medium', q=search) }}" class="filter-pill rt-medium {% if read_time=='medium' %}active{% endif %}">📖 Medium (5–10 min)</a>
+              <a href="{{ url_for('blog.index', category=category, sort=sort, read_time='long', q=search) }}" class="filter-pill rt-long {% if read_time=='long' %}active{% endif %}">📚 Deep (&gt;10 min)</a>
             </div>
           </div>
 
-          <!-- Tags -->
           {% if all_tags %}
           <div class="filter-section">
             <span class="fs-label"><i class="fas fa-tags me-1"></i>Tags</span>
             <div class="filter-pills-row">
               {% for t in all_tags %}
-              <a href="{{ url_for('blog.index', tag=t, category=category, sort=sort, read_time=read_time) }}"
-                 class="filter-pill tag-pill {% if tag==t %}active{% endif %}" style="font-size:.73rem;">
-                #{{ t }}
-              </a>
+              <a href="{{ url_for('blog.index', tag=t, category=category, sort=sort, read_time=read_time) }}" class="filter-pill tag-pill {% if tag==t %}active{% endif %}" style="font-size:.73rem;">#{{ t }}</a>
               {% endfor %}
             </div>
           </div>
           {% endif %}
 
-          <!-- Sort + clear -->
           <div class="filter-section">
             <span class="fs-label"><i class="fas fa-sort me-1"></i>Sort By</span>
             <div class="filter-actions">
@@ -383,15 +760,15 @@
             </div>
           </div>
 
-        </div><!-- /filter-body -->
-      </div><!-- /adv-filter -->
+        </div>
+      </div>
 
-      <!-- ── Results header ── -->
+      <!-- Results header -->
       <div class="results-header">
         <div class="results-count">
           {% if search %}<strong>{{ total }}</strong> results for "<em>{{ search }}</em>"
-          {% elif category %}<strong>{{ total }}</strong> posts in <em>{{ category }}</em>
-          {% elif tag %}<strong>{{ total }}</strong> posts tagged <em>#{{ tag }}</em>
+          {% elif category %}<strong>{{ total }}</strong> articles in <em>{{ category }}</em>
+          {% elif tag %}<strong>{{ total }}</strong> articles tagged <em>#{{ tag }}</em>
           {% elif read_time == 'quick' %}⚡ <strong>{{ total }}</strong> quick reads
           {% elif read_time == 'medium' %}📖 <strong>{{ total }}</strong> medium reads
           {% elif read_time == 'long' %}📚 <strong>{{ total }}</strong> deep reads
@@ -399,16 +776,12 @@
           {% endif %}
         </div>
         <div class="view-toggle">
-          <button class="vt-btn active" id="gridViewBtn" onclick="setView('grid')" title="Grid view">
-            <i class="fas fa-th-large"></i>
-          </button>
-          <button class="vt-btn" id="listViewBtn" onclick="setView('list')" title="List view">
-            <i class="fas fa-list"></i>
-          </button>
+          <button class="vt-btn active" id="gridViewBtn" onclick="setView('grid')" title="Grid view"><i class="fas fa-th-large"></i></button>
+          <button class="vt-btn" id="listViewBtn" onclick="setView('list')" title="List view"><i class="fas fa-list"></i></button>
         </div>
       </div>
 
-      <!-- ── Posts Grid / List ── -->
+      <!-- Posts Grid -->
       {% if posts %}
       <div class="row g-3 mb-4" id="postsGrid">
         {% for p in posts %}
@@ -420,20 +793,19 @@
               {% else %}
               <div class="bc-img-placeholder"><i class="fas fa-balance-scale"></i></div>
               {% endif %}
+              {% if loop.index <= 2 and page == 1 and not search and not category %}
+              <span class="bc-trending-badge">🔥 Trending</span>
+              {% endif %}
             </div>
             <div class="bc-body">
               <div class="bc-cat">{{ p.category }}</div>
               <div class="bc-title">{{ p.title }}</div>
               {% if p.excerpt %}<div class="bc-excerpt">{{ p.excerpt }}</div>{% endif %}
               <div class="bc-meta">
-                {% if p.read_time_minutes %}
-                <span class="bc-rt"><i class="fas fa-clock me-1"></i>{{ p.read_time_minutes }}m</span>
-                {% endif %}
+                {% if p.read_time_minutes %}<span class="bc-rt"><i class="fas fa-clock me-1"></i>{{ p.read_time_minutes }}m</span>{% endif %}
                 <span><i class="fas fa-eye me-1"></i>{{ p.view_count or 0 | int }}</span>
                 <span class="d-none d-sm-inline"><i class="fas fa-comments me-1"></i>{{ p.comment_count or 0 | int }}</span>
-                {% if p.published_at %}
-                <span class="ms-auto d-none d-sm-inline">{{ p.published_at.strftime('%b %d') }}</span>
-                {% endif %}
+                {% if p.published_at %}<span class="ms-auto d-none d-sm-inline">{{ p.published_at.strftime('%b %d') }}</span>{% endif %}
               </div>
             </div>
           </a>
@@ -441,26 +813,22 @@
         {% endfor %}
       </div>
       {% else %}
-      <div class="text-center py-5" style="color:#9aa3b0;">
+      <div class="text-center py-5" style="color:var(--text3);">
         <i class="fas fa-file-alt" style="font-size:3rem;opacity:.22;display:block;margin-bottom:1rem;"></i>
-        <p class="mb-2">No posts found{% if search %} for "{{ search }}"{% endif %}.</p>
+        <p class="mb-2">No articles found{% if search %} for "{{ search }}"{% endif %}.</p>
         {% if search or category or tag or read_time %}
-        <a href="{{ url_for('blog.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill mt-1">
-          <i class="fas fa-times me-1"></i>Clear filters
-        </a>
+        <a href="{{ url_for('blog.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill mt-1"><i class="fas fa-times me-1"></i>Clear filters</a>
         {% endif %}
       </div>
       {% endif %}
 
-      <!-- ── Pagination ── -->
+      <!-- Pagination -->
       {% if total_pages > 1 %}
       <nav class="blog-pagination d-flex justify-content-center mt-3">
         <ul class="pagination flex-wrap justify-content-center gap-1">
           {% if page > 1 %}
           <li class="page-item">
-            <a class="page-link" href="{{ url_for('blog.index', page=page-1, category=category, q=search, sort=sort, read_time=read_time, tag=tag) }}">
-              <i class="fas fa-chevron-left"></i>
-            </a>
+            <a class="page-link" href="{{ url_for('blog.index', page=page-1, category=category, q=search, sort=sort, read_time=read_time, tag=tag) }}"><i class="fas fa-chevron-left"></i></a>
           </li>
           {% endif %}
           {% for pg in range(1, total_pages+1) %}
@@ -476,9 +844,7 @@
           {% endfor %}
           {% if page < total_pages %}
           <li class="page-item">
-            <a class="page-link" href="{{ url_for('blog.index', page=page+1, category=category, q=search, sort=sort, read_time=read_time, tag=tag) }}">
-              <i class="fas fa-chevron-right"></i>
-            </a>
+            <a class="page-link" href="{{ url_for('blog.index', page=page+1, category=category, q=search, sort=sort, read_time=read_time, tag=tag) }}"><i class="fas fa-chevron-right"></i></a>
           </li>
           {% endif %}
         </ul>
@@ -491,19 +857,28 @@
     <div class="col-lg-4 blog-sidebar">
       <div class="sidebar-scroll d-lg-block">
 
+        <!-- Newsletter -->
+        <div class="newsletter-card sc">
+          <h5><i class="fas fa-bell me-2"></i>Stay in the Loop</h5>
+          <p style="font-size:.8rem;color:rgba(255,255,255,.75);line-height:1.6;margin-bottom:.4rem;">Join 2,000+ legal professionals. New insights every week.</p>
+          <a href="/auth/signup" class="btn btn-sm w-100 fw-bold mt-1" style="background:var(--gold);color:var(--navy2);border-radius:50px;font-size:.8rem;">Create Free Account →</a>
+        </div>
+
+        <!-- LawColab CTA -->
+        <div class="sc" style="background:#fff;border:2.5px solid var(--gold);">
+          <div style="font-size:1.8rem;margin-bottom:.5rem;text-align:center;">⚖️</div>
+          <h5 style="text-align:center;">Run Your Firm Smarter</h5>
+          <p style="font-size:.8rem;color:var(--text2);line-height:1.6;text-align:center;margin-bottom:.85rem;">Case management, billing, client portal, AI assistant — all in one platform.</p>
+          <a href="/auth/signup" class="btn btn-warning btn-sm w-100 fw-bold" style="color:var(--navy2);border-radius:50px;">Start Free Trial <i class="fas fa-arrow-right ms-1"></i></a>
+          <a href="https://youtu.be/NopBJ0aCcgo?si=nmcHMEl64eBESei3" target="_blank" rel="noopener" class="btn btn-outline-dark btn-sm w-100 mt-2 fw-bold" style="border-radius:50px;font-size:.78rem;"><i class="fab fa-youtube me-1" style="color:#ff0000;"></i>Watch Demo</a>
+        </div>
+
         <!-- Categories -->
         <div class="sc">
           <h5><i class="fas fa-folder me-2"></i>Categories</h5>
-          <a href="{{ url_for('blog.index') }}"
-             class="cat-pill {% if not category %}active{% endif %}">All
-            <span style="opacity:.5;">({{ total }})</span>
-          </a>
+          <a href="{{ url_for('blog.index') }}" class="cat-pill {% if not category %}active{% endif %}">All <span style="opacity:.5;">({{ total }})</span></a>
           {% for c in cats %}
-          <a href="{{ url_for('blog.index', category=c.category) }}"
-             class="cat-pill {% if category==c.category %}active{% endif %}">
-            {{ c.category }}
-            <span style="opacity:.5;">({{ c.cnt }})</span>
-          </a>
+          <a href="{{ url_for('blog.index', category=c.category) }}" class="cat-pill {% if category==c.category %}active{% endif %}">{{ c.category }} <span style="opacity:.5;">({{ c.cnt }})</span></a>
           {% endfor %}
         </div>
 
@@ -512,89 +887,96 @@
           <h5><i class="fas fa-fire me-2"></i>Most Read</h5>
           {% for p in popular %}
           <a class="pop-item" href="{{ url_for('blog.post', slug=p.slug) }}">
-            {% if p.hero_image %}
-            <img src="{{ p.hero_image }}" alt="{{ p.title }}" loading="lazy">
-            {% else %}
-            <div class="pi-ph"><i class="fas fa-balance-scale"></i></div>
-            {% endif %}
+            {% if p.hero_image %}<img src="{{ p.hero_image }}" alt="{{ p.title }}" loading="lazy">
+            {% else %}<div class="pi-ph"><i class="fas fa-balance-scale"></i></div>{% endif %}
             <div>
               <div class="pop-title">{{ p.title }}</div>
-              <div class="pop-meta">
-                <i class="fas fa-eye me-1"></i>{{ p.view_count or 0 | int }} views
-                {% if p.read_time_minutes %} · {{ p.read_time_minutes }}m{% endif %}
-              </div>
+              <div class="pop-meta"><i class="fas fa-eye me-1"></i>{{ p.view_count or 0 | int }} views{% if p.read_time_minutes %} · {{ p.read_time_minutes }}m{% endif %}</div>
             </div>
           </a>
           {% endfor %}
         </div>
 
-        <!-- CTA -->
-        <div class="sc no-scroll" style="background:linear-gradient(135deg,#0d1b4b,#172a72);color:#fff;">
-          <div style="font-size:1.5rem;margin-bottom:.4rem;">⚖️</div>
-          <h5 style="color:#FFD700;border-bottom-color:rgba(255,215,0,.3);">Run Your Firm Smarter</h5>
-          <p style="font-size:.8rem;color:rgba(255,255,255,.78);line-height:1.6;margin-bottom:.9rem;">
-            Join hundreds of law firms using LAWCOLAB to manage cases, billing, and clients — all in one place.
-          </p>
-          <a href="/auth/signup" class="btn btn-warning btn-sm w-100 fw-bold"
-             style="color:#0d1b4b;border-radius:50px;">Start Free Trial →</a>
-        </div>
-
-        <!-- Newsletter teaser -->
-        <div class="sc no-scroll" style="border:2px solid #f0f2f7;">
-          <h5><i class="fas fa-bell me-2"></i>Never Miss an Article</h5>
-          <p style="font-size:.78rem;color:#6c757d;line-height:1.6;margin-bottom:.7rem;">
-            New legal insights published weekly. Join 2,000+ legal professionals.
-          </p>
-          <a href="/auth/signup" class="btn btn-outline-dark btn-sm w-100 fw-bold"
-             style="border-radius:50px;font-size:.8rem;">Create Free Account</a>
+        <!-- Share on social / drive traffic -->
+        <div class="social-traffic-card">
+          <h5><i class="fas fa-share-alt me-2"></i>Share This Blog</h5>
+          <p style="font-size:.77rem;color:var(--text2);line-height:1.55;margin-bottom:.75rem;">Help legal professionals discover these insights — share on your favourite platform.</p>
+          <a class="stc-platform" href="https://twitter.com/intent/tweet?url={{ request.url_root }}blog&text=Great+legal+insights+on+the+LAWCOLAB+Blog+%E2%80%94+AI,+practice+management+%26+the+future+of+law+firms+in+Africa&hashtags=LegalTech,NigerianLaw,LawColab" target="_blank" rel="noopener">
+            <div class="stc-icon" style="background:#1da1f2;"><i class="fab fa-twitter"></i></div>
+            <div><div class="stc-label">Share on Twitter/X</div><div class="stc-sub">Reach legal Twitter</div></div>
+          </a>
+          <a class="stc-platform" href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.url_root }}blog&title=LAWCOLAB+Blog&summary=Legal+insights+for+African+law+firms" target="_blank" rel="noopener">
+            <div class="stc-icon" style="background:#0077b5;"><i class="fab fa-linkedin-in"></i></div>
+            <div><div class="stc-label">Share on LinkedIn</div><div class="stc-sub">Connect with legal professionals</div></div>
+          </a>
+          <a class="stc-platform" href="https://wa.me/?text=Check+out+the+LAWCOLAB+Blog+%E2%80%94+great+legal+insights+for+African+law+firms:+{{ request.url_root }}blog" target="_blank" rel="noopener">
+            <div class="stc-icon" style="background:#25d366;"><i class="fab fa-whatsapp"></i></div>
+            <div><div class="stc-label">Share via WhatsApp</div><div class="stc-sub">Send to your chambers</div></div>
+          </a>
+          <a class="stc-platform" href="https://t.me/share/url?url={{ request.url_root }}blog&text=LAWCOLAB+Blog+%E2%80%94+Legal+insights+for+African+law+firms" target="_blank" rel="noopener">
+            <div class="stc-icon" style="background:#229ed9;"><i class="fab fa-telegram-plane"></i></div>
+            <div><div class="stc-label">Share on Telegram</div><div class="stc-sub">Post to legal groups</div></div>
+          </a>
         </div>
 
         {% if current_user.is_authenticated and current_user.is_super_admin() %}
         <div class="sc no-scroll border border-warning">
           <h5 style="color:#856404;border-bottom-color:#ffc107;"><i class="fas fa-cog me-2"></i>Admin</h5>
           <div class="d-grid gap-2">
-            <a href="{{ url_for('blog.admin_analytics') }}" class="btn btn-sm btn-outline-info rounded-pill">
-              <i class="fas fa-chart-bar me-1"></i>Analytics
-            </a>
-            <a href="{{ url_for('blog.admin_list') }}" class="btn btn-sm btn-outline-warning rounded-pill">
-              <i class="fas fa-list me-1"></i>Manage Posts
-            </a>
-            <a href="{{ url_for('blog.admin_new') }}" class="btn btn-sm btn-warning fw-bold rounded-pill"
-               style="color:#0d1b4b;">
-              <i class="fas fa-plus me-1"></i>New Post
-            </a>
+            <a href="{{ url_for('blog.admin_analytics') }}" class="btn btn-sm btn-outline-info rounded-pill"><i class="fas fa-chart-bar me-1"></i>Analytics</a>
+            <a href="{{ url_for('blog.admin_list') }}" class="btn btn-sm btn-outline-warning rounded-pill"><i class="fas fa-list me-1"></i>Manage Posts</a>
+            <a href="{{ url_for('blog.admin_new') }}" class="btn btn-sm btn-warning fw-bold rounded-pill" style="color:var(--navy2);"><i class="fas fa-plus me-1"></i>New Post</a>
           </div>
         </div>
         {% endif %}
 
-      </div><!-- /sidebar-scroll -->
+      </div>
     </div><!-- /col-lg-4 -->
 
-  </div><!-- /row -->
+  </div>
 </div>
+
+<!-- ══════════════════════════════════════════════════════
+     CHANNEL DISTRIBUTION BANNER
+══════════════════════════════════════════════════════ -->
+{% if page == 1 %}
+<section class="distribution-banner">
+  <div class="container db-inner">
+    <div class="db-title">Spread Legal Knowledge Across Every Platform</div>
+    <p class="db-sub">These articles are designed to drive discussion. Share them — your colleagues, clients, and chambers need to read this.</p>
+    <div class="db-channels">
+      <a class="db-channel tw" href="https://twitter.com/intent/tweet?url={{ request.url_root }}blog&text=Legal+insights+from+the+LAWCOLAB+Blog+%E2%80%94+AI,+practice+management+%26+the+future+of+African+law+firms&hashtags=LegalTech,NigerianLaw" target="_blank" rel="noopener"><i class="fab fa-twitter"></i>Twitter / X</a>
+      <a class="db-channel li" href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.url_root }}blog" target="_blank" rel="noopener"><i class="fab fa-linkedin-in"></i>LinkedIn</a>
+      <a class="db-channel wa" href="https://wa.me/?text=LAWCOLAB+Blog+%E2%80%94+Legal+insights+for+African+law+firms:+{{ request.url_root }}blog" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i>WhatsApp</a>
+      <a class="db-channel fb" href="https://www.facebook.com/sharer/sharer.php?u={{ request.url_root }}blog" target="_blank" rel="noopener"><i class="fab fa-facebook-f"></i>Facebook</a>
+      <a class="db-channel tg" href="https://t.me/share/url?url={{ request.url_root }}blog" target="_blank" rel="noopener"><i class="fab fa-telegram-plane"></i>Telegram</a>
+      <a class="db-channel rd" href="https://www.reddit.com/submit?url={{ request.url_root }}blog&title=LAWCOLAB+Blog+%E2%80%94+Legal+insights+for+African+law+firms" target="_blank" rel="noopener"><i class="fab fa-reddit-alien"></i>Reddit</a>
+      <a class="db-channel yt" href="https://youtu.be/NopBJ0aCcgo?si=nmcHMEl64eBESei3" target="_blank" rel="noopener"><i class="fab fa-youtube"></i>Watch Demo</a>
+      <a class="db-channel em" href="mailto:?subject=LAWCOLAB Blog — Legal Insights for African Law Firms&body=Check out these articles on legal technology and practice management: {{ request.url_root }}blog" target="_blank" rel="noopener"><i class="fas fa-envelope"></i>Email</a>
+    </div>
+    <div class="db-cta">
+      <a href="/auth/signup"><i class="fas fa-rocket me-2"></i>Start Your Free Trial on LawColab</a>
+    </div>
+  </div>
+</section>
+{% endif %}
 
 {% endblock %}
 
 {% block additional_js %}
 <script>
-/* ═══════════════════════════════════════════════════
-   FEATURED SLIDER
-═══════════════════════════════════════════════════ */
+/* ── FEATURED SLIDER ─────────────────────────────────────────────────────── */
 (function(){
   const slider = document.getElementById('featuredSlider');
   if(!slider) return;
-
-  const track   = document.getElementById('fsTrack');
-  const slides  = track ? track.querySelectorAll('.fs-slide') : [];
-  const dots    = document.querySelectorAll('.fs-dot');
+  const track = document.getElementById('fsTrack');
+  const slides = track ? track.querySelectorAll('.fs-slide') : [];
+  const dots = document.querySelectorAll('.fs-dot');
   const counter = document.getElementById('fsCounter');
-  const total   = slides.length;
+  const total = slides.length;
   if(total <= 1) return;
 
-  let current = 0;
-  let timer   = null;
-  let startX  = 0;
-  let isDragging = false;
+  let current = 0, timer = null, startX = 0, isDragging = false;
 
   function goTo(idx){
     idx = ((idx % total) + total) % total;
@@ -609,32 +991,23 @@
 
   function next(){ goTo(current + 1); }
   function prev(){ goTo(current - 1); }
-
-  function startAuto(){ timer = setInterval(next, 5500); }
+  function startAuto(){ timer = setInterval(next, 6000); }
   function stopAuto(){  clearInterval(timer); }
   function resetAuto(){ stopAuto(); startAuto(); }
 
-  // Buttons
   const btnPrev = document.getElementById('fsPrev');
   const btnNext = document.getElementById('fsNext');
   if(btnPrev) btnPrev.addEventListener('click', function(e){ e.preventDefault(); prev(); resetAuto(); });
   if(btnNext) btnNext.addEventListener('click', function(e){ e.preventDefault(); next(); resetAuto(); });
 
-  // Dots
   dots.forEach(function(d){
-    d.addEventListener('click', function(){
-      goTo(parseInt(d.dataset.index));
-      resetAuto();
-    });
+    d.addEventListener('click', function(){ goTo(parseInt(d.dataset.index)); resetAuto(); });
   });
 
-  // Pause on hover
   slider.addEventListener('mouseenter', stopAuto);
   slider.addEventListener('mouseleave', startAuto);
-
-  // Touch swipe
-  slider.addEventListener('touchstart', function(e){ startX = e.touches[0].clientX; isDragging=true; }, {passive:true});
-  slider.addEventListener('touchend',   function(e){
+  slider.addEventListener('touchstart', function(e){ startX = e.touches[0].clientX; isDragging=true; },{passive:true});
+  slider.addEventListener('touchend', function(e){
     if(!isDragging) return;
     const dx = e.changedTouches[0].clientX - startX;
     if(Math.abs(dx) > 40){ dx < 0 ? next() : prev(); resetAuto(); }
@@ -644,9 +1017,7 @@
   startAuto();
 })();
 
-/* ═══════════════════════════════════════════════════
-   FILTER TOGGLE
-═══════════════════════════════════════════════════ */
+/* ── FILTER TOGGLE ───────────────────────────────────────────────────────── */
 function toggleFilter(){
   const body = document.getElementById('filterBody');
   const btn  = document.getElementById('toggleFilterBtn');
@@ -654,37 +1025,30 @@ function toggleFilter(){
   btn.classList.toggle('open', isOpen);
 }
 
-/* ═══════════════════════════════════════════════════
-   VIEW TOGGLE (grid / list)
-═══════════════════════════════════════════════════ */
+/* ── VIEW TOGGLE (grid / list) ───────────────────────────────────────────── */
 function setView(mode){
-  const grid     = document.getElementById('postsGrid');
-  const gridBtn  = document.getElementById('gridViewBtn');
-  const listBtn  = document.getElementById('listViewBtn');
-  const wraps    = document.querySelectorAll('.blog-card-wrap');
+  const grid    = document.getElementById('postsGrid');
+  const gridBtn = document.getElementById('gridViewBtn');
+  const listBtn = document.getElementById('listViewBtn');
+  const wraps   = document.querySelectorAll('.blog-card-wrap');
   if(!grid) return;
 
   if(mode === 'list'){
     grid.classList.remove('row-cols-2','row-cols-sm-2','row-cols-md-3');
     grid.classList.add('posts-list','flex-column');
-    wraps.forEach(function(w){
-      w.className = 'blog-card-wrap ani';
-    });
+    wraps.forEach(function(w){ w.className = 'blog-card-wrap ani'; });
     gridBtn.classList.remove('active');
     listBtn.classList.add('active');
     localStorage.setItem('blogView','list');
   } else {
     grid.classList.remove('posts-list','flex-column');
-    wraps.forEach(function(w){
-      w.className = 'col-6 col-sm-6 col-md-4 ani blog-card-wrap';
-    });
+    wraps.forEach(function(w){ w.className = 'col-6 col-sm-6 col-md-4 ani blog-card-wrap'; });
     gridBtn.classList.add('active');
     listBtn.classList.remove('active');
     localStorage.setItem('blogView','grid');
   }
 }
 
-// Restore saved view preference
 (function(){
   const saved = localStorage.getItem('blogView');
   if(saved === 'list') setView('list');

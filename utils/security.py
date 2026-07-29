@@ -106,7 +106,9 @@ def apply_security_headers(response):
         "connect-src 'self' https://www.google-analytics.com "
         "https://analytics.google.com https://stats.g.doubleclick.net "
         "https://region1.google-analytics.com; "
-        "frame-src https://www.googletagmanager.com; "
+        "frame-src https://www.googletagmanager.com "
+        "https://www.youtube.com https://youtube.com "
+        "https://www.youtube-nocookie.com; "
         "frame-ancestors 'self';"
     )
     return response

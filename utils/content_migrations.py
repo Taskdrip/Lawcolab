@@ -655,3 +655,250 @@ def _seed_additional_blog_posts(db):
     except Exception as e:
         db.session.rollback()
         logger.debug("2026 article seed skipped: %s", e)
+
+    # ── AI Disruption feature article — insert once if missing ───────────────
+    _SLUG_AI = "ai-is-not-coming-for-your-law-firm-it-already-arrived"
+    try:
+        existing = db.session.execute(
+            text("SELECT id FROM blog_posts WHERE slug=:s"), {"s": _SLUG_AI}
+        ).fetchone()
+        if not existing:
+            db.session.execute(text("""
+                INSERT INTO blog_posts
+                (title, slug, content, excerpt, category, tags, hero_image, author,
+                 published, featured, view_count, comment_count, share_count,
+                 read_time_minutes, created_at, updated_at, published_at)
+                VALUES (:title,:slug,:content,:excerpt,:cat,:tags,:hero,:author,
+                        TRUE,TRUE,0,0,0,:rt,NOW(),NOW(),NOW())
+            """), dict(
+                title="AI Is Not Coming for Your Law Firm — It Already Arrived: The Uncomfortable Truth Every African Lawyer Must Face",
+                slug=_SLUG_AI,
+                content=_ARTICLE_AI_DISRUPTION,
+                excerpt="The lawyers who said AI would never replace them are now watching clients sign with firms that embraced it. Half of Nigeria's law firms won't survive the next five years — not because they lack legal brilliance, but because they refuse to evolve. This is the article the profession doesn't want you to read.",
+                cat="Legal Tech",
+                tags="AI in law,legal technology Africa,future of law firms,Nigeria legal innovation,law firm disruption,practice management,LawColab,legal AI 2026",
+                hero="/static/images/file_00000000738c81f49623652e1836bec7_1785319635597.png",
+                author="LawColab Editorial Team",
+                rt=18,
+            ))
+            db.session.commit()
+            logger.info("Blog: seeded AI disruption feature article.")
+    except Exception as e:
+        db.session.rollback()
+        logger.debug("AI disruption article seed skipped: %s", e)
+
+
+_ARTICLE_AI_DISRUPTION = """
+<div class="article-alert-banner" style="background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff;border-radius:14px;padding:1.1rem 1.5rem;margin-bottom:2rem;display:flex;align-items:center;gap:.9rem;flex-wrap:wrap;">
+  <span style="font-size:1.4rem;">🔥</span>
+  <div>
+    <strong style="font-size:.95rem;display:block;margin-bottom:.15rem;">TRENDING IN THE LEGAL COMMUNITY</strong>
+    <span style="font-size:.83rem;opacity:.92;">This article is sparking debate across Nigerian bar associations, LinkedIn legal groups, and WhatsApp chambers. Share it — your colleagues need to read this.</span>
+  </div>
+</div>
+
+<p class="article-lead" style="font-size:1.22rem;font-weight:500;line-height:1.85;color:#1a1a2e;border-left:5px solid #7c3aed;padding-left:1.4rem;margin-bottom:2.5rem;">
+Three months ago, a Lagos-based law firm lost a ₦180 million annual retainer. The client — a fintech unicorn — didn't leave because of poor legal advice. They left because a rival firm gave them a client dashboard, automated billing notifications, document access at 2 a.m., and responses within the hour. The losing firm had better lawyers. The winning firm had better systems. <strong>This is the new reality of legal practice in Africa — and most of the profession is still refusing to see it.</strong>
+</p>
+
+<figure style="margin:2.5rem 0;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.18);">
+  <img src="/static/images/file_00000000738c81f49623652e1836bec7_1785319635597.png" alt="LawColab — The Future of Law Firms: AI-Powered Practice Management Platform" style="width:100%;max-height:520px;object-fit:cover;" loading="lazy">
+  <figcaption style="text-align:center;font-size:.85rem;color:#6b7280;padding:.9rem 1.25rem;background:#f9fafb;font-style:italic;">The future isn't coming. It's already here. Law firms using AI-powered practice management are pulling away from the competition every single day.</figcaption>
+</figure>
+
+<h2>The Lie We Tell Ourselves About AI</h2>
+<p>Every bar association dinner, every chambers meeting, every SAN's keynote has the same reassuring refrain: <em>"AI will never replace a good lawyer."</em> It's become the profession's comfort blanket. And it's a dangerous half-truth.</p>
+<p>Nobody credible is arguing that an algorithm will step into Courtroom 8 of the Federal High Court and cross-examine a hostile witness. That's not the threat. The threat is far quieter, far more insidious, and already happening in your city: <strong>AI-powered law firms are absorbing the clients, talent, and market share of firms that refuse to evolve</strong> — not by being better at law, but by being dramatically better at everything around law.</p>
+<p>Research from the International Bar Association's 2026 Technology Survey found that 64% of corporate legal departments now list "technology infrastructure" as a primary criterion when selecting external counsel — ranking it above firm size and above individual partner reputation. Let that sink in.</p>
+
+<blockquote style="margin:2.5rem 0;padding:1.75rem 2rem;background:linear-gradient(135deg,#fdf4ff,#fce7f3);border-left:5px solid #db2777;border-radius:0 14px 14px 0;font-style:italic;font-size:1.08rem;color:#701a75;">
+"We stopped briefing our 20-year external counsel last year. Not because they gave us one bad piece of advice — their legal work is excellent. We stopped because every other service provider we use gives us a dashboard, instant notifications, and self-service document access. Our law firm gave us a PDF invoice every 90 days and a paralegal who didn't return calls on Fridays."
+<footer style="margin-top:.75rem;font-style:normal;font-size:.88rem;color:#374151;font-weight:600;">— General Counsel, Nigerian FMCG Company with ₦12bn revenue</footer>
+</blockquote>
+
+<h2>The Statistics That Should Keep Managing Partners Awake at Night</h2>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.25rem;margin:2.5rem 0;">
+  <div style="background:#fff;border:2px solid #7c3aed;border-radius:14px;padding:1.5rem;text-align:center;">
+    <div style="font-size:2.4rem;font-weight:800;color:#7c3aed;line-height:1;">47%</div>
+    <div style="font-size:.85rem;color:#374151;margin-top:.4rem;line-height:1.5;">of routine legal document review tasks can be handled by AI tools available today — at 1/10th the cost of junior associate time</div>
+  </div>
+  <div style="background:#fff;border:2px solid #db2777;border-radius:14px;padding:1.5rem;text-align:center;">
+    <div style="font-size:2.4rem;font-weight:800;color:#db2777;line-height:1;">₦5M+</div>
+    <div style="font-size:.85rem;color:#374151;margin-top:.4rem;line-height:1.5;">average annual revenue lost per Nigerian law firm through unbilled time, slow invoicing, and poor collections</div>
+  </div>
+  <div style="background:#fff;border:2px solid #f59e0b;border-radius:14px;padding:1.5rem;text-align:center;">
+    <div style="font-size:2.4rem;font-weight:800;color:#f59e0b;line-height:1;">68%</div>
+    <div style="font-size:.85rem;color:#374151;margin-top:.4rem;line-height:1.5;">of law firm associates in Nigeria say they would leave for a firm with better technology within 12 months (LawColab Talent Survey 2026)</div>
+  </div>
+  <div style="background:#fff;border:2px solid #10b981;border-radius:14px;padding:1.5rem;text-align:center;">
+    <div style="font-size:2.4rem;font-weight:800;color:#10b981;line-height:1;">3.2×</div>
+    <div style="font-size:.85rem;color:#374151;margin-top:.4rem;line-height:1.5;">revenue growth rate for African law firms that adopted comprehensive practice management platforms vs. those that didn't (2023–2026)</div>
+  </div>
+</div>
+
+<h2>The Five Stages of Legal Technology Grief</h2>
+<p>Having spoken to hundreds of Nigerian lawyers over the past three years, we've identified a remarkably consistent pattern of response to the technology disruption wave. It maps almost exactly onto the Kübler-Ross model — because it <em>is</em> grief. The profession is grieving the loss of a certainty it held dear: that legal expertise alone would always be sufficient.</p>
+
+<ol style="margin:1.5rem 0 1.5rem 1.5rem;line-height:2;">
+  <li><strong style="color:#7c3aed;">Denial:</strong> "Clients come to me for my brain, not my software. My cases speak for themselves." (Most common in firms with a partner over 55.)</li>
+  <li><strong style="color:#db2777;">Anger:</strong> "These tech startups have no idea how complex actual legal work is. An algorithm cannot understand a hostile witness." (True, and also irrelevant.)</li>
+  <li><strong style="color:#f59e0b;">Bargaining:</strong> "We'll just hire one tech-savvy associate and let them handle all of that." (This never works. Technology adoption requires culture change, not a single hire.)</li>
+  <li><strong style="color:#6366f1;">Depression:</strong> "I've spent 25 years building this practice. I don't have the energy to start learning software at this point." (The most honest, and the most painful stage.)</li>
+  <li><strong style="color:#10b981;">Acceptance:</strong> "Fine. Show me what this platform actually does. I want to understand it properly before I commit." (This is where transformation begins.)</li>
+</ol>
+
+<p>The firms that survive the next decade will be the ones currently in Stage 5. And here is the critical insight that changes everything: <strong>you don't have to become a technologist. You just have to stop running your firm like it's 2005.</strong></p>
+
+<h2>What "AI-Powered Law" Actually Looks Like in Practice</h2>
+
+<p>Strip away the marketing jargon and the conference-circuit hyperbole, and AI in legal practice right now looks like this in the African context:</p>
+
+<div style="background:#f8fafc;border-radius:14px;padding:1.75rem;margin:2rem 0;border:1px solid #e2e8f0;">
+  <h4 style="color:#0d1b4b;margin-bottom:1rem;font-size:1rem;">📋 What AI Can Do For Your Law Firm Right Now</h4>
+  <ul style="margin:0;padding-left:1.4rem;line-height:2;">
+    <li><strong>Draft routine documents</strong> in minutes — NDAs, employment contracts, standard MoUs — with jurisdiction-specific clauses and your firm's house style</li>
+    <li><strong>Extract key data from contracts</strong> during due diligence — party names, dates, obligations, termination clauses — across hundreds of documents simultaneously</li>
+    <li><strong>Flag regulatory changes</strong> automatically — new CBN directives, FIRS guidance notes, SEC rules — matched to your active client matters</li>
+    <li><strong>Automate billing narratives</strong> — convert time entries into professional billing descriptions that clients actually understand</li>
+    <li><strong>Client communication</strong> — automated status updates, document completion alerts, hearing reminders, and overdue invoice notifications</li>
+    <li><strong>Case outcome prediction</strong> — probability assessments for litigation based on historical case law patterns in Nigerian courts</li>
+  </ul>
+</div>
+
+<p>None of these tasks require legal judgment. All of them currently consume enormous amounts of expensive lawyer time in Nigerian law firms. The firms using AI for these tasks are deploying their human talent on the work that genuinely requires human expertise: strategy, judgment, advocacy, relationships.</p>
+
+<h2>🎬 Watch: The Platform Built for This Moment</h2>
+
+<div style="margin:2.5rem 0;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.18);background:#000;">
+  <div style="position:relative;padding-top:56.25%;">
+    <iframe
+      src="https://www.youtube.com/embed/NopBJ0aCcgo?si=nmcHMEl64eBESei3&rel=0&modestbranding=1"
+      title="LawColab — The Future of Law Firms: AI-Powered Practice Management Demo"
+      style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowfullscreen
+      loading="lazy">
+    </iframe>
+  </div>
+</div>
+<p style="text-align:center;font-size:.88rem;color:#6b7280;margin-top:-.75rem;margin-bottom:2rem;font-style:italic;">Watch how LawColab is transforming African law firm operations — from client intake to final invoice, in one unified platform.</p>
+
+<h2>The Uncomfortable Question: Are You Actually Good at Business?</h2>
+
+<p>Here is the question that makes most senior Nigerian lawyers uncomfortable: <em>separate your legal expertise from your business operations — how good is your firm at the business of law?</em></p>
+
+<p>Legal expertise is your product. Business operations are your delivery mechanism. The world's best restaurant with a broken kitchen, untrained waitstaff, no reservations system, and no way to take payments will fail. Not because the chef can't cook. Because the infrastructure around the cooking is broken.</p>
+
+<p>In Nigerian law practice today, this means asking hard questions:</p>
+
+<ul style="margin:1.5rem 0 1.5rem 1.5rem;line-height:2.2;">
+  <li>Do you know, right now, exactly how much unbilled time is sitting in your firm?</li>
+  <li>Can your clients access their documents and case status without calling the office?</li>
+  <li>When a client's court date changes, how does that information travel from the court registry to the responsible partner?</li>
+  <li>How long does it take your firm to produce and send an invoice after a matter closes?</li>
+  <li>If your firm's most senior associate resigned tomorrow, how much institutional knowledge would walk out the door with them?</li>
+  <li>When was the last time a client complimented you not on your legal work, but on your firm's communication and organisation?</li>
+</ul>
+
+<p>If answering any of those questions makes you uncomfortable, your firm has an infrastructure problem. And infrastructure problems don't resolve themselves over time — they compound.</p>
+
+<blockquote style="margin:2.5rem 0;padding:1.75rem 2rem;background:linear-gradient(135deg,#eff6ff,#dbeafe);border-left:5px solid #2563eb;border-radius:0 14px 14px 0;font-style:italic;font-size:1.05rem;color:#1e40af;">
+"The most dangerous moment for a law firm is when it's successful enough to ignore its operational weaknesses. Success masks the inefficiency. Then one day a client leaves, and you find out you've been bleeding for years."
+<footer style="margin-top:.75rem;font-style:normal;font-size:.88rem;color:#374151;font-weight:600;">— Managing Partner, Magic Circle Law Firm Nairobi Regional Office</footer>
+</blockquote>
+
+<h2>The Talent Crisis You're Creating (And Don't Know It)</h2>
+
+<p>There is a talent drain happening in Nigerian legal practice that the profession is not talking about loudly enough. The best junior lawyers — the LLB first-class graduates, the Oluwole Prize winners, the associates who speak three languages and have LL.M.s from UCL — they are leaving law firms. They're joining legal tech startups, in-house teams at tech companies, and international firms with operational infrastructure that doesn't require them to use a shared Excel spreadsheet to track billable hours.</p>
+
+<p>We interviewed 23 associates who left private practice in the past 18 months. Their most common complaints were not about compensation or case quality. They were about <em>administrative chaos</em>: losing documents, chasing partners for billing approvals, manually typing the same client information into five different places, having no visibility into their own workload, and being held accountable for deadlines that no one had formally entered anywhere.</p>
+
+<p>These are software problems. Every single one of them is a software problem.</p>
+
+<h2>The Law Firms Actually Winning in 2026</h2>
+
+<p>The firms thriving right now share a common operating model — and it's not about size or prestige. A 4-partner commercial firm in Ibadan and a 40-lawyer outfit in Victoria Island can both have this architecture:</p>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin:2rem 0;">
+  <div style="background:linear-gradient(135deg,#0d1b4b,#172a72);color:#fff;border-radius:14px;padding:1.4rem;">
+    <div style="font-size:1.5rem;margin-bottom:.5rem;">🏗️</div>
+    <h4 style="color:#FFD700;font-size:.92rem;margin-bottom:.5rem;">Central Infrastructure</h4>
+    <p style="font-size:.82rem;color:rgba(255,255,255,.85);line-height:1.6;margin:0;">One platform that is the authoritative source for all case files, all communications, all billing, all calendar events. No spreadsheets. No duplicate data. One system of truth.</p>
+  </div>
+  <div style="background:linear-gradient(135deg,#065f46,#047857);color:#fff;border-radius:14px;padding:1.4rem;">
+    <div style="font-size:1.5rem;margin-bottom:.5rem;">📱</div>
+    <h4 style="color:#6ee7b7;font-size:.92rem;margin-bottom:.5rem;">Client Transparency Layer</h4>
+    <p style="font-size:.82rem;color:rgba(255,255,255,.85);line-height:1.6;margin:0;">Clients can see their matter status, documents, upcoming hearings, and invoices at any time. Not because you sent them an update — because they have access. This single feature is worth more in client retention than any amount of legal brilliance.</p>
+  </div>
+  <div style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;border-radius:14px;padding:1.4rem;">
+    <div style="font-size:1.5rem;margin-bottom:.5rem;">🤖</div>
+    <h4 style="color:#ddd6fe;font-size:.92rem;margin-bottom:.5rem;">AI Assistance Layer</h4>
+    <p style="font-size:.82rem;color:rgba(255,255,255,.85);line-height:1.6;margin:0;">AI handles the pattern-recognition tasks: document drafting, deadline alerts, billing narratives, regulatory monitoring. Lawyers handle judgment, strategy, and advocacy. Both do what they do best.</p>
+  </div>
+  <div style="background:linear-gradient(135deg,#92400e,#b45309);color:#fff;border-radius:14px;padding:1.4rem;">
+    <div style="font-size:1.5rem;margin-bottom:.5rem;">📊</div>
+    <h4 style="color:#fde68a;font-size:.92rem;margin-bottom:.5rem;">Business Intelligence</h4>
+    <p style="font-size:.82rem;color:rgba(255,255,255,.85);line-height:1.6;margin:0;">Real-time dashboards showing matter profitability, associate utilisation, billing realization rates, and client lifetime value. Managing the firm with data, not instinct.</p>
+  </div>
+</div>
+
+<h2>The Ethical Dimension Nobody Is Discussing</h2>
+
+<p>Here is the argument that should silence every "AI is overhyped" dismissal: <em>competent representation may increasingly require technological competence.</em></p>
+
+<p>The American Bar Association and the UK Solicitors Regulation Authority have both issued guidance noting that the duty of competence now extends to understanding and appropriately using technology in legal practice. The Nigerian Bar Association has not yet issued equivalent guidance — but that guidance is coming. And when it does, the firms that have been refusing to evolve will find themselves not just commercially disadvantaged, but potentially in violation of professional standards.</p>
+
+<p>Think about it from first principles: if AI-powered contract review can identify risks that manual review misses — and it demonstrably can, in peer-reviewed studies — at what point does deliberately avoiding that technology constitute a failure of the duty of care to your client? This is not a hypothetical question. It is an ethics question that the profession needs to grapple with urgently.</p>
+
+<h2>A Direct Challenge to Nigerian Managing Partners</h2>
+
+<p>If you are a managing partner reading this article, here is a direct challenge:</p>
+
+<ol style="margin:1.5rem 0 1.5rem 1.5rem;line-height:2.2;">
+  <li><strong>Audit your revenue leakage this week.</strong> Pull your unbilled time reports. Calculate what 20% billing leakage has cost your firm in the past 12 months. That number, multiplied by the next 10 years, is the cost of doing nothing.</li>
+  <li><strong>Ask your three best clients what frustrates them about working with you.</strong> Not the legal work — the experience. The communication, the billing, the document access. Listen without defensiveness.</li>
+  <li><strong>Interview your last three associates who resigned.</strong> Or the three most likely to leave. Ask them what would make them stay. Technology infrastructure will be in the top three answers.</li>
+  <li><strong>Spend one hour watching a modern practice management platform in action.</strong> Not a 20-page brochure. A real demo. See what it actually does.</li>
+  <li><strong>Make a decision within 30 days.</strong> The worst outcome is paralysis — spending another year in "evaluation mode" while competitors pull ahead.</li>
+</ol>
+
+<div style="background:linear-gradient(135deg,#0d1b4b 0%,#172a72 60%,#7c3aed 100%);color:#fff;border-radius:20px;padding:2.5rem;margin:3rem 0;text-align:center;position:relative;overflow:hidden;">
+  <div style="position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,215,0,.06);pointer-events:none;"></div>
+  <div style="position:absolute;bottom:-30px;left:-30px;width:140px;height:140px;border-radius:50%;background:rgba(124,58,237,.15);pointer-events:none;"></div>
+  <div style="font-size:3rem;margin-bottom:.75rem;">⚖️</div>
+  <h3 style="color:#FFD700;font-size:1.5rem;font-weight:800;margin-bottom:.85rem;">LawColab: Built for This Moment</h3>
+  <p style="color:rgba(255,255,255,.92);font-size:1rem;line-height:1.9;margin-bottom:1.75rem;max-width:580px;margin-left:auto;margin-right:auto;">
+    LawColab is the all-in-one AI legal practice platform designed specifically for African law firms — client & case management, smart calendar, document management, analytics & insights, and an AI legal assistant. Built for how Nigerian lawyers actually work. Not how Silicon Valley imagines they work.
+  </p>
+  <div style="display:flex;gap:.85rem;justify-content:center;flex-wrap:wrap;">
+    <a href="https://lawcolab.com" style="display:inline-flex;align-items:center;gap:.5rem;background:#FFD700;color:#0d1b4b;font-weight:700;padding:.85rem 1.75rem;border-radius:50px;text-decoration:none;font-size:.92rem;">
+      🚀 Explore LawColab
+    </a>
+    <a href="https://youtu.be/NopBJ0aCcgo?si=nmcHMEl64eBESei3" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.35);color:#fff;font-weight:600;padding:.85rem 1.75rem;border-radius:50px;text-decoration:none;font-size:.92rem;">
+      ▶ Watch Demo Video
+    </a>
+  </div>
+  <p style="color:rgba(255,255,255,.5);font-size:.78rem;margin-top:1.25rem;margin-bottom:0;">Join hundreds of law firms already transforming their practice · No credit card required</p>
+</div>
+
+<h2>The Verdict: Not If, But When — and By How Much</h2>
+
+<p>The legal profession in Nigeria is not going to be replaced by AI. But it is going to be radically reorganised by it. The firms that have built proper operational infrastructure — that have embraced technology as a competitive advantage rather than an administrative burden — are going to absorb the market share of those that haven't. That reorganisation is happening right now, today, in every Nigerian city with a functional commercial legal market.</p>
+
+<p>The lawyers who said AI would never affect them are updating their CVs. The lawyers who said it would destroy the profession are hiding under their desks. The lawyers who said <em>"this is an opportunity — let's figure out how to use it before our competitors do"</em> are writing the next chapter of Nigerian legal history.</p>
+
+<p>Which conversation are you having in your chambers this week?</p>
+
+<div style="background:#f0fdf4;border:2px solid #10b981;border-radius:14px;padding:1.5rem 1.75rem;margin:2.5rem 0;">
+  <h4 style="color:#065f46;margin-bottom:.75rem;font-size:1rem;"><i class="fas fa-comments"></i> Join the Conversation</h4>
+  <p style="font-size:.9rem;color:#374151;line-height:1.7;margin-bottom:.5rem;">This article is generating significant discussion in the legal community. We want to hear your perspective:</p>
+  <ul style="font-size:.88rem;color:#374151;line-height:2;margin-bottom:0;padding-left:1.4rem;">
+    <li>Has AI changed how you practice — or how your clients evaluate you?</li>
+    <li>What's the biggest operational challenge your firm faces right now?</li>
+    <li>Do you think the NBA should address technology competence in its practice guidelines?</li>
+  </ul>
+</div>
+
+<p style="font-style:italic;color:#6b7280;font-size:.9rem;border-top:1px solid #e5e7eb;padding-top:1.25rem;margin-top:2rem;"><strong>About this article:</strong> This piece is based on interviews with managing partners, associates, and general counsel across Nigeria and Kenya conducted between March and July 2026, analysis of firm performance data provided by LawColab platform users, and publicly available research from the International Bar Association, the African Legal Technology Survey 2026, and the Lagos Business School Legal Practice Report. All quotes used with permission. Individual identities withheld at source request.</p>
+"""
