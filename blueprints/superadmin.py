@@ -117,16 +117,31 @@ def toggle_user_status():
     return redirect(request.referrer or url_for('superadmin.manage_users'))
 
 def _sa_cleanup_user_fk(uid):
-    """Remove FK-dependent records before hard-deleting a user (superadmin version)."""
+    """Remove FK-dependent records before hard-deleting a user (superadmin version).
+
+    IMPORTANT: all steps run in ONE transaction with no per-step rollback.
+    A per-step rollback would undo earlier deletes, leaving orphan FK rows that
+    cause NOT NULL violations when SQLAlchemy tries to nullify created_by_id on
+    calendar_events (or similar nullable=False columns) during the user delete.
+    """
     steps = [
+        # Nullify soft back-references first so they don't block later deletes
+        "UPDATE support_requests SET resolved_by_id=NULL WHERE resolved_by_id=:u",
+        "UPDATE project_assignments SET assigned_by_id=NULL WHERE assigned_by_id=:u",
+        # Calendar: remove attendee rows (children) before events (parent)
+        "DELETE FROM calendar_event_attendees WHERE user_id=:u",
+        ("DELETE FROM calendar_event_attendees WHERE event_id IN "
+         "(SELECT id FROM calendar_events WHERE created_by_id=:u)"),
+        "DELETE FROM calendar_events WHERE created_by_id=:u",
+        # Messages / chat
         "DELETE FROM project_messages WHERE user_id=:u",
         "DELETE FROM direct_messages WHERE sender_id=:u OR receiver_id=:u",
         "DELETE FROM chat_conversations WHERE user1_id=:u OR user2_id=:u",
-        "UPDATE support_requests SET resolved_by_id=NULL WHERE resolved_by_id=:u",
+        # Support
         "DELETE FROM support_requests WHERE user_id=:u",
+        # Notes
         "DELETE FROM client_notes WHERE client_id=:u OR created_by_id=:u",
-        "DELETE FROM calendar_event_attendees WHERE user_id=:u",
-        "DELETE FROM calendar_events WHERE created_by_id=:u",
+        # Invoices (children before parent)
         "DELETE FROM invoice_chat_attachments WHERE uploaded_by_id=:u",
         "DELETE FROM invoice_chat_messages WHERE sender_id=:u",
         "DELETE FROM invoice_chats WHERE client_id=:u OR created_by_id=:u",
@@ -135,22 +150,22 @@ def _sa_cleanup_user_fk(uid):
         ("DELETE FROM invoice_line_items WHERE invoice_id IN "
          "(SELECT id FROM invoices WHERE client_id=:u OR created_by_id=:u)"),
         "DELETE FROM invoices WHERE client_id=:u OR created_by_id=:u",
+        # Projects (children before parent)
         "DELETE FROM project_files WHERE uploaded_by_id=:u",
         ("DELETE FROM project_messages WHERE project_id IN "
          "(SELECT id FROM projects WHERE created_by_id=:u)"),
         ("DELETE FROM project_files WHERE project_id IN "
          "(SELECT id FROM projects WHERE created_by_id=:u)"),
-        "UPDATE project_assignments SET assigned_by_id=NULL WHERE assigned_by_id=:u",
-        "DELETE FROM project_assignments WHERE user_id=:u",
         ("DELETE FROM project_assignments WHERE project_id IN "
          "(SELECT id FROM projects WHERE created_by_id=:u)"),
+        "DELETE FROM project_assignments WHERE user_id=:u",
         "DELETE FROM projects WHERE created_by_id=:u",
     ]
     for sql in steps:
-        try:
-            db.session.execute(text(sql), {"u": uid})
-        except Exception:
-            db.session.rollback()
+        db.session.execute(text(sql), {"u": uid})
+    # Flush all cleanup to the DB before the caller does db.session.delete(user),
+    # so no FK references to this user remain when the ORM removes the user row.
+    db.session.flush()
 
 @superadmin_bp.route('/users/delete', methods=['POST'])
 @require_super_admin
