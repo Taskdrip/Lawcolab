@@ -198,8 +198,17 @@ def _sa_cleanup_user_fk(uid):
          "(SELECT id FROM calendar_events WHERE created_by_id=:u)"),
         "DELETE FROM calendar_events WHERE created_by_id=:u",
         # ── Chat / messaging ───────────────────────────────────────────────────
+        # First remove the user's own sends and participations
         "DELETE FROM chat_messages    WHERE sender_id=:u",
         "DELETE FROM chat_participants WHERE user_id=:u",
+        # The user may have CREATED rooms that other users still participate in.
+        # Those participant rows (and messages from other senders) must be cleared
+        # before we can delete the owned rooms — otherwise FK on chat_participants
+        # blocks the DELETE FROM chat_rooms.
+        ("DELETE FROM chat_messages WHERE room_id IN "
+         "(SELECT id FROM chat_rooms WHERE created_by_id=:u)"),
+        ("DELETE FROM chat_participants WHERE room_id IN "
+         "(SELECT id FROM chat_rooms WHERE created_by_id=:u)"),
         "DELETE FROM chat_rooms       WHERE created_by_id=:u",
         "DELETE FROM direct_messages  WHERE sender_id=:u OR receiver_id=:u",
         "DELETE FROM chat_conversations WHERE user1_id=:u OR user2_id=:u",
