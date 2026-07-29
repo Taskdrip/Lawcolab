@@ -261,6 +261,23 @@
     </a></li>
   </ul>
 
+  <div class="sidebar-section">Research</div>
+  <ul class="sidebar-nav">
+    <li><a href="{{ url_for('research_robot.dashboard') }}" class="{% if 'research_robot' in request.endpoint %}active{% endif %}">
+      <i class="fas fa-satellite-dish nav-icon"></i> Research Robot
+      <span class="nav-badge" style="background:rgba(124,58,237,.25);color:#c4b5fd;">New</span>
+    </a></li>
+    <li><a href="{{ url_for('research_robot.search') }}" class="{% if request.endpoint == 'research_robot.search' %}active{% endif %}">
+      <i class="fas fa-search nav-icon"></i> Web Scan
+    </a></li>
+    <li><a href="{{ url_for('research_robot.engagement') }}" class="{% if 'engagement' in request.endpoint %}active{% endif %}">
+      <i class="fas fa-comments nav-icon"></i> Social Posts
+    </a></li>
+    <li><a href="{{ url_for('research_robot.browser') }}" class="{% if request.endpoint == 'research_robot.browser' %}active{% endif %}">
+      <i class="fas fa-globe nav-icon"></i> Browser
+    </a></li>
+  </ul>
+
   <div class="sidebar-section">Grow</div>
   <ul class="sidebar-nav">
     <li><a href="{{ url_for('crm.discovery') }}" class="{% if 'discovery' in request.endpoint %}active{% endif %}">

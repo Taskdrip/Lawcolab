@@ -150,6 +150,7 @@ with app.app_context():
     import models_audit        # noqa: F401
     import models_payment      # noqa: F401
     import models_payment_custom  # noqa: F401
+    import models_grabber      # noqa: F401
     db.create_all()
     logger.info("Database tables created / verified")
 

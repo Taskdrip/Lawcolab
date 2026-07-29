@@ -1,0 +1,78 @@
+{% extends "research_robot/base.html" %}
+{% block title %}Session History{% endblock %}
+{% block page_title %}Session History{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item active">Sessions</li>{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm" style="border-radius:14px;">
+  <div class="card-header bg-white border-bottom px-4 py-3 d-flex align-items-center justify-content-between" style="border-radius:14px 14px 0 0;">
+    <h6 class="mb-0 fw-700" style="color:var(--navy);"><i class="fas fa-history me-2" style="color:#7c3aed;"></i>All Research Sessions</h6>
+    <a href="{{ url_for('research_robot.search') }}" class="btn btn-sm" style="background:#7c3aed;color:#fff;border-radius:8px;">
+      <i class="fas fa-plus me-1"></i>New Scan
+    </a>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0" style="font-size:.83rem;">
+      <thead style="background:#f8f9fa;">
+        <tr>
+          <th class="px-4 py-3">#</th>
+          <th>Keyword</th>
+          <th>Platform</th>
+          <th>Type</th>
+          <th class="text-center">Found</th>
+          <th class="text-center">Added</th>
+          <th>Status</th>
+          <th>Country</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in pag.items %}
+        <tr>
+          <td class="px-4 py-3 text-muted">{{ s.id }}</td>
+          <td class="fw-600">{{ s.keyword[:50] }}{{ '…' if s.keyword|length > 50 else '' }}</td>
+          <td>
+            {% set pm = platform_meta.get(s.platform, {'label': s.platform}) %}
+            <span class="platform-badge pb-{{ s.platform }}">{{ pm.label }}</span>
+          </td>
+          <td><span class="badge bg-light text-secondary">{{ s.search_type }}</span></td>
+          <td class="text-center fw-600">{{ s.results_found or 0 }}</td>
+          <td class="text-center fw-600 text-success">{{ s.results_added or 0 }}</td>
+          <td><span class="status-pill sp-{{ s.status }}">{{ s.status }}</span></td>
+          <td class="text-muted">{{ s.country or '—' }}</td>
+          <td class="text-muted">{{ s.created_at.strftime('%b %d, %Y %H:%M') }}</td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{{ url_for('research_robot.session_detail', session_id=s.id) }}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-eye"></i>
+              </a>
+              <form method="POST" action="{{ url_for('research_robot.delete_session', session_id=s.id) }}"
+                    onsubmit="return confirm('Delete this session and all its results?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="10" class="text-center py-5 text-muted">No sessions yet. <a href="{{ url_for('research_robot.search') }}">Run your first scan →</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if pag.pages > 1 %}
+  <div class="card-footer bg-white px-4 py-3">
+    <nav>
+      <ul class="pagination pagination-sm mb-0">
+        {% if pag.has_prev %}<li class="page-item"><a class="page-link" href="?page={{ pag.prev_num }}">‹</a></li>{% endif %}
+        {% for p in pag.iter_pages() %}
+          {% if p %}<li class="page-item {{ 'active' if p == pag.page else '' }}"><a class="page-link" href="?page={{ p }}">{{ p }}</a></li>{% endif %}
+        {% endfor %}
+        {% if pag.has_next %}<li class="page-item"><a class="page-link" href="?page={{ pag.next_num }}">›</a></li>{% endif %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

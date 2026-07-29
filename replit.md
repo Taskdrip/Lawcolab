@@ -1,50 +1,67 @@
-# LawFirmOS — LAWCOLAB Platform
+# LawColab / LawFirmOS
 
 ## Project Overview
-LawFirmOS is a full-stack Python/Flask web application for law firm management. It provides multi-tenant law firm operations (case management, billing, client portals, team collaboration, calendar, invoicing) plus a public **Law Firm Directory & Showcase** system — a Google My Business-style listing hub for Nigerian and global law firms.
+**LawColab** is a full-stack Python/Flask web application — a complete Legal Operating System (OS) for law firms. It includes client management, case tracking, billing, calendaring, a public law firm directory, a CRM pipeline, social community discovery, email outreach, a Research Robot browser, and analytics.
 
-## Stack
-- **Backend**: Python 3 / Flask + SQLAlchemy (PostgreSQL)
-- **Auth**: Flask-Login with role-based access (super_admin, admin, lawyer, client)
-- **Frontend**: Jinja2 templates + Bootstrap 5 + vanilla JS
-- **PDF generation**: WeasyPrint / ReportLab
-- **Deployment**: Gunicorn on Railway (production) / Replit (development)
+**Stack:** Python 3.11 · Flask · SQLAlchemy · SQLite (dev) / PostgreSQL (prod) · Gunicorn · Bootstrap 5 · Chart.js
 
 ## How to Run
-The app starts via the `Start application` workflow:
+The app is started with:
 ```
 gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app
 ```
+Entry point: `main.py` → `app.py` (Flask factory) → `routes.py` (blueprint registration)
 
-## Key Feature Areas
-- `/` — Marketing homepage with featured firm showcases
-- `/directory` — Public law firm directory with smart filters (state, practice area, verified)
-- `/directory/firm/<id>` — Full firm profile with reviews (Google My Business style)
-- `/showcase-profile` — Firm admin self-service profile editor (logo, hero, practice areas, locations, team, social media)
-- `/showcase-profile/edit` — Edit & submit firm profile for super admin approval
-- `/superadmin/directory` — Super admin CRM (HubSpot-style): approve submissions, manage external firms, notes
-- `/superadmin/directory/robot` — Google Maps discovery robot (seeds Nigerian law firm data)
-- `/showcase` — Showcase admin routes (review/message moderation, verification)
-- `/auth` — Login / signup
-- `/dashboard` — Firm admin dashboard
-- `/admin` — Firm admin management panel
-- `/superadmin` — Platform super admin panel
+## Key Modules
+| Area | Blueprint/File | URL Prefix |
+|---|---|---|
+| Public site | `blueprints/public.py` | `/` |
+| Auth | `auth.py` | `/auth` |
+| Super Admin | `blueprints/superadmin.py` | `/superadmin` |
+| CRM Pipeline | `blueprints/crm.py` | `/superadmin/crm` |
+| Social Communities | `blueprints/social_communities.py` | `/superadmin/crm/communities` |
+| **Research Robot** | `blueprints/research_robot.py` | `/superadmin/research-robot` |
+| Email CRM | `blueprints/email_crm.py` | `/superadmin/crm/email` |
+| Directory | `blueprints/directory.py` | `/directory` |
+| Directory Admin | `blueprints/directory_admin.py` | `/superadmin/directory` |
+| Showcase | `blueprints/showcase.py` | `/showcase` |
+| Calendar | `blueprints/calendar.py` | `/calendar` |
+| Invoices | `blueprints/invoices/routes.py` | `/invoices` |
+| Payments | `blueprints/payment_management.py` | (mounted directly) |
 
-## Architecture
-- **`app.py`** — Flask app factory, DB init, migrations run at startup
-- **`models.py`** — All SQLAlchemy models
-- **`routes.py`** — Blueprint registration + top-level routes
-- **`utils/migrations.py`** — Idempotent `ALTER TABLE … ADD COLUMN IF NOT EXISTS` migrations
-- **`blueprints/`** — Feature blueprints (showcase, directory, directory_admin, showcase_profile, etc.)
-- **`templates/`** — Jinja2 HTML templates mirroring blueprint structure
-- **`static/uploads/showcase/`** — User-uploaded firm logos and hero images
+## Database
+- **Dev:** SQLite (`lawcolab_dev.db`)
+- **Prod:** PostgreSQL via `DATABASE_URL` env var
+- **Migrations:** `utils/migrations.py` — runs on every startup, idempotent `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` pattern
 
-## Environment Variables / Secrets
-- `SESSION_SECRET` — Flask session secret key (required)
-- `DATABASE_URL` — PostgreSQL connection string (required in production)
-- `SUPER_ADMIN_EMAIL` / `SUPER_ADMIN_PASSWORD` — Auto-creates super admin on first deploy
+## Models
+- `models.py` — core models (User, LawFirm, DirectoryLawFirm, SocialCommunity, etc.)
+- `models_chat.py` — chat/support models
+- `models_payment.py` + `models_payment_custom.py` — payment models
+- `models_audit.py` — audit logs
+- `models_grabber.py` — Research Robot models (ResearchSession, GrabbedResult, SocialEngagement)
+
+## Research Robot (New Feature)
+CRM Grabber Browser at `/superadmin/research-robot/`:
+- **Search & Scan** — keyword-based web scraping across Facebook, LinkedIn, Reddit, Quora, YouTube, Telegram, Google GMB
+- **Scraper engine** — `utils/scraper_engine.py` — uses DuckDuckGo HTML search + BeautifulSoup
+- **One-click grab** — push scraped results directly to DirectoryLawFirm CRM or SocialCommunity tables
+- **Session history** — every scan is logged with results count and conversion rate
+- **Social Engagement Tracker** — log comments/posts made on external platforms, track likes/shares/views
+- **Web Browser** — in-app browser for visiting and extracting data from community pages
+
+## Environment Secrets
+| Secret | Purpose |
+|---|---|
+| `SESSION_SECRET` | Flask session encryption (required) |
+| `DATABASE_URL` | PostgreSQL connection string (optional, falls back to SQLite) |
+| `SUPER_ADMIN_EMAIL` | Auto-created super admin email |
+| `SUPER_ADMIN_PASSWORD` | Auto-created super admin password |
+| `GA4_MEASUREMENT_ID` | Google Analytics 4 |
+| `GSC_VERIFICATION` | Google Search Console meta tag |
 
 ## User Preferences
-- Keep existing project structure and stack — do not migrate or restructure
-- Migrations are idempotent (`IF NOT EXISTS`) — always add new columns via `utils/migrations.py`
-- Templates use Bootstrap 5 with LAWCOLAB brand colors (`#0d1b4b` navy, `#FFD700` gold)
+- Maintain the existing project structure — do not restructure or rename modules without asking
+- New database columns must always go through `utils/migrations.py` (ADD COLUMN IF NOT EXISTS pattern)
+- All new pages should use the matching base template (crm/base_crm.html for CRM area, research_robot/base.html for robot area, etc.)
+- Super admin routes use `@require_super_admin` decorator from `utils/decorators.py`

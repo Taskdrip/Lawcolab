@@ -1,0 +1,323 @@
+{% extends "research_robot/base.html" %}
+{% block title %}Search & Scan{% endblock %}
+{% block page_title %}Search &amp; Scan{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item active">Search</li>{% endblock %}
+
+{% block extra_css %}
+<style>
+.search-panel{background:#fff;border-radius:16px;padding:2rem;box-shadow:0 2px 16px rgba(0,0,0,.06);border:1px solid var(--border);}
+.scan-results-wrap{max-height:70vh;overflow-y:auto;padding-right:4px;}
+.scan-results-wrap::-webkit-scrollbar{width:4px;}
+.scan-results-wrap::-webkit-scrollbar-thumb{background:#dee2e6;border-radius:2px;}
+.platform-tab{cursor:pointer;padding:.45rem 1rem;border-radius:8px;font-size:.8rem;font-weight:600;border:2px solid transparent;transition:all .15s;}
+.platform-tab.active{color:#fff!important;}
+.platform-tab[data-p="all"].active{background:#7c3aed;border-color:#7c3aed;}
+.platform-tab[data-p="facebook"].active{background:#1877F2;border-color:#1877F2;}
+.platform-tab[data-p="linkedin"].active{background:#0A66C2;border-color:#0A66C2;}
+.platform-tab[data-p="reddit"].active{background:#FF4500;border-color:#FF4500;}
+.platform-tab[data-p="quora"].active{background:#A82400;border-color:#A82400;}
+.platform-tab[data-p="youtube"].active{background:#FF0000;border-color:#FF0000;}
+.platform-tab[data-p="telegram"].active{background:#229ED9;border-color:#229ED9;}
+.platform-tab[data-p="google_gmb"].active{background:#4285F4;border-color:#4285F4;}
+.grab-btn{border:none;padding:.25rem .7rem;border-radius:6px;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .15s;}
+.grab-crm{background:#dbeafe;color:#1d4ed8;}
+.grab-crm:hover{background:#1d4ed8;color:#fff;}
+.grab-comm{background:#ede9fe;color:#7c3aed;}
+.grab-comm:hover{background:#7c3aed;color:#fff;}
+.grab-skip{background:#f3f4f6;color:#6b7280;}
+.grab-skip:hover{background:#e5e7eb;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <!-- Search Form -->
+  <div class="col-lg-4">
+    <div class="search-panel mb-3">
+      <h6 class="fw-700 mb-3" style="color:var(--navy);">
+        <i class="fas fa-robot me-2" style="color:#7c3aed;"></i>Configure Scan
+      </h6>
+
+      <!-- Platform Tabs -->
+      <label class="form-label fw-600 small mb-2">Platform</label>
+      <div class="d-flex flex-wrap gap-1 mb-3" id="platformTabs">
+        <span class="platform-tab active" data-p="all" style="background:#ede9fe;color:#7c3aed;">All</span>
+        <span class="platform-tab" data-p="facebook" style="background:#e7f0fd;color:#1877F2;"><i class="fab fa-facebook me-1"></i>FB</span>
+        <span class="platform-tab" data-p="linkedin" style="background:#e8f4fd;color:#0A66C2;"><i class="fab fa-linkedin me-1"></i>LI</span>
+        <span class="platform-tab" data-p="reddit" style="background:#fff0eb;color:#FF4500;"><i class="fab fa-reddit me-1"></i>Reddit</span>
+        <span class="platform-tab" data-p="quora" style="background:#fde8e6;color:#A82400;"><i class="fab fa-quora me-1"></i>Quora</span>
+        <span class="platform-tab" data-p="youtube" style="background:#ffe9e9;color:#FF0000;"><i class="fab fa-youtube me-1"></i>YT</span>
+        <span class="platform-tab" data-p="telegram" style="background:#e2f4fc;color:#229ED9;"><i class="fab fa-telegram me-1"></i>TG</span>
+        <span class="platform-tab" data-p="google_gmb" style="background:#e8f0fe;color:#4285F4;"><i class="fab fa-google me-1"></i>GMB</span>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-600 small">Search Type</label>
+        <select class="form-select form-select-sm" id="searchType">
+          <option value="community">Community / Group Discovery</option>
+          <option value="gmb_listing">GMB / Law Firm Directory</option>
+          <option value="quora">Quora Questions & Spaces</option>
+          <option value="web">General Web Research</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-600 small">Keywords <span class="text-danger">*</span></label>
+        <input type="text" class="form-control form-control-sm" id="keyword"
+               placeholder="e.g. corporate law Nigeria, legal aid Africa…">
+        <div class="form-text">Be specific — include practice area + country for best results.</div>
+      </div>
+
+      <div class="mb-3" id="locationField">
+        <label class="form-label fw-600 small">Location / Country</label>
+        <input type="text" class="form-control form-control-sm" id="location"
+               placeholder="e.g. Nigeria, Lagos, United Kingdom…">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-600 small">Country Focus</label>
+        <select class="form-select form-select-sm" id="country">
+          <option value="Global">Global</option>
+          <option value="Nigeria">Nigeria</option>
+          <option value="Ghana">Ghana</option>
+          <option value="Kenya">Kenya</option>
+          <option value="South Africa">South Africa</option>
+          <option value="United Kingdom">United Kingdom</option>
+          <option value="United States">United States</option>
+          <option value="Canada">Canada</option>
+          <option value="Australia">Australia</option>
+          <option value="India">India</option>
+        </select>
+      </div>
+
+      <!-- Suggested keywords -->
+      <div class="mb-3">
+        <label class="form-label fw-600 small">Quick Keywords</label>
+        <div class="d-flex flex-wrap gap-1">
+          {% for kw in ['corporate law', 'family law', 'criminal defense', 'legal aid', 'business law', 'immigration law', 'employment law', 'real estate law', 'intellectual property', 'law firm marketing'] %}
+          <span class="badge bg-light text-dark border" style="cursor:pointer;font-size:.7rem;"
+                onclick="document.getElementById('keyword').value='{{ kw }}'">{{ kw }}</span>
+          {% endfor %}
+        </div>
+      </div>
+
+      <button id="startScanBtn" class="btn w-100 fw-600" style="background:#7c3aed;color:#fff;border-radius:10px;">
+        <i class="fas fa-satellite-dish me-2"></i>Launch Research Scan
+      </button>
+    </div>
+
+    <!-- Recent sessions mini-list -->
+    {% if sessions %}
+    <div class="card border-0 shadow-sm" style="border-radius:12px;">
+      <div class="card-body px-3 py-3">
+        <h6 class="fw-700 mb-2" style="font-size:.82rem;color:var(--navy);">Recent Sessions</h6>
+        {% for s in sessions %}
+        <a href="{{ url_for('research_robot.session_detail', session_id=s.id) }}"
+           class="d-flex align-items-center gap-2 py-1 text-decoration-none text-dark" style="font-size:.78rem;">
+          <span class="status-pill sp-{{ s.status }}">{{ s.status }}</span>
+          <span class="text-truncate">{{ s.keyword }}</span>
+          <span class="ms-auto text-muted">+{{ s.results_found or 0 }}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Results Panel -->
+  <div class="col-lg-8">
+    <!-- Loading -->
+    <div id="scanLoading" class="d-none text-center py-5">
+      <div class="spinner-border mb-3" style="color:#7c3aed;width:2.5rem;height:2.5rem;" role="status"></div>
+      <div class="fw-600 mb-1" style="color:#7c3aed;">Scanning the web…</div>
+      <div class="text-muted small">Searching across communities, groups & listings</div>
+      <div class="mt-3 px-5">
+        <div class="progress" style="height:4px;">
+          <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:60%;background:#7c3aed;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="scanEmpty" class="text-center py-5">
+      <div style="font-size:4rem;">🤖</div>
+      <h5 class="fw-700 mt-2 mb-1" style="color:var(--navy);">Ready to Scan</h5>
+      <p class="text-muted">Enter a keyword and click Launch — the robot will search across all selected platforms and surface communities, groups, and listings you can add directly to your CRM.</p>
+    </div>
+
+    <!-- Results -->
+    <div id="scanResultsPanel" class="d-none">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-700 mb-0" style="color:var(--navy);">
+          <span id="resultsCount">0</span> Results Found
+          <span class="badge ms-2" id="sessionBadge" style="background:#ede9fe;color:#7c3aed;font-size:.7rem;"></span>
+        </h6>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm grab-comm" id="bulkCommunityBtn" onclick="bulkGrab('community')">
+            <i class="fas fa-users me-1"></i>All → Communities
+          </button>
+          <button class="btn btn-sm grab-crm" id="bulkCrmBtn" onclick="bulkGrab('crm')">
+            <i class="fas fa-building me-1"></i>All → CRM
+          </button>
+        </div>
+      </div>
+      <div class="scan-results-wrap" id="resultsContainer"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentPlatform = 'all';
+let currentSessionId = null;
+
+// Platform tab switch
+document.querySelectorAll('.platform-tab').forEach(tab => {
+  tab.addEventListener('click', function(){
+    document.querySelectorAll('.platform-tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    currentPlatform = this.dataset.p;
+    // Show/hide location field for GMB
+    document.getElementById('locationField').style.display =
+      currentPlatform === 'google_gmb' ? 'block' : 'block';
+  });
+});
+
+// Search type changes
+document.getElementById('searchType').addEventListener('change', function(){
+  if(this.value === 'gmb_listing'){
+    currentPlatform = 'google_gmb';
+    document.querySelectorAll('.platform-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.p === 'google_gmb');
+    });
+  }
+});
+
+// Launch scan
+document.getElementById('startScanBtn').addEventListener('click', async function(){
+  const keyword = document.getElementById('keyword').value.trim();
+  if(!keyword){ alert('Please enter a keyword.'); return; }
+
+  document.getElementById('scanEmpty').classList.add('d-none');
+  document.getElementById('scanResultsPanel').classList.add('d-none');
+  document.getElementById('scanLoading').classList.remove('d-none');
+  this.disabled = true;
+  this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Scanning…';
+
+  try {
+    const r = await csrfJsonFetch('{{ url_for("research_robot.scan") }}', {
+        keyword,
+        platform: currentPlatform,
+        search_type: document.getElementById('searchType').value,
+        country: document.getElementById('country').value,
+        location: document.getElementById('location').value,
+      });
+    const d = await r.json();
+    document.getElementById('scanLoading').classList.add('d-none');
+
+    if(d.error){
+      document.getElementById('scanEmpty').classList.remove('d-none');
+      alert('Scan error: ' + d.error);
+    } else {
+      currentSessionId = d.session_id;
+      renderResults(d.results, d.session_id);
+    }
+  } catch(err){
+    document.getElementById('scanLoading').classList.add('d-none');
+    document.getElementById('scanEmpty').classList.remove('d-none');
+    alert('Error: ' + err.message);
+  } finally {
+    this.disabled = false;
+    this.innerHTML = '<i class="fas fa-satellite-dish me-2"></i>Launch Research Scan';
+  }
+});
+
+function renderResults(results, sessionId){
+  document.getElementById('resultsCount').textContent = results.length;
+  document.getElementById('sessionBadge').textContent = 'Session #' + sessionId;
+  document.getElementById('scanResultsPanel').classList.remove('d-none');
+  const container = document.getElementById('resultsContainer');
+  container.innerHTML = '';
+
+  if(!results.length){
+    container.innerHTML = '<div class="text-center py-4 text-muted"><i class="fas fa-search-minus fa-2x mb-2 d-block opacity-25"></i>No results found. Try a different keyword or platform.</div>';
+    return;
+  }
+
+  const PLATFORM_META = {{ platform_meta | tojson }};
+  results.forEach(item => {
+    const pm = PLATFORM_META[item.platform] || {label: item.platform, color:'#6c757d', icon:'globe'};
+    const mc = item.member_count_text || (item.member_count ? item.member_count.toLocaleString() : '');
+    const isListing = item.result_type === 'listing';
+    container.insertAdjacentHTML('beforeend', `
+      <div class="result-card" id="result-${item.id}" data-id="${item.id}">
+        <div class="d-flex align-items-start gap-3">
+          <div class="flex-grow-1 min-w-0">
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span class="platform-badge pb-${item.platform}">
+                <i class="fab fa-${pm.icon || 'globe'} me-1"></i>${pm.label}
+              </span>
+              ${mc ? `<span class="badge bg-light text-secondary" style="font-size:.68rem;"><i class="fas fa-users me-1"></i>${mc}</span>` : ''}
+              ${item.category ? `<span class="badge" style="background:#f0fdf4;color:#166534;font-size:.67rem;">${item.category}</span>` : ''}
+            </div>
+            <div class="fw-600 mb-1" style="font-size:.9rem;">${item.name || 'Untitled'}</div>
+            <div class="text-muted" style="font-size:.78rem;line-height:1.4;">
+              ${(item.description || '').substring(0, 180)}${item.description && item.description.length > 180 ? '…' : ''}
+            </div>
+            ${isListing ? `
+              <div class="mt-1" style="font-size:.75rem;color:#6c757d;">
+                ${item.phone ? `<span class="me-2"><i class="fas fa-phone me-1"></i>${item.phone}</span>` : ''}
+                ${item.address ? `<span class="me-2"><i class="fas fa-map-marker-alt me-1"></i>${item.address}</span>` : ''}
+                ${item.rating ? `<span class="me-2"><i class="fas fa-star me-1" style="color:#f59e0b;"></i>${item.rating}</span>` : ''}
+              </div>` : ''}
+            <div class="mt-1">
+              <a href="${item.url}" target="_blank" rel="noopener" class="text-primary" style="font-size:.72rem; word-break:break-all;">
+                <i class="fas fa-external-link-alt me-1"></i>${item.url.substring(0,70)}${item.url.length>70?'…':''}
+              </a>
+            </div>
+          </div>
+          <div class="d-flex flex-column gap-1 flex-shrink-0" id="btns-${item.id}">
+            ${!isListing ? `<button class="grab-btn grab-comm" onclick="grab(${item.id},'community')"><i class="fas fa-users me-1"></i>Community</button>` : ''}
+            <button class="grab-btn grab-crm" onclick="grab(${item.id},'${isListing ? 'directory' : 'crm'}')"><i class="fas fa-building me-1"></i>${isListing ? 'Directory' : 'CRM'}</button>
+            <button class="grab-btn grab-skip" onclick="grab(${item.id},'skip')"><i class="fas fa-times me-1"></i>Skip</button>
+          </div>
+        </div>
+      </div>
+    `);
+  });
+}
+
+async function grab(id, target){
+  const btnWrap = document.getElementById('btns-'+id);
+  btnWrap.innerHTML = '<span class="spinner-border spinner-border-sm text-primary"></span>';
+  try {
+    const fd = new FormData();
+    fd.append('target', target);
+    const r = await csrfFormFetch(`/superadmin/research-robot/grab/${id}`, fd);
+    const d = await r.json();
+    const card = document.getElementById('result-'+id);
+    if(d.ok){
+      const labels = {community:'Added to Communities',crm:'Added to CRM',directory:'Added to Directory',skip:'Skipped',duplicate:'Duplicate'};
+      const colors = {community:'#7c3aed',crm:'#1d4ed8',directory:'#0891b2',skip:'#6b7280',duplicate:'#d97706'};
+      const s = d.status || target;
+      card.classList.add(d.status === 'skipped' ? 'skipped' : 'added');
+      btnWrap.innerHTML = `<span class="status-pill" style="background:#ede9fe;color:${colors[s]||'#666'};">${labels[s]||s}</span>`;
+    } else {
+      btnWrap.innerHTML = `<span class="text-danger" style="font-size:.72rem;">${d.error||'Error'}</span>`;
+    }
+  } catch(err){
+    btnWrap.innerHTML = `<span class="text-danger" style="font-size:.72rem;">${err.message}</span>`;
+  }
+}
+
+async function bulkGrab(target){
+  if(!currentSessionId){ alert('Run a scan first.'); return; }
+  if(!confirm(`Push ALL pending results to ${target === 'community' ? 'Communities CRM' : 'Law Firm CRM'}?`)) return;
+  const r = await csrfJsonFetch('{{ url_for("research_robot.grab_bulk") }}', {session_id: currentSessionId, target});
+  const d = await r.json();
+  alert(`Done! Added: ${d.added}, Duplicates skipped: ${d.duplicates}`);
+  window.location.reload();
+}
+</script>
+{% endblock %}

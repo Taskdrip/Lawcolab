@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Research Robot{% endblock %} — LAWCOLAB</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  {% block extra_css %}{% endblock %}
+  <style>
+    *{font-family:'Inter',sans-serif;}
+    :root{
+      --navy:#0d1b4b;--gold:#FFD700;--gold-dark:#b8860b;
+      --sidebar-w:240px;--sidebar-bg:#0d1b4b;
+      --bg:#f0f2f7;--card-bg:#fff;--border:#e2e8f0;
+      --text:#1a202c;--text-muted:#718096;
+      --robot:#7c3aed;--robot-light:#ede9fe;
+    }
+    body{background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
+    /* ── Sidebar ── */
+    .rr-sidebar{
+      position:fixed;top:0;left:0;height:100vh;width:var(--sidebar-w);
+      background:var(--sidebar-bg);z-index:100;overflow-y:auto;
+      display:flex;flex-direction:column;
+    }
+    .rr-sidebar::-webkit-scrollbar{width:4px;}
+    .rr-sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:2px;}
+    .sidebar-logo{
+      padding:1.2rem 1.2rem .9rem;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .sidebar-logo-icon{
+      width:38px;height:38px;background:var(--robot);border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      color:#fff;font-size:1.05rem;font-weight:800;
+    }
+    .sidebar-logo-text{color:#fff;font-weight:700;font-size:.93rem;line-height:1.2;}
+    .sidebar-logo-text span{color:var(--gold);}
+    .sidebar-logo-sub{color:rgba(255,255,255,.4);font-size:.66rem;font-weight:500;letter-spacing:.07em;text-transform:uppercase;}
+
+    .sidebar-section{padding:.7rem 1rem .2rem;color:rgba(255,255,255,.3);font-size:.63rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;}
+    .sidebar-nav{list-style:none;margin:0;padding:0 .5rem;}
+    .sidebar-nav li a{
+      display:flex;align-items:center;gap:.65rem;
+      padding:.52rem .75rem;border-radius:8px;
+      color:rgba(255,255,255,.7);text-decoration:none;
+      font-size:.82rem;font-weight:500;
+      transition:all .15s ease;margin-bottom:.08rem;
+    }
+    .sidebar-nav li a:hover{background:rgba(255,255,255,.07);color:#fff;}
+    .sidebar-nav li a.active{background:rgba(124,58,237,.25);color:var(--gold);font-weight:600;}
+    .sidebar-nav li a .nav-icon{width:18px;text-align:center;font-size:.83rem;flex-shrink:0;}
+    .sidebar-nav li a .nav-badge{
+      margin-left:auto;background:rgba(255,255,255,.12);
+      color:rgba(255,255,255,.7);font-size:.6rem;font-weight:700;
+      padding:.1rem .45rem;border-radius:20px;
+    }
+    .sidebar-nav li a.active .nav-badge{background:rgba(255,215,0,.2);color:var(--gold);}
+
+    /* ── Main ── */
+    .rr-main{
+      margin-left:var(--sidebar-w);flex:1;min-height:100vh;
+      display:flex;flex-direction:column;
+    }
+    .rr-topbar{
+      background:#fff;border-bottom:1px solid var(--border);
+      padding:.75rem 1.5rem;display:flex;align-items:center;
+      gap:1rem;position:sticky;top:0;z-index:50;
+    }
+    .rr-topbar .page-title{font-weight:700;font-size:1.05rem;color:var(--navy);}
+    .rr-topbar .breadcrumb{margin:0;font-size:.78rem;}
+    .rr-content{padding:1.5rem;flex:1;}
+
+    /* ── Cards ── */
+    .stat-card{background:#fff;border-radius:14px;padding:1.25rem 1.5rem;border:1px solid var(--border);transition:box-shadow .2s;}
+    .stat-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.07);}
+    .stat-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.15rem;}
+    .stat-val{font-size:1.9rem;font-weight:800;line-height:1;}
+    .stat-label{font-size:.75rem;color:var(--text-muted);font-weight:500;margin-top:.2rem;}
+
+    /* ── Platform badges ── */
+    .platform-badge{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .5rem;border-radius:6px;font-size:.72rem;font-weight:600;}
+    .pb-facebook{background:#e7f0fd;color:#1877F2;}
+    .pb-linkedin{background:#e8f4fd;color:#0A66C2;}
+    .pb-reddit{background:#fff0eb;color:#FF4500;}
+    .pb-quora{background:#fde8e6;color:#A82400;}
+    .pb-youtube{background:#ffe9e9;color:#FF0000;}
+    .pb-google_gmb{background:#e8f0fe;color:#4285F4;}
+    .pb-telegram{background:#e2f4fc;color:#229ED9;}
+    .pb-twitter{background:#f0f0f0;color:#000;}
+    .pb-web{background:#f3f4f6;color:#6c757d;}
+    .pb-whatsapp{background:#e6f9ee;color:#25D366;}
+
+    /* ── Result cards ── */
+    .result-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1rem 1.15rem;transition:box-shadow .2s;margin-bottom:.75rem;}
+    .result-card:hover{box-shadow:0 3px 16px rgba(0,0,0,.06);}
+    .result-card.added{border-left:3px solid #198754;}
+    .result-card.skipped{opacity:.55;}
+    .result-card.duplicate{border-left:3px solid #ffc107;}
+
+    /* ── Status pill ── */
+    .status-pill{display:inline-block;padding:.15rem .6rem;border-radius:20px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+    .sp-pending{background:#f3f4f6;color:#6c757d;}
+    .sp-added_crm,.sp-added_directory{background:#d1fae5;color:#065f46;}
+    .sp-added_community{background:#ddd6fe;color:#5b21b6;}
+    .sp-skipped{background:#f3f4f6;color:#9ca3af;}
+    .sp-duplicate{background:#fef3c7;color:#92400e;}
+    .sp-running{background:#dbeafe;color:#1d4ed8;}
+    .sp-done{background:#d1fae5;color:#065f46;}
+    .sp-error{background:#fee2e2;color:#991b1b;}
+
+    @media(max-width:768px){
+      .rr-sidebar{transform:translateX(-100%);}
+      .rr-sidebar.open{transform:translateX(0);}
+      .rr-main{margin-left:0;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<aside class="rr-sidebar">
+  <div class="sidebar-logo d-flex align-items-center gap-2">
+    <div class="sidebar-logo-icon"><i class="fas fa-robot"></i></div>
+    <div>
+      <div class="sidebar-logo-text"><span>LAW</span>COLAB</div>
+      <div class="sidebar-logo-sub">Research Robot</div>
+    </div>
+  </div>
+
+  <div class="sidebar-section mt-2">Navigator</div>
+  <ul class="sidebar-nav">
+    <li><a href="{{ url_for('research_robot.dashboard') }}"
+           class="{{ 'active' if request.endpoint == 'research_robot.dashboard' else '' }}">
+      <span class="nav-icon"><i class="fas fa-tachometer-alt"></i></span> Dashboard
+    </a></li>
+    <li><a href="{{ url_for('research_robot.search') }}"
+           class="{{ 'active' if request.endpoint in ('research_robot.search','research_robot.scan') else '' }}">
+      <span class="nav-icon"><i class="fas fa-search"></i></span> Search & Scan
+    </a></li>
+    <li><a href="{{ url_for('research_robot.sessions') }}"
+           class="{{ 'active' if 'session' in request.endpoint else '' }}">
+      <span class="nav-icon"><i class="fas fa-history"></i></span> Session History
+    </a></li>
+    <li><a href="{{ url_for('research_robot.browser') }}"
+           class="{{ 'active' if request.endpoint == 'research_robot.browser' else '' }}">
+      <span class="nav-icon"><i class="fas fa-globe"></i></span> Web Browser
+    </a></li>
+  </ul>
+
+  <div class="sidebar-section">Social</div>
+  <ul class="sidebar-nav">
+    <li><a href="{{ url_for('research_robot.engagement') }}"
+           class="{{ 'active' if 'engagement' in request.endpoint else '' }}">
+      <span class="nav-icon"><i class="fas fa-comments"></i></span> Engagement Tracker
+    </a></li>
+  </ul>
+
+  <div class="sidebar-section">CRM Links</div>
+  <ul class="sidebar-nav">
+    <li><a href="{{ url_for('crm.leads') }}">
+      <span class="nav-icon"><i class="fas fa-building"></i></span> Law Firm CRM
+    </a></li>
+    <li><a href="{{ url_for('social_communities.index') }}">
+      <span class="nav-icon"><i class="fas fa-users"></i></span> Communities CRM
+    </a></li>
+    <li><a href="{{ url_for('directory_admin.external_firms') }}">
+      <span class="nav-icon"><i class="fas fa-map-marker-alt"></i></span> Directory
+    </a></li>
+    <li><a href="{{ url_for('superadmin.dashboard') }}">
+      <span class="nav-icon"><i class="fas fa-arrow-left"></i></span> Back to Admin
+    </a></li>
+  </ul>
+
+  <div class="mt-auto p-3 border-top" style="border-color:rgba(255,255,255,.08)!important;">
+    <div class="text-center" style="color:rgba(255,255,255,.3);font-size:.65rem;">
+      <i class="fas fa-robot me-1"></i> Research Robot v1.0
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main content ── -->
+<main class="rr-main">
+  <div class="rr-topbar">
+    <button class="btn btn-sm d-lg-none me-1" onclick="document.querySelector('.rr-sidebar').classList.toggle('open')">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div>
+      <div class="page-title">{% block page_title %}Research Robot{% endblock %}</div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="{{ url_for('superadmin.dashboard') }}">Admin</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('research_robot.dashboard') }}">Research Robot</a></li>
+          {% block breadcrumb %}{% endblock %}
+        </ol>
+      </nav>
+    </div>
+    <div class="ms-auto d-flex align-items-center gap-2">
+      <a href="{{ url_for('research_robot.search') }}" class="btn btn-sm" style="background:var(--robot);color:#fff;border-radius:8px;">
+        <i class="fas fa-search me-1"></i>New Scan
+      </a>
+      <a href="{{ url_for('research_robot.add_engagement') if false else url_for('research_robot.engagement') }}" class="btn btn-sm btn-outline-secondary">
+        <i class="fas fa-plus me-1"></i>Log Post
+      </a>
+    </div>
+  </div>
+
+  <div class="rr-content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ 'success' if cat == 'success' else 'danger' if cat == 'error' else 'info' }} alert-dismissible fade show" role="alert">
+          {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// Global CSRF helpers — use these for all fetch() calls in this app
+const _csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+function csrfFetch(url, opts = {}) {
+  opts.headers = opts.headers || {};
+  opts.headers['X-CSRFToken'] = _csrfToken;
+  return fetch(url, opts);
+}
+
+function csrfJsonFetch(url, body) {
+  return fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': _csrfToken },
+    body: JSON.stringify(body),
+  });
+}
+
+function csrfFormFetch(url, formData) {
+  formData.append('csrf_token', _csrfToken);
+  return fetch(url, { method: 'POST', body: formData });
+}
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

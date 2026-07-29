@@ -511,6 +511,96 @@ def run_migrations(db):
         """,
         "CREATE INDEX IF NOT EXISTS idx_cel_record ON crm_edit_logs(record_type, record_id)",
         "CREATE INDEX IF NOT EXISTS idx_cel_created ON crm_edit_logs(created_at)",
+
+        # ── research_sessions table ────────────────────────────────────────────
+        """
+        CREATE TABLE IF NOT EXISTS research_sessions (
+            id SERIAL PRIMARY KEY,
+            keyword VARCHAR(300) NOT NULL,
+            platform VARCHAR(60) NOT NULL,
+            search_type VARCHAR(60) DEFAULT 'community',
+            country VARCHAR(100),
+            results_found INTEGER DEFAULT 0,
+            results_added INTEGER DEFAULT 0,
+            status VARCHAR(30) DEFAULT 'pending',
+            error_message TEXT,
+            run_by_id VARCHAR REFERENCES users(id) ON DELETE SET NULL,
+            created_at TIMESTAMP DEFAULT NOW(),
+            completed_at TIMESTAMP
+        )
+        """,
+        "CREATE INDEX IF NOT EXISTS idx_rsess_created ON research_sessions(created_at)",
+        "CREATE INDEX IF NOT EXISTS idx_rsess_status  ON research_sessions(status)",
+
+        # ── grabbed_results table ──────────────────────────────────────────────
+        """
+        CREATE TABLE IF NOT EXISTS grabbed_results (
+            id SERIAL PRIMARY KEY,
+            session_id INTEGER NOT NULL REFERENCES research_sessions(id) ON DELETE CASCADE,
+            result_type VARCHAR(30) DEFAULT 'community',
+            platform VARCHAR(60),
+            name VARCHAR(300),
+            url VARCHAR(1000),
+            description TEXT,
+            snippet TEXT,
+            thumbnail VARCHAR(500),
+            member_count INTEGER,
+            member_count_text VARCHAR(50),
+            category VARCHAR(100),
+            country_focus VARCHAR(100),
+            join_link VARCHAR(1000),
+            phone VARCHAR(50),
+            email VARCHAR(200),
+            address VARCHAR(500),
+            city VARCHAR(100),
+            state VARCHAR(100),
+            country VARCHAR(100),
+            rating FLOAT,
+            reviews INTEGER,
+            website VARCHAR(500),
+            place_id VARCHAR(200),
+            status VARCHAR(30) DEFAULT 'pending',
+            crm_id INTEGER,
+            notes TEXT,
+            raw_json TEXT,
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+        """,
+        "CREATE INDEX IF NOT EXISTS idx_gr_session ON grabbed_results(session_id)",
+        "CREATE INDEX IF NOT EXISTS idx_gr_status  ON grabbed_results(status)",
+
+        # ── social_engagements table ───────────────────────────────────────────
+        """
+        CREATE TABLE IF NOT EXISTS social_engagements (
+            id SERIAL PRIMARY KEY,
+            platform VARCHAR(60) NOT NULL,
+            engagement_type VARCHAR(40) DEFAULT 'comment',
+            target_url VARCHAR(1000),
+            target_name VARCHAR(300),
+            post_content TEXT,
+            post_url VARCHAR(1000),
+            image_url VARCHAR(500),
+            hashtags VARCHAR(500),
+            status VARCHAR(30) DEFAULT 'posted',
+            scheduled_at TIMESTAMP,
+            posted_at TIMESTAMP DEFAULT NOW(),
+            views INTEGER DEFAULT 0,
+            likes INTEGER DEFAULT 0,
+            comments INTEGER DEFAULT 0,
+            shares INTEGER DEFAULT 0,
+            clicks INTEGER DEFAULT 0,
+            last_checked_at TIMESTAMP,
+            linked_firm_id INTEGER REFERENCES directory_law_firms(id) ON DELETE SET NULL,
+            linked_community_id INTEGER REFERENCES social_communities(id) ON DELETE SET NULL,
+            posted_by_id VARCHAR REFERENCES users(id) ON DELETE SET NULL,
+            campaign_tag VARCHAR(200),
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT NOW(),
+            updated_at TIMESTAMP DEFAULT NOW()
+        )
+        """,
+        "CREATE INDEX IF NOT EXISTS idx_seng_platform ON social_engagements(platform)",
+        "CREATE INDEX IF NOT EXISTS idx_seng_posted   ON social_engagements(posted_at)",
     ]
 
     # Detect SQLite so we can translate PostgreSQL-specific syntax

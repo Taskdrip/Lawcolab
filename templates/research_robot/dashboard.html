@@ -1,0 +1,218 @@
+{% extends "research_robot/base.html" %}
+{% block title %}Research Robot Dashboard{% endblock %}
+{% block page_title %}Research Robot Dashboard{% endblock %}
+
+{% block content %}
+<!-- ── Stat strip ── -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3">
+    <div class="stat-card d-flex align-items-center gap-3">
+      <div class="stat-icon" style="background:#ede9fe;color:#7c3aed;"><i class="fas fa-robot"></i></div>
+      <div>
+        <div class="stat-val" style="color:#7c3aed;">{{ total_sessions }}</div>
+        <div class="stat-label">Scan Sessions</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card d-flex align-items-center gap-3">
+      <div class="stat-icon" style="background:#dbeafe;color:#1d4ed8;"><i class="fas fa-database"></i></div>
+      <div>
+        <div class="stat-val" style="color:#1d4ed8;">{{ total_grabbed }}</div>
+        <div class="stat-label">Results Grabbed</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card d-flex align-items-center gap-3">
+      <div class="stat-icon" style="background:#d1fae5;color:#065f46;"><i class="fas fa-check-circle"></i></div>
+      <div>
+        <div class="stat-val" style="color:#065f46;">{{ total_added }}</div>
+        <div class="stat-label">Added to CRM</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card d-flex align-items-center gap-3">
+      <div class="stat-icon" style="background:#fef3c7;color:#92400e;"><i class="fas fa-comments"></i></div>
+      <div>
+        <div class="stat-val" style="color:#92400e;">{{ total_engagement }}</div>
+        <div class="stat-label">Social Posts</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Quick actions -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm mb-3" style="border-radius:14px;">
+      <div class="card-body p-4">
+        <h6 class="fw-700 mb-3" style="color:var(--navy);"><i class="fas fa-bolt me-2" style="color:var(--gold);"></i>Quick Scan</h6>
+        <form id="quickScanForm">
+          <div class="mb-2">
+            <input type="text" class="form-control form-control-sm" id="qs-keyword" placeholder="Keyword e.g. corporate law Nigeria" required>
+          </div>
+          <div class="mb-2">
+            <select class="form-select form-select-sm" id="qs-type">
+              <option value="community">Community / Group Search</option>
+              <option value="gmb_listing">GMB / Law Firm Listing</option>
+              <option value="quora">Quora Questions</option>
+              <option value="web">General Web</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <select class="form-select form-select-sm" id="qs-platform">
+              <option value="all">All Platforms</option>
+              <option value="facebook">Facebook</option>
+              <option value="linkedin">LinkedIn</option>
+              <option value="reddit">Reddit</option>
+              <option value="quora">Quora</option>
+              <option value="youtube">YouTube</option>
+              <option value="telegram">Telegram</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-sm w-100 fw-600" style="background:#7c3aed;color:#fff;border-radius:8px;">
+            <i class="fas fa-robot me-1"></i> Launch Scan
+          </button>
+        </form>
+        <div id="qsScanStatus" class="mt-2 d-none">
+          <div class="d-flex align-items-center gap-2 text-muted" style="font-size:.8rem;">
+            <div class="spinner-border spinner-border-sm" role="status"></div>
+            <span>Scanning the web…</span>
+          </div>
+        </div>
+        <div id="qsScanResult" class="mt-2 d-none"></div>
+      </div>
+    </div>
+
+    <!-- Platform breakdown -->
+    <div class="card border-0 shadow-sm" style="border-radius:14px;">
+      <div class="card-body p-4">
+        <h6 class="fw-700 mb-3" style="color:var(--navy);"><i class="fas fa-chart-pie me-2" style="color:var(--gold);"></i>Platform Breakdown</h6>
+        {% if platform_stats %}
+          {% for plat, cnt in platform_stats %}
+            {% set meta = platform_meta.get(plat, {'label': plat, 'color': '#6c757d'}) %}
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="platform-badge pb-{{ plat }}"><i class="fab fa-{{ meta.icon }} me-1"></i>{{ meta.label }}</span>
+              <span class="fw-700" style="font-size:.85rem;">{{ cnt }}</span>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-muted small mb-0">No scans yet — run a search to populate.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent sessions -->
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm" style="border-radius:14px;">
+      <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between px-4 py-3" style="border-radius:14px 14px 0 0;">
+        <span class="fw-700" style="color:var(--navy);"><i class="fas fa-history me-2" style="color:#7c3aed;"></i>Recent Scan Sessions</span>
+        <a href="{{ url_for('research_robot.sessions') }}" class="btn btn-sm btn-outline-secondary">View All</a>
+      </div>
+      <div class="card-body p-0">
+        {% if recent_sessions %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0" style="font-size:.82rem;">
+            <thead style="background:#f8f9fa;">
+              <tr>
+                <th class="px-4 py-2">Keyword</th>
+                <th>Platform</th>
+                <th>Type</th>
+                <th class="text-center">Found</th>
+                <th class="text-center">Added</th>
+                <th>Status</th>
+                <th>When</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in recent_sessions %}
+              <tr>
+                <td class="px-4 py-2 fw-600">{{ s.keyword[:40] }}</td>
+                <td>
+                  {% set pm = platform_meta.get(s.platform, {'label': s.platform, 'color': '#6c757d'}) %}
+                  <span class="platform-badge pb-{{ s.platform }}">{{ pm.label }}</span>
+                </td>
+                <td><span class="badge bg-light text-secondary">{{ s.search_type }}</span></td>
+                <td class="text-center fw-600">{{ s.results_found or 0 }}</td>
+                <td class="text-center fw-600 text-success">{{ s.results_added or 0 }}</td>
+                <td><span class="status-pill sp-{{ s.status }}">{{ s.status }}</span></td>
+                <td class="text-muted">{{ s.created_at.strftime('%b %d %H:%M') }}</td>
+                <td>
+                  <a href="{{ url_for('research_robot.session_detail', session_id=s.id) }}" class="btn btn-xs btn-outline-primary btn-sm">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+          <i class="fas fa-search fa-2x mb-3 d-block opacity-25"></i>
+          <p class="mb-2">No scan sessions yet.</p>
+          <a href="{{ url_for('research_robot.search') }}" class="btn btn-sm" style="background:#7c3aed;color:#fff;">Start Your First Scan</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Social engagement summary -->
+    {% if engagement_stats %}
+    <div class="card border-0 shadow-sm mt-3" style="border-radius:14px;">
+      <div class="card-body px-4 py-3">
+        <h6 class="fw-700 mb-3" style="color:var(--navy);"><i class="fas fa-share-alt me-2" style="color:var(--gold);"></i>Social Engagement by Platform</h6>
+        <div class="d-flex flex-wrap gap-2">
+          {% for plat, cnt in engagement_stats %}
+            {% set pm = platform_meta.get(plat, {'label': plat, 'color': '#6c757d'}) %}
+            <div class="platform-badge pb-{{ plat }} px-3 py-2">
+              <span class="fw-700 me-1">{{ cnt }}</span> {{ pm.label }} posts
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('quickScanForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const keyword  = document.getElementById('qs-keyword').value.trim();
+  const type     = document.getElementById('qs-type').value;
+  const platform = document.getElementById('qs-platform').value;
+  if(!keyword) return;
+
+  document.getElementById('qsScanStatus').classList.remove('d-none');
+  document.getElementById('qsScanResult').classList.add('d-none');
+
+  try {
+    const r = await csrfJsonFetch('{{ url_for("research_robot.scan") }}', {keyword, search_type: type, platform, country:'Global'});
+    const d = await r.json();
+    document.getElementById('qsScanStatus').classList.add('d-none');
+    const res = document.getElementById('qsScanResult');
+    res.classList.remove('d-none');
+    if(d.error){
+      res.innerHTML = `<div class="alert alert-danger p-2 small">${d.error}</div>`;
+    } else {
+      res.innerHTML = `<div class="alert alert-success p-2 small">
+        <i class="fas fa-check-circle me-1"></i>Found <strong>${d.found}</strong> results.
+        <a href="{{ url_for('research_robot.sessions') }}" class="alert-link">View session →</a>
+      </div>`;
+      setTimeout(()=>window.location.href='{{ url_for("research_robot.session_detail", session_id=0) }}'.replace('/0', '/'+d.session_id), 1200);
+    }
+  } catch(err){
+    document.getElementById('qsScanStatus').classList.add('d-none');
+    document.getElementById('qsScanResult').innerHTML = `<div class="alert alert-danger p-2 small">${err.message}</div>`;
+    document.getElementById('qsScanResult').classList.remove('d-none');
+  }
+});
+</script>
+{% endblock %}

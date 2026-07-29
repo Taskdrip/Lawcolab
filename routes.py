@@ -53,6 +53,9 @@ from blueprints.claim import claim_bp
 # Import Email CRM blueprint
 from blueprints.email_crm import email_crm_bp
 
+# Import Research Robot blueprint
+from blueprints.research_robot import research_robot_bp
+
 # Import payment models
 import models_payment  # noqa: F401
 
@@ -83,6 +86,7 @@ app.register_blueprint(crm_bp, url_prefix="/superadmin/crm")  # CRM
 app.register_blueprint(social_communities_bp, url_prefix="/superadmin/crm/communities")  # Social communities CRM
 app.register_blueprint(claim_bp, url_prefix="/directory/claim")  # Listing claim flow
 app.register_blueprint(email_crm_bp, url_prefix="/superadmin/crm/email")  # Email CRM
+app.register_blueprint(research_robot_bp, url_prefix="/superadmin/research-robot")  # Research Robot
 
 # Import & register blog blueprint
 from blueprints.blog import blog_bp

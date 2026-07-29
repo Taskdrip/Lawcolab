@@ -1,0 +1,131 @@
+{% extends "research_robot/base.html" %}
+{% block title %}Session #{{ sess.id }} — {{ sess.keyword }}{% endblock %}
+{% block page_title %}Session #{{ sess.id }}: {{ sess.keyword[:40] }}{% endblock %}
+{% block breadcrumb %}
+  <li class="breadcrumb-item"><a href="{{ url_for('research_robot.sessions') }}">Sessions</a></li>
+  <li class="breadcrumb-item active">#{{ sess.id }}</li>
+{% endblock %}
+
+{% block content %}
+<!-- Meta strip -->
+<div class="card border-0 shadow-sm mb-3" style="border-radius:12px;">
+  <div class="card-body px-4 py-3">
+    <div class="row g-3 align-items-center">
+      <div class="col-auto">
+        {% set pm = platform_meta.get(sess.platform, {'label': sess.platform, 'color':'#6c757d'}) %}
+        <span class="platform-badge pb-{{ sess.platform }} px-3 py-2" style="font-size:.8rem;">
+          <i class="fab fa-{{ pm.icon if pm.get('icon') else 'globe' }} me-1"></i>{{ pm.label }}
+        </span>
+      </div>
+      <div class="col-auto"><span class="badge bg-light text-secondary">{{ sess.search_type }}</span></div>
+      <div class="col-auto"><span class="status-pill sp-{{ sess.status }}">{{ sess.status }}</span></div>
+      <div class="col-auto text-muted" style="font-size:.8rem;"><i class="fas fa-calendar me-1"></i>{{ sess.created_at.strftime('%b %d, %Y %H:%M') }}</div>
+      {% if sess.duration_seconds %}<div class="col-auto text-muted" style="font-size:.8rem;"><i class="fas fa-clock me-1"></i>{{ sess.duration_seconds }}s</div>{% endif %}
+      <div class="ms-auto col-auto">
+        <span class="fw-700 me-1" style="color:#7c3aed;">{{ sess.results_found or 0 }}</span><span class="text-muted small">found</span>
+        <span class="mx-2 text-muted">·</span>
+        <span class="fw-700 me-1 text-success">{{ sess.results_added or 0 }}</span><span class="text-muted small">added</span>
+      </div>
+      {% if results | selectattr('status','equalto','pending') | list %}
+      <div class="col-auto">
+        <button class="btn btn-sm grab-comm" onclick="bulkGrab('community')"><i class="fas fa-users me-1"></i>All → Communities</button>
+        <button class="btn btn-sm grab-crm ms-1" onclick="bulkGrab('crm')"><i class="fas fa-building me-1"></i>All → CRM</button>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Results -->
+<div id="resultsContainer">
+  {% if results %}
+    {% for item in results %}
+    <div class="result-card {{ 'added' if item.is_added else 'skipped' if item.status == 'skipped' else 'duplicate' if item.status == 'duplicate' else '' }}"
+         id="result-{{ item.id }}">
+      <div class="d-flex align-items-start gap-3">
+        <div class="flex-grow-1 min-w-0">
+          <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+            {% set pm = platform_meta.get(item.platform, {'label': item.platform}) %}
+            <span class="platform-badge pb-{{ item.platform }}">{{ pm.label }}</span>
+            {% if item.member_count %}<span class="badge bg-light text-secondary" style="font-size:.68rem;"><i class="fas fa-users me-1"></i>{{ '{:,}'.format(item.member_count) }}</span>{% endif %}
+            {% if item.category %}<span class="badge" style="background:#f0fdf4;color:#166534;font-size:.67rem;">{{ item.category }}</span>{% endif %}
+            <span class="status-pill sp-{{ item.status }}">{{ item.status }}</span>
+          </div>
+          <div class="fw-600 mb-1">{{ item.name or 'Untitled' }}</div>
+          <div class="text-muted small mb-1" style="line-height:1.4;">{{ (item.description or '')[:200] }}{{ '…' if (item.description or '')|length > 200 else '' }}</div>
+          {% if item.phone or item.address or item.rating %}
+          <div class="text-muted" style="font-size:.75rem;">
+            {% if item.phone %}<span class="me-3"><i class="fas fa-phone me-1"></i>{{ item.phone }}</span>{% endif %}
+            {% if item.address %}<span class="me-3"><i class="fas fa-map-marker-alt me-1"></i>{{ item.address }}</span>{% endif %}
+            {% if item.rating %}<span><i class="fas fa-star me-1" style="color:#f59e0b;"></i>{{ item.rating }}</span>{% endif %}
+          </div>
+          {% endif %}
+          <div class="mt-1">
+            <a href="{{ item.url }}" target="_blank" rel="noopener" class="text-primary" style="font-size:.72rem;word-break:break-all;">
+              <i class="fas fa-external-link-alt me-1"></i>{{ item.url[:80] }}{{ '…' if item.url|length > 80 else '' }}
+            </a>
+          </div>
+          {% if item.crm_id %}
+          <div class="mt-1 text-muted" style="font-size:.7rem;">
+            {% if item.status == 'added_crm' %}<a href="{{ url_for('crm.lead_detail', firm_id=item.crm_id) }}" class="text-success">→ View in CRM</a>{% endif %}
+            {% if item.status == 'added_community' %}<a href="{{ url_for('social_communities.community_detail', community_id=item.crm_id) }}" class="text-purple">→ View Community</a>{% endif %}
+          </div>
+          {% endif %}
+        </div>
+        {% if not item.is_added and item.status not in ('skipped', 'duplicate') %}
+        <div class="d-flex flex-column gap-1 flex-shrink-0" id="btns-{{ item.id }}">
+          {% if item.result_type != 'listing' %}
+          <button class="grab-btn grab-comm" onclick="grab({{ item.id }},'community')"><i class="fas fa-users me-1"></i>Community</button>
+          {% endif %}
+          <button class="grab-btn grab-crm" onclick="grab({{ item.id }}, '{{ 'directory' if item.result_type == 'listing' else 'crm' }}')">
+            <i class="fas fa-building me-1"></i>{{ 'Directory' if item.result_type == 'listing' else 'CRM' }}
+          </button>
+          <button class="grab-btn grab-skip" onclick="grab({{ item.id }},'skip')"><i class="fas fa-times me-1"></i>Skip</button>
+        </div>
+        {% else %}
+        <div id="btns-{{ item.id }}">
+          <span class="status-pill sp-{{ item.status }}">{{ item.status }}</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="fas fa-inbox fa-2x mb-3 d-block opacity-25"></i>
+      <p>No results in this session.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<style>
+.grab-btn{border:none;padding:.25rem .7rem;border-radius:6px;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .15s;}
+.grab-crm{background:#dbeafe;color:#1d4ed8;}.grab-crm:hover{background:#1d4ed8;color:#fff;}
+.grab-comm{background:#ede9fe;color:#7c3aed;}.grab-comm:hover{background:#7c3aed;color:#fff;}
+.grab-skip{background:#f3f4f6;color:#6b7280;}.grab-skip:hover{background:#e5e7eb;}
+</style>
+<script>
+async function grab(id, target){
+  const btnWrap = document.getElementById('btns-'+id);
+  btnWrap.innerHTML = '<span class="spinner-border spinner-border-sm text-primary"></span>';
+  const fd = new FormData(); fd.append('target', target);
+  const r = await csrfFormFetch(`/superadmin/research-robot/grab/${id}`, fd);
+  const d = await r.json();
+  const card = document.getElementById('result-'+id);
+  const labels={community:'Communities',crm:'CRM',directory:'Directory',skip:'Skipped',duplicate:'Duplicate'};
+  const s = d.status||target;
+  card.classList.add(d.status==='skipped'?'skipped':d.status==='duplicate'?'duplicate':'added');
+  btnWrap.innerHTML=`<span class="status-pill sp-${s}">${labels[s]||s}</span>`;
+}
+
+async function bulkGrab(target){
+  if(!confirm(`Push all pending results to ${target==='community'?'Communities':'CRM'}?`)) return;
+  const r = await csrfJsonFetch('{{ url_for("research_robot.grab_bulk") }}', {session_id:{{ sess.id }},target});
+  const d = await r.json();
+  alert(`Done! Added: ${d.added}, Duplicates: ${d.duplicates}`);
+  window.location.reload();
+}
+</script>
+{% endblock %}
