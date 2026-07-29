@@ -1,7 +1,7 @@
 """
 LAWCOLAB Blog Blueprint — /blog
 Full-featured blog with share tracking, unique-view analytics, reading time,
-glowing inline CTAs, and analytics dashboard.
+glowing inline CTAs, analytics dashboard, and super-admin full editing with image upload.
 """
 from flask import (Blueprint, render_template, request, redirect, url_for,
                    flash, jsonify, abort, make_response)
@@ -9,7 +9,8 @@ from flask_login import current_user
 from app import db
 from sqlalchemy import text
 from datetime import datetime
-import re, logging, math, secrets as _sec
+import re, logging, math, secrets as _sec, os
+from werkzeug.utils import secure_filename
 
 logger = logging.getLogger(__name__)
 blog_bp = Blueprint('blog', __name__)
@@ -440,6 +441,40 @@ def like_post(slug):
 
 from utils.decorators import require_super_admin
 
+_ALLOWED_IMG = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+_BLOG_UPLOAD_DIR = os.path.join('static', 'uploads', 'blog')
+
+
+def _allowed_image(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in _ALLOWED_IMG
+
+
+def _save_upload(file_obj, prefix='img'):
+    """Save an uploaded image file; return the public URL path."""
+    os.makedirs(_BLOG_UPLOAD_DIR, exist_ok=True)
+    ext = file_obj.filename.rsplit('.', 1)[-1].lower()
+    fname = f"{prefix}_{_sec.token_hex(8)}.{ext}"
+    path = os.path.join(_BLOG_UPLOAD_DIR, fname)
+    file_obj.save(path)
+    return f"/static/uploads/blog/{fname}"
+
+
+@blog_bp.route('/admin/upload-image', methods=['POST'])
+@require_super_admin
+def upload_image():
+    """AJAX image upload — returns {url} on success."""
+    f = request.files.get('image')
+    if not f or not f.filename:
+        return jsonify({'error': 'No file provided'}), 400
+    if not _allowed_image(f.filename):
+        return jsonify({'error': 'Only PNG/JPG/GIF/WebP allowed'}), 400
+    try:
+        url = _save_upload(f, prefix='blog')
+        return jsonify({'url': url})
+    except Exception as e:
+        logger.exception("Blog image upload failed")
+        return jsonify({'error': str(e)}), 500
+
 
 @blog_bp.route('/admin/')
 @require_super_admin
@@ -552,10 +587,19 @@ def admin_new():
         excerpt  = request.form.get('excerpt', '').strip()[:300]
         category = request.form.get('category', 'Legal Tech').strip()
         tags     = request.form.get('tags', '').strip()
-        hero     = request.form.get('hero_image', '').strip()
         author   = request.form.get('author', 'LAWCOLAB Team').strip()
         published = bool(request.form.get('published'))
         featured  = bool(request.form.get('featured'))
+
+        # Hero image: prefer file upload, fall back to URL
+        hero = request.form.get('hero_image', '').strip()
+        hero_file = request.files.get('hero_file')
+        if hero_file and hero_file.filename and _allowed_image(hero_file.filename):
+            try:
+                hero = _save_upload(hero_file, prefix='hero')
+            except Exception as e:
+                flash(f'Image upload failed: {e}', 'error')
+
         slug = _slugify(title)
         rt   = _calc_read_time(content)
 
@@ -615,10 +659,19 @@ def admin_edit(post_id):
         excerpt  = request.form.get('excerpt', '').strip()[:300]
         category = request.form.get('category', '').strip()
         tags     = request.form.get('tags', '').strip()
-        hero     = request.form.get('hero_image', '').strip()
         author   = request.form.get('author', '').strip()
         published = bool(request.form.get('published'))
         featured  = bool(request.form.get('featured'))
+
+        # Hero image: prefer new file upload, fall back to URL field, then keep existing
+        hero = request.form.get('hero_image', '').strip() or (p.get('hero_image') or '')
+        hero_file = request.files.get('hero_file')
+        if hero_file and hero_file.filename and _allowed_image(hero_file.filename):
+            try:
+                hero = _save_upload(hero_file, prefix='hero')
+            except Exception as e:
+                flash(f'Image upload failed: {e}', 'error')
+
         rt = _calc_read_time(content)
 
         try:
@@ -632,7 +685,7 @@ def admin_edit(post_id):
                        tags=tags, hero=hero, author=author, pub=published,
                        feat=featured, rt=rt, id=post_id))
             db.session.commit()
-            flash('Post updated.', 'success')
+            flash('Post updated successfully.', 'success')
             return redirect(url_for('blog.admin_list'))
         except Exception as e:
             db.session.rollback()

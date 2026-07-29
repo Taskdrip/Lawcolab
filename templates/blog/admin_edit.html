@@ -1,126 +1,450 @@
 {% extends 'base.html' %}
-{% block title %}{% if action=='new' %}New Post{% else %}Edit Post{% endif %} — Blog Admin{% endblock %}
+{% block title %}{% if action=='new' %}New Article{% else %}Edit: {{ post.title }}{% endif %} — Blog Admin{% endblock %}
 
 {% block additional_css %}
+<!-- Quill rich-text editor -->
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
 <style>
-.blog-editor .form-control{border-radius:10px;border:1.5px solid #e2e8f0;font-size:.9rem;}
-.blog-editor .form-control:focus{border-color:#0d1b4b;box-shadow:0 0 0 3px rgba(13,27,75,.1);}
-.blog-editor label{font-size:.8rem;font-weight:600;color:#3d4c6e;margin-bottom:.35rem;}
+:root{--brand:#0d1b4b;--gold:#FFD700;--border:#e2e8f0;}
+.be-wrap{max-width:1200px;margin:0 auto;}
+
+/* ── Page header ── */
+.be-header{background:linear-gradient(135deg,var(--brand) 0%,#1a2d6b 100%);padding:1.6rem 2rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+.be-header h1{color:#fff;font-size:1.3rem;font-weight:700;margin:0;}
+.be-header p{color:rgba(255,255,255,.65);font-size:.83rem;margin:0;}
+.be-header .btn-back{margin-left:auto;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;font-size:.82rem;padding:.38rem .9rem;}
+.be-header .btn-back:hover{background:rgba(255,255,255,.22);color:#fff;}
+
+/* ── Layout ── */
+.be-body{display:grid;grid-template-columns:1fr 340px;gap:1.5rem;padding:1.5rem 1rem;align-items:start;}
+@media(max-width:900px){.be-body{grid-template-columns:1fr;}}
+
+/* ── Cards ── */
+.be-card{background:#fff;border-radius:12px;border:1.5px solid var(--border);overflow:hidden;margin-bottom:1.25rem;}
+.be-card-head{padding:.7rem 1.1rem;background:#f8fafc;border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:.5rem;}
+.be-card-head span{font-size:.78rem;font-weight:700;color:var(--brand);text-transform:uppercase;letter-spacing:.04em;}
+.be-card-head i{color:var(--gold);font-size:.88rem;}
+.be-card-body{padding:1.1rem;}
+
+/* ── Title ── */
+.be-title-input{font-size:1.35rem;font-weight:700;color:var(--brand);border:none;border-bottom:2px solid var(--border);border-radius:0;padding:.5rem 0;width:100%;outline:none;background:transparent;}
+.be-title-input:focus{border-bottom-color:var(--brand);}
+
+/* ── Quill ── */
+#quill-editor{min-height:480px;font-size:1rem;line-height:1.8;}
+.ql-toolbar{border:1.5px solid var(--border);border-radius:8px 8px 0 0;background:#f8fafc;}
+.ql-container{border:1.5px solid var(--border);border-top:none;border-radius:0 0 8px 8px;font-family:inherit;}
+.ql-editor{min-height:460px;}
+.ql-editor h2{font-size:1.4rem;font-weight:700;color:var(--brand);}
+.ql-editor h3{font-size:1.15rem;font-weight:700;color:var(--brand);}
+.ql-editor blockquote{border-left:4px solid var(--gold);background:#f8f9fd;padding:.9rem 1.2rem;border-radius:0 8px 8px 0;font-style:italic;color:#3d4c6e;}
+.ql-editor img{max-width:100%;border-radius:8px;margin:.75rem 0;}
+
+/* Image insert toolbar button */
+.ql-insertImage::before{content:"🖼";font-size:14px;}
+
+/* ── Hero image ── */
+.hero-tabs{display:flex;gap:.4rem;margin-bottom:.9rem;}
+.htab{background:none;border:1.5px solid var(--border);border-radius:6px;padding:.3rem .8rem;font-size:.78rem;font-weight:600;color:#6c757d;cursor:pointer;transition:.15s;}
+.htab.active{background:var(--brand);color:#fff;border-color:var(--brand);}
+.hero-panel{display:none;}
+.hero-panel.active{display:block;}
+
+/* Drop zone */
+.drop-zone{border:2px dashed var(--border);border-radius:10px;padding:2rem 1rem;text-align:center;cursor:pointer;transition:.2s;position:relative;background:#fafbff;}
+.drop-zone.drag-over{border-color:var(--brand);background:#f0f4ff;}
+.drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.drop-zone p{margin:0;font-size:.83rem;color:#9aa3b0;pointer-events:none;}
+.drop-zone i{font-size:1.8rem;color:#c4cdd8;margin-bottom:.4rem;display:block;pointer-events:none;}
+
+/* Preview */
+.hero-preview-wrap{position:relative;margin-top:.75rem;display:none;}
+.hero-preview-wrap img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px;}
+.hero-remove-btn{position:absolute;top:.4rem;right:.4rem;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:26px;height:26px;font-size:.72rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+
+/* ── Sidebar controls ── */
+.publish-btn{background:var(--gold);color:var(--brand);font-weight:700;border:none;border-radius:8px;padding:.7rem;width:100%;font-size:.95rem;cursor:pointer;transition:.15s;}
+.publish-btn:hover{background:#e6b800;}
+.save-draft-btn{background:#f0f4ff;color:var(--brand);font-weight:600;border:1.5px solid var(--border);border-radius:8px;padding:.5rem;width:100%;font-size:.83rem;cursor:pointer;margin-top:.5rem;transition:.15s;}
+.save-draft-btn:hover{background:#e2e8f0;}
+.be-select{border-radius:8px;border:1.5px solid var(--border);font-size:.87rem;width:100%;padding:.45rem .65rem;color:var(--brand);}
+.be-input{border-radius:8px;border:1.5px solid var(--border);font-size:.87rem;width:100%;padding:.45rem .75rem;color:var(--brand);}
+.be-input:focus,.be-select:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 3px rgba(13,27,75,.08);}
+.be-textarea{border-radius:8px;border:1.5px solid var(--border);font-size:.87rem;width:100%;padding:.6rem .75rem;resize:vertical;min-height:80px;color:var(--brand);}
+.be-label{font-size:.76rem;font-weight:700;color:#5a6474;margin-bottom:.3rem;display:block;text-transform:uppercase;letter-spacing:.03em;}
+.form-check-input:checked{background-color:var(--brand);border-color:var(--brand);}
+
+/* ── Upload status ── */
+.upload-status{font-size:.76rem;margin-top:.3rem;padding:.25rem .6rem;border-radius:5px;display:none;}
+.upload-status.ok{background:#d1fae5;color:#065f46;display:block;}
+.upload-status.err{background:#fee2e2;color:#991b1b;display:block;}
+
+/* ── Inline img upload ── */
+#inline-upload-input{display:none;}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="lc-page-header lc-ph-bg-analytics">
-  <div class="lc-ph-accent"></div>
-  <div class="container lc-ph-inner">
-    <div class="d-flex align-items-center gap-3">
-      <div class="lc-ph-icon"><i class="fas fa-pen-nib"></i></div>
-      <div>
-        <h1>{% if action=='new' %}New Blog Post{% else %}Edit: {{ post.title }}{% endif %}</h1>
-        <p class="lc-ph-sub">{% if action=='new' %}Create a new article{% else %}Update this article{% endif %}</p>
+{% set is_edit = (action == 'edit') %}
+
+<!-- Hidden real content textarea (synced from Quill) -->
+<form id="be-form" method="POST" enctype="multipart/form-data">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <!-- Synced by JS before submit -->
+  <textarea name="content" id="content-hidden" style="display:none;">{{ post.get('content','') }}</textarea>
+
+  <div class="be-wrap">
+
+    <!-- Header -->
+    <div class="be-header">
+      <div class="lc-ph-icon" style="width:40px;height:40px;background:rgba(255,215,0,.18);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+        <i class="fas fa-pen-nib" style="color:var(--gold);"></i>
       </div>
-      <a href="{{ url_for('blog.admin_list') }}" class="btn btn-outline-light ms-auto" style="border-radius:10px;font-size:.84rem;">
-        <i class="fas fa-arrow-left me-1"></i>Back
-      </a>
+      <div>
+        <h1>{% if is_edit %}Edit Article{% else %}New Article{% endif %}</h1>
+        <p>{% if is_edit %}{{ post.title }}{% else %}Create a new blog article{% endif %}</p>
+      </div>
+      <a href="{{ url_for('blog.admin_list') }}" class="btn btn-back"><i class="fas fa-arrow-left me-1"></i>Back to Articles</a>
     </div>
-  </div>
-</div>
 
-<div class="container py-4">
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% for cat, msg in messages %}
-    <div class="alert alert-{% if cat=='success' %}success{% else %}danger{% endif %} mb-3" style="border-radius:10px;">{{ msg }}</div>
-    {% endfor %}
-  {% endwith %}
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+      <div class="alert alert-{% if cat=='success' %}success{% else %}danger{% endif %} mx-3 mt-3 mb-0" style="border-radius:10px;">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
 
-  <form method="POST" class="blog-editor">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <div class="row g-4">
-      <div class="col-lg-8">
-        <div class="card mb-3">
-          <div class="card-body p-4">
-            <div class="mb-3">
-              <label>Post Title *</label>
-              <input type="text" name="title" class="form-control form-control-lg" value="{{ post.get('title','') }}" placeholder="Write a compelling headline…" required>
-            </div>
-            <div class="mb-3">
-              <label>Excerpt (shown in listings)</label>
-              <textarea name="excerpt" class="form-control" rows="2" maxlength="300" placeholder="A short summary of the article (max 300 chars)…">{{ post.get('excerpt','') }}</textarea>
-            </div>
-            <div class="mb-3">
-              <label>Article Content (HTML supported) *</label>
-              <textarea name="content" class="form-control" rows="20" style="font-family:monospace;font-size:.85rem;" required placeholder="Write your article here. HTML tags like &lt;h2&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;strong&gt;, &lt;a&gt; are supported.">{{ post.get('content','') }}</textarea>
-              <div class="form-text">Use HTML: &lt;h2&gt;, &lt;h3&gt;, &lt;p&gt;, &lt;ul&gt;&lt;li&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;a href=""&gt;, &lt;blockquote&gt;</div>
-            </div>
+    <div class="be-body">
+
+      <!-- ── LEFT: Content ── -->
+      <div>
+
+        <!-- Title -->
+        <div class="be-card">
+          <div class="be-card-head"><i class="fas fa-heading"></i><span>Title</span></div>
+          <div class="be-card-body">
+            <input type="text" name="title" class="be-title-input" value="{{ post.get('title','') }}"
+                   placeholder="Write a compelling headline…" required>
           </div>
         </div>
+
+        <!-- Excerpt -->
+        <div class="be-card">
+          <div class="be-card-head"><i class="fas fa-align-left"></i><span>Excerpt</span>
+            <span style="margin-left:auto;font-size:.72rem;color:#9aa3b0;font-weight:400;text-transform:none;letter-spacing:0;">Shown in article listings (max 300 chars)</span>
+          </div>
+          <div class="be-card-body">
+            <textarea name="excerpt" class="be-textarea" maxlength="300" rows="2"
+                      placeholder="A short summary of the article…">{{ post.get('excerpt','') }}</textarea>
+          </div>
+        </div>
+
+        <!-- Content editor -->
+        <div class="be-card">
+          <div class="be-card-head">
+            <i class="fas fa-file-alt"></i><span>Article Content</span>
+            <button type="button" id="insert-img-btn" onclick="document.getElementById('inline-upload-input').click()"
+                    style="margin-left:auto;background:#f0f4ff;border:1.5px solid var(--border);color:var(--brand);border-radius:7px;padding:.28rem .75rem;font-size:.76rem;font-weight:600;cursor:pointer;">
+              <i class="fas fa-image me-1"></i>Insert Image
+            </button>
+            <input type="file" id="inline-upload-input" accept="image/png,image/jpeg,image/gif,image/webp">
+          </div>
+          <div class="be-card-body" style="padding:.5rem .5rem 1rem;">
+            <div id="quill-editor"></div>
+          </div>
+        </div>
+
       </div>
 
-      <div class="col-lg-4">
-        <div class="card mb-3">
-          <div class="card-header"><strong style="font-size:.88rem;">Publish Settings</strong></div>
-          <div class="card-body">
+      <!-- ── RIGHT: Sidebar ── -->
+      <div>
+
+        <!-- Publish -->
+        <div class="be-card">
+          <div class="be-card-head"><i class="fas fa-paper-plane"></i><span>Publish</span></div>
+          <div class="be-card-body">
             <div class="form-check mb-2">
-              <input class="form-check-input" type="checkbox" name="published" id="published" {% if post.get('published') %}checked{% endif %}>
-              <label class="form-check-label" for="published" style="font-size:.88rem;font-weight:600;">Published (visible to public)</label>
+              <input class="form-check-input" type="checkbox" name="published" id="published"
+                     {% if post.get('published') %}checked{% endif %}>
+              <label class="form-check-label" for="published" style="font-size:.87rem;font-weight:600;">
+                Published <span style="color:#9aa3b0;font-weight:400;">(visible to public)</span>
+              </label>
             </div>
             <div class="form-check mb-3">
-              <input class="form-check-input" type="checkbox" name="featured" id="featured" {% if post.get('featured') %}checked{% endif %}>
-              <label class="form-check-label" for="featured" style="font-size:.88rem;">⭐ Featured (shown at top)</label>
+              <input class="form-check-input" type="checkbox" name="featured" id="featured"
+                     {% if post.get('featured') %}checked{% endif %}>
+              <label class="form-check-label" for="featured" style="font-size:.87rem;">
+                ⭐ Featured <span style="color:#9aa3b0;font-weight:400;">(shown at top)</span>
+              </label>
             </div>
-            <button type="submit" class="btn btn-warning w-100 fw-bold" style="color:#0d1b4b;border-radius:10px;">
-              <i class="fas fa-save me-2"></i>{% if action=='new' %}Publish Post{% else %}Save Changes{% endif %}
+            <button type="submit" class="publish-btn">
+              <i class="fas fa-save me-2"></i>{% if is_edit %}Save Changes{% else %}Create Article{% endif %}
             </button>
+            {% if is_edit %}
+            <a href="{{ url_for('blog.post', slug=post.slug) }}" target="_blank" class="save-draft-btn" style="display:block;text-align:center;text-decoration:none;margin-top:.5rem;">
+              <i class="fas fa-eye me-1"></i>Preview Article
+            </a>
+            {% endif %}
           </div>
         </div>
 
-        <div class="card mb-3">
-          <div class="card-header"><strong style="font-size:.88rem;">Post Details</strong></div>
-          <div class="card-body">
+        <!-- Hero / Featured Image -->
+        <div class="be-card">
+          <div class="be-card-head"><i class="fas fa-image"></i><span>Featured Image</span></div>
+          <div class="be-card-body">
+
+            <!-- Tabs -->
+            <div class="hero-tabs">
+              <button type="button" class="htab active" onclick="switchHeroTab('upload',this)">
+                <i class="fas fa-upload me-1"></i>Upload
+              </button>
+              <button type="button" class="htab" onclick="switchHeroTab('url',this)">
+                <i class="fas fa-link me-1"></i>Paste URL
+              </button>
+            </div>
+
+            <!-- Upload panel -->
+            <div class="hero-panel active" id="hero-upload-panel">
+              <div class="drop-zone" id="hero-drop-zone">
+                <input type="file" name="hero_file" id="hero-file-input"
+                       accept="image/png,image/jpeg,image/gif,image/webp"
+                       onchange="handleHeroFile(this.files[0])">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p><strong>Click to upload</strong> or drag &amp; drop</p>
+                <p style="font-size:.72rem;margin-top:.2rem;">PNG, JPG, GIF, WebP</p>
+              </div>
+              <div id="upload-status" class="upload-status"></div>
+            </div>
+
+            <!-- URL panel -->
+            <div class="hero-panel" id="hero-url-panel">
+              <label class="be-label">Image URL</label>
+              <input type="url" name="hero_image" id="hero-url-input" class="be-input"
+                     value="{{ post.get('hero_image','') }}"
+                     placeholder="https://images.unsplash.com/…"
+                     oninput="previewHeroUrl(this.value)">
+              <div style="font-size:.73rem;color:#9aa3b0;margin-top:.3rem;">Free images: <a href="https://unsplash.com" target="_blank">unsplash.com</a></div>
+            </div>
+
+            <!-- Preview (shared) -->
+            <div class="hero-preview-wrap" id="hero-preview-wrap">
+              <img id="hero-preview-img"
+                   src="{{ post.get('hero_image','') }}"
+                   alt="Hero preview">
+              <button type="button" class="hero-remove-btn" onclick="clearHero()" title="Remove image">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            {% if post.get('hero_image') %}
+            <p style="font-size:.73rem;color:#9aa3b0;margin-top:.5rem;margin-bottom:0;">
+              Current image is set. Upload a new one to replace it.
+            </p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Article details -->
+        <div class="be-card">
+          <div class="be-card-head"><i class="fas fa-info-circle"></i><span>Details</span></div>
+          <div class="be-card-body">
             <div class="mb-3">
-              <label>Category</label>
-              <select name="category" class="form-select form-control">
-                {% for cat in ['Legal Tech','Practice Management','Directory','Nigeria Law','Client Relations','Billing & Finance','Court Procedures','Team Management','Industry News'] %}
+              <label class="be-label">Category</label>
+              <select name="category" class="be-select">
+                {% for cat in ['Legal Tech','Practice Management','Directory','Nigeria Law','Client Relations','Billing & Finance','Court Procedures','Team Management','Industry News','Document Management'] %}
                 <option value="{{ cat }}" {% if post.get('category','Legal Tech')==cat %}selected{% endif %}>{{ cat }}</option>
                 {% endfor %}
               </select>
             </div>
             <div class="mb-3">
-              <label>Author</label>
-              <input type="text" name="author" class="form-control" value="{{ post.get('author','LAWCOLAB Team') }}" placeholder="Author name">
+              <label class="be-label">Author</label>
+              <input type="text" name="author" class="be-input"
+                     value="{{ post.get('author','LAWCOLAB Team') }}" placeholder="Author name">
             </div>
-            <div class="mb-3">
-              <label>Tags (comma-separated)</label>
-              <input type="text" name="tags" class="form-control" value="{{ post.get('tags','') }}" placeholder="Nigeria, legal tech, case management">
+            <div class="mb-0">
+              <label class="be-label">Tags <span style="text-transform:none;font-weight:400;">(comma-separated)</span></label>
+              <input type="text" name="tags" class="be-input"
+                     value="{{ post.get('tags','') }}"
+                     placeholder="Nigeria, legal tech, billing">
             </div>
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header"><strong style="font-size:.88rem;">Hero Image</strong></div>
-          <div class="card-body">
-            <label>Image URL</label>
-            <input type="url" name="hero_image" class="form-control mb-2" value="{{ post.get('hero_image','') }}" placeholder="https://images.unsplash.com/…" id="heroInput">
-            <div id="heroPreview" style="display:{% if post.get('hero_image') %}block{% else %}none{% endif %};">
-              <img id="heroImg" src="{{ post.get('hero_image','') }}" style="width:100%;border-radius:8px;aspect-ratio:16/9;object-fit:cover;" alt="Preview">
-            </div>
-            <div class="form-text mt-1">Paste any image URL. Free images: <a href="https://unsplash.com" target="_blank">unsplash.com</a></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </form>
-</div>
+      </div><!-- /sidebar -->
+    </div><!-- /be-body -->
+  </div><!-- /be-wrap -->
+</form>
 {% endblock %}
 
 {% block extra_js %}
+<!-- Quill -->
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 <script>
-document.getElementById('heroInput').addEventListener('input', function(){
-  const url=this.value.trim();
-  const prev=document.getElementById('heroPreview');
-  const img=document.getElementById('heroImg');
-  if(url){prev.style.display='block';img.src=url;}
-  else{prev.style.display='none';}
+// ── Quill setup ────────────────────────────────────────────────────────────
+var quill = new Quill('#quill-editor', {
+  theme: 'snow',
+  placeholder: 'Write your article here…',
+  modules: {
+    toolbar: {
+      container: [
+        [{ 'header': [2, 3, 4, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        ['blockquote', 'code-block'],
+        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+        [{ 'indent': '-1' }, { 'indent': '+1' }],
+        ['link', 'image'],
+        [{ 'color': [] }, { 'background': [] }],
+        ['clean']
+      ],
+      handlers: {
+        image: function() {
+          // Open our custom image uploader
+          document.getElementById('inline-upload-input').click();
+        }
+      }
+    }
+  }
 });
+
+// Load existing content from hidden textarea
+var existingHTML = document.getElementById('content-hidden').value.trim();
+if (existingHTML) {
+  quill.root.innerHTML = existingHTML;
+}
+
+// Sync to hidden textarea before form submit
+document.getElementById('be-form').addEventListener('submit', function(e) {
+  var content = quill.root.innerHTML;
+  if(content === '<p><br></p>' || content.trim() === '') {
+    e.preventDefault();
+    alert('Article content is required.');
+    return;
+  }
+  document.getElementById('content-hidden').value = content;
+});
+
+// ── Inline image insertion ─────────────────────────────────────────────────
+document.getElementById('inline-upload-input').addEventListener('change', function() {
+  var file = this.files[0];
+  if (!file) return;
+  uploadImageFile(file, function(url) {
+    var range = quill.getSelection(true);
+    quill.insertEmbed(range ? range.index : quill.getLength(), 'image', url);
+    quill.setSelection((range ? range.index : quill.getLength()) + 1);
+  });
+  this.value = '';
+});
+
+function uploadImageFile(file, onSuccess) {
+  var fd = new FormData();
+  fd.append('image', file);
+  fetch('{{ url_for("blog.upload_image") }}', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': '{{ csrf_token() }}' },
+    body: fd
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if (d.url) {
+      onSuccess(d.url);
+    } else {
+      alert('Upload failed: ' + (d.error || 'unknown error'));
+    }
+  })
+  .catch(function(){ alert('Upload request failed.'); });
+}
+
+// ── Hero image tabs ────────────────────────────────────────────────────────
+function switchHeroTab(tab, btn) {
+  document.querySelectorAll('.htab').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.hero-panel').forEach(function(p){ p.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('hero-' + tab + '-panel').classList.add('active');
+}
+
+// ── Hero drag & drop ────────────────────────────────────────────────────────
+var dropZone = document.getElementById('hero-drop-zone');
+dropZone.addEventListener('dragover', function(e){
+  e.preventDefault(); this.classList.add('drag-over');
+});
+dropZone.addEventListener('dragleave', function(){
+  this.classList.remove('drag-over');
+});
+dropZone.addEventListener('drop', function(e){
+  e.preventDefault(); this.classList.remove('drag-over');
+  var file = e.dataTransfer.files[0];
+  if (file) handleHeroFile(file);
+});
+
+function handleHeroFile(file) {
+  if (!file) return;
+  // Show local preview immediately
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    showHeroPreview(e.target.result);
+    setUploadStatus('Uploading…', '');
+    // Upload to server so we get a permanent URL
+    var fd = new FormData();
+    fd.append('image', file);
+    fetch('{{ url_for("blog.upload_image") }}', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': '{{ csrf_token() }}' },
+      body: fd
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (d.url) {
+        // Set the URL field so the form saves it properly; clear the file input to avoid double-upload
+        document.getElementById('hero-url-input').value = d.url;
+        document.getElementById('hero-file-input').value = '';
+        showHeroPreview(d.url);
+        setUploadStatus('✓ Image uploaded successfully', 'ok');
+      } else {
+        setUploadStatus('Upload failed: ' + (d.error || 'unknown'), 'err');
+      }
+    })
+    .catch(function(){ setUploadStatus('Upload request failed.', 'err'); });
+  };
+  reader.readAsDataURL(file);
+}
+
+function setUploadStatus(msg, cls) {
+  var el = document.getElementById('upload-status');
+  el.textContent = msg;
+  el.className = 'upload-status' + (cls ? ' ' + cls : '');
+  el.style.display = msg ? 'block' : 'none';
+}
+
+function showHeroPreview(src) {
+  if (!src) return;
+  var wrap = document.getElementById('hero-preview-wrap');
+  var img  = document.getElementById('hero-preview-img');
+  img.src = src;
+  wrap.style.display = 'block';
+}
+
+function previewHeroUrl(url) {
+  if (url) {
+    showHeroPreview(url);
+  } else {
+    document.getElementById('hero-preview-wrap').style.display = 'none';
+  }
+}
+
+function clearHero() {
+  document.getElementById('hero-preview-wrap').style.display = 'none';
+  document.getElementById('hero-preview-img').src = '';
+  document.getElementById('hero-url-input').value = '';
+  document.getElementById('hero-file-input').value = '';
+  setUploadStatus('', '');
+}
+
+// Init: show preview if existing hero_image
+(function(){
+  var existingHero = {{ post.get("hero_image","") | tojson }};
+  if (existingHero) {
+    showHeroPreview(existingHero);
+  }
+})();
 </script>
 {% endblock %}
