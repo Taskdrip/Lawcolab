@@ -49,11 +49,11 @@ def dashboard():
     start, end = _date_range(days)
 
     # ── Totals ──
-    total_views   = _scalar("SELECT COUNT(*) FROM page_view_events WHERE created_at >= :s", {"s": start})
-    unique_sess   = _scalar("SELECT COUNT(DISTINCT session_id) FROM page_view_events WHERE created_at >= :s", {"s": start})
-    total_prev    = _scalar("SELECT COUNT(*) FROM page_view_events WHERE created_at >= :s AND created_at < :e",
+    total_views   = _scalar("SELECT COUNT(*) FROM page_analytics WHERE created_at >= :s", {"s": start})
+    unique_sess   = _scalar("SELECT COUNT(DISTINCT session_id) FROM page_analytics WHERE created_at >= :s", {"s": start})
+    total_prev    = _scalar("SELECT COUNT(*) FROM page_analytics WHERE created_at >= :s AND created_at < :e",
                             {"s": start - timedelta(days=days), "e": start})
-    unique_prev   = _scalar("SELECT COUNT(DISTINCT session_id) FROM page_view_events WHERE created_at >= :s AND created_at < :e",
+    unique_prev   = _scalar("SELECT COUNT(DISTINCT session_id) FROM page_analytics WHERE created_at >= :s AND created_at < :e",
                             {"s": start - timedelta(days=days), "e": start})
 
     views_change  = round(((total_views - total_prev) / max(total_prev, 1)) * 100, 1)
@@ -62,7 +62,7 @@ def dashboard():
     # ── Bounce rate (sessions with only 1 page view) ──
     bounce_sessions = _scalar("""
         SELECT COUNT(*) FROM (
-            SELECT session_id FROM page_view_events
+            SELECT session_id FROM page_analytics
             WHERE created_at >= :s GROUP BY session_id HAVING COUNT(*) = 1
         ) x
     """, {"s": start})
@@ -77,44 +77,48 @@ def dashboard():
         d = datetime.now() - timedelta(days=i)
         ds = d.replace(hour=0, minute=0, second=0, microsecond=0)
         de = ds + timedelta(days=1)
-        v = _scalar("SELECT COUNT(*) FROM page_view_events WHERE created_at>=:s AND created_at<:e",
+        v = _scalar("SELECT COUNT(*) FROM page_analytics WHERE created_at>=:s AND created_at<:e",
                     {"s": ds, "e": de})
-        u = _scalar("SELECT COUNT(DISTINCT session_id) FROM page_view_events WHERE created_at>=:s AND created_at<:e",
+        u = _scalar("SELECT COUNT(DISTINCT session_id) FROM page_analytics WHERE created_at>=:s AND created_at<:e",
                     {"s": ds, "e": de})
         daily_trend.append({"date": ds.strftime("%b %d"), "views": v, "unique": u})
 
     # ── Top pages ──
     top_pages = _q("""
-        SELECT path, COUNT(*) as views, COUNT(DISTINCT session_id) as unique_v
-        FROM page_view_events WHERE created_at >= :s
-        GROUP BY path ORDER BY views DESC LIMIT 15
+        SELECT page_path AS path, COUNT(*) as views, COUNT(DISTINCT session_id) as unique_v
+        FROM page_analytics WHERE created_at >= :s
+        GROUP BY page_path ORDER BY views DESC LIMIT 15
     """, {"s": start})
 
     # ── Device breakdown ──
     devices = _q("""
         SELECT device_type, COUNT(*) as cnt
-        FROM page_view_events WHERE created_at >= :s
+        FROM page_analytics WHERE created_at >= :s
         GROUP BY device_type ORDER BY cnt DESC
     """, {"s": start})
 
-    # ── Top referrers ──
+    # ── Top referrers (extract domain from referrer URL) ──
     referrers = _q("""
-        SELECT COALESCE(NULLIF(referrer_domain,''),'Direct') as src, COUNT(*) as cnt
-        FROM page_view_events WHERE created_at >= :s
-        GROUP BY referrer_domain ORDER BY cnt DESC LIMIT 10
+        SELECT COALESCE(NULLIF(
+            CASE WHEN referrer ~ '^https?://'
+                 THEN regexp_replace(regexp_replace(referrer, '^https?://([^/?#]*).*', '\\1'), '^www\\.', '')
+                 ELSE '' END
+        , ''), 'Direct') as src, COUNT(*) as cnt
+        FROM page_analytics WHERE created_at >= :s
+        GROUP BY src ORDER BY cnt DESC LIMIT 10
     """, {"s": start})
 
     # ── Top countries ──
     countries = _q("""
         SELECT COALESCE(NULLIF(country,''),'Unknown') as country, COUNT(*) as cnt
-        FROM page_view_events WHERE created_at >= :s
+        FROM page_analytics WHERE created_at >= :s
         GROUP BY country ORDER BY cnt DESC LIMIT 10
     """, {"s": start})
 
     # ── Browser ──
     browsers = _q("""
         SELECT COALESCE(NULLIF(browser,''),'Other') as browser, COUNT(*) as cnt
-        FROM page_view_events WHERE created_at >= :s
+        FROM page_analytics WHERE created_at >= :s
         GROUP BY browser ORDER BY cnt DESC LIMIT 8
     """, {"s": start})
 
@@ -157,16 +161,17 @@ def track():
 
     device  = _detect_device(ua)
     browser = _detect_browser(ua)
-    ref_domain = _extract_domain(ref)
+    import hashlib
+    ip_hash = hashlib.sha256(ip.encode()).hexdigest()[:64] if ip else ''
 
     try:
         db.session.execute(text("""
-            INSERT INTO page_view_events
-            (path, session_id, referrer, referrer_domain, ip_address, user_agent,
+            INSERT INTO page_analytics
+            (page_path, session_id, referrer, ip_hash,
              device_type, browser, country, created_at)
-            VALUES (:path,:sid,:ref,:refd,:ip,:ua,:device,:browser,:country,NOW())
-        """), dict(path=path, sid=sid, ref=ref, refd=ref_domain,
-                   ip=ip, ua=ua, device=device, browser=browser, country=''))
+            VALUES (:page_path,:sid,:ref,:ip_hash,:device,:browser,:country,NOW())
+        """), dict(page_path=path, sid=sid, ref=ref, ip_hash=ip_hash,
+                   device=device, browser=browser, country=''))
         db.session.commit()
         return jsonify({'ok': True})
     except Exception as e:
@@ -181,14 +186,18 @@ def ai_refresh():
     days = request.json.get('days', 30)
     start = datetime.now() - timedelta(days=days)
 
-    total_views   = _scalar("SELECT COUNT(*) FROM page_view_events WHERE created_at >= :s", {"s": start})
-    unique_sess   = _scalar("SELECT COUNT(DISTINCT session_id) FROM page_view_events WHERE created_at >= :s", {"s": start})
-    bounce_s      = _scalar("SELECT COUNT(*) FROM (SELECT session_id FROM page_view_events WHERE created_at>=:s GROUP BY session_id HAVING COUNT(*)=1) x", {"s": start})
+    total_views   = _scalar("SELECT COUNT(*) FROM page_analytics WHERE created_at >= :s", {"s": start})
+    unique_sess   = _scalar("SELECT COUNT(DISTINCT session_id) FROM page_analytics WHERE created_at >= :s", {"s": start})
+    bounce_s      = _scalar("SELECT COUNT(*) FROM (SELECT session_id FROM page_analytics WHERE created_at>=:s GROUP BY session_id HAVING COUNT(*)=1) x", {"s": start})
     bounce_rate   = round((bounce_s / max(unique_sess, 1)) * 100, 1)
     avg_pages     = round(total_views / max(unique_sess, 1), 2)
-    devices       = _q("SELECT device_type, COUNT(*) as cnt FROM page_view_events WHERE created_at>=:s GROUP BY device_type ORDER BY cnt DESC", {"s": start})
-    top_pages     = _q("SELECT path, COUNT(*) as views FROM page_view_events WHERE created_at>=:s GROUP BY path ORDER BY views DESC LIMIT 10", {"s": start})
-    referrers     = _q("SELECT COALESCE(NULLIF(referrer_domain,''),'Direct') as src, COUNT(*) as cnt FROM page_view_events WHERE created_at>=:s GROUP BY referrer_domain ORDER BY cnt DESC LIMIT 5", {"s": start})
+    devices       = _q("SELECT device_type, COUNT(*) as cnt FROM page_analytics WHERE created_at>=:s GROUP BY device_type ORDER BY cnt DESC", {"s": start})
+    top_pages     = _q("SELECT page_path AS path, COUNT(*) as views FROM page_analytics WHERE created_at>=:s GROUP BY page_path ORDER BY views DESC LIMIT 10", {"s": start})
+    referrers     = _q("""SELECT COALESCE(NULLIF(
+            CASE WHEN referrer ~ '^https?://'
+                 THEN regexp_replace(regexp_replace(referrer, '^https?://([^/?#]*).*', '\\1'), '^www\\.', '')
+                 ELSE '' END
+        , ''), 'Direct') as src, COUNT(*) as cnt FROM page_analytics WHERE created_at>=:s GROUP BY src ORDER BY cnt DESC LIMIT 5""", {"s": start})
 
     recs = _generate_ai_recommendations(
         total_views=total_views, unique_sess=unique_sess,
