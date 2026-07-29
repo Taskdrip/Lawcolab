@@ -1089,6 +1089,201 @@ def toggle_automation(auto_id):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+# ── System Emails (Welcome, Trial, etc.) ──────────────────────────────────────
+
+WELCOME_EMAIL_DEFAULTS = {
+    'welcome_email_from_name':       'Abraham at LawCoLab',
+    'welcome_email_from_email':      'noreply@mail.lawcolab.com',
+    'welcome_email_subject':         'Welcome to LawCoLab, {firm_name} — your trial is live ✦',
+    'welcome_email_hero_eyebrow':    '✦  Welcome to the Family  ✦',
+    'welcome_email_hero_headline':   "You're in, {first_name}.",
+    'welcome_email_hero_headline2':  "Let's build something great.",
+    'welcome_email_hero_sub':        '{firm_name} now has a 14-day free trial with full access to LawCoLab — your firm\'s new operating system.',
+    'welcome_email_intro_text':      "We're genuinely glad to have you here. LawCoLab was built by lawyers for lawyers — so we know how much time gets lost to paperwork, chasing clients, and juggling spreadsheets. Your trial gives you everything switched on so you can feel the difference from day one.",
+    'welcome_email_features_title':  'Everything ready for you right now',
+    'welcome_email_steps_title':     'Three things to do first',
+    'welcome_email_cta_text':        'Go to My Dashboard →',
+    'welcome_email_support_phone':   '+234 803 662 2568',
+    'welcome_email_support_wa_url':  'https://wa.me/2348036622568',
+    'welcome_email_support_email':   'support@lawcolab.com',
+    'welcome_email_founder_name':    'Abraham Tahbat',
+    'welcome_email_founder_title':   'Lawyer & Founder, LawCoLab',
+    'welcome_email_founder_quote':   'I built this because every tool I tried felt designed for accountants, not lawyers. I hope LawCoLab feels like it was made for you — because it was.',
+    'welcome_email_footer_tagline':  'Collaborate. Innovate. Elevate.',
+}
+
+def _get_welcome_email_settings():
+    """Read welcome email settings from site_settings, falling back to defaults."""
+    settings = dict(WELCOME_EMAIL_DEFAULTS)
+    try:
+        rows = db.session.execute(
+            text("SELECT key, value FROM site_settings WHERE key LIKE 'welcome_email_%'")
+        ).fetchall()
+        for r in rows:
+            settings[r[0]] = r[1]
+    except Exception:
+        pass
+    return settings
+
+def _save_site_setting(key, value):
+    try:
+        exists = db.session.execute(
+            text("SELECT key FROM site_settings WHERE key=:k"), {"k": key}
+        ).fetchone()
+        if exists:
+            db.session.execute(
+                text("UPDATE site_settings SET value=:v, updated_at=NOW() WHERE key=:k"),
+                {"k": key, "v": value}
+            )
+        else:
+            db.session.execute(
+                text("INSERT INTO site_settings (key, value, updated_at) VALUES (:k, :v, NOW())"),
+                {"k": key, "v": value}
+            )
+    except Exception as e:
+        raise e
+
+
+@email_crm_bp.route('/system-emails')
+@email_crm_bp.route('/system-emails/<email_type>')
+@require_super_admin
+def system_emails(email_type='welcome'):
+    counts  = _folder_counts()
+    settings = _get_welcome_email_settings()
+    return render_template('email_crm/system_emails.html',
+                           counts=counts, settings=settings, email_type=email_type)
+
+
+@email_crm_bp.route('/system-emails/save', methods=['POST'])
+@require_super_admin
+def save_system_email():
+    data = request.form
+    keys = [k for k in WELCOME_EMAIL_DEFAULTS if k in data]
+    try:
+        for key in keys:
+            _save_site_setting(key, data.get(key, '').strip())
+        db.session.commit()
+        flash('Welcome email settings saved.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error saving: {e}', 'error')
+    return redirect(url_for('email_crm.system_emails', email_type='welcome'))
+
+
+@email_crm_bp.route('/system-emails/preview/welcome')
+@require_super_admin
+def preview_welcome_email():
+    """Return a rendered preview of the welcome email with sample data."""
+    from flask import render_template as rt
+    import datetime as _dt
+    settings = _get_welcome_email_settings()
+    base_url = request.host_url.rstrip('/')
+    html = rt('emails/welcome.html',
+              first_name='Abraham',
+              firm_name='Owoeye & Associate LLP',
+              email='admin@example.com',
+              trial_days=14,
+              logo_url=f'{base_url}/static/images/lawcolab-logo.png',
+              base_url=base_url,
+              dashboard_url=f'{base_url}/dashboard',
+              year=_dt.datetime.now().year,
+              we=settings)
+    resp = make_response(html)
+    resp.headers['Content-Type'] = 'text/html'
+    return resp
+
+
+# ── Automation Step Management ─────────────────────────────────────────────────
+
+@email_crm_bp.route('/automation/<int:auto_id>/steps/add', methods=['POST'])
+@require_super_admin
+def add_automation_step(auto_id):
+    data         = request.form
+    action_type  = data.get('action_type', 'send_email')
+    delay_days   = int(data.get('delay_days') or 0)
+    delay_hours  = int(data.get('delay_hours') or 0)
+    subject      = data.get('subject', '').strip()
+    body_html    = data.get('body_html', '').strip()
+    template_id  = data.get('template_id') or None
+    try:
+        # Get next step order
+        max_order = db.session.execute(
+            text("SELECT COALESCE(MAX(step_order),0) FROM email_automation_steps WHERE automation_id=:aid"),
+            {"aid": auto_id}
+        ).scalar()
+        db.session.execute(text("""
+            INSERT INTO email_automation_steps
+                (automation_id, step_order, action_type, delay_days, delay_hours,
+                 template_id, subject, body_html, created_at)
+            VALUES (:aid, :ord, :at, :dd, :dh, :tid, :subj, :body, NOW())
+        """), dict(aid=auto_id, ord=max_order+1, at=action_type,
+                   dd=delay_days, dh=delay_hours,
+                   tid=int(template_id) if template_id else None,
+                   subj=subject, body=body_html))
+        db.session.commit()
+        flash('Step added.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error adding step: {e}', 'error')
+    return redirect(url_for('email_crm.automation'))
+
+
+@email_crm_bp.route('/automation/<int:auto_id>/steps/<int:step_id>/delete', methods=['POST'])
+@require_super_admin
+def delete_automation_step(auto_id, step_id):
+    try:
+        db.session.execute(
+            text("DELETE FROM email_automation_steps WHERE id=:sid AND automation_id=:aid"),
+            {"sid": step_id, "aid": auto_id}
+        )
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@email_crm_bp.route('/automation/<int:auto_id>/steps/<int:step_id>/edit', methods=['POST'])
+@require_super_admin
+def edit_automation_step(auto_id, step_id):
+    data = request.json or {}
+    try:
+        db.session.execute(text("""
+            UPDATE email_automation_steps
+            SET action_type=:at, delay_days=:dd, delay_hours=:dh,
+                subject=:subj, body_html=:body
+            WHERE id=:sid AND automation_id=:aid
+        """), dict(at=data.get('action_type','send_email'),
+                   dd=int(data.get('delay_days') or 0),
+                   dh=int(data.get('delay_hours') or 0),
+                   subj=data.get('subject',''),
+                   body=data.get('body_html',''),
+                   sid=step_id, aid=auto_id))
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@email_crm_bp.route('/automation/<int:auto_id>/delete', methods=['POST'])
+@require_super_admin
+def delete_automation(auto_id):
+    try:
+        db.session.execute(
+            text("DELETE FROM email_automation_steps WHERE automation_id=:id"), {"id": auto_id}
+        )
+        db.session.execute(
+            text("DELETE FROM email_automations WHERE id=:id"), {"id": auto_id}
+        )
+        db.session.commit()
+        flash('Automation deleted.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error: {e}', 'error')
+    return redirect(url_for('email_crm.automation'))
+
+
 # ── Firm Profile / Email Timeline ─────────────────────────────────────────────
 
 @email_crm_bp.route('/firm/<int:firm_id>')

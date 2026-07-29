@@ -2,8 +2,40 @@
 {% block title %}Automation — Communications{% endblock %}
 {% block page_title %}Email Automation{% endblock %}
 
+{% block extra_css %}
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<style>
+.auto-card { background:#fff; border-radius:14px; border:1px solid var(--border);
+  box-shadow:0 1px 3px rgba(0,0,0,.04); margin-bottom:1.25rem; overflow:hidden; }
+.auto-header { padding:.9rem 1.2rem; display:flex; align-items:center;
+  justify-content:space-between; border-bottom:1px solid #f1f5f9; }
+.auto-name { font-size:.9rem; font-weight:700; }
+.auto-trigger { font-size:.73rem; color:var(--muted); margin-top:.1rem; }
+.step-row { display:flex; align-items:center; gap:.75rem; padding:.65rem 1.2rem;
+  border-bottom:1px solid #f8f9fb; }
+.step-row:last-child { border-bottom:none; }
+.step-num { width:26px; height:26px; border-radius:50%; display:flex;
+  align-items:center; justify-content:center; font-size:.75rem; font-weight:700;
+  flex-shrink:0; }
+.step-num.email { background:#e8f0fe; color:#1a56db; }
+.step-num.wait  { background:#fff8e1; color:#f57f17; }
+.step-detail { flex:1; min-width:0; }
+.step-title { font-size:.82rem; font-weight:600; color:var(--text); }
+.step-meta  { font-size:.73rem; color:var(--muted); margin-top:.05rem; }
+.step-actions { display:flex; gap:.35rem; }
+.add-step-area { padding:1rem 1.2rem; background:#fafbff; border-top:1px solid #f1f5f9; }
+.trigger-badge { display:inline-block; padding:.15rem .55rem; border-radius:50px;
+  font-size:.71rem; font-weight:700; background:#e8f0fe; color:#1a56db; }
+.status-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.ql-container { min-height:100px; font-size:.84rem; }
+.ql-toolbar { border-radius:6px 6px 0 0!important; background:#f8fafc; }
+.ql-container { border-radius:0 0 6px 6px!important; }
+</style>
+{% endblock %}
+
 {% block topbar_actions %}
-<button class="btn-gold" onclick="document.getElementById('createModal').style.display='flex'" style="padding:.38rem .85rem;border-radius:9px;font-size:.8rem;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;gap:.4rem;">
+<button class="btn-gold" onclick="document.getElementById('createModal').style.display='flex'"
+  style="padding:.38rem .85rem;border-radius:9px;font-size:.8rem;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;gap:.4rem;">
   <i class="fas fa-plus"></i> New Workflow
 </button>
 {% endblock %}
@@ -16,59 +48,130 @@
 </div>
 
 {% if automations %}
-<div class="row g-3">
+<div>
   {% for auto in automations %}
-  <div class="col-lg-6">
-    <div class="ec-card">
-      <div class="ec-card-header">
-        <div>
-          <div style="font-size:.9rem;font-weight:700;">{{ auto.name }}</div>
-          <div style="font-size:.75rem;color:var(--muted);">Trigger: {{ auto.trigger_type|replace('_',' ')|title }}</div>
+  <div class="auto-card" id="auto-{{ auto.id }}">
+    <!-- Header -->
+    <div class="auto-header">
+      <div>
+        <div class="auto-name">{{ auto.name }}</div>
+        <div class="auto-trigger">
+          <span class="trigger-badge">{{ auto.trigger_type|replace('_',' ')|title }}</span>
+          <span class="ms-2" style="font-size:.72rem;">{{ auto.run_count or 0 }} runs</span>
+          {% if auto.created_at %}
+          <span class="ms-1" style="font-size:.72rem;">&middot; Created {{ auto.created_at.strftime('%b %d, %Y') if auto.created_at else '' }}</span>
+          {% endif %}
         </div>
-        <div class="d-flex align-items-center gap-2">
-          <span style="font-size:.72rem;padding:.2rem .6rem;border-radius:50px;font-weight:600;background:{{ '#dcfce7' if auto.is_active else '#f1f5f9' }};color:{{ '#16a34a' if auto.is_active else '#64748b' }};">
-            {{ 'Active' if auto.is_active else 'Inactive' }}
-          </span>
-          <button class="btn btn-sm btn-outline-secondary" style="border-radius:7px;font-size:.74rem;"
-                  onclick="toggleAuto({{ auto.id }}, this)">
-            {{ 'Pause' if auto.is_active else 'Activate' }}
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <span style="font-size:.72rem;padding:.2rem .6rem;border-radius:50px;font-weight:600;
+          background:{{ '#dcfce7' if auto.is_active else '#f1f5f9' }};
+          color:{{ '#16a34a' if auto.is_active else '#64748b' }};">
+          {{ 'Active' if auto.is_active else 'Inactive' }}
+        </span>
+        <button class="btn btn-sm btn-outline-secondary" style="border-radius:7px;font-size:.74rem;"
+                onclick="toggleAuto({{ auto.id }}, this)">
+          {{ 'Pause' if auto.is_active else 'Activate' }}
+        </button>
+        <form method="POST" action="{{ url_for('email_crm.delete_automation', auto_id=auto.id) }}"
+              onsubmit="return confirm('Delete this automation and all its steps?')" style="margin:0;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius:7px;font-size:.74rem;">
+            <i class="fas fa-trash"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    {% if auto.description %}
+    <div class="px-3 py-2" style="font-size:.8rem;color:var(--muted);border-bottom:1px solid #f1f5f9;">{{ auto.description }}</div>
+    {% endif %}
+
+    <!-- Steps list -->
+    <div id="steps-{{ auto.id }}">
+      {% if auto.steps %}
+        {% for step in auto.steps %}
+        <div class="step-row" id="step-row-{{ step.id }}">
+          <div class="step-num {{ 'email' if step.action_type == 'send_email' else 'wait' }}">
+            <i class="fas fa-{{ 'envelope' if step.action_type == 'send_email' else 'clock' }}" style="font-size:.7rem;"></i>
+          </div>
+          <div class="step-detail">
+            {% if step.action_type == 'send_email' %}
+              <div class="step-title">Send Email{% if step.delay_days or step.delay_hours %} (after {{ step.delay_days or 0 }}d {{ step.delay_hours or 0 }}h delay){% endif %}</div>
+              {% if step.subject %}
+              <div class="step-meta">Subject: {{ step.subject[:60] }}{% if step.subject|length > 60 %}…{% endif %}</div>
+              {% endif %}
+            {% elif step.action_type == 'wait' %}
+              <div class="step-title">Wait {{ step.delay_days or 0 }} day{{ 's' if (step.delay_days or 0) != 1 else '' }}{% if step.delay_hours %} {{ step.delay_hours }}h{% endif %}</div>
+              <div class="step-meta">Pause before next step</div>
+            {% else %}
+              <div class="step-title">{{ step.action_type|replace('_',' ')|title }}</div>
+            {% endif %}
+          </div>
+          <div class="step-actions">
+            {% if step.action_type == 'send_email' and step.body_html %}
+            <button class="btn btn-sm btn-outline-secondary" style="border-radius:7px;font-size:.72rem;"
+                    onclick="previewStep({{ step.id }}, `{{ step.body_html|e|truncate(5000) }}`)">
+              <i class="fas fa-eye"></i>
+            </button>
+            {% endif %}
+            <button class="btn btn-sm btn-outline-danger" style="border-radius:7px;font-size:.72rem;"
+                    onclick="deleteStep({{ auto.id }}, {{ step.id }})">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="text-center py-3" id="no-steps-{{ auto.id }}" style="font-size:.8rem;color:var(--muted);">
+          <i class="fas fa-stream me-1"></i>No steps yet — add one below
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Add Step area -->
+    <div class="add-step-area">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <span style="font-size:.75rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;">Add Step</span>
+      </div>
+      <form method="POST" action="{{ url_for('email_crm.add_automation_step', auto_id=auto.id) }}" id="stepForm-{{ auto.id }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="row g-2 align-items-end">
+          <div class="col-sm-3">
+            <label style="font-size:.72rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;display:block;">Type</label>
+            <select name="action_type" class="form-select form-select-sm" onchange="toggleStepFields(this, {{ auto.id }})">
+              <option value="send_email">📧 Send Email</option>
+              <option value="wait">⏱️ Wait</option>
+            </select>
+          </div>
+          <div class="col-sm-2">
+            <label style="font-size:.72rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;display:block;">Delay Days</label>
+            <input type="number" name="delay_days" class="form-control form-control-sm" min="0" value="0" placeholder="0">
+          </div>
+          <div class="col-sm-2">
+            <label style="font-size:.72rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;display:block;">Delay Hours</label>
+            <input type="number" name="delay_hours" class="form-control form-control-sm" min="0" max="23" value="0" placeholder="0">
+          </div>
+          <div class="col-sm-5 email-fields-{{ auto.id }}">
+            <label style="font-size:.72rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;display:block;">Email Subject</label>
+            <input type="text" name="subject" class="form-control form-control-sm" placeholder="Subject line…" maxlength="200">
+          </div>
+        </div>
+        <div class="email-fields-{{ auto.id }} mt-2" style="display:none;" id="bodyWrap-{{ auto.id }}">
+          <label style="font-size:.72rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;display:block;">Email Body (HTML)</label>
+          <div id="quilleditor-{{ auto.id }}" style="min-height:100px;border:1px solid #e2e8f0;border-radius:8px;"></div>
+          <input type="hidden" name="body_html" id="bodyHtml-{{ auto.id }}">
+          <div style="font-size:.7rem;color:var(--muted);margin-top:.25rem;">
+            Tip: Use <code>{{"{{"}} first_name {{"}}"}}</code>, <code>{{"{{"}} firm_name {{"}}"}}</code>, <code>{{"{{"}} dashboard_url {{"}}"}}</code> as merge tags
+          </div>
+        </div>
+        <div class="d-flex gap-2 mt-2">
+          <button type="submit" class="btn-navy" style="padding:.35rem .9rem;border-radius:8px;font-size:.78rem;cursor:pointer;"
+                  onclick="captureBody({{ auto.id }})">
+            <i class="fas fa-plus me-1"></i>Add Step
           </button>
         </div>
-      </div>
-      <div class="ec-card-body p-0">
-        {% if auto.description %}
-        <div class="px-3 py-2" style="font-size:.8rem;color:var(--muted);border-bottom:1px solid #f1f5f9;">{{ auto.description }}</div>
-        {% endif %}
-        <!-- Steps -->
-        {% if auto.steps %}
-        <div class="px-3 pt-2 pb-1">
-          <div style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.5rem;">Steps</div>
-          {% for step in auto.steps %}
-          <div class="d-flex align-items-center gap-2 mb-2">
-            <div style="width:24px;height:24px;border-radius:6px;background:{{ '#e8f0fe' if step.action_type=='send_email' else '#fff8e1' }};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <i class="fas fa-{{ 'envelope' if step.action_type=='send_email' else 'clock' }}" style="font-size:.7rem;color:{{ '#1a56db' if step.action_type=='send_email' else '#f57f17' }};"></i>
-            </div>
-            <div style="font-size:.8rem;flex:1;">
-              {% if step.action_type == 'send_email' %}
-              <span class="fw-600">Send email</span>{% if step.subject %}: {{ step.subject[:40] }}{% endif %}
-              {% elif step.action_type == 'wait' %}
-              <span>Wait {{ step.delay_days or 0 }}d {% if step.delay_hours %}{{ step.delay_hours }}h{% endif %}</span>
-              {% else %}
-              {{ step.action_type|replace('_',' ')|title }}
-              {% endif %}
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-        {% else %}
-        <div class="px-3 py-2 text-center" style="font-size:.8rem;color:var(--muted);">No steps configured yet</div>
-        {% endif %}
-        <div class="px-3 py-2 border-top d-flex align-items-center gap-2" style="border-color:#f1f5f9;">
-          <span style="font-size:.75rem;color:var(--muted);">{{ auto.run_count or 0 }} runs</span>
-          <span style="font-size:.75rem;color:var(--muted);">·</span>
-          <span style="font-size:.75rem;color:var(--muted);">{{ auto.created_at.strftime('%b %d, %Y') if auto.created_at else '' }}</span>
-        </div>
-      </div>
+      </form>
     </div>
   </div>
   {% endfor %}
@@ -78,97 +181,145 @@
   <div class="text-center py-5">
     <i class="fas fa-robot fa-3x mb-3" style="color:#cbd5e0;"></i>
     <h5 style="font-size:.95rem;font-weight:700;margin-bottom:.5rem;">No automations yet</h5>
-    <p style="font-size:.84rem;color:var(--muted);max-width:380px;margin:0 auto 1.2rem;">
-      Build automated sequences — welcome emails, follow-ups, trial reminders — that run without you lifting a finger.
+    <p style="font-size:.83rem;color:var(--muted);margin-bottom:1.2rem;">
+      Create your first workflow to start automating email follow-ups.
     </p>
-    <button class="btn-gold" onclick="document.getElementById('createModal').style.display='flex'" style="padding:.5rem 1.4rem;border-radius:10px;font-size:.84rem;font-weight:700;border:none;cursor:pointer;">
-      Create your first workflow
+    <button class="btn-gold" onclick="document.getElementById('createModal').style.display='flex'"
+      style="padding:.45rem 1.2rem;border-radius:9px;font-size:.82rem;font-weight:700;border:none;cursor:pointer;">
+      Create First Automation
     </button>
   </div>
 </div>
 {% endif %}
 
-<!-- Example workflows reference -->
-<div class="ec-card mt-3">
-  <div class="ec-card-header"><span class="ec-card-title"><i class="fas fa-lightbulb me-2" style="color:var(--gold-dark);"></i>Example Workflows</span></div>
-  <div class="row g-0">
-    {% for title, steps, trigger in [
-      ('New Registration Sequence', ['Welcome Email', '→ Wait 2 days', '→ Product Guide', '→ Wait 5 days', '→ Demo Invitation'], 'user_register'),
-      ('Trial Nurture', ['Trial Start Email', '→ Wait 3 days', '→ Tips & Tricks', '→ Wait 4 days', '→ Trial Expiry Warning'], 'trial_started'),
-      ('Cold Lead Re-engagement', ['Re-engagement Email', '→ Wait 7 days', '→ Case Study', '→ Wait 7 days', '→ Final Offer'], 'lead_dormant'),
-    ] %}
-    <div class="col-md-4 p-3 {% if not loop.last %}border-end{% endif %}" style="border-color:#f1f5f9;">
-      <div style="font-size:.84rem;font-weight:700;margin-bottom:.5rem;">{{ title }}</div>
-      <div style="font-size:.75rem;color:var(--muted);line-height:1.8;">
-        {% for step in steps %}{{ step }}<br>{% endfor %}
-      </div>
-      <button class="btn btn-sm btn-outline-primary mt-2" style="border-radius:7px;font-size:.74rem;"
-              onclick="prefillCreate('{{ title }}','{{ trigger }}')">
-        Use this template
-      </button>
-    </div>
-    {% endfor %}
-  </div>
-</div>
 
-<!-- Create modal -->
-<div id="createModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;align-items:center;justify-content:center;padding:1rem;">
-  <div style="background:#fff;border-radius:16px;width:min(560px,100%);box-shadow:0 20px 60px rgba(0,0,0,.2);">
-    <div style="padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:1rem;font-weight:700;">New Automation</span>
-      <button onclick="document.getElementById('createModal').style.display='none'" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);">×</button>
+<!-- Create automation modal -->
+<div id="createModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1050;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:480px;padding:2rem;margin:1rem;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <h5 style="font-size:1rem;font-weight:700;margin:0;">New Automation Workflow</h5>
+      <button onclick="document.getElementById('createModal').style.display='none'" style="border:none;background:none;font-size:1.2rem;color:var(--muted);cursor:pointer;">&times;</button>
     </div>
     <form method="POST" action="{{ url_for('email_crm.create_automation') }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <div style="padding:1.2rem;">
-        <div class="mb-3">
-          <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Workflow Name *</label>
-          <input type="text" name="name" id="autoName" class="form-control" style="border-radius:9px;" placeholder="e.g. New Registration Welcome Sequence" required>
-        </div>
-        <div class="mb-3">
-          <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Description</label>
-          <textarea name="description" class="form-control" rows="2" style="border-radius:9px;font-size:.84rem;" placeholder="What does this automation do?"></textarea>
-        </div>
-        <div class="mb-3">
-          <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--muted);">Trigger</label>
-          <select name="trigger_type" id="autoTrigger" class="form-select" style="border-radius:9px;">
-            {% for val, label in [
-              ('manual','Manual — run on demand'),
-              ('user_register','User registers on LAWCOLAB'),
-              ('trial_started','Trial period starts'),
-              ('lead_dormant','Lead dormant for 14+ days'),
-              ('email_opened','Email opened'),
-              ('email_replied','Email replied'),
-              ('stage_changed','Pipeline stage changed'),
-            ] %}
-            <option value="{{ val }}">{{ label }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div style="background:#f0f4ff;border-radius:10px;padding:.75rem 1rem;font-size:.8rem;color:#3b4d9b;">
-          <i class="fas fa-info-circle me-1"></i> After creating the workflow, add steps (send email, wait, conditions) from the workflow detail page.
-        </div>
+      <div class="mb-3">
+        <label class="form-label" style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;">Workflow Name</label>
+        <input type="text" name="name" class="form-control" placeholder="e.g. Welcome Sequence" required>
       </div>
-      <div style="padding:.85rem 1.2rem;border-top:1px solid var(--border);display:flex;gap:.6rem;justify-content:flex-end;">
-        <button type="button" onclick="document.getElementById('createModal').style.display='none'" class="btn-outline-ec">Cancel</button>
-        <button type="submit" class="btn-navy">Create Workflow</button>
+      <div class="mb-3">
+        <label class="form-label" style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;">Description</label>
+        <textarea name="description" class="form-control" rows="2" placeholder="What does this workflow do?"></textarea>
       </div>
+      <div class="mb-4">
+        <label class="form-label" style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;">Trigger</label>
+        <select name="trigger_type" class="form-select">
+          <option value="signup">New Signup</option>
+          <option value="trial_start">Trial Started</option>
+          <option value="trial_expiring">Trial Expiring (3 days)</option>
+          <option value="trial_expired">Trial Expired</option>
+          <option value="payment_success">Payment Received</option>
+          <option value="inactivity">Inactivity (7 days)</option>
+          <option value="manual">Manual / On Demand</option>
+        </select>
+      </div>
+      <button type="submit" class="btn-gold w-100" style="padding:.65rem;border-radius:10px;font-size:.88rem;font-weight:700;border:none;cursor:pointer;">
+        Create Workflow
+      </button>
     </form>
   </div>
 </div>
+
+<!-- Step preview modal -->
+<div id="previewModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1060;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:700px;max-height:90vh;margin:1rem;overflow:hidden;display:flex;flex-direction:column;">
+    <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-weight:700;font-size:.9rem;">Email Preview</span>
+      <button onclick="document.getElementById('previewModal').style.display='none'" style="border:none;background:none;font-size:1.2rem;cursor:pointer;">&times;</button>
+    </div>
+    <div style="flex:1;overflow:auto;">
+      <iframe id="previewIframe" style="width:100%;min-height:500px;border:none;"></iframe>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
 <script>
-async function toggleAuto(id, btn){
-  const r = await api(`/superadmin/crm/email/automation/${id}/toggle`);
-  if(r.success){ showToast('Automation updated'); location.reload(); }
-  else showToast(r.error||'Error','error');
+// Init Quill editors for each automation
+const quillEditors = {};
+{% for auto in automations %}
+quillEditors[{{ auto.id }}] = new Quill('#quilleditor-{{ auto.id }}', {
+  theme: 'snow',
+  placeholder: 'Write your email body here… Use {{first_name}}, {{firm_name}} as merge tags',
+  modules: {
+    toolbar: [
+      ['bold','italic','underline'],
+      [{'list':'ordered'},{'list':'bullet'}],
+      ['link'],
+      ['clean']
+    ]
+  }
+});
+{% endfor %}
+
+function captureBody(autoId) {
+  const editor = quillEditors[autoId];
+  if (editor) {
+    document.getElementById('bodyHtml-' + autoId).value = editor.root.innerHTML;
+  }
 }
-function prefillCreate(name, trigger){
-  document.getElementById('autoName').value = name;
-  document.getElementById('autoTrigger').value = trigger;
-  document.getElementById('createModal').style.display='flex';
+
+function toggleStepFields(sel, autoId) {
+  const isEmail = sel.value === 'send_email';
+  document.querySelectorAll('.email-fields-' + autoId).forEach(el => {
+    if (el.id === 'bodyWrap-' + autoId) {
+      el.style.display = isEmail ? 'block' : 'none';
+    } else {
+      // subject input — keep visible but clear if wait
+      if (!isEmail) el.querySelector('input') && (el.querySelector('input').value = '');
+    }
+  });
 }
+
+function toggleAuto(autoId, btn) {
+  api('{{ url_for("email_crm.toggle_automation", auto_id=0) }}'.replace('/0/', '/' + autoId + '/'))
+    .then(r => {
+      if (r.success) {
+        location.reload();
+      } else {
+        showToast(r.error || 'Error', 'error');
+      }
+    });
+}
+
+function deleteStep(autoId, stepId) {
+  if (!confirm('Remove this step?')) return;
+  const url = '{{ url_for("email_crm.delete_automation_step", auto_id=0, step_id=0) }}'
+    .replace('/0/steps/0/', '/' + autoId + '/steps/' + stepId + '/');
+  api(url).then(r => {
+    if (r.success) {
+      const el = document.getElementById('step-row-' + stepId);
+      if (el) el.remove();
+      showToast('Step removed.');
+    } else {
+      showToast(r.error || 'Error removing step', 'error');
+    }
+  });
+}
+
+function previewStep(stepId, html) {
+  const iframe = document.getElementById('previewIframe');
+  iframe.srcdoc = html;
+  document.getElementById('previewModal').style.display = 'flex';
+}
+
+// Close modals on backdrop click
+['createModal','previewModal'].forEach(id => {
+  document.getElementById(id).addEventListener('click', function(e) {
+    if (e.target === this) this.style.display = 'none';
+  });
+});
 </script>
 {% endblock %}

@@ -243,6 +243,10 @@
            class="{% if 'automation' in request.endpoint %}active{% endif %}">
       <i class="fas fa-robot ni"></i> Automation
     </a></li>
+    <li><a href="{{ url_for('email_crm.system_emails') }}"
+           class="{% if 'system_email' in request.endpoint %}active{% endif %}">
+      <i class="fas fa-envelope-open-text ni"></i> System Emails
+    </a></li>
   </ul>
 
   <div class="sidebar-section">Insights</div>

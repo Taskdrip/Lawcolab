@@ -189,6 +189,7 @@ def signup():
                 from utils.email_sender import send_email
                 from flask import request as flask_request
                 import datetime as _dt
+                from sqlalchemy import text as _text
                 _base_url = flask_request.host_url.rstrip('/')
                 _logo_url = f"{_base_url}/static/images/lawcolab-logo.png"
                 _dashboard_url = f"{_base_url}/dashboard"
@@ -197,6 +198,36 @@ def signup():
                 if new_firm.admin_access_expires:
                     _delta = new_firm.admin_access_expires - _dt.datetime.now()
                     _trial_days = max(1, _delta.days)
+                # Read welcome email settings from DB (with defaults)
+                _we_defaults = {
+                    'welcome_email_from_name':      'Abraham at LawCoLab',
+                    'welcome_email_from_email':     'noreply@mail.lawcolab.com',
+                    'welcome_email_subject':        'Welcome to LawCoLab, {firm_name} — your trial is live ✦',
+                    'welcome_email_hero_eyebrow':   '✦  Welcome to the Family  ✦',
+                    'welcome_email_hero_headline':  "You're in, {first_name}.",
+                    'welcome_email_hero_headline2': "Let's build something great.",
+                    'welcome_email_hero_sub':       '{firm_name} now has a 14-day free trial with full access to LawCoLab - your firm\'s new operating system.',
+                    'welcome_email_intro_text':     "We're genuinely glad to have you here. LawCoLab was built by lawyers for lawyers - so we know how much time gets lost to paperwork, chasing clients, and juggling spreadsheets. Your trial gives you everything switched on so you can feel the difference from day one.",
+                    'welcome_email_features_title': 'Everything ready for you right now',
+                    'welcome_email_steps_title':    'Three things to do first',
+                    'welcome_email_cta_text':       'Go to My Dashboard →',
+                    'welcome_email_support_phone':  '+234 803 662 2568',
+                    'welcome_email_support_wa_url': 'https://wa.me/2348036622568',
+                    'welcome_email_support_email':  'support@lawcolab.com',
+                    'welcome_email_founder_name':   'Abraham Tahbat',
+                    'welcome_email_founder_title':  'Lawyer & Founder, LawCoLab',
+                    'welcome_email_founder_quote':  'I built this because every tool I tried felt designed for accountants, not lawyers. I hope LawCoLab feels like it was made for you - because it was.',
+                    'welcome_email_footer_tagline': 'Collaborate. Innovate. Elevate.',
+                }
+                try:
+                    _rows = db.session.execute(
+                        _text("SELECT key, value FROM site_settings WHERE key LIKE 'welcome_email_%'")
+                    ).fetchall()
+                    for _r in _rows:
+                        _we_defaults[_r[0]] = _r[1]
+                except Exception:
+                    pass
+                _subject = _we_defaults['welcome_email_subject'].replace('{firm_name}', new_firm.name).replace('{first_name}', user.first_name)
                 welcome_html = render_template(
                     'emails/welcome.html',
                     first_name=user.first_name,
@@ -207,13 +238,14 @@ def signup():
                     base_url=_base_url,
                     dashboard_url=_dashboard_url,
                     year=_dt.datetime.now().year,
+                    we=_we_defaults,
                 )
                 send_email(
                     to_email=user.email,
-                    subject=f'Welcome to LawCoLab, {new_firm.name} — your trial is live ✦',
+                    subject=_subject,
                     body_html=welcome_html,
-                    from_name='Abraham at LawCoLab',
-                    from_email='noreply@mail.lawcolab.com',
+                    from_name=_we_defaults['welcome_email_from_name'],
+                    from_email=_we_defaults['welcome_email_from_email'],
                 )
             except Exception as email_err:
                 logger.warning("Welcome email failed (signup still succeeded): %s", email_err)

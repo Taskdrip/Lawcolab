@@ -37,13 +37,12 @@
                style="max-width:600px; width:100%; background:#ffffff; border-radius:16px; overflow:hidden;
                       box-shadow:0 4px 24px rgba(13,27,75,0.10);">
 
-          <!-- ── HEADER / LOGO ── -->
+          <!-- HEADER / LOGO -->
           <tr>
             <td style="background:#0d1b4b; padding:28px 40px 22px;">
               <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
                 <tr>
                   <td>
-                    <!-- Logo -->
                     <img src="{{ logo_url }}" alt="LawCoLab" width="140" height="auto"
                          style="display:block; max-height:56px; object-fit:contain;"
                          onerror="this.style.display='none'">
@@ -59,12 +58,12 @@
             </td>
           </tr>
 
-          <!-- ── GOLD ACCENT LINE ── -->
+          <!-- GOLD ACCENT LINE -->
           <tr>
             <td style="height:4px; background:linear-gradient(90deg,#FFD700 0%,#FFA500 50%,#FFD700 100%);"></td>
           </tr>
 
-          <!-- ── HERO ── -->
+          <!-- HERO -->
           <tr>
             <td class="hero-content"
                 style="background:linear-gradient(160deg,#0d1b4b 0%,#1a3a6b 100%);
@@ -72,18 +71,16 @@
               <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; font-weight:600;
                          color:#FFD700; letter-spacing:2px; text-transform:uppercase;
                          margin-bottom:16px;">
-                ✦ &nbsp; Welcome to the Family &nbsp; ✦
+                {{ we.welcome_email_hero_eyebrow if we is defined else '✦  Welcome to the Family  ✦' }}
               </p>
               <h1 style="font-family:'Playfair Display',Georgia,serif; font-size:32px;
                           font-weight:800; color:#ffffff; line-height:1.25; margin-bottom:14px;">
-                You're in, {{ first_name }}.<br>
-                <span style="color:#FFD700;">Let's build something great.</span>
+                {{ (we.welcome_email_hero_headline if we is defined else "You're in, {first_name}.").replace('{first_name}', first_name) }}<br>
+                <span style="color:#FFD700;">{{ we.welcome_email_hero_headline2 if we is defined else "Let's build something great." }}</span>
               </h1>
               <p style="font-family:'Inter',Arial,sans-serif; font-size:15px; color:rgba(255,255,255,0.78);
                          line-height:1.6; max-width:440px; margin:0 auto 28px;">
-                <strong style="color:#fff;">{{ firm_name }}</strong> now has a
-                14&#8209;day free trial with full access to LawCoLab —
-                your firm's new operating system.
+                {{ ((we.welcome_email_hero_sub if we is defined else '{firm_name} now has a 14-day free trial with full access to LawCoLab - your firm\'s new operating system.').replace('{firm_name}', firm_name).replace('{first_name}', first_name)) }}
               </p>
               <!-- Trial badge -->
               <div style="display:inline-block; background:rgba(255,215,0,0.12); border:1px solid rgba(255,215,0,0.4);
@@ -96,7 +93,7 @@
             </td>
           </tr>
 
-          <!-- ── INTRO ── -->
+          <!-- INTRO -->
           <tr>
             <td class="content-block" style="padding:40px 40px 8px;">
               <p style="font-family:'Inter',Arial,sans-serif; font-size:15px; color:#374151; line-height:1.7;">
@@ -104,19 +101,17 @@
               </p>
               <p style="font-family:'Inter',Arial,sans-serif; font-size:15px; color:#374151;
                          line-height:1.7; margin-top:12px;">
-                We're genuinely glad to have you here. LawCoLab was built by lawyers for lawyers —
-                so we know how much time gets lost to paperwork, chasing clients, and juggling spreadsheets.
-                Your trial gives you everything switched on so you can feel the difference from day one.
+                {{ we.welcome_email_intro_text if we is defined else "We're genuinely glad to have you here. LawCoLab was built by lawyers for lawyers - so we know how much time gets lost to paperwork, chasing clients, and juggling spreadsheets. Your trial gives you everything switched on so you can feel the difference from day one." }}
               </p>
             </td>
           </tr>
 
-          <!-- ── WHAT'S READY NOW ── -->
+          <!-- WHAT'S READY NOW -->
           <tr>
             <td class="content-block" style="padding:32px 40px 8px;">
               <h2 style="font-family:'Playfair Display',Georgia,serif; font-size:20px;
                           font-weight:800; color:#0d1b4b; margin-bottom:20px;">
-                Everything ready for you right now
+                {{ we.welcome_email_features_title if we is defined else 'Everything ready for you right now' }}
               </h2>
               <!-- Feature cards grid -->
               <table width="100%" cellpadding="0" cellspacing="0" border="0"
@@ -197,14 +192,14 @@
             </td>
           </tr>
 
-          <!-- ── DIVIDER ── -->
+          <!-- DIVIDER -->
           <tr>
             <td style="padding:32px 40px 0;">
               <hr style="border:none; border-top:1px solid #e8eef4;">
             </td>
           </tr>
 
-          <!-- ── PEEK AT WHAT'S AHEAD (non-pitchy) ── -->
+          <!-- PEEK AT WHAT'S AHEAD -->
           <tr>
             <td class="content-block" style="padding:32px 40px 8px;">
               <h2 style="font-family:'Playfair Display',Georgia,serif; font-size:20px;
@@ -217,13 +212,10 @@
                 unlock when they're ready:
               </p>
 
-              <!-- Tier rows -->
               <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
-                <!-- Starter -->
                 <tr>
                   <td style="padding-bottom:12px;">
-                    <div style="background:#eff6ff; border-radius:10px; padding:16px 20px;
-                                 display:flex; align-items:flex-start;">
+                    <div style="background:#eff6ff; border-radius:10px; padding:16px 20px;">
                       <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
                         <tr>
                           <td width="28" style="vertical-align:top; padding-top:2px;">
@@ -235,7 +227,7 @@
                             <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; font-weight:700;
                                        color:#1d4ed8; margin-bottom:2px;">Starter Plan</p>
                             <p style="font-family:'Inter',Arial,sans-serif; font-size:12px; color:#374151; line-height:1.5;">
-                              Up to 5 users, full case management, billing &amp; invoices, 20 GB storage — everything a small firm needs.
+                              Up to 5 users, full case management, billing &amp; invoices, 20 GB storage.
                             </p>
                           </td>
                         </tr>
@@ -243,7 +235,6 @@
                     </div>
                   </td>
                 </tr>
-                <!-- Growth -->
                 <tr>
                   <td style="padding-bottom:12px;">
                     <div style="background:#fff7ed; border-radius:10px; padding:16px 20px;">
@@ -258,7 +249,7 @@
                             <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; font-weight:700;
                                        color:#c2410c; margin-bottom:2px;">Growth Plan</p>
                             <p style="font-family:'Inter',Arial,sans-serif; font-size:12px; color:#374151; line-height:1.5;">
-                              Up to 20 users, advanced analytics &amp; reports, priority support, 100 GB storage, and all integrations with API access.
+                              Up to 20 users, advanced analytics, priority support, 100 GB storage, and all integrations.
                             </p>
                           </td>
                         </tr>
@@ -266,11 +257,9 @@
                     </div>
                   </td>
                 </tr>
-                <!-- Enterprise -->
                 <tr>
                   <td>
-                    <div style="background:#f9fafb; border-radius:10px; padding:16px 20px;
-                                 border:1px solid #e5e7eb;">
+                    <div style="background:#f9fafb; border-radius:10px; padding:16px 20px; border:1px solid #e5e7eb;">
                       <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
                         <tr>
                           <td width="28" style="vertical-align:top; padding-top:2px;">
@@ -282,7 +271,7 @@
                             <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; font-weight:700;
                                        color:#0d1b4b; margin-bottom:2px;">Enterprise Plan</p>
                             <p style="font-family:'Inter',Arial,sans-serif; font-size:12px; color:#374151; line-height:1.5;">
-                              Unlimited users, multi-office management, white-label client portal, custom integrations, SSO, and 24/7 priority support — for firms that run at scale.
+                              Unlimited users, multi-office management, white-label client portal, custom integrations, SSO, and 24/7 priority support.
                             </p>
                           </td>
                         </tr>
@@ -294,21 +283,20 @@
             </td>
           </tr>
 
-          <!-- ── DIVIDER ── -->
+          <!-- DIVIDER -->
           <tr>
             <td style="padding:32px 40px 0;">
               <hr style="border:none; border-top:1px solid #e8eef4;">
             </td>
           </tr>
 
-          <!-- ── 3 QUICK STEPS ── -->
+          <!-- 3 QUICK STEPS -->
           <tr>
             <td class="content-block" style="padding:32px 40px 8px;">
               <h2 style="font-family:'Playfair Display',Georgia,serif; font-size:20px;
                           font-weight:800; color:#0d1b4b; margin-bottom:20px;">
-                Three things to do first
+                {{ we.welcome_email_steps_title if we is defined else 'Three things to do first' }}
               </h2>
-              <!-- Step 1 -->
               <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation"
                      style="margin-bottom:16px;">
                 <tr>
@@ -326,7 +314,6 @@
                   </td>
                 </tr>
               </table>
-              <!-- Step 2 -->
               <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation"
                      style="margin-bottom:16px;">
                 <tr>
@@ -344,7 +331,6 @@
                   </td>
                 </tr>
               </table>
-              <!-- Step 3 -->
               <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
                 <tr>
                   <td width="40" style="vertical-align:top; padding-top:2px;">
@@ -356,7 +342,7 @@
                     <p style="font-family:'Inter',Arial,sans-serif; font-size:14px; font-weight:700;
                                 color:#0d1b4b; margin-bottom:2px;">Invite a colleague</p>
                     <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; color:#64748b; line-height:1.5;">
-                      LawCoLab works best as a team. Invite a lawyer or paralegal from the Admin → Team section.
+                      LawCoLab works best as a team. Invite a lawyer or paralegal from the Admin &rarr; Team section.
                     </p>
                   </td>
                 </tr>
@@ -364,7 +350,7 @@
             </td>
           </tr>
 
-          <!-- ── CTA BUTTON ── -->
+          <!-- CTA BUTTON -->
           <tr>
             <td class="cta-block" style="padding:32px 40px 40px; text-align:center;">
               <a href="{{ dashboard_url }}"
@@ -372,7 +358,7 @@
                          font-family:'Inter',Arial,sans-serif; font-size:15px; font-weight:700;
                          padding:16px 40px; border-radius:10px; letter-spacing:0.3px;
                          text-decoration:none; box-shadow:0 4px 14px rgba(13,27,75,0.25);">
-                Go to My Dashboard &rarr;
+                {{ we.welcome_email_cta_text if we is defined else 'Go to My Dashboard &rarr;' }}
               </a>
               <p style="font-family:'Inter',Arial,sans-serif; font-size:12px; color:#94a3b8;
                          margin-top:14px; line-height:1.5;">
@@ -382,7 +368,7 @@
             </td>
           </tr>
 
-          <!-- ── FOUNDER SIGN-OFF ── -->
+          <!-- FOUNDER SIGN-OFF -->
           <tr>
             <td style="padding:0 40px 40px;">
               <div style="background:#f8faff; border-radius:12px; padding:24px 24px;
@@ -391,19 +377,19 @@
                   <tr>
                     <td width="52" style="vertical-align:top;">
                       <img src="{{ base_url }}/static/abraham_founder.jpg"
-                           alt="Abraham Tahbat" width="44" height="44"
+                           alt="{{ we.welcome_email_founder_name if we is defined else 'Abraham Tahbat' }}"
+                           width="44" height="44"
                            style="border-radius:50%; object-fit:cover; width:44px; height:44px;"
                            onerror="this.style.display='none'">
                     </td>
                     <td style="padding-left:14px; vertical-align:top;">
                       <p style="font-family:'Inter',Arial,sans-serif; font-size:14px; font-weight:700;
-                                  color:#0d1b4b; margin-bottom:2px;">Abraham Tahbat</p>
+                                  color:#0d1b4b; margin-bottom:2px;">{{ we.welcome_email_founder_name if we is defined else 'Abraham Tahbat' }}</p>
                       <p style="font-family:'Inter',Arial,sans-serif; font-size:12px; color:#64748b;
-                                  margin-bottom:8px;">Lawyer &amp; Founder, LawCoLab</p>
+                                  margin-bottom:8px;">{{ we.welcome_email_founder_title if we is defined else 'Lawyer &amp; Founder, LawCoLab' }}</p>
                       <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; color:#374151;
                                   line-height:1.6; font-style:italic;">
-                        "I built this because every tool I tried felt designed for accountants, not lawyers.
-                        I hope LawCoLab feels like it was made for you — because it was."
+                        "{{ we.welcome_email_founder_quote if we is defined else 'I built this because every tool I tried felt designed for accountants, not lawyers. I hope LawCoLab feels like it was made for you - because it was.' }}"
                       </p>
                     </td>
                   </tr>
@@ -412,7 +398,7 @@
             </td>
           </tr>
 
-          <!-- ── SUPPORT STRIP ── -->
+          <!-- SUPPORT STRIP -->
           <tr>
             <td style="background:#0d1b4b; padding:24px 40px; text-align:center;">
               <p style="font-family:'Inter',Arial,sans-serif; font-size:13px; font-weight:600;
@@ -422,17 +408,17 @@
               <p style="font-family:'Inter',Arial,sans-serif; font-size:12px; color:rgba(255,255,255,0.7);
                          line-height:1.6;">
                 💬 WhatsApp &nbsp;
-                <a href="https://wa.me/2348036622568"
-                   style="color:#fff; font-weight:600;">+234 803 662 2568</a>
+                <a href="{{ we.welcome_email_support_wa_url if we is defined else 'https://wa.me/2348036622568' }}"
+                   style="color:#fff; font-weight:600;">{{ we.welcome_email_support_phone if we is defined else '+234 803 662 2568' }}</a>
                 &nbsp;&nbsp;|&nbsp;&nbsp;
                 📧
-                <a href="mailto:support@lawcolab.com"
-                   style="color:#fff; font-weight:600;">support@lawcolab.com</a>
+                <a href="mailto:{{ we.welcome_email_support_email if we is defined else 'support@lawcolab.com' }}"
+                   style="color:#fff; font-weight:600;">{{ we.welcome_email_support_email if we is defined else 'support@lawcolab.com' }}</a>
               </p>
             </td>
           </tr>
 
-          <!-- ── FOOTER ── -->
+          <!-- FOOTER -->
           <tr>
             <td class="footer-block"
                 style="background:#f8faff; border-top:1px solid #e2e8f0;
@@ -442,7 +428,7 @@
                    onerror="this.style.display='none'">
               <p style="font-family:'Inter',Arial,sans-serif; font-size:11px; color:#94a3b8;
                          line-height:1.6;">
-                LawCoLab &bull; Collaborate. Innovate. Elevate.<br>
+                LawCoLab &bull; {{ we.welcome_email_footer_tagline if we is defined else 'Collaborate. Innovate. Elevate.' }}<br>
                 You're receiving this because you signed up at
                 <a href="{{ base_url }}" style="color:#64748b;">lawcolab.com</a>.<br>
                 &copy; {{ year }} LawCoLab. All rights reserved.
