@@ -4,3 +4,4 @@
 - [Super admin Railway fix](super-admin-railway.md) — app.py syncs super admin password/role from SUPER_ADMIN_EMAIL + SUPER_ADMIN_PASSWORD env vars on every startup; both must be set on Railway
 - [Social Communities & Robot feature](social-communities-feature.md) — SocialCommunity model + blueprint at /superadmin/crm/communities; robot seeds 20 legal communities; per-firm AI pitch email + call script on law firm CRM profile page
 - [Analytics & Google Settings](analytics-google-settings.md) — /superadmin/web-analytics rewritten with 5-tab dashboard; site_settings table for GA4/GSC/GTM; SEO base.html enhanced with 3-schema JSON-LD
+- [Contact route CSRF fix](contact-csrf-fix.md) — public forms need @csrf.exempt; Replit proxy breaks session-cookie pairing causing spurious 400s

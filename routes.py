@@ -1,6 +1,6 @@
 from flask import session, render_template, redirect, url_for, send_from_directory, make_response, request, flash
 from flask_login import current_user
-from app import app, db
+from app import app, db, csrf
 from models import User, LawFirm, Project, ProjectAssignment
 from datetime import datetime, timedelta
 import os
@@ -433,6 +433,7 @@ def about():
     resp.headers['Expires'] = '0'
     return resp
 
+@csrf.exempt
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
     """Contact page - saves submissions to contact_inquiries table for super admin inbox."""
