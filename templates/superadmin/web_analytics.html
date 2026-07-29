@@ -780,11 +780,11 @@
             {% endif %}
           </div>
           <div class="sec-body">
-            {% set max_hourly = hourly_data | max if hourly_data else 1 %}
+            {% set max_hourly = hourly_data_list | max if hourly_data_list else 1 %}
             {% set max_h = max_hourly if max_hourly > 0 else 1 %}
             <div class="heatmap-grid" id="heatmap-grid">
               {% for i in range(24) %}
-              {% set val = hourly_data[i] if hourly_data else 0 %}
+              {% set val = hourly_data_list[i] if hourly_data_list else 0 %}
               {% set intensity = (val / max_h * 100)|int %}
               <div class="heat-cell" data-hour="{{ i }}" data-val="{{ val }}"
                    style="background:rgba(13,27,75,{{ (intensity / 100 * 0.85 + 0.05)|round(2) }});">

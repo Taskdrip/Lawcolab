@@ -249,10 +249,44 @@
 }
 .btn-ghost-light:hover { background:rgba(255,255,255,.1); border-color:#fff; color:#fff; transform:translateY(-2px); }
 
+@media(max-width:992px){
+  .ct-hero { min-height:auto; padding:3.5rem 0 2.5rem; }
+  .ct-quick-box { max-width:100%; }
+}
 @media(max-width:768px){
-  .ct-hero { min-height:440px; }
-  .ct-form-body { padding:1.5rem; }
-  .ct-form-header { padding:1.5rem; }
+  .ct-hero { min-height:auto; overflow:hidden; }
+  .ct-hero-title { font-size:clamp(2rem,7vw,2.8rem) !important; }
+  .ct-hero-sub { font-size:.93rem; }
+  .ct-promises { gap:1rem !important; flex-direction:column !important; }
+  .ct-form-body { padding:1.25rem; }
+  .ct-form-header { padding:1.25rem; }
+  .ct-form-header h2 { font-size:1.2rem; }
+  .ct-form-body .form-control,
+  .ct-form-body .form-select { font-size:.88rem; }
+  .ct-submit { font-size:.9rem; padding:.85rem 1rem; }
+  .ct-submit span { font-size:.82rem; }
+  .ct-info-card { flex-direction:column; gap:.6rem; }
+  .ct-info-icon { width:42px; height:42px; font-size:1rem; }
+  .partner-card { padding:1.75rem 1.25rem; }
+  .ct-cta { padding:4rem 0; }
+  .ct-cta h2 { font-size:1.9rem !important; }
+  .ct-cta .d-flex.gap-3 { flex-direction:column; align-items:stretch; }
+  .ct-cta .btn { text-align:center; }
+}
+@media(max-width:480px){
+  .ct-hero { padding:2.5rem 0 2rem; }
+  .ct-eyebrow { font-size:.68rem; }
+  .ct-hero-title { font-size:1.9rem !important; }
+  .ct-hero-sub { font-size:.88rem; }
+  .section-title { font-size:1.6rem !important; }
+  .ct-form-body { padding:1rem; }
+  .ct-faq-q { padding:1rem 1.1rem; font-size:.88rem; }
+  .ct-faq-a { padding:0 1.1rem 1rem; font-size:.84rem; }
+  .ct-response-widget { padding:1.25rem; }
+}
+/* Prevent horizontal overflow */
+.ct-hero, .ct-cta {
+  max-width:100vw; overflow-x:hidden;
 }
 </style>
 {% endblock %}

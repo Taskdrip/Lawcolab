@@ -462,6 +462,7 @@ def web_analytics():
         daily_data=_json.dumps(daily_data),
         hourly_labels=_json.dumps(hourly_labels),
         hourly_data=_json.dumps(hourly_data),
+        hourly_data_list=hourly_data,
         top_pages=top_pages,
         top_pages_labels=_json.dumps([p['page_path'][:30] for p in top_pages]),
         top_pages_data=_json.dumps([p['visits'] for p in top_pages]),

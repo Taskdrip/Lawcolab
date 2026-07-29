@@ -258,11 +258,47 @@
 .btn-ghost-light:hover { background:rgba(255,255,255,.1); border-color:#fff; color:#fff; transform:translateY(-2px); }
 
 /* ── Responsive ── */
+@media(max-width:992px){
+  .ab-hero { min-height:auto; padding:3.5rem 0 2.5rem; }
+  .ab-story { padding:4rem 0; }
+  .ab-mv   { padding:4rem 0; }
+  .ab-values { padding:4rem 0; }
+  .ab-team  { padding:4rem 0; }
+  .ab-cta   { padding:4rem 0; }
+  .story-badge { right:.5rem; bottom:-1rem; min-width:90px; padding:.9rem 1rem; font-size:1.2rem; }
+  .col-lg-7.ps-lg-5 { padding-left: 0 !important; }
+}
 @media(max-width:768px){
-  .ab-hero { min-height:480px; }
-  .story-badge { right:-.5rem; }
+  .ab-hero { min-height:auto; overflow:hidden; }
+  .ab-hero-title { font-size:clamp(2rem,7vw,2.8rem) !important; }
+  .ab-hero-sub { font-size:.95rem; }
+  .ab-hero-btns .btn { width:100%; text-align:center; }
+  .ab-hero-btns { flex-direction:column; gap:.75rem !important; }
+  .story-badge { right:0; bottom:-1rem; }
+  .story-img-wrap { margin-bottom:2.5rem; }
   .stat-block { border-right:none; border-bottom:1px solid rgba(255,255,255,.08); padding:.75rem; }
   .stat-block:last-child { border-bottom:none; }
+  .mv-card { padding:1.75rem; }
+  .ab-timeline { padding-left:1.5rem; }
+  .ab-dot { left:-1.85rem; }
+  .val-card { padding:1.75rem 1.25rem; }
+  .team-card { padding:1.75rem 1.25rem; }
+}
+@media(max-width:480px){
+  .ab-hero { padding:2.5rem 0 2rem; }
+  .ab-eyebrow { font-size:.68rem; }
+  .ab-hero-title { font-size:2rem !important; }
+  .ab-hero-btns .btn { font-size:.88rem; padding:.75rem 1.25rem; }
+  .ab-stats-strip { padding:2rem 0; }
+  .stat-num { font-size:2.2rem; }
+  .section-title { font-size:1.65rem !important; }
+  .trust-flag { font-size:.82rem; padding:.4rem .85rem; }
+  .ab-cta { padding:3rem 0; }
+  .ab-cta h2 { font-size:1.8rem !important; }
+}
+/* Prevent horizontal overflow on all section containers */
+.ab-hero, .ab-stats-strip, .ab-story, .ab-mv, .ab-values, .ab-team, .ab-trusted, .ab-cta {
+  max-width:100vw; overflow-x:hidden;
 }
 </style>
 {% endblock %}
