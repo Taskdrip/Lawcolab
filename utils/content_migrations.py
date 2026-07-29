@@ -662,6 +662,7 @@ def _seed_additional_blog_posts(db):
         existing = db.session.execute(
             text("SELECT id FROM blog_posts WHERE slug=:s"), {"s": _SLUG_AI}
         ).fetchone()
+        _AI_HERO = "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=1200&q=80"
         if not existing:
             db.session.execute(text("""
                 INSERT INTO blog_posts
@@ -677,12 +678,19 @@ def _seed_additional_blog_posts(db):
                 excerpt="The lawyers who said AI would never replace them are now watching clients sign with firms that embraced it. Half of Nigeria's law firms won't survive the next five years — not because they lack legal brilliance, but because they refuse to evolve. This is the article the profession doesn't want you to read.",
                 cat="Legal Tech",
                 tags="AI in law,legal technology Africa,future of law firms,Nigeria legal innovation,law firm disruption,practice management,LawColab,legal AI 2026",
-                hero="https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=1200&q=80",
+                hero=_AI_HERO,
                 author="LawColab Editorial Team",
                 rt=18,
             ))
             db.session.commit()
             logger.info("Blog: seeded AI disruption feature article.")
+        else:
+            # Fix any broken/missing hero image on existing rows (e.g. after deploy)
+            db.session.execute(text("""
+                UPDATE blog_posts SET hero_image=:hero
+                WHERE slug=:s AND (hero_image IS NULL OR hero_image NOT LIKE 'http%')
+            """), {"hero": _AI_HERO, "s": _SLUG_AI})
+            db.session.commit()
     except Exception as e:
         db.session.rollback()
         logger.debug("AI disruption article seed skipped: %s", e)
