@@ -677,7 +677,7 @@ def _seed_additional_blog_posts(db):
                 excerpt="The lawyers who said AI would never replace them are now watching clients sign with firms that embraced it. Half of Nigeria's law firms won't survive the next five years — not because they lack legal brilliance, but because they refuse to evolve. This is the article the profession doesn't want you to read.",
                 cat="Legal Tech",
                 tags="AI in law,legal technology Africa,future of law firms,Nigeria legal innovation,law firm disruption,practice management,LawColab,legal AI 2026",
-                hero="/static/images/file_00000000738c81f49623652e1836bec7_1785319635597.png",
+                hero="https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=1200&q=80",
                 author="LawColab Editorial Team",
                 rt=18,
             ))
