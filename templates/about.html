@@ -4,152 +4,266 @@
 
 {% block additional_css %}
 <style>
-/* ── Animations ── */
-@keyframes fadeUp   { from{opacity:0;transform:translateY(32px)} to{opacity:1;transform:translateY(0)} }
-@keyframes fadeLeft { from{opacity:0;transform:translateX(-32px)} to{opacity:1;transform:translateX(0)} }
-@keyframes scaleIn  { from{opacity:0;transform:scale(.93)} to{opacity:1;transform:scale(1)} }
+/* ── CSS-first animations (no JS required for visibility) ── */
+@keyframes slideUp   { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+@keyframes slideLeft { from{opacity:0;transform:translateX(-28px)} to{opacity:1;transform:translateX(0)} }
+@keyframes slideRight{ from{opacity:0;transform:translateX(28px)} to{opacity:1;transform:translateX(0)} }
+@keyframes scaleIn   { from{opacity:0;transform:scale(.93)} to{opacity:1;transform:scale(1)} }
+@keyframes fadeIn    { from{opacity:0} to{opacity:1} }
+@keyframes pulse     { 0%,100%{box-shadow:0 0 0 0 rgba(255,215,0,.4)} 50%{box-shadow:0 0 0 12px rgba(255,215,0,0)} }
+@keyframes float     { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+@keyframes shimmer   { 0%{background-position:-200% center} 100%{background-position:200% center} }
+@keyframes countUp   { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes spin      { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 
-.ani { opacity:0; }
-.ani.visible { animation-fill-mode:both; animation-duration:.7s; animation-timing-function:cubic-bezier(.22,.68,0,1.2); }
-.ani-up.visible    { animation-name:fadeUp; }
-.ani-left.visible  { animation-name:fadeLeft; }
-.ani-scale.visible { animation-name:scaleIn; }
-.d1.visible { animation-delay:.08s; }
-.d2.visible { animation-delay:.16s; }
-.d3.visible { animation-delay:.24s; }
-.d4.visible { animation-delay:.32s; }
-.d5.visible { animation-delay:.40s; }
-.d6.visible { animation-delay:.48s; }
+/* Scroll-triggered via IntersectionObserver — with CSS fallback (visible after 3s) */
+.reveal { opacity:0; transform:translateY(32px); transition:opacity .7s cubic-bezier(.22,.68,0,1.2), transform .7s cubic-bezier(.22,.68,0,1.2); }
+.reveal.left  { transform:translateX(-32px); }
+.reveal.right { transform:translateX(32px); }
+.reveal.scale { transform:scale(.93); }
+.reveal.is-visible { opacity:1 !important; transform:none !important; }
+/* Fallback: if JS never fires, show everything after 1.5s */
+.reveal { animation:fadeIn 0s 1.5s both; }
+.reveal.is-visible { animation:none; }
 
 /* ── Hero ── */
 .ab-hero {
-  position:relative; min-height:540px; display:flex; align-items:center;
-  background:#06101f; overflow:hidden;
+  position:relative; min-height:600px; display:flex; align-items:center;
+  background:#04091a; overflow:hidden;
 }
 .ab-hero-bg {
   position:absolute; inset:0;
-  background:url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1600&q=80') center/cover;
-  opacity:.12;
+  background:url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1600&q=80') center/cover no-repeat;
+  opacity:.14; transform:scale(1.05);
 }
 .ab-hero-overlay {
   position:absolute; inset:0;
-  background:linear-gradient(135deg,rgba(6,16,31,.97) 0%,rgba(13,27,75,.88) 55%,rgba(20,50,100,.75) 100%);
+  background:linear-gradient(135deg,rgba(4,9,26,.98) 0%,rgba(13,27,75,.92) 50%,rgba(10,30,80,.80) 100%);
   z-index:1;
 }
+.ab-hero-particles { position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
+.ab-hero-particles span {
+  position:absolute; width:2px; height:2px; border-radius:50%;
+  background:#FFD700; opacity:.4; animation:float 4s ease-in-out infinite;
+}
 .ab-hero-content { position:relative; z-index:2; }
+
 .ab-eyebrow {
   display:inline-flex; align-items:center; gap:.5rem;
-  background:rgba(255,215,0,.12); border:1.5px solid rgba(255,215,0,.35);
-  color:#FFD700; font-size:.78rem; font-weight:800;
-  padding:.35rem 1rem; border-radius:50px; letter-spacing:.07em; margin-bottom:1.5rem;
+  background:rgba(255,215,0,.1); border:1.5px solid rgba(255,215,0,.3);
+  color:#FFD700; font-size:.75rem; font-weight:800; letter-spacing:.09em;
+  padding:.35rem 1.1rem; border-radius:50px; margin-bottom:1.75rem;
+  animation:slideUp .6s cubic-bezier(.22,.68,0,1.2) .1s both;
 }
 .ab-hero-title {
   font-family:'Playfair Display',Georgia,serif;
-  font-size:clamp(2.6rem,5.5vw,4rem); color:#fff; font-weight:800; line-height:1.08;
-  text-shadow:0 2px 28px rgba(0,0,0,.5);
+  font-size:clamp(2.8rem,5.5vw,4.2rem); color:#fff; font-weight:800; line-height:1.06;
+  text-shadow:0 2px 32px rgba(0,0,0,.5);
+  animation:slideUp .7s cubic-bezier(.22,.68,0,1.2) .2s both;
 }
 .ab-hero-title span { color:#FFD700; }
-.ab-hero-sub { color:rgba(255,255,255,.82); font-size:1.08rem; max-width:580px; line-height:1.75; }
+.ab-hero-sub {
+  color:rgba(255,255,255,.80); font-size:1.1rem; max-width:580px; line-height:1.78;
+  animation:slideUp .7s cubic-bezier(.22,.68,0,1.2) .32s both;
+}
+.ab-hero-btns { animation:slideUp .7s cubic-bezier(.22,.68,0,1.2) .44s both; }
 
 .ab-stat-mini {
-  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.13);
-  border-radius:16px; padding:1.25rem 1.5rem; text-align:center;
+  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12);
+  backdrop-filter:blur(4px); border-radius:18px; padding:1.3rem 1.6rem; text-align:center;
+  transition:all .3s;
 }
-.ab-stat-mini .n { font-size:2rem; font-weight:900; color:#FFD700; line-height:1; }
-.ab-stat-mini .l { color:rgba(255,255,255,.65); font-size:.78rem; margin-top:.25rem; }
+.ab-stat-mini:hover { background:rgba(255,215,0,.1); border-color:rgba(255,215,0,.3); transform:translateY(-3px); }
+.ab-stat-mini .n { font-size:2.1rem; font-weight:900; color:#FFD700; line-height:1; }
+.ab-stat-mini .l { color:rgba(255,255,255,.6); font-size:.76rem; font-weight:600; margin-top:.3rem; }
+.ab-hero-grid { animation:slideRight .7s cubic-bezier(.22,.68,0,1.2) .3s both; }
 
-/* ── Stats Strip ── */
+/* ── Gold divider ── */
+.ab-divider { height:4px; background:linear-gradient(90deg,#0d1b4b 0%,#FFD700 40%,#FFD700 60%,#0d1b4b 100%); border:none; opacity:1; margin:0; }
+
+/* ── Stats strip ── */
 .ab-stats-strip {
-  background:#0d1b4b; padding:2.75rem 0;
-  border-bottom:1px solid rgba(255,255,255,.06);
+  background:linear-gradient(135deg,#0d1b4b 0%,#0f2460 100%);
+  padding:3rem 0; border-bottom:1px solid rgba(255,255,255,.06);
+  position:relative; overflow:hidden;
 }
-.ab-stats-strip .sn { font-size:2.8rem; font-weight:900; color:#FFD700; line-height:1; }
-.ab-stats-strip .sl { color:rgba(255,255,255,.65); font-size:.82rem; font-weight:500; margin-top:.35rem; }
+.ab-stats-strip::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse at 50% 50%, rgba(255,215,0,.04) 0%, transparent 70%);
+}
+.ab-stats-strip .container { position:relative; }
+.stat-num { font-size:3rem; font-weight:900; color:#FFD700; line-height:1; font-family:'Playfair Display',serif; }
+.stat-lbl { color:rgba(255,255,255,.6); font-size:.8rem; font-weight:600; margin-top:.4rem; letter-spacing:.04em; }
+.stat-block { text-align:center; padding:1rem; border-right:1px solid rgba(255,255,255,.08); }
+.stat-block:last-child { border-right:none; }
 
 /* ── Section helpers ── */
-.ab-eyebrow-sm {
-  font-size:.72rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
-  color:#FFD700; margin-bottom:.5rem;
+.section-eyebrow {
+  font-size:.72rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
+  color:#FFD700; margin-bottom:.65rem; display:flex; align-items:center; gap:.4rem;
 }
-.ab-section-title {
+.section-title {
   font-family:'Playfair Display',Georgia,serif;
-  font-size:clamp(1.9rem,3.5vw,2.65rem); color:#0d1b4b; font-weight:800; line-height:1.2;
+  font-size:clamp(2rem,3.5vw,2.8rem); color:#0d1b4b; font-weight:800; line-height:1.15;
 }
+.section-sub { color:#64748b; font-size:1rem; line-height:1.75; max-width:560px; }
 
-/* ── Story timeline ── */
-.ab-timeline { border-left:3px solid #e2e8f0; padding-left:2.25rem; position:relative; }
-.ab-timeline-item { position:relative; margin-bottom:2.5rem; }
-.ab-timeline-item:last-child { margin-bottom:0; }
+/* ── Story section ── */
+.ab-story { background:#fff; padding:6rem 0; }
+.story-img-wrap { position:relative; }
+.story-img {
+  border-radius:24px; width:100%; object-fit:cover; max-height:520px;
+  box-shadow:0 20px 60px rgba(0,0,0,.14);
+}
+.story-badge {
+  position:absolute; bottom:-1.5rem; right:-1.5rem;
+  background:#FFD700; color:#0d1b4b;
+  padding:1.25rem 1.5rem; border-radius:20px;
+  box-shadow:0 10px 32px rgba(255,215,0,.35);
+  font-weight:900; font-size:1.5rem; text-align:center; min-width:110px;
+  animation:float 3s ease-in-out infinite;
+}
+.story-badge span { font-size:.68rem; font-weight:700; line-height:1.3; display:block; margin-top:.15rem; }
+
+/* Timeline */
+.ab-timeline { border-left:3px solid #e8edf4; padding-left:2.25rem; }
+.ab-tl-item { position:relative; margin-bottom:2.5rem; }
+.ab-tl-item:last-child { margin-bottom:0; }
 .ab-dot {
-  position:absolute; left:-2.55rem; top:.2rem;
-  width:22px; height:22px; border-radius:50%;
+  position:absolute; left:-2.6rem; top:.15rem;
+  width:24px; height:24px; border-radius:50%;
   background:#0d1b4b; border:3px solid #FFD700;
-  box-shadow:0 0 0 4px rgba(255,215,0,.12);
+  box-shadow:0 0 0 5px rgba(255,215,0,.12);
 }
 .ab-year {
-  font-size:.73rem; font-weight:800; letter-spacing:.08em;
-  color:#FFD700; background:#0d1b4b; padding:.2rem .7rem;
-  border-radius:50px; display:inline-block; margin-bottom:.65rem;
+  font-size:.72rem; font-weight:800; letter-spacing:.08em;
+  color:#FFD700; background:#0d1b4b;
+  padding:.2rem .75rem; border-radius:50px; display:inline-block; margin-bottom:.6rem;
 }
+.ab-tl-text { color:#4b5563; font-size:.94rem; line-height:1.72; margin:0; }
 
-/* ── Value cards ── */
-.ab-val-card {
-  background:#fff; border-radius:20px; padding:2rem 1.6rem;
-  border:1.5px solid #e8eef4; text-align:center;
-  box-shadow:0 4px 20px rgba(0,0,0,.05); transition:all .3s;
+/* ── Mission & Vision ── */
+.ab-mv { background:linear-gradient(135deg,#f0f4f8 0%,#e8edf5 100%); padding:6rem 0; }
+.mv-card {
+  border-radius:24px; padding:2.75rem;
+  box-shadow:0 8px 32px rgba(0,0,0,.08);
+  height:100%;
 }
-.ab-val-card:hover { transform:translateY(-6px); box-shadow:0 18px 44px rgba(13,27,75,.13); border-color:#0d1b4b28; }
-.ab-val-icon {
-  width:72px; height:72px; border-radius:20px; margin:0 auto 1.25rem;
-  background:linear-gradient(135deg,#0d1b4b,#1a3a6b);
-  color:#FFD700; font-size:1.75rem;
+.mv-card.mission {
+  background:linear-gradient(135deg,#0d1b4b 0%,#162d6b 100%);
+  border:1px solid rgba(255,215,0,.15);
+}
+.mv-card.vision {
+  background:#fff; border:1.5px solid #e8edf4;
+}
+.mv-icon {
+  width:72px; height:72px; border-radius:20px;
   display:flex; align-items:center; justify-content:center;
+  font-size:1.75rem; margin-bottom:1.5rem;
 }
-.ab-val-title { font-weight:800; color:#0d1b4b; font-size:1.03rem; margin-bottom:.5rem; }
-.ab-val-desc  { color:#64748b; font-size:.87rem; line-height:1.65; }
 
-/* ── Team cards ── */
-.ab-team-card {
-  background:#fff; border-radius:22px; border:1.5px solid #e8eef4;
+/* ── Values ── */
+.ab-values { background:#fff; padding:6rem 0; }
+.val-card {
+  background:#fff; border-radius:22px; padding:2.25rem 1.75rem;
+  border:1.5px solid #e8edf4; text-align:center;
+  box-shadow:0 4px 22px rgba(0,0,0,.05);
+  transition:all .35s cubic-bezier(.22,.68,0,1.2); height:100%;
+}
+.val-card:hover {
+  transform:translateY(-8px);
+  box-shadow:0 24px 56px rgba(13,27,75,.14);
+  border-color:#0d1b4b30;
+}
+.val-icon {
+  width:76px; height:76px; border-radius:22px; margin:0 auto 1.4rem;
+  background:linear-gradient(135deg,#0d1b4b,#1c3a78);
+  color:#FFD700; font-size:1.8rem;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 8px 24px rgba(13,27,75,.22);
+  transition:transform .3s;
+}
+.val-card:hover .val-icon { transform:scale(1.1) rotate(-3deg); }
+.val-title { font-weight:800; color:#0d1b4b; font-size:1.05rem; margin-bottom:.55rem; }
+.val-desc  { color:#64748b; font-size:.87rem; line-height:1.68; }
+
+/* ── Team ── */
+.ab-team { background:linear-gradient(180deg,#f0f4f8 0%,#fff 100%); padding:6rem 0; }
+.team-card {
+  background:#fff; border-radius:24px; border:1.5px solid #e8edf4;
   padding:2.5rem 1.75rem; text-align:center;
-  box-shadow:0 4px 22px rgba(0,0,0,.06); transition:all .3s;
+  box-shadow:0 4px 24px rgba(0,0,0,.07);
+  transition:all .35s cubic-bezier(.22,.68,0,1.2); height:100%;
 }
-.ab-team-card:hover { transform:translateY(-8px); box-shadow:0 22px 52px rgba(13,27,75,.14); }
-.ab-avatar {
-  width:100px; height:100px; border-radius:50%;
+.team-card:hover {
+  transform:translateY(-10px);
+  box-shadow:0 28px 64px rgba(13,27,75,.15);
+  border-color:#0d1b4b20;
+}
+.team-avatar {
+  width:108px; height:108px; border-radius:50%;
   display:flex; align-items:center; justify-content:center;
-  font-size:1.9rem; margin:0 auto 1.25rem;
-  border:4px solid #fff; box-shadow:0 4px 20px rgba(13,27,75,.18); overflow:hidden;
+  font-size:2rem; margin:0 auto 1.3rem;
+  border:4px solid #fff; box-shadow:0 6px 24px rgba(13,27,75,.2); overflow:hidden;
 }
-.ab-team-name { font-family:'Playfair Display',serif; font-size:1.15rem; font-weight:700; color:#0d1b4b; }
-.ab-team-role { font-size:.78rem; font-weight:700; color:#FFD700; background:#0d1b4b; padding:.25rem .8rem; border-radius:50px; display:inline-block; margin:.4rem 0 .85rem; }
-.ab-team-bio  { color:#64748b; font-size:.87rem; line-height:1.65; }
-.ab-expertise { display:inline-block; background:#eef2ff; color:#3730a3; font-size:.68rem; font-weight:700; padding:.2rem .6rem; border-radius:50px; margin:.12rem; }
+.team-name { font-family:'Playfair Display',serif; font-size:1.18rem; font-weight:700; color:#0d1b4b; }
+.team-role {
+  font-size:.75rem; font-weight:800; color:#FFD700; background:#0d1b4b;
+  padding:.25rem .9rem; border-radius:50px; display:inline-block; margin:.4rem 0 .9rem;
+}
+.team-bio { color:#64748b; font-size:.87rem; line-height:1.65; }
+.expertise {
+  display:inline-block; background:#eef2ff; color:#3730a3;
+  font-size:.68rem; font-weight:700; padding:.2rem .65rem;
+  border-radius:50px; margin:.12rem;
+}
+
+/* ── Trusted By ── */
+.ab-trusted { background:#0d1b4b; padding:3.5rem 0; border-top:1px solid rgba(255,255,255,.06); }
+.trust-flag {
+  color:rgba(255,255,255,.72); font-size:.94rem; font-weight:600;
+  background:rgba(255,255,255,.06); padding:.5rem 1.1rem; border-radius:50px;
+  border:1px solid rgba(255,255,255,.1); transition:all .25s;
+}
+.trust-flag:hover { background:rgba(255,215,0,.1); border-color:rgba(255,215,0,.25); color:#FFD700; }
 
 /* ── CTA ── */
 .ab-cta {
-  background:linear-gradient(135deg,#0d1b4b 0%,#0f2d5a 50%,#163060 100%);
-  padding:6rem 0; position:relative; overflow:hidden;
+  background:linear-gradient(135deg,#04091a 0%,#0d1b4b 40%,#0f2460 100%);
+  padding:6.5rem 0; position:relative; overflow:hidden;
 }
 .ab-cta::before {
   content:''; position:absolute; inset:0;
-  background:url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1400&q=60') center/cover;
-  opacity:.05;
+  background:radial-gradient(ellipse at 50% 0%, rgba(255,215,0,.08) 0%, transparent 60%);
 }
-.ab-cta .container { position:relative; z-index:2; }
-
-/* ── Divider accent ── */
-.ab-divider { height:4px; background:linear-gradient(90deg,#0d1b4b,#FFD700,#0d1b4b); border:none; opacity:1; }
-
-/* ── Mission/Vision split ── */
-.mv-card {
-  border-radius:22px; padding:2.5rem; height:100%;
-  box-shadow:0 6px 28px rgba(0,0,0,.07);
-  border:1.5px solid #e8eef4;
+.ab-cta::after {
+  content:''; position:absolute; bottom:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg,transparent,#FFD700,transparent);
 }
-.mv-card.mission { background:linear-gradient(135deg,#0d1b4b,#1a3a6b); }
-.mv-card.vision  { background:#fff; }
-.mv-icon { width:68px; height:68px; border-radius:18px; display:flex; align-items:center; justify-content:center; font-size:1.7rem; margin-bottom:1.5rem; }
+.ab-cta .container { position:relative; z-index:1; }
+
+/* ── Button styles ── */
+.btn-gold {
+  background:linear-gradient(135deg,#FFD700,#f0c800);
+  color:#0d1b4b; border:none; border-radius:12px;
+  padding:.85rem 2rem; font-weight:800; font-size:.95rem;
+  transition:all .25s; box-shadow:0 4px 18px rgba(255,215,0,.35);
+}
+.btn-gold:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(255,215,0,.5); color:#0d1b4b; background:linear-gradient(135deg,#ffe234,#FFD700); }
+.btn-ghost-light {
+  background:transparent; color:#fff; border:2px solid rgba(255,255,255,.4);
+  border-radius:12px; padding:.85rem 2rem; font-weight:700; font-size:.95rem;
+  transition:all .25s;
+}
+.btn-ghost-light:hover { background:rgba(255,255,255,.1); border-color:#fff; color:#fff; transform:translateY(-2px); }
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .ab-hero { min-height:480px; }
+  .story-badge { right:-.5rem; }
+  .stat-block { border-right:none; border-bottom:1px solid rgba(255,255,255,.08); padding:.75rem; }
+  .stat-block:last-child { border-bottom:none; }
+}
 </style>
 {% endblock %}
 
@@ -159,10 +273,21 @@
 <section class="ab-hero">
   <div class="ab-hero-bg"></div>
   <div class="ab-hero-overlay"></div>
+  <!-- Decorative particles -->
+  <div class="ab-hero-particles">
+    <span style="left:10%;top:20%;animation-delay:0s;animation-duration:3.2s;width:3px;height:3px;opacity:.6;"></span>
+    <span style="left:25%;top:60%;animation-delay:.8s;animation-duration:4s;"></span>
+    <span style="left:50%;top:15%;animation-delay:1.5s;animation-duration:3.5s;width:3px;height:3px;"></span>
+    <span style="left:70%;top:70%;animation-delay:.3s;animation-duration:5s;opacity:.3;"></span>
+    <span style="left:85%;top:30%;animation-delay:2s;animation-duration:3.8s;width:3px;height:3px;opacity:.5;"></span>
+    <span style="left:40%;top:80%;animation-delay:1s;animation-duration:4.5s;"></span>
+  </div>
   <div class="container ab-hero-content py-5">
     <div class="row align-items-center g-5">
       <div class="col-lg-7">
-        <div class="ab-eyebrow"><i class="fas fa-balance-scale"></i>&nbsp;Est. 2024 · Built by Lawyers</div>
+        <div class="ab-eyebrow">
+          <i class="fas fa-balance-scale"></i>&nbsp;Est. 2024 · Built by Lawyers
+        </div>
         <h1 class="ab-hero-title mb-4">
           About <span>LAWCOLAB</span><br>Global
         </h1>
@@ -171,17 +296,17 @@
           From Abuja to New York, we empower thousands of legal professionals to work smarter,
           collaborate better, and deliver exceptional client service.
         </p>
-        <div class="d-flex gap-3 flex-wrap">
-          <a href="{{ url_for('auth.signup') }}" class="btn btn-warning btn-lg fw-bold px-4" style="border-radius:12px;">
+        <div class="ab-hero-btns d-flex gap-3 flex-wrap">
+          <a href="{{ url_for('auth.signup') }}" class="btn btn-gold btn-lg">
             <i class="fas fa-rocket me-2"></i>Start Free Trial
           </a>
-          <a href="{{ url_for('contact') }}" class="btn btn-outline-light btn-lg px-4" style="border-radius:12px;">
+          <a href="{{ url_for('contact') }}" class="btn btn-ghost-light btn-lg">
             <i class="fas fa-envelope me-2"></i>Contact Us
           </a>
         </div>
       </div>
-      <div class="col-lg-5 d-none d-lg-block">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;max-width:340px;margin-left:auto;">
+      <div class="col-lg-5 d-none d-lg-block ab-hero-grid">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;max-width:350px;margin-left:auto;">
           {% for n,l in [('150+','Law Firms'),('6+','Countries'),('2024','Founded'),('99.9%','Uptime')] %}
           <div class="ab-stat-mini">
             <div class="n">{{ n }}</div>
@@ -197,65 +322,55 @@
 <!-- ── Stats Strip ── -->
 <div class="ab-stats-strip">
   <div class="container">
-    <div class="row g-0 text-center">
-      <div class="col-6 col-md-3 ani ani-up">
-        <div class="sn" data-count="150" data-suffix="+">0</div>
-        <div class="sl">Law Firms Onboard</div>
+    <div class="row g-0">
+      {% for n,l,suf in [('150','+','Law Firms Onboard'),('6','+','Countries Covered'),('5000','+','Cases Managed'),('99','%','Client Satisfaction')] %}
+      <div class="col-6 col-md-3 stat-block reveal" style="transition-delay:{{ loop.index0 * 0.1 }}s">
+        <div class="stat-num" data-target="{{ n }}" data-suffix="{{ suf[0] }}">{{ n }}{{ suf[0] }}</div>
+        <div class="stat-lbl">{{ l }}</div>
       </div>
-      <div class="col-6 col-md-3 ani ani-up d1">
-        <div class="sn" data-count="6" data-suffix="+">0</div>
-        <div class="sl">Countries Covered</div>
-      </div>
-      <div class="col-6 col-md-3 ani ani-up d2">
-        <div class="sn" data-count="5000" data-suffix="+">0</div>
-        <div class="sl">Cases Managed</div>
-      </div>
-      <div class="col-6 col-md-3 ani ani-up d3">
-        <div class="sn" data-count="99" data-suffix="%">0</div>
-        <div class="sl">Client Satisfaction</div>
-      </div>
+      {% endfor %}
     </div>
   </div>
 </div>
 
-<hr class="ab-divider m-0">
+<hr class="ab-divider">
 
 <!-- ── Our Story ── -->
-<section style="background:#fff;padding:5.5rem 0;">
+<section class="ab-story">
   <div class="container">
     <div class="row g-5 align-items-center">
-      <div class="col-lg-5 ani ani-left">
-        <div style="position:relative;">
+      <div class="col-lg-5 reveal left">
+        <div class="story-img-wrap">
           <img src="https://images.unsplash.com/photo-1593115057322-e94b77572f20?w=700&q=80"
-               alt="Legal office" class="img-fluid rounded-4 shadow-lg" style="width:100%;object-fit:cover;max-height:500px;">
-          <div style="position:absolute;bottom:-1.5rem;right:-1.5rem;background:#FFD700;color:#0d1b4b;padding:1.25rem 1.5rem;border-radius:18px;box-shadow:0 8px 28px rgba(255,215,0,.35);font-weight:900;font-size:1.4rem;text-align:center;min-width:110px;">
-            10+<br><span style="font-size:.7rem;font-weight:700;line-height:1.2;">Years of<br>Legal Exp.</span>
+               alt="Legal office" class="story-img">
+          <div class="story-badge">
+            10+<span>Years of<br>Legal Exp.</span>
           </div>
         </div>
       </div>
       <div class="col-lg-7 ps-lg-5">
-        <div class="ab-eyebrow-sm ani ani-up"><i class="fas fa-book-open me-1"></i>Our Story</div>
-        <h2 class="ab-section-title mb-4 ani ani-up d1">Born from the Courtroom,<br>Built for the Future</h2>
-        <div class="ab-timeline ani ani-up d2">
-          <div class="ab-timeline-item">
+        <div class="section-eyebrow reveal"><i class="fas fa-book-open"></i>Our Story</div>
+        <h2 class="section-title mb-4 reveal" style="transition-delay:.1s">Born from the Courtroom,<br>Built for the Future</h2>
+        <div class="ab-timeline reveal" style="transition-delay:.2s">
+          <div class="ab-tl-item">
             <div class="ab-dot"></div>
             <span class="ab-year">2015</span>
-            <p class="text-muted mb-0" style="font-size:.93rem;line-height:1.72;">Abraham is called to the Bar, beginning a legal career that exposed him to the real inefficiencies hampering law firms across Africa and beyond.</p>
+            <p class="ab-tl-text">Abraham is called to the Bar, beginning a legal career that exposed him to the real inefficiencies hampering law firms across Africa and beyond.</p>
           </div>
-          <div class="ab-timeline-item">
+          <div class="ab-tl-item">
             <div class="ab-dot"></div>
             <span class="ab-year">2018 – 2022</span>
-            <p class="text-muted mb-0" style="font-size:.93rem;line-height:1.72;">After consulting for dozens of law firms, Abraham partners with Wiam Tahbat and begins researching, prototyping, and building what would become LAWCOLAB — a platform designed <em>by</em> lawyers, <em>for</em> lawyers.</p>
+            <p class="ab-tl-text">After consulting for dozens of law firms, Abraham partners with Wiam Tahbat and begins prototyping what would become LAWCOLAB — a platform designed <em>by</em> lawyers, <em>for</em> lawyers.</p>
           </div>
-          <div class="ab-timeline-item">
+          <div class="ab-tl-item">
             <div class="ab-dot"></div>
             <span class="ab-year">2024</span>
-            <p class="text-muted mb-0" style="font-size:.93rem;line-height:1.72;">LAWCOLAB Global officially launches under Taskdrip, bringing enterprise-grade legal practice management to law firms across Nigeria, Ghana, the US, UK, and beyond.</p>
+            <p class="ab-tl-text">LAWCOLAB Global officially launches under Taskdrip, bringing enterprise-grade legal practice management to law firms across Nigeria, Ghana, the US, UK, and beyond.</p>
           </div>
-          <div class="ab-timeline-item">
+          <div class="ab-tl-item">
             <div class="ab-dot"></div>
             <span class="ab-year">Today</span>
-            <p class="text-muted mb-0" style="font-size:.93rem;line-height:1.72;">We power 150+ law firms across 6 countries — with a global directory of 3,000+ firms and growing. Our mission: make every legal professional a world-class operator.</p>
+            <p class="ab-tl-text">We power 150+ law firms across 6 countries — with a global directory of 3,000+ firms and growing. Our mission: make every legal professional a world-class operator.</p>
           </div>
         </div>
       </div>
@@ -263,27 +378,43 @@
   </div>
 </section>
 
+<hr class="ab-divider">
+
 <!-- ── Mission & Vision ── -->
-<section style="background:#f0f4f8;padding:5.5rem 0;">
+<section class="ab-mv">
   <div class="container">
-    <div class="text-center mb-5 ani ani-up">
-      <div class="ab-eyebrow-sm"><i class="fas fa-bullseye me-1"></i>Purpose</div>
-      <h2 class="ab-section-title">Mission &amp; Vision</h2>
-      <p class="text-muted mt-2" style="max-width:520px;margin:0 auto;font-size:1rem;">Two commitments that guide everything we build.</p>
+    <div class="text-center mb-5 reveal">
+      <div class="section-eyebrow justify-content-center"><i class="fas fa-bullseye"></i>Purpose</div>
+      <h2 class="section-title mx-auto">Mission &amp; Vision</h2>
+      <p class="section-sub mx-auto mt-2">Two commitments that guide everything we build.</p>
     </div>
     <div class="row g-4">
-      <div class="col-md-6 ani ani-up d1">
+      <div class="col-md-6 reveal left" style="transition-delay:.1s">
         <div class="mv-card mission h-100">
-          <div class="mv-icon" style="background:rgba(255,215,0,.15);color:#FFD700;"><i class="fas fa-bullseye"></i></div>
+          <div class="mv-icon" style="background:rgba(255,215,0,.12);color:#FFD700;">
+            <i class="fas fa-bullseye fa-lg"></i>
+          </div>
           <h4 style="font-family:'Playfair Display',serif;color:#fff;font-weight:800;margin-bottom:1rem;">Our Mission</h4>
-          <p style="color:rgba(255,255,255,.82);font-size:.97rem;line-height:1.75;margin:0;">To empower every legal professional worldwide — from solo practitioners to global law firms — with intelligent technology that streamlines operations, enhances client relationships, and transforms legal practice from complex to seamless.</p>
+          <p style="color:rgba(255,255,255,.82);font-size:.97rem;line-height:1.78;margin:0;">To empower every legal professional worldwide — from solo practitioners to global law firms — with intelligent technology that streamlines operations, enhances client relationships, and transforms legal practice from complex to seamless.</p>
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1.75rem;">
+            {% for tag in ['Legal-First','Enterprise-Grade','Client-Centric'] %}
+            <span style="background:rgba(255,215,0,.12);border:1px solid rgba(255,215,0,.25);color:#FFD700;font-size:.72rem;font-weight:700;padding:.25rem .8rem;border-radius:50px;">{{ tag }}</span>
+            {% endfor %}
+          </div>
         </div>
       </div>
-      <div class="col-md-6 ani ani-up d2">
+      <div class="col-md-6 reveal right" style="transition-delay:.15s">
         <div class="mv-card vision h-100">
-          <div class="mv-icon" style="background:#eef2ff;color:#3730a3;"><i class="fas fa-eye"></i></div>
+          <div class="mv-icon" style="background:#eef2ff;color:#3730a3;">
+            <i class="fas fa-eye fa-lg"></i>
+          </div>
           <h4 style="font-family:'Playfair Display',serif;color:#0d1b4b;font-weight:800;margin-bottom:1rem;">Our Vision</h4>
-          <p style="color:#64748b;font-size:.97rem;line-height:1.75;margin:0;">A world where every law firm — regardless of size or location — has access to enterprise-grade technology that lets them focus on what they do best: delivering exceptional legal outcomes for their clients and communities.</p>
+          <p style="color:#64748b;font-size:.97rem;line-height:1.78;margin:0;">A world where every law firm — regardless of size or location — has access to enterprise-grade technology that lets them focus on what they do best: delivering exceptional legal outcomes for their clients and communities.</p>
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1.75rem;">
+            {% for tag in ['Global Reach','Accessible','Community'] %}
+            <span style="background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;font-size:.72rem;font-weight:700;padding:.25rem .8rem;border-radius:50px;">{{ tag }}</span>
+            {% endfor %}
+          </div>
         </div>
       </div>
     </div>
@@ -291,27 +422,27 @@
 </section>
 
 <!-- ── Core Values ── -->
-<section style="background:#fff;padding:5.5rem 0;">
+<section class="ab-values">
   <div class="container">
-    <div class="text-center mb-5 ani ani-up">
-      <div class="ab-eyebrow-sm"><i class="fas fa-gem me-1"></i>What Drives Us</div>
-      <h2 class="ab-section-title">Our Core Values</h2>
-      <p class="text-muted mt-2" style="max-width:560px;margin:0 auto;font-size:1rem;">The principles behind every decision we make and every feature we build.</p>
+    <div class="text-center mb-5 reveal">
+      <div class="section-eyebrow justify-content-center"><i class="fas fa-gem"></i>What Drives Us</div>
+      <h2 class="section-title mx-auto">Our Core Values</h2>
+      <p class="section-sub mx-auto mt-2">The principles behind every decision we make and every feature we build.</p>
     </div>
     <div class="row g-4">
       {% for icon, title, desc, delay in [
-        ('fas fa-gavel',        'Legal-First Design',    'Every feature is conceived by legal professionals who have lived the challenges — from court deadlines to client billing.',              'd1'),
-        ('fas fa-lock',         'Security & Privacy',    'Enterprise-grade encryption and complete data isolation ensures your sensitive client data is always protected.',                         'd2'),
-        ('fas fa-rocket',       'Continuous Innovation', 'We ship new features every sprint, driven by feedback from our global community of legal professionals.',                              'd3'),
-        ('fas fa-globe-africa', 'Global Reach',          'Built for Africa and the world — supporting law firms from Lagos to London, Accra to Atlanta.',                                        'd1'),
-        ('fas fa-handshake',    'Client-Centric',        'We measure our success by your success. Our support team is with you from onboarding to growth.',                                      'd2'),
-        ('fas fa-shield-alt',   'Trust & Compliance',    'Designed to meet the compliance requirements of legal industries across multiple jurisdictions worldwide.',                              'd3'),
+        ('fas fa-gavel',        'Legal-First Design',    'Every feature is conceived by legal professionals who have lived the challenges — from court deadlines to client billing.',        0.05),
+        ('fas fa-lock',         'Security & Privacy',    'Enterprise-grade encryption and complete data isolation ensures your sensitive client data is always protected.',                  0.10),
+        ('fas fa-rocket',       'Continuous Innovation', 'We ship new features every sprint, driven by feedback from our global community of legal professionals.',                        0.15),
+        ('fas fa-globe-africa', 'Global Reach',          'Built for Africa and the world — supporting law firms from Lagos to London, Accra to Atlanta.',                                  0.20),
+        ('fas fa-handshake',    'Client-Centric',        'We measure our success by your success. Our support team is with you from onboarding to growth.',                               0.25),
+        ('fas fa-shield-alt',   'Trust & Compliance',    'Designed to meet the compliance requirements of legal industries across multiple jurisdictions worldwide.',                       0.30),
       ] %}
-      <div class="col-lg-4 col-md-6 ani ani-up {{ delay }}">
-        <div class="ab-val-card h-100">
-          <div class="ab-val-icon"><i class="{{ icon }}"></i></div>
-          <div class="ab-val-title">{{ title }}</div>
-          <div class="ab-val-desc">{{ desc }}</div>
+      <div class="col-lg-4 col-md-6 reveal" style="transition-delay:{{ delay }}s">
+        <div class="val-card">
+          <div class="val-icon"><i class="{{ icon }}"></i></div>
+          <div class="val-title">{{ title }}</div>
+          <div class="val-desc">{{ desc }}</div>
         </div>
       </div>
       {% endfor %}
@@ -319,47 +450,49 @@
   </div>
 </section>
 
+<hr class="ab-divider">
+
 <!-- ── Team ── -->
-<section style="background:linear-gradient(180deg,#f0f4f8 0%,#fff 100%);padding:5.5rem 0;">
+<section class="ab-team">
   <div class="container">
-    <div class="text-center mb-5 ani ani-up">
-      <div class="ab-eyebrow-sm"><i class="fas fa-users me-1"></i>The People</div>
-      <h2 class="ab-section-title">Meet the LAWCOLAB Team</h2>
-      <p class="text-muted mt-2" style="max-width:540px;margin:0 auto;font-size:1rem;">Lawyers, technologists and operators united by one goal — making legal practice better for everyone.</p>
+    <div class="text-center mb-5 reveal">
+      <div class="section-eyebrow justify-content-center"><i class="fas fa-users"></i>The People</div>
+      <h2 class="section-title mx-auto">Meet the LAWCOLAB Team</h2>
+      <p class="section-sub mx-auto mt-2">Lawyers, technologists and operators united by one goal — making legal practice better for everyone.</p>
     </div>
 
     <!-- Founders -->
     <div class="row g-4 justify-content-center mb-4">
-      <div class="col-lg-4 col-md-6 ani ani-up d1">
-        <div class="ab-team-card h-100">
-          <div class="ab-avatar" style="background:linear-gradient(135deg,#0d1b4b,#1a6b9b);">
+      <div class="col-lg-4 col-md-6 reveal left" style="transition-delay:.05s">
+        <div class="team-card">
+          <div class="team-avatar" style="background:linear-gradient(135deg,#0d1b4b,#1a6b9b);">
             <img src="/static/uploads/abraham_founder.jpg" alt="Abraham"
                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
                  style="width:100%;height:100%;object-fit:cover;">
-            <span style="display:none;color:#FFD700;font-weight:900;font-size:1.6rem;width:100%;height:100%;align-items:center;justify-content:center;">A</span>
+            <span style="display:none;color:#FFD700;font-weight:900;font-size:2rem;width:100%;height:100%;align-items:center;justify-content:center;">A</span>
           </div>
-          <div class="ab-team-name">Abraham</div>
-          <div class="ab-team-role">Founder &amp; CEO</div>
-          <div class="ab-team-bio">Called to the Bar in 2015, Abraham transitioned from practising law to building the technology he wished existed. His dual expertise in law and software development is the heartbeat of LAWCOLAB.</div>
-          <div class="mt-2">
-            <span class="ab-expertise">Legal Tech</span>
-            <span class="ab-expertise">Blockchain</span>
-            <span class="ab-expertise">Strategy</span>
+          <div class="team-name">Abraham</div>
+          <div class="team-role">Founder &amp; CEO</div>
+          <div class="team-bio">Called to the Bar in 2015, Abraham transitioned from practising law to building the technology he wished existed. His dual expertise in law and software development is the heartbeat of LAWCOLAB.</div>
+          <div class="mt-3">
+            <span class="expertise">Legal Tech</span>
+            <span class="expertise">Blockchain</span>
+            <span class="expertise">Strategy</span>
           </div>
         </div>
       </div>
-      <div class="col-lg-4 col-md-6 ani ani-up d2">
-        <div class="ab-team-card h-100">
-          <div class="ab-avatar" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">
-            <span style="color:#fff;font-weight:900;font-size:1.6rem;">W</span>
+      <div class="col-lg-4 col-md-6 reveal right" style="transition-delay:.1s">
+        <div class="team-card">
+          <div class="team-avatar" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">
+            <span style="color:#fff;font-weight:900;font-size:2rem;">W</span>
           </div>
-          <div class="ab-team-name">Wiam Tahbat</div>
-          <div class="ab-team-role">Co-Founder &amp; COO</div>
-          <div class="ab-team-bio">Strategic operations expert with deep experience in business development and legal technology implementation. Wiam ensures every feature solves a real problem for real lawyers.</div>
-          <div class="mt-2">
-            <span class="ab-expertise">Operations</span>
-            <span class="ab-expertise">Legal Tech</span>
-            <span class="ab-expertise">UX Strategy</span>
+          <div class="team-name">Wiam Tahbat</div>
+          <div class="team-role">Co-Founder &amp; COO</div>
+          <div class="team-bio">Strategic operations expert with deep experience in business development and legal technology implementation. Wiam ensures every feature solves a real problem for real lawyers.</div>
+          <div class="mt-3">
+            <span class="expertise">Operations</span>
+            <span class="expertise">Legal Tech</span>
+            <span class="expertise">UX Strategy</span>
           </div>
         </div>
       </div>
@@ -368,21 +501,21 @@
     <!-- Tech Team -->
     <div class="row g-4">
       {% for icon, bg, title, role, bio, delay in [
-        ('fas fa-code',      '#16a34a', 'Sarah Chen',     'Lead Engineer',       'Full-stack developer. 8+ years in enterprise software. Leads all technical development.',               'd1'),
-        ('fas fa-shield-alt','#d97706', 'Marcus Johnson',  'Security Officer',    'Cybersecurity expert ensuring the highest standards of data protection and compliance.',               'd2'),
-        ('fas fa-palette',   '#0891b2', 'Elena Rodriguez', 'UX/UI Lead',          'Creates intuitive interfaces that lawyers love. Obsessed with removing friction.',                    'd3'),
-        ('fas fa-chart-bar', '#dc2626', 'David Park',      'Data Lead',           'Builds insights that help firms optimise operations, billing, and growth strategies.',                 'd1'),
-        ('fas fa-headset',   '#6366f1', 'Rachel Thompson', 'Customer Success',    'Dedicated to ensuring clients achieve maximum value — from onboarding to expansion.',                 'd2'),
-        ('fas fa-cloud',     '#0d1b4b', 'James Mitchell',  'DevOps Engineer',     'Maintains 99.9% uptime across our global cloud infrastructure. The backbone of reliability.',         'd3'),
+        ('fas fa-code',      '#16a34a', 'Sarah Chen',      'Lead Engineer',     'Full-stack developer with 8+ years in enterprise software. Leads all technical development with a focus on performance.',  0.05),
+        ('fas fa-shield-alt','#d97706', 'Marcus Johnson',  'Security Officer',   'Cybersecurity expert ensuring the highest standards of data protection and compliance across all jurisdictions.',         0.10),
+        ('fas fa-palette',   '#0891b2', 'Elena Rodriguez', 'UX/UI Lead',         'Creates intuitive interfaces that lawyers love. Obsessed with removing friction from complex legal workflows.',          0.15),
+        ('fas fa-chart-bar', '#dc2626', 'David Park',      'Data Lead',          'Builds insights that help firms optimise operations, billing, and growth strategies through AI-powered analytics.',       0.20),
+        ('fas fa-headset',   '#6366f1', 'Rachel Thompson', 'Customer Success',   'Dedicated to ensuring clients achieve maximum value — from onboarding to expansion. Your champion at LAWCOLAB.',         0.25),
+        ('fas fa-cloud',     '#0d1b4b', 'James Mitchell',  'DevOps Engineer',    'Maintains 99.9% uptime across our global cloud infrastructure. The backbone of LAWCOLAB reliability.',                   0.30),
       ] %}
-      <div class="col-lg-4 col-md-6 ani ani-up {{ delay }}">
-        <div class="ab-team-card h-100">
-          <div class="ab-avatar" style="background:{{ bg }};">
-            <i class="{{ icon }}" style="color:#fff;font-size:1.7rem;"></i>
+      <div class="col-lg-4 col-md-6 reveal" style="transition-delay:{{ delay }}s">
+        <div class="team-card">
+          <div class="team-avatar" style="background:{{ bg }};">
+            <i class="{{ icon }}" style="color:#fff;font-size:1.8rem;"></i>
           </div>
-          <div class="ab-team-name">{{ title }}</div>
-          <div class="ab-team-role" style="background:{{ bg }};">{{ role }}</div>
-          <div class="ab-team-bio">{{ bio }}</div>
+          <div class="team-name">{{ title }}</div>
+          <div class="team-role" style="background:{{ bg }};">{{ role }}</div>
+          <div class="team-bio">{{ bio }}</div>
         </div>
       </div>
       {% endfor %}
@@ -390,37 +523,38 @@
   </div>
 </section>
 
-<!-- ── Trusted By Strip ── -->
-<div style="background:#0d1b4b;padding:3rem 0;border-top:1px solid rgba(255,255,255,.06);">
+<!-- ── Trusted By ── -->
+<div class="ab-trusted">
   <div class="container text-center">
-    <p style="color:rgba(255,255,255,.45);font-size:.73rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin-bottom:1.5rem;">Trusted by legal professionals in</p>
-    <div class="d-flex gap-4 justify-content-center flex-wrap">
+    <p style="color:rgba(255,255,255,.4);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;margin-bottom:1.5rem;">Trusted by legal professionals in</p>
+    <div class="d-flex gap-3 justify-content-center flex-wrap">
       {% for country in ['🇳🇬 Nigeria','🇬🇭 Ghana','🇺🇸 United States','🇬🇧 United Kingdom','🇿🇦 South Africa','🇨🇦 Canada'] %}
-      <span style="color:rgba(255,255,255,.75);font-size:.92rem;font-weight:600;">{{ country }}</span>
+      <span class="trust-flag">{{ country }}</span>
       {% endfor %}
     </div>
   </div>
 </div>
 
 <!-- ── CTA ── -->
-<section class="ab-cta lc-dark">
+<section class="ab-cta">
   <div class="container text-center">
-    <div class="ani ani-up">
-      <div class="ab-eyebrow-sm" style="color:#FFD700;"><i class="fas fa-rocket me-1"></i>Get Started</div>
-      <h2 style="font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3rem);font-weight:800;color:#fff;margin:1rem 0;">
-        Ready to Transform Your Practice?
+    <div class="reveal">
+      <div class="section-eyebrow justify-content-center mb-3" style="color:#FFD700;"><i class="fas fa-rocket"></i>Get Started Today</div>
+      <h2 style="font-family:'Playfair Display',serif;font-size:clamp(2.2rem,4vw,3.2rem);font-weight:800;color:#fff;margin-bottom:1.1rem;">
+        Ready to Transform<br>Your Practice?
       </h2>
-      <p style="color:rgba(255,255,255,.8);font-size:1.05rem;max-width:560px;margin:0 auto 2.5rem;">
+      <p style="color:rgba(255,255,255,.75);font-size:1.05rem;max-width:520px;margin:0 auto 2.5rem;line-height:1.75;">
         Join thousands of legal professionals worldwide who trust LAWCOLAB to manage their practice efficiently, securely, and with confidence.
       </p>
       <div class="d-flex gap-3 justify-content-center flex-wrap">
-        <a href="{{ url_for('auth.signup') }}" class="btn btn-warning btn-lg fw-bold px-5" style="border-radius:12px;padding:.9rem 2.5rem;">
+        <a href="{{ url_for('auth.signup') }}" class="btn btn-gold btn-lg px-5">
           <i class="fas fa-rocket me-2"></i>Start Free Trial
         </a>
-        <a href="{{ url_for('contact') }}" class="btn btn-outline-light btn-lg px-5" style="border-radius:12px;padding:.9rem 2.5rem;">
+        <a href="{{ url_for('contact') }}" class="btn btn-ghost-light btn-lg px-5">
           <i class="fas fa-envelope me-2"></i>Talk to Our Team
         </a>
       </div>
+      <p style="color:rgba(255,255,255,.35);font-size:.8rem;margin-top:1.5rem;">No credit card required · 30-day free trial · Cancel anytime</p>
     </div>
   </div>
 </section>
@@ -430,43 +564,64 @@
 {% block scripts %}
 <script>
 (function(){
-  // Animate elements into view
-  function initAni(){
-    var els = document.querySelectorAll('.ani');
-    if(!els.length) return;
-    var io = new IntersectionObserver(function(entries){
-      entries.forEach(function(e){
-        if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); }
-      });
-    },{ threshold:0.05, rootMargin:'0px 0px 80px 0px' });
-    els.forEach(function(el){
-      var r = el.getBoundingClientRect();
-      if(r.top < window.innerHeight + 80){ el.classList.add('visible'); }
-      else{ io.observe(el); }
-    });
-  }
-  document.addEventListener('DOMContentLoaded', initAni);
-  setTimeout(initAni, 100);
+  // Robust IntersectionObserver with fallback
+  var els = document.querySelectorAll('.reveal');
+  if(!els.length) return;
 
-  // Count-up
-  function countUp(){
-    document.querySelectorAll('[data-count]').forEach(function(el){
-      if(el.dataset.counted) return;
-      el.dataset.counted = '1';
-      var target = +el.dataset.count, suffix = el.dataset.suffix||'';
-      var step = Math.max(1, Math.ceil(target/60)), cur = 0;
-      var t = setInterval(function(){
-        cur = Math.min(cur+step, target);
-        el.textContent = (target>999 ? cur.toLocaleString() : cur) + suffix;
-        if(cur >= target) clearInterval(t);
-      }, 28);
-    });
+  function showAll() {
+    els.forEach(function(el){ el.classList.add('is-visible'); });
   }
+
+  // Fallback: show everything after 1.5s regardless
+  var fallback = setTimeout(showAll, 1500);
+
+  if(!('IntersectionObserver' in window)) { clearTimeout(fallback); showAll(); return; }
+
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        e.target.classList.add('is-visible');
+        io.unobserve(e.target);
+      }
+    });
+    // Check if all revealed
+    var remaining = document.querySelectorAll('.reveal:not(.is-visible)');
+    if(!remaining.length){ clearTimeout(fallback); io.disconnect(); }
+  }, { threshold:0.04, rootMargin:'0px 0px 120px 0px' });
+
+  els.forEach(function(el){
+    var r = el.getBoundingClientRect();
+    if(r.top < window.innerHeight + 120){
+      el.classList.add('is-visible');
+    } else {
+      io.observe(el);
+    }
+  });
+
+  // Count-up animation for stat numbers
   var statIo = new IntersectionObserver(function(entries){
-    entries.forEach(function(e){ if(e.isIntersecting){ countUp(); statIo.disconnect(); } });
-  },{ threshold:0.1 });
-  var strip = document.querySelector('.ab-stats-strip');
-  if(strip) statIo.observe(strip); else countUp();
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      var el = e.target;
+      var target = parseInt(el.dataset.target);
+      var suffix = el.dataset.suffix || '';
+      var label = el.nextElementSibling ? el.nextElementSibling.textContent.trim() : '';
+      var duration = 1800, start = null;
+      function step(ts){
+        if(!start) start = ts;
+        var prog = Math.min((ts - start) / duration, 1);
+        var ease = 1 - Math.pow(1 - prog, 3);
+        el.textContent = Math.round(ease * target) + suffix;
+        if(prog < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+      statIo.unobserve(el);
+    });
+  }, { threshold:0.3 });
+
+  document.querySelectorAll('[data-target]').forEach(function(el){
+    statIo.observe(el);
+  });
 })();
 </script>
 {% endblock %}
