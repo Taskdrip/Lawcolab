@@ -456,18 +456,21 @@ def contact():
             if ip_addr and ',' in ip_addr:
                 ip_addr = ip_addr.split(',')[0].strip()
 
+            from datetime import datetime as _dt
+            _now = _dt.utcnow()
             db.session.execute(text("""
                 INSERT INTO contact_inquiries
                     (first_name, last_name, email, phone, company, country,
                      inquiry_type, message, newsletter, status, ip_address, created_at, updated_at)
                 VALUES
-                    (:fn, :ln, :em, :ph, :co, :ct, :it, :ms, :nl, 'new', :ip, NOW(), NOW())
+                    (:fn, :ln, :em, :ph, :co, :ct, :it, :ms, :nl, 'new', :ip, :now, :now)
             """), dict(fn=first_name, ln=last_name, em=email, ph=phone or None,
                        co=company or None, ct=country or None, it=inquiry_type,
-                       ms=message, nl=newsletter, ip=ip_addr[:45] if ip_addr else None))
+                       ms=message, nl=newsletter, ip=ip_addr[:45] if ip_addr else None,
+                       now=_now))
             db.session.commit()
 
-            flash(f"Thank you {first_name}! Your message has been received. We'll reply within 24 hours.", 'success')
+            flash(f"__SUCCESS__{first_name}", 'success')
         except Exception as exc:
             import traceback; traceback.print_exc()
             db.session.rollback()

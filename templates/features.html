@@ -257,8 +257,14 @@
   .ft-table th:first-child, .ft-table td:first-child { min-width:110px; }
 }
 /* Prevent horizontal overflow */
-.ft-hero, .ft-spec-strip, .ft-showcase, .ft-cta {
+.ft-hero, .ft-spec-strip, .ft-showcase, .ft-cta,
+section, .ft-spec-strip {
   max-width:100vw; overflow-x:hidden;
+}
+@media(max-width:576px){
+  .container { padding-left:16px !important; padding-right:16px !important; }
+  .row.g-5 { --bs-gutter-x: 1.5rem; }
+  .ft-card { padding:1.5rem 1rem; }
 }
 /* Ensure the comparison table wrapper scrolls horizontally on mobile */
 .table-responsive { -webkit-overflow-scrolling:touch; }

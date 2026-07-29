@@ -51,16 +51,26 @@ app.config["WTF_CSRF_SSL_STRICT"] = False
 _db_url = os.environ.get("DATABASE_URL", "")
 if _db_url.startswith("postgres://"):
     _db_url = _db_url.replace("postgres://", "postgresql://", 1)
-app.config["SQLALCHEMY_DATABASE_URI"] = _db_url or None
+_db_url = _db_url or "sqlite:///lawcolab_dev.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = _db_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_pre_ping": True,
-    "pool_recycle": 300,
-    "pool_size": 5,
-    "max_overflow": 10,
-    "connect_args": {"connect_timeout": 10},
-    "echo": False,
-}
+
+# Engine options differ between PostgreSQL and SQLite
+if _db_url.startswith("sqlite"):
+    # SQLite doesn't support connection pooling args or connect_timeout
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,
+        "echo": False,
+    }
+else:
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+        "pool_size": 5,
+        "max_overflow": 10,
+        "connect_args": {"connect_timeout": 10},
+        "echo": False,
+    }
 
 # ── Uploads ───────────────────────────────────────────────────────────────────
 app.config["UPLOAD_FOLDER"] = "uploads"

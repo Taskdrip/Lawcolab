@@ -479,15 +479,30 @@ def run_migrations(db):
         "CREATE INDEX IF NOT EXISTS idx_cie_inquiry ON contact_inquiry_emails(inquiry_id)",
     ]
 
+    # Detect SQLite so we can translate PostgreSQL-specific syntax
+    is_sqlite = str(db.engine.url).startswith("sqlite")
+
     with db.engine.connect() as conn:
         for sql in migrations:
+            exec_sql = sql
+            if is_sqlite:
+                # SQLite doesn't support IF NOT EXISTS on ALTER TABLE — skip those
+                if "ALTER TABLE" in exec_sql and "ADD COLUMN IF NOT EXISTS" in exec_sql:
+                    # Rewrite to plain ADD COLUMN and let the except handle duplicates
+                    exec_sql = exec_sql.replace(" IF NOT EXISTS", "")
+                # Replace PostgreSQL auto-increment with SQLite INTEGER PRIMARY KEY
+                exec_sql = exec_sql.replace("SERIAL PRIMARY KEY", "INTEGER PRIMARY KEY AUTOINCREMENT")
+                # Replace NOW() with SQLite's CURRENT_TIMESTAMP
+                exec_sql = exec_sql.replace("DEFAULT NOW()", "DEFAULT CURRENT_TIMESTAMP")
+                exec_sql = exec_sql.replace(" NOW()", " CURRENT_TIMESTAMP")
+                # ON DELETE CASCADE foreign-key syntax is fine in SQLite
             try:
-                conn.execute(text(sql))
-                logger.info("Migration OK: %s", sql[:80])
+                conn.execute(text(exec_sql))
+                logger.info("Migration OK: %s", exec_sql[:80])
             except Exception as exc:
                 # Log but don't crash — column may already exist on some drivers
                 # that don't support IF NOT EXISTS (psycopg2 on PG does support it)
-                logger.warning("Migration skipped (%s): %s", exc.__class__.__name__, sql[:80])
+                logger.warning("Migration skipped (%s): %s", exc.__class__.__name__, exec_sql[:80])
         conn.commit()
 
     logger.info("Schema migrations complete.")
