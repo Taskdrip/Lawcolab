@@ -165,6 +165,19 @@
         </button>
 
         <hr>
+        <a href="{{ url_for('social_communities.edit_community', community_id=community.id) }}" class="btn btn-primary btn-sm w-100 fw-bold mb-2" style="background:#0d1b4b;border-color:#0d1b4b;border-radius:8px;">
+          <i class="fas fa-edit me-1"></i>Edit Listing
+        </a>
+        {% if community.is_draft %}<div class="text-center mb-2"><span style="background:#fef3c7;color:#92400e;font-size:.72rem;font-weight:700;padding:.2rem .65rem;border-radius:50px;border:1.5px solid #fbbf24;"><i class="fas fa-pencil-alt me-1"></i>Draft</span></div>{% endif %}
+
+        <!-- Audit Log (collapsible) -->
+        <div style="background:#f8fafc;border-radius:10px;padding:.75rem;margin-bottom:.75rem;">
+          <button class="btn btn-sm btn-outline-secondary w-100" style="border-radius:8px;font-size:.75rem;" onclick="toggleAuditLog()">
+            <i class="fas fa-history me-1"></i>Edit History
+          </button>
+          <div id="auditContent" style="display:none;margin-top:.6rem;max-height:240px;overflow-y:auto;"></div>
+        </div>
+
         <form method="POST" action="{{ url_for('social_communities.delete_community', community_id=community.id) }}" onsubmit="return confirm('Remove this community from the CRM?')">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="btn btn-outline-danger btn-sm w-100" style="border-radius:8px;"><i class="fas fa-trash me-1"></i>Remove</button>
@@ -257,6 +270,33 @@ function attachCopyHandlers() {
   });
 }
 attachCopyHandlers();
+
+// ── Audit log ────────────────────────────────────────────────────────────────
+let auditLoaded = false;
+async function toggleAuditLog() {
+  const content = document.getElementById('auditContent');
+  if (content.style.display !== 'none') { content.style.display = 'none'; return; }
+  if (!auditLoaded) {
+    content.innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm text-secondary"></div></div>';
+    content.style.display = 'block';
+    try {
+      const r = await fetch(`/superadmin/crm/communities/${communityId}/audit-log`);
+      const logs = await r.json();
+      if (!logs.length) {
+        content.innerHTML = '<p class="text-muted small text-center">No edit history yet.</p>';
+      } else {
+        const tc = {form:'#0d6efd',inline:'#198754',bulk:'#fd7e14',draft:'#f59e0b'};
+        content.innerHTML = logs.map(l => `
+          <div style="padding:.5rem .7rem;border-left:3px solid ${tc[l.edit_type]||'#ccc'};background:#fff;border-radius:0 8px 8px 0;margin-bottom:.4rem;font-size:.75rem;">
+            <div style="display:flex;justify-content:space-between;gap:.25rem;flex-wrap:wrap;"><strong>${l.field_name||'Full edit'}</strong><span style="color:#888;">${l.created_at}</span></div>
+            ${l.old_value ? `<div style="color:#dc3545;"><s>${l.old_value.substring(0,60)}</s></div>` : ''}
+            <div style="color:#198754;">${(l.new_value||'—').substring(0,60)}</div>
+          </div>`).join('');
+      }
+      auditLoaded = true;
+    } catch(e) { content.innerHTML = '<p class="text-danger small">Failed.</p>'; }
+  } else { content.style.display = 'block'; }
+}
 
 function showToast(msg, bg) {
   const t = document.createElement('div');

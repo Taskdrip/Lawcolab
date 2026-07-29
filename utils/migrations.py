@@ -477,6 +477,40 @@ def run_migrations(db):
         )
         """,
         "CREATE INDEX IF NOT EXISTS idx_cie_inquiry ON contact_inquiry_emails(inquiry_id)",
+
+        # ── directory_law_firms: edit-feature columns ─────────────────────────
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS contact_person VARCHAR(200)",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS ai_summary TEXT",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS source_url VARCHAR(500)",
+        "ALTER TABLE directory_law_firms ADD COLUMN IF NOT EXISTS is_draft BOOLEAN DEFAULT FALSE",
+
+        # ── social_communities: edit-feature columns ──────────────────────────
+        "ALTER TABLE social_communities ADD COLUMN IF NOT EXISTS contact_person VARCHAR(200)",
+        "ALTER TABLE social_communities ADD COLUMN IF NOT EXISTS logo_url VARCHAR(500)",
+        "ALTER TABLE social_communities ADD COLUMN IF NOT EXISTS email VARCHAR(200)",
+        "ALTER TABLE social_communities ADD COLUMN IF NOT EXISTS phone VARCHAR(100)",
+        "ALTER TABLE social_communities ADD COLUMN IF NOT EXISTS whatsapp VARCHAR(100)",
+        "ALTER TABLE social_communities ADD COLUMN IF NOT EXISTS tags_json TEXT",
+        "ALTER TABLE social_communities ADD COLUMN IF NOT EXISTS is_draft BOOLEAN DEFAULT FALSE",
+
+        # ── crm_edit_logs table ────────────────────────────────────────────────
+        """
+        CREATE TABLE IF NOT EXISTS crm_edit_logs (
+            id SERIAL PRIMARY KEY,
+            record_type VARCHAR(50) NOT NULL,
+            record_id INTEGER NOT NULL,
+            record_name VARCHAR(300),
+            field_name VARCHAR(100),
+            old_value TEXT,
+            new_value TEXT,
+            edit_type VARCHAR(30) DEFAULT 'form',
+            edited_by_id VARCHAR REFERENCES users(id) ON DELETE SET NULL,
+            ip_address VARCHAR(45),
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+        """,
+        "CREATE INDEX IF NOT EXISTS idx_cel_record ON crm_edit_logs(record_type, record_id)",
+        "CREATE INDEX IF NOT EXISTS idx_cel_created ON crm_edit_logs(created_at)",
     ]
 
     # Detect SQLite so we can translate PostgreSQL-specific syntax

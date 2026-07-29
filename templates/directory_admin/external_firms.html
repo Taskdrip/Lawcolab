@@ -94,6 +94,7 @@
     <a href="{{ url_for('dir_admin.index') }}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;flex-shrink:0;"><i class="fas fa-arrow-left"></i></a>
     <h4>External Firms CRM</h4>
     <div class="d-flex gap-2 ms-auto flex-shrink-0">
+      <button id="bulkEditBtn" class="btn btn-sm fw-bold d-none" style="background:#6366f1;color:#fff;border-radius:8px;border:none;" onclick="openBulkModal()"><i class="fas fa-layer-group me-1"></i>Bulk Edit</button>
       <a href="{{ url_for('dir_admin.add_external') }}" class="btn btn-sm fw-bold" style="background:#0d1b4b;color:#fff;border-radius:8px;"><i class="fas fa-plus me-1"></i>Add Firm</a>
       <a href="{{ url_for('dir_admin.robot_dashboard') }}" class="btn btn-sm fw-bold" style="background:#FFD700;color:#0d1b4b;border-radius:8px;"><i class="fas fa-robot me-1"></i>Robot</a>
     </div>
@@ -180,6 +181,7 @@
       <!-- Action bar -->
       <div class="card-actions">
         <div class="d-flex align-items-center gap-2">
+          <input type="checkbox" class="bulk-check form-check-input" data-firm-id="{{ firm.id }}" onclick="event.stopPropagation();updateBulkBar()" style="width:16px;height:16px;cursor:pointer;border-radius:4px;" title="Select for bulk edit">
           <select class="crm-status-select" data-firm-id="{{ firm.id }}" style="font-size:.72rem;border-radius:8px;border:1.5px solid #e8ecf0;padding:.25rem .5rem;background:#fff;color:#374151;font-weight:600;" onclick="event.stopPropagation()" onchange="updateStatus(this)">
             {% for s in ['new','contacted','converted','inactive'] %}
             <option value="{{ s }}" {% if firm.crm_status == s %}selected{% endif %}>{{ s|capitalize }}</option>
@@ -188,7 +190,8 @@
         </div>
         <div class="d-flex gap-2" onclick="event.stopPropagation()">
           <button class="btn-view" onclick="openQuickViewById({{ firm.id }})"><i class="fas fa-eye"></i> Quick View</button>
-          <a href="{{ url_for('dir_admin.external_detail', firm_id=firm.id) }}" class="btn-view-page"><i class="fas fa-external-link-alt"></i> Full Page</a>
+          <a href="{{ url_for('dir_admin.edit_external', firm_id=firm.id) }}" class="btn-view-page" style="background:#e0e7ff;border-color:#6366f1;color:#4338ca;"><i class="fas fa-edit"></i> Edit</a>
+          <a href="{{ url_for('dir_admin.external_detail', firm_id=firm.id) }}" class="btn-view-page"><i class="fas fa-external-link-alt"></i> Profile</a>
         </div>
       </div>
     </div>
@@ -211,6 +214,45 @@
       </ul>
     </nav>
     {% endif %}
+  </div>
+</div>
+
+<!-- ── Bulk Edit Modal ─────────────────────────────────────────────── -->
+<div class="modal fade" id="bulkModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:16px;border:none;">
+      <div class="modal-header" style="border-bottom:1px solid #f0f0f0;">
+        <h5 class="modal-title fw-bold" style="color:#0d1b4b;"><i class="fas fa-layer-group me-2"></i>Bulk Edit Firms</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted small mb-3">Apply a single change to all selected firms.</p>
+        <div class="mb-3">
+          <label class="form-label fw-semibold small">Field to Update</label>
+          <select class="form-select" id="bulkField" style="border-radius:10px;" onchange="updateBulkValueOptions()">
+            <option value="">Choose field…</option>
+            <option value="crm_status">CRM Status</option>
+            <option value="pipeline_stage">Pipeline Stage</option>
+            <option value="is_active">Active / Inactive</option>
+            <option value="is_draft">Draft / Published</option>
+            <option value="gmb_verified">GMB Verified</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold small">New Value</label>
+          <select class="form-select" id="bulkValue" style="border-radius:10px;">
+            <option value="">Select field first…</option>
+          </select>
+        </div>
+        <div id="bulkSummary" class="text-muted small"></div>
+      </div>
+      <div class="modal-footer" style="border-top:1px solid #f0f0f0;">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius:8px;">Cancel</button>
+        <button class="btn fw-bold" id="bulkApplyBtn" style="background:#0d1b4b;color:#fff;border-radius:8px;border:none;">
+          <i class="fas fa-check me-1"></i>Apply to Selected
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -400,7 +442,62 @@ async function updateStatusFromPanel(sel) {
   if (card) card.dataset.crm = sel.value;
 }
 
+// ── Bulk field→value options ──────────────────────────────────────────────
+function updateBulkValueOptions() {
+  const field = document.getElementById('bulkField').value;
+  const sel = document.getElementById('bulkValue');
+  const opts = {
+    crm_status: [['new','New'],['contacted','Contacted'],['converted','Converted'],['inactive','Inactive']],
+    pipeline_stage: [['new','New Lead'],['discovered','Discovered'],['verified','Verified'],['contacted','Contacted'],['interested','Interested'],['won','Won'],['lost','Lost'],['customer','Customer']],
+    is_active: [['true','Active'],['false','Inactive']],
+    is_draft: [['true','Draft'],['false','Published']],
+    gmb_verified: [['true','Verified'],['false','Unverified']],
+  };
+  sel.innerHTML = (opts[field]||[]).map(([v,l]) => `<option value="${v}">${l}</option>`).join('') || '<option>Select field first…</option>';
+  const checked = document.querySelectorAll('.bulk-check:checked').length;
+  document.getElementById('bulkSummary').textContent = `This will update ${checked} selected firm(s).`;
+}
+
 // ── Toast ─────────────────────────────────────────────────────────
+// ── Bulk edit ─────────────────────────────────────────────────────────────
+function updateBulkBar() {
+  const checked = document.querySelectorAll('.bulk-check:checked');
+  const btn = document.getElementById('bulkEditBtn');
+  if (checked.length > 0) {
+    btn.classList.remove('d-none');
+    btn.textContent = '';
+    btn.innerHTML = `<i class="fas fa-layer-group me-1"></i>Bulk Edit (${checked.length})`;
+  } else {
+    btn.classList.add('d-none');
+  }
+}
+
+function openBulkModal() {
+  const modal = new bootstrap.Modal(document.getElementById('bulkModal'));
+  modal.show();
+}
+
+document.getElementById('bulkApplyBtn')?.addEventListener('click', async function() {
+  const checked = Array.from(document.querySelectorAll('.bulk-check:checked'));
+  const firmIds = checked.map(c => parseInt(c.dataset.firmId));
+  const field = document.getElementById('bulkField').value;
+  const value = document.getElementById('bulkValue').value;
+  if (!field || !value) { showToast('Select a field and value', '#dc3545'); return; }
+  const r = await fetch('/superadmin/directory/external/bulk-edit', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'X-CSRFToken': CSRF},
+    body: JSON.stringify({firm_ids: firmIds, field, value})
+  });
+  const d = await r.json();
+  if (d.success) {
+    showToast(d.message);
+    bootstrap.Modal.getInstance(document.getElementById('bulkModal')).hide();
+    setTimeout(() => location.reload(), 800);
+  } else {
+    showToast(d.message, '#dc3545');
+  }
+});
+
 function showToast(msg, bg='#10b981') {
   const t = document.createElement('div');
   t.style.cssText = `position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:${bg};color:#fff;padding:.6rem 1.25rem;border-radius:50px;font-weight:700;font-size:.82rem;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.2);pointer-events:none;white-space:nowrap;`;

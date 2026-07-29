@@ -1,0 +1,388 @@
+{% extends "base.html" %}
+{% block title %}Edit — {{ firm.name }}{% endblock %}
+{% block content %}
+<style>
+.edit-section{background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.75rem;margin-bottom:1.5rem;}
+.edit-section h5{font-weight:800;color:#0d1b4b;margin-bottom:1.25rem;font-size:.98rem;display:flex;align-items:center;gap:.5rem;}
+.form-label{font-weight:600;font-size:.82rem;color:#374151;margin-bottom:.3rem;}
+.form-control,.form-select{border-radius:10px;font-size:.88rem;}
+.form-control:focus,.form-select:focus{border-color:#0d1b4b;box-shadow:0 0 0 3px rgba(13,27,75,.1);}
+.dupe-alert{background:#fff3cd;border:1.5px solid #ffc107;border-radius:10px;padding:.75rem 1rem;font-size:.82rem;display:none;margin-top:.5rem;}
+.char-counter{font-size:.72rem;color:#9ca3af;text-align:right;margin-top:.15rem;}
+.section-divider{border:none;border-top:2px solid #f1f5f9;margin:1.5rem 0;}
+.area-chip{display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .8rem;border-radius:50px;font-size:.78rem;font-weight:600;cursor:pointer;border:1.5px solid #c7d2fe;background:#f0f4ff;color:#0d1b4b;transition:all .15s;user-select:none;}
+.area-chip input{display:none;}
+.area-chip.checked{background:#0d1b4b;color:#fff;border-color:#0d1b4b;}
+.tag-input-wrap{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;border:1.5px solid #dee2e6;border-radius:10px;padding:.45rem .75rem;min-height:42px;cursor:text;}
+.tag-input-wrap:focus-within{border-color:#0d1b4b;box-shadow:0 0 0 3px rgba(13,27,75,.1);}
+.tag-pill{display:inline-flex;align-items:center;gap:.25rem;background:#e0e7ff;color:#0d1b4b;border-radius:50px;padding:.2rem .6rem;font-size:.75rem;font-weight:600;}
+.tag-pill button{background:none;border:none;cursor:pointer;color:#6366f1;font-size:.75rem;padding:0;line-height:1;display:flex;align-items:center;}
+#tagRealInput{border:none;outline:none;min-width:80px;font-size:.85rem;flex:1;background:transparent;}
+.draft-badge{background:#fef3c7;color:#92400e;font-size:.72rem;font-weight:700;padding:.2rem .6rem;border-radius:50px;border:1.5px solid #fbbf24;}
+.published-badge{background:#d1fae5;color:#065f46;font-size:.72rem;font-weight:700;padding:.2rem .6rem;border-radius:50px;border:1.5px solid #34d399;}
+@media(max-width:767px){.edit-actions{flex-direction:column;}.edit-actions button,.edit-actions a{width:100%;}}
+</style>
+
+<div class="container-fluid py-3" style="max-width:1000px;margin:0 auto;padding-left:1rem;padding-right:1rem;">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between gap-2 mb-3 flex-wrap">
+    <div class="d-flex align-items-center gap-2 min-width-0">
+      <a href="{{ url_for('dir_admin.external_detail', firm_id=firm.id) }}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;flex-shrink:0;"><i class="fas fa-arrow-left"></i></a>
+      <div style="min-width:0;">
+        <h4 class="mb-0 fw-bold" style="color:#0d1b4b;font-size:clamp(.95rem,3.5vw,1.3rem);word-break:break-word;">Edit: {{ firm.name }}</h4>
+        <div class="d-flex align-items-center gap-2 mt-1">
+          {% if firm.is_draft %}<span class="draft-badge"><i class="fas fa-pencil-alt me-1"></i>Draft</span>{% else %}<span class="published-badge"><i class="fas fa-check-circle me-1"></i>Published</span>{% endif %}
+          <span class="text-muted" style="font-size:.75rem;">ID #{{ firm.id }} · Last updated {{ firm.updated_at.strftime('%b %d, %Y') if firm.updated_at else '—' }}</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <a href="{{ url_for('dir_admin.firm_audit_log', firm_id=firm.id) }}" class="btn btn-sm btn-outline-secondary" style="border-radius:8px;font-size:.78rem;" target="_blank">
+        <i class="fas fa-history me-1"></i>Audit Log
+      </a>
+    </div>
+  </div>
+
+  <!-- Flash messages -->
+  {% for cat, msg in get_flashed_messages(with_categories=true) %}
+  <div class="alert alert-{{ 'danger' if cat == 'error' else 'success' if cat == 'success' else 'warning' }} alert-dismissible mb-3" style="border-radius:12px;">
+    {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endfor %}
+  {% if errors %}
+  <div class="alert alert-danger mb-3" style="border-radius:12px;"><strong>Please fix the following:</strong>
+    <ul class="mb-0 mt-1">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+
+  <!-- Duplicate detection banner -->
+  <div id="dupeBanner" class="dupe-alert mb-3" style="display:none;">
+    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+    <strong>Possible duplicates found:</strong>
+    <div id="dupeList" class="mt-1"></div>
+  </div>
+
+  <form method="POST" id="editForm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="_action" id="formAction" value="publish">
+
+    <!-- ── Identity ─────────────────────────────────────────────────────────── -->
+    <div class="edit-section">
+      <h5><i class="fas fa-building"></i> Firm Identity</h5>
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label">Firm Name *</label>
+          <input type="text" class="form-control" name="name" id="fieldName" value="{{ firm.name }}" required placeholder="e.g. Templars Law" maxlength="300">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Logo URL</label>
+          <input type="url" class="form-control" name="logo_url" value="{{ firm.logo_url or '' }}" placeholder="https://…/logo.png">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Source URL <span class="text-muted fw-normal">(where this lead came from)</span></label>
+          <input type="url" class="form-control" name="source_url" value="{{ firm.source_url or '' }}" placeholder="https://maps.google.com/…">
+        </div>
+        <div class="col-12">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" name="description" rows="3" id="descField" maxlength="2000" placeholder="Brief description of the firm…">{{ firm.description or '' }}</textarea>
+          <div class="char-counter"><span id="descCount">{{ (firm.description or '')|length }}</span>/2000</div>
+        </div>
+        <div class="col-12">
+          <label class="form-label">AI Summary <span class="text-muted fw-normal">(internal — enriched profile)</span></label>
+          <textarea class="form-control" name="ai_summary" rows="3" maxlength="3000" placeholder="AI-generated summary…">{{ firm.ai_summary or '' }}</textarea>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Contact Person</label>
+          <input type="text" class="form-control" name="contact_person" value="{{ firm.contact_person or '' }}" placeholder="e.g. Mr. Emeka Obi">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Firm Size</label>
+          <select class="form-select" name="firm_size">
+            <option value="">Select…</option>
+            {% for val, label in [('solo','Solo Practitioner'),('small','Small (2–10)'),('mid','Mid-size (11–50)'),('large','Large (51–200)'),('biglaw','Big Law (200+)')] %}
+            <option value="{{ val }}" {% if firm.firm_size == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Founding Year</label>
+          <input type="number" class="form-control" name="founding_year" value="{{ firm.founding_year or '' }}" min="1800" max="2030" placeholder="e.g. 1998">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Number of Lawyers</label>
+          <input type="number" class="form-control" name="num_lawyers" value="{{ firm.num_lawyers or '' }}" min="0" placeholder="e.g. 12">
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Contact ──────────────────────────────────────────────────────────── -->
+    <div class="edit-section">
+      <h5><i class="fas fa-address-book"></i> Contact Information</h5>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Phone</label>
+          <input type="tel" class="form-control" name="phone" value="{{ firm.phone or '' }}" placeholder="+234 1 234 5678">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">WhatsApp Number</label>
+          <input type="tel" class="form-control" name="whatsapp" value="{{ firm.whatsapp or '' }}" placeholder="+234 80 1234 5678">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" name="email" value="{{ firm.email or '' }}" placeholder="info@firm.com">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Website</label>
+          <input type="url" class="form-control" name="website" value="{{ firm.website or '' }}" placeholder="https://www.firm.com">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Google Maps URL</label>
+          <input type="url" class="form-control" name="google_maps_url" value="{{ firm.google_maps_url or '' }}" placeholder="https://maps.google.com/…">
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Social Links ─────────────────────────────────────────────────────── -->
+    <div class="edit-section">
+      <h5><i class="fas fa-share-alt"></i> Social Media Links</h5>
+      {% set slinks = firm.social_links %}
+      <div class="row g-3">
+        {% for platform, icon, color, label in [
+          ('facebook','fab fa-facebook','#1877f2','Facebook'),
+          ('linkedin','fab fa-linkedin','#0077b5','LinkedIn'),
+          ('twitter','fab fa-x-twitter','#000','X / Twitter'),
+          ('instagram','fab fa-instagram','#e4405f','Instagram'),
+          ('youtube','fab fa-youtube','#ff0000','YouTube'),
+          ('tiktok','fab fa-tiktok','#000','TikTok'),
+        ] %}
+        <div class="col-md-6">
+          <label class="form-label">
+            <i class="{{ icon }} me-1" style="color:{{ color }};"></i>{{ label }}
+          </label>
+          <input type="url" class="form-control" name="social_{{ platform }}" value="{{ slinks.get(platform,'') }}" placeholder="https://{{ platform }}.com/…">
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- ── Location ─────────────────────────────────────────────────────────── -->
+    <div class="edit-section">
+      <h5><i class="fas fa-map-marker-alt"></i> Location</h5>
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label">Address</label>
+          <input type="text" class="form-control" name="address" value="{{ firm.address or '' }}" placeholder="Street address">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">City</label>
+          <input type="text" class="form-control" name="city" id="fieldCity" value="{{ firm.city or '' }}" placeholder="Lagos">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">State</label>
+          <select class="form-select" name="state">
+            <option value="{{ firm.state or '' }}">{{ firm.state or 'Select state…' }}</option>
+            <option disabled>──────────</option>
+            {% for s in states %}<option value="{{ s }}" {% if firm.state == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Country</label>
+          <select class="form-select" name="country">
+            {% for c in countries %}<option value="{{ c }}" {% if (firm.country or 'Nigeria') == c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Postal Code</label>
+          <input type="text" class="form-control" name="postal_code" value="{{ firm.postal_code or '' }}" placeholder="100001">
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Practice Areas ───────────────────────────────────────────────────── -->
+    <div class="edit-section">
+      <h5><i class="fas fa-gavel"></i> Practice Areas</h5>
+      <div class="d-flex flex-wrap gap-2">
+        {% for area in practice_areas %}
+        <label class="area-chip {% if area in firm.practice_areas %}checked{% endif %}">
+          <input type="checkbox" name="practice_areas" value="{{ area }}" {% if area in firm.practice_areas %}checked{% endif %}>
+          {{ area }}
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- ── Tags ────────────────────────────────────────────────────────────────-->
+    <div class="edit-section">
+      <h5><i class="fas fa-tags"></i> Tags &amp; Categories</h5>
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label">Tags <span class="text-muted fw-normal">(press Enter or comma to add)</span></label>
+          <div class="tag-input-wrap" id="tagWrap" onclick="document.getElementById('tagRealInput').focus()">
+            {% for tag in firm.tags %}
+            <span class="tag-pill">{{ tag }}<button type="button" onclick="removeTag(this)" title="Remove">×</button></span>
+            {% endfor %}
+            <input type="text" id="tagRealInput" placeholder="Add tag…" autocomplete="off">
+          </div>
+          <input type="hidden" name="tags" id="tagsHidden" value="{{ firm.tags | join(',') }}">
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CRM Status ───────────────────────────────────────────────────────── -->
+    <div class="edit-section">
+      <h5><i class="fas fa-chart-line"></i> CRM Status &amp; Pipeline</h5>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">CRM Status</label>
+          <select class="form-select" name="crm_status">
+            {% for val, label in [('new','New'),('contacted','Contacted'),('converted','Converted'),('inactive','Inactive')] %}
+            <option value="{{ val }}" {% if firm.crm_status == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Pipeline Stage</label>
+          <select class="form-select" name="pipeline_stage">
+            {% for val, label in [
+              ('new','New Lead'),('discovered','Discovered'),('verified','Verified'),
+              ('contacted','Contacted'),('email_sent','Email Sent'),('whatsapp_sent','WhatsApp Sent'),
+              ('interested','Interested'),('meeting_scheduled','Meeting Scheduled'),
+              ('demo_completed','Demo Completed'),('negotiating','Negotiating'),
+              ('won','Won'),('lost','Lost'),('customer','Customer'),
+            ] %}
+            <option value="{{ val }}" {% if firm.pipeline_stage == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Lead Score (0–100)</label>
+          <input type="number" class="form-control" name="lead_score" value="{{ firm.lead_score or 0 }}" min="0" max="100">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Confidence %</label>
+          <input type="number" class="form-control" name="confidence_score" value="{{ firm.confidence_score or 0 }}" min="0" max="100">
+        </div>
+        <div class="col-12">
+          <div class="d-flex flex-wrap gap-4 mt-1">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="is_active" id="chkActive" role="switch" {% if firm.is_active %}checked{% endif %}>
+              <label class="form-check-label fw-semibold" for="chkActive">Active (visible in directory)</label>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="gmb_verified" id="chkGmb" role="switch" {% if firm.gmb_verified %}checked{% endif %}>
+              <label class="form-check-label fw-semibold" for="chkGmb">GMB Verified</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── AI Outreach ──────────────────────────────────────────────────────── -->
+    <div class="edit-section">
+      <h5><i class="fas fa-magic"></i> AI Outreach Content</h5>
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label">AI Pitch Email</label>
+          <textarea class="form-control" name="ai_pitch_email" rows="5" placeholder="AI-generated outreach email…">{{ firm.ai_pitch_email or '' }}</textarea>
+        </div>
+        <div class="col-12">
+          <label class="form-label">AI Call Script</label>
+          <textarea class="form-control" name="ai_call_script" rows="5" placeholder="AI-generated call script…">{{ firm.ai_call_script or '' }}</textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Actions ──────────────────────────────────────────────────────────── -->
+    <div style="background:#f8fafc;border-radius:16px;border:1px solid #e8ecf0;padding:1.25rem;" class="d-flex align-items-center justify-content-between flex-wrap gap-3 edit-actions mb-4">
+      <a href="{{ url_for('dir_admin.external_detail', firm_id=firm.id) }}" class="btn btn-outline-secondary" style="border-radius:10px;font-weight:600;">
+        <i class="fas fa-times me-1"></i>Cancel
+      </a>
+      <div class="d-flex gap-2 flex-wrap">
+        <button type="submit" class="btn fw-bold" id="btnDraft"
+          style="background:#f59e0b;color:#fff;border:none;border-radius:10px;padding:.6rem 1.5rem;"
+          onclick="document.getElementById('formAction').value='save_draft'">
+          <i class="fas fa-save me-1"></i>Save Draft
+        </button>
+        <button type="submit" class="btn fw-bold" id="btnPublish"
+          style="background:#0d1b4b;color:#fff;border:none;border-radius:10px;padding:.6rem 1.75rem;"
+          onclick="document.getElementById('formAction').value='publish'">
+          <i class="fas fa-check-circle me-1"></i>Publish Changes
+        </button>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<script>
+// ── Area chips toggle ─────────────────────────────────────────────────────────
+document.querySelectorAll('.area-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    chip.classList.toggle('checked');
+    chip.querySelector('input').checked = chip.classList.contains('checked');
+  });
+});
+
+// ── Description char counter ──────────────────────────────────────────────────
+const descField = document.getElementById('descField');
+const descCount = document.getElementById('descCount');
+if (descField) descField.addEventListener('input', () => descCount.textContent = descField.value.length);
+
+// ── Tag input ─────────────────────────────────────────────────────────────────
+function syncTagsHidden() {
+  const pills = document.querySelectorAll('#tagWrap .tag-pill');
+  document.getElementById('tagsHidden').value = Array.from(pills).map(p => p.textContent.trim().replace('×','')).join(',');
+}
+function addTag(val) {
+  const v = val.trim();
+  if (!v) return;
+  const existing = Array.from(document.querySelectorAll('#tagWrap .tag-pill')).map(p => p.textContent.trim().replace('×',''));
+  if (existing.includes(v)) return;
+  const span = document.createElement('span');
+  span.className = 'tag-pill';
+  span.innerHTML = v + '<button type="button" onclick="removeTag(this)" title="Remove">×</button>';
+  document.getElementById('tagWrap').insertBefore(span, document.getElementById('tagRealInput'));
+  syncTagsHidden();
+}
+function removeTag(btn) {
+  btn.parentElement.remove();
+  syncTagsHidden();
+}
+const tagInput = document.getElementById('tagRealInput');
+tagInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    addTag(tagInput.value);
+    tagInput.value = '';
+  }
+});
+tagInput.addEventListener('blur', () => { if (tagInput.value.trim()) { addTag(tagInput.value); tagInput.value = ''; } });
+
+// ── Duplicate detection ───────────────────────────────────────────────────────
+let dupeTimer = null;
+function checkDupe() {
+  const name = document.getElementById('fieldName').value.trim();
+  const city = document.getElementById('fieldCity').value.trim();
+  if (!name || name.length < 4) { hideDupe(); return; }
+  clearTimeout(dupeTimer);
+  dupeTimer = setTimeout(async () => {
+    try {
+      const r = await fetch(`{{ url_for('dir_admin.check_firm_duplicate') }}?name=${encodeURIComponent(name)}&city=${encodeURIComponent(city)}&exclude_id={{ firm.id }}`);
+      const dupes = await r.json();
+      if (dupes.length) {
+        document.getElementById('dupeList').innerHTML = dupes.map(d =>
+          `<a href="{{ url_for('dir_admin.external_detail', firm_id=0) }}".replace('0','${d.id}') class="text-dark me-2" target="_blank">
+            <strong>${d.name}</strong> (${d.city || '—'}, ${d.state || '—'}) <span class="badge bg-secondary">${d.crm_status}</span>
+          </a>`
+        ).join('<br>');
+        document.getElementById('dupeBanner').style.display = 'block';
+      } else { hideDupe(); }
+    } catch(e) {}
+  }, 600);
+}
+function hideDupe() { document.getElementById('dupeBanner').style.display = 'none'; }
+document.getElementById('fieldName').addEventListener('input', checkDupe);
+document.getElementById('fieldCity').addEventListener('input', checkDupe);
+</script>
+{% endblock %}

@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+{% block title %}Edit — {{ community.community_name }}{% endblock %}
+{% block content %}
+<style>
+.edit-section{background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.75rem;margin-bottom:1.5rem;}
+.edit-section h5{font-weight:800;color:#0d1b4b;margin-bottom:1.25rem;font-size:.98rem;display:flex;align-items:center;gap:.5rem;}
+.form-label{font-weight:600;font-size:.82rem;color:#374151;margin-bottom:.3rem;}
+.form-control,.form-select{border-radius:10px;font-size:.88rem;}
+.form-control:focus,.form-select:focus{border-color:#0d1b4b;box-shadow:0 0 0 3px rgba(13,27,75,.1);}
+.dupe-alert{background:#fff3cd;border:1.5px solid #ffc107;border-radius:10px;padding:.75rem 1rem;font-size:.82rem;display:none;margin-top:.5rem;}
+.draft-badge{background:#fef3c7;color:#92400e;font-size:.72rem;font-weight:700;padding:.2rem .6rem;border-radius:50px;border:1.5px solid #fbbf24;}
+.published-badge{background:#d1fae5;color:#065f46;font-size:.72rem;font-weight:700;padding:.2rem .6rem;border-radius:50px;border:1.5px solid #34d399;}
+.platform-option{display:inline-flex;align-items:center;gap:.5rem;padding:.4rem .9rem;border-radius:50px;font-size:.82rem;font-weight:600;cursor:pointer;border:1.5px solid #dee2e6;background:#f8fafc;transition:all .15s;user-select:none;}
+.platform-option input{display:none;}
+.platform-option.selected{border-color:#0d1b4b;background:#e8ecf0;}
+.tag-input-wrap{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;border:1.5px solid #dee2e6;border-radius:10px;padding:.45rem .75rem;min-height:42px;cursor:text;}
+.tag-input-wrap:focus-within{border-color:#0d1b4b;box-shadow:0 0 0 3px rgba(13,27,75,.1);}
+.tag-pill{display:inline-flex;align-items:center;gap:.25rem;background:#e0e7ff;color:#0d1b4b;border-radius:50px;padding:.2rem .6rem;font-size:.75rem;font-weight:600;}
+.tag-pill button{background:none;border:none;cursor:pointer;color:#6366f1;font-size:.75rem;padding:0;line-height:1;display:flex;align-items:center;}
+#tagRealInput{border:none;outline:none;min-width:80px;font-size:.85rem;flex:1;background:transparent;}
+@media(max-width:767px){.edit-actions{flex-direction:column;}.edit-actions button,.edit-actions a{width:100%;}}
+</style>
+
+<div class="container-fluid py-3" style="max-width:900px;margin:0 auto;padding-left:1rem;padding-right:1rem;">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between gap-2 mb-3 flex-wrap">
+    <div class="d-flex align-items-center gap-2" style="min-width:0;">
+      <a href="{{ url_for('social_communities.detail', community_id=community.id) }}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;flex-shrink:0;"><i class="fas fa-arrow-left"></i></a>
+      <div style="min-width:0;">
+        <h4 class="mb-0 fw-bold" style="color:#0d1b4b;font-size:clamp(.95rem,3.5vw,1.3rem);word-break:break-word;">Edit: {{ community.community_name }}</h4>
+        <div class="d-flex align-items-center gap-2 mt-1">
+          {% if community.is_draft %}<span class="draft-badge"><i class="fas fa-pencil-alt me-1"></i>Draft</span>{% else %}<span class="published-badge"><i class="fas fa-check-circle me-1"></i>Published</span>{% endif %}
+          <span class="text-muted" style="font-size:.75rem;">ID #{{ community.id }} · {{ community.platform|title }}</span>
+        </div>
+      </div>
+    </div>
+    <a href="{{ url_for('social_communities.community_audit_log', community_id=community.id) }}" class="btn btn-sm btn-outline-secondary" style="border-radius:8px;font-size:.78rem;" target="_blank">
+      <i class="fas fa-history me-1"></i>Audit Log
+    </a>
+  </div>
+
+  {% for cat, msg in get_flashed_messages(with_categories=true) %}
+  <div class="alert alert-{{ 'danger' if cat == 'error' else 'success' if cat == 'success' else 'warning' }} alert-dismissible mb-3" style="border-radius:12px;">
+    {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endfor %}
+  {% if errors %}
+  <div class="alert alert-danger mb-3" style="border-radius:12px;"><strong>Please fix:</strong>
+    <ul class="mb-0 mt-1">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+
+  <!-- Duplicate detection banner -->
+  <div id="dupeBanner" class="dupe-alert mb-3">
+    <i class="fas fa-exclamation-triangle text-warning me-2"></i><strong>Possible duplicates:</strong>
+    <div id="dupeList" class="mt-1"></div>
+  </div>
+
+  <form method="POST" id="editForm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="_action" id="formAction" value="publish">
+
+    <!-- ── Identity ─────────────────────────────────────────────────────────── -->
+    <div class="edit-section">
+      <h5><i class="fas fa-users"></i> Community Identity</h5>
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label">Community Name *</label>
+          <input type="text" class="form-control" name="community_name" id="fieldName" value="{{ community.community_name }}" required maxlength="300">
+        </div>
+        <div class="col-12">
+          <label class="form-label">Platform</label>
+          <div class="d-flex flex-wrap gap-2 mt-1">
+            {% set picons = {'facebook':'fab fa-facebook','linkedin':'fab fa-linkedin','reddit':'fab fa-reddit','twitter':'fab fa-x-twitter','whatsapp':'fab fa-whatsapp','telegram':'fab fa-telegram','youtube':'fab fa-youtube','instagram':'fab fa-instagram','other':'fas fa-users'} %}
+            {% for p in platforms %}
+            <label class="platform-option {% if community.platform == p %}selected{% endif %}" onclick="selectPlatform(this,'{{ p }}')">
+              <input type="radio" name="platform" value="{{ p }}" {% if community.platform == p %}checked{% endif %}>
+              <i class="{{ picons.get(p,'fas fa-users') }}"></i>{{ p|title }}
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Logo URL</label>
+          <input type="url" class="form-control" name="logo_url" value="{{ community.logo_url or '' }}" placeholder="https://…/logo.png">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Contact Person</label>
+          <input type="text" class="form-control" name="contact_person" value="{{ community.contact_person or '' }}" placeholder="e.g. Admin name">
+        </div>
+        <div class="col-12">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" name="description" rows="3" maxlength="2000" placeholder="Brief description…">{{ community.description or '' }}</textarea>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Join Instructions</label>
+          <textarea class="form-control" name="join_instructions" rows="2" placeholder="How to join…">{{ community.join_instructions or '' }}</textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Contact & Links ──────────────────────────────────────────────────── -->
+    <div class="edit-section">
+      <h5><i class="fas fa-link"></i> Contact &amp; Links</h5>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Community URL</label>
+          <input type="url" class="form-control" name="url" value="{{ community.url or '' }}" placeholder="https://…">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Community Invite / Join Link</label>
+          <input type="url" class="form-control" name="join_link" value="{{ community.join_link or '' }}" placeholder="https://…/invite">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" name="email" value="{{ community.email or '' }}" placeholder="admin@community.com">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Phone</label>
+          <input type="tel" class="form-control" name="phone" value="{{ community.phone or '' }}" placeholder="+234…">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">WhatsApp</label>
+          <input type="tel" class="form-control" name="whatsapp" value="{{ community.whatsapp or '' }}" placeholder="+234…">
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Reach & Scope ────────────────────────────────────────────────────── -->
+    <div class="edit-section">
+      <h5><i class="fas fa-globe"></i> Reach &amp; Scope</h5>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Member Count</label>
+          <input type="number" class="form-control" name="member_count" value="{{ community.member_count or '' }}" min="0" placeholder="e.g. 47000">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Display Label <span class="text-muted fw-normal">("47K")</span></label>
+          <input type="text" class="form-control" name="member_count_display" value="{{ community.member_count_display or '' }}" placeholder="e.g. 47K">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Language</label>
+          <input type="text" class="form-control" name="language" value="{{ community.language or 'English' }}" placeholder="English">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Category</label>
+          <select class="form-select" name="category">
+            <option value="">Select…</option>
+            {% for cat in categories %}
+            <option value="{{ cat }}" {% if community.category == cat %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Country Focus</label>
+          <input type="text" class="form-control" name="country_focus" value="{{ community.country_focus or '' }}" placeholder="e.g. Nigeria, Global, Africa">
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tags ─────────────────────────────────────────────────────────────── -->
+    <div class="edit-section">
+      <h5><i class="fas fa-tags"></i> Tags</h5>
+      <label class="form-label">Tags <span class="text-muted fw-normal">(press Enter or comma to add)</span></label>
+      <div class="tag-input-wrap" id="tagWrap" onclick="document.getElementById('tagRealInput').focus()">
+        {% for tag in community.tags %}
+        <span class="tag-pill">{{ tag }}<button type="button" onclick="removeTag(this)">×</button></span>
+        {% endfor %}
+        <input type="text" id="tagRealInput" placeholder="Add tag…" autocomplete="off">
+      </div>
+      <input type="hidden" name="tags" id="tagsHidden" value="{{ community.tags | join(',') }}">
+    </div>
+
+    <!-- ── Status & CRM ─────────────────────────────────────────────────────── -->
+    <div class="edit-section">
+      <h5><i class="fas fa-chart-line"></i> Status &amp; CRM</h5>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Outreach Status</label>
+          <select class="form-select" name="outreach_status">
+            {% for val, label in [('not_contacted','Not Contacted'),('draft','Draft Ready'),('contacted','Contacted'),('replied','Replied')] %}
+            <option value="{{ val }}" {% if community.outreach_status == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Source</label>
+          <select class="form-select" name="source">
+            {% for val, label in [('robot','Robot Discovered'),('manual','Manual Entry')] %}
+            <option value="{{ val }}" {% if community.source == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12">
+          <div class="d-flex flex-wrap gap-4 mt-1">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="is_active" id="chkActive" role="switch" {% if community.is_active %}checked{% endif %}>
+              <label class="form-check-label fw-semibold" for="chkActive">Active (visible in CRM)</label>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="is_verified" id="chkVerified" role="switch" {% if community.is_verified %}checked{% endif %}>
+              <label class="form-check-label fw-semibold" for="chkVerified">Verified (manually confirmed)</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Notes ─────────────────────────────────────────────────────────────── -->
+    <div class="edit-section">
+      <h5><i class="fas fa-sticky-note"></i> Admin Notes</h5>
+      <textarea class="form-control" name="notes" rows="4" placeholder="Internal notes, observations, outreach history…">{{ community.notes or '' }}</textarea>
+    </div>
+
+    <!-- ── Actions ──────────────────────────────────────────────────────────── -->
+    <div style="background:#f8fafc;border-radius:16px;border:1px solid #e8ecf0;padding:1.25rem;" class="d-flex align-items-center justify-content-between flex-wrap gap-3 edit-actions mb-4">
+      <a href="{{ url_for('social_communities.detail', community_id=community.id) }}" class="btn btn-outline-secondary" style="border-radius:10px;font-weight:600;">
+        <i class="fas fa-times me-1"></i>Cancel
+      </a>
+      <div class="d-flex gap-2 flex-wrap">
+        <button type="submit" class="btn fw-bold"
+          style="background:#f59e0b;color:#fff;border:none;border-radius:10px;padding:.6rem 1.5rem;"
+          onclick="document.getElementById('formAction').value='save_draft'">
+          <i class="fas fa-save me-1"></i>Save Draft
+        </button>
+        <button type="submit" class="btn fw-bold"
+          style="background:#0d1b4b;color:#fff;border:none;border-radius:10px;padding:.6rem 1.75rem;"
+          onclick="document.getElementById('formAction').value='publish'">
+          <i class="fas fa-check-circle me-1"></i>Publish Changes
+        </button>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<script>
+function selectPlatform(label, val) {
+  document.querySelectorAll('.platform-option').forEach(l => l.classList.remove('selected'));
+  label.classList.add('selected');
+  label.querySelector('input').checked = true;
+}
+
+function syncTagsHidden() {
+  const pills = document.querySelectorAll('#tagWrap .tag-pill');
+  document.getElementById('tagsHidden').value = Array.from(pills)
+    .map(p => p.textContent.trim().replace('×','')).join(',');
+}
+function addTag(val) {
+  const v = val.trim();
+  if (!v) return;
+  const existing = Array.from(document.querySelectorAll('#tagWrap .tag-pill')).map(p => p.textContent.trim().replace('×',''));
+  if (existing.includes(v)) return;
+  const span = document.createElement('span');
+  span.className = 'tag-pill';
+  span.innerHTML = v + '<button type="button" onclick="removeTag(this)">×</button>';
+  document.getElementById('tagWrap').insertBefore(span, document.getElementById('tagRealInput'));
+  syncTagsHidden();
+}
+function removeTag(btn) { btn.parentElement.remove(); syncTagsHidden(); }
+const tagInput = document.getElementById('tagRealInput');
+tagInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag(tagInput.value); tagInput.value = ''; }
+});
+tagInput.addEventListener('blur', () => { if (tagInput.value.trim()) { addTag(tagInput.value); tagInput.value = ''; } });
+
+// ── Duplicate detection ───────────────────────────────────────────────────────
+let dupeTimer = null;
+const dupeBanner = document.getElementById('dupeBanner');
+dupeBanner.style.display = 'none';
+function checkDupe() {
+  const name = document.getElementById('fieldName').value.trim();
+  const platform = document.querySelector('input[name="platform"]:checked')?.value || '';
+  if (!name || name.length < 4) { dupeBanner.style.display = 'none'; return; }
+  clearTimeout(dupeTimer);
+  dupeTimer = setTimeout(async () => {
+    try {
+      const r = await fetch(`{{ url_for('social_communities.check_community_duplicate') }}?name=${encodeURIComponent(name)}&platform=${encodeURIComponent(platform)}&exclude_id={{ community.id }}`);
+      const dupes = await r.json();
+      if (dupes.length) {
+        document.getElementById('dupeList').innerHTML = dupes.map(d =>
+          `<strong>${d.name}</strong> (${d.platform}) <span class="badge bg-secondary">${d.outreach_status}</span>`
+        ).join('<br>');
+        dupeBanner.style.display = 'block';
+      } else { dupeBanner.style.display = 'none'; }
+    } catch(e) {}
+  }, 600);
+}
+document.getElementById('fieldName').addEventListener('input', checkDupe);
+document.querySelectorAll('input[name="platform"]').forEach(r => r.addEventListener('change', checkDupe));
+</script>
+{% endblock %}

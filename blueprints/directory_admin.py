@@ -9,7 +9,7 @@ from flask_login import current_user
 from app import db
 from models import (
     LawFirm, LawFirmShowcase, DirectoryLawFirm, DirectoryNote, User,
-    ROLE_SUPER_ADMIN
+    ROLE_SUPER_ADMIN, CrmEditLog
 )
 from utils.decorators import require_super_admin
 from datetime import datetime
@@ -1402,3 +1402,297 @@ def robot_run():
         'errors': errors,
         'message': f'Robot completed: {added} firms added, {skipped} already existed.'
     })
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# EDIT LISTING — full form, inline, bulk, draft/publish, audit log
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _log_edit(record_type, record_id, record_name, changes, edit_type, ip):
+    """Write one CrmEditLog row per changed field."""
+    try:
+        for field, (old, new) in changes.items():
+            entry = CrmEditLog(
+                record_type=record_type,
+                record_id=record_id,
+                record_name=record_name,
+                field_name=field,
+                old_value=str(old) if old is not None else None,
+                new_value=str(new) if new is not None else None,
+                edit_type=edit_type,
+                edited_by_id=current_user.id if current_user.is_authenticated else None,
+                ip_address=ip,
+            )
+            db.session.add(entry)
+        db.session.commit()
+    except Exception as exc:
+        db.session.rollback()
+        import logging; logging.getLogger(__name__).warning('CrmEditLog failed: %s', exc)
+
+
+@dir_admin_bp.route('/external/<int:firm_id>/edit', methods=['GET', 'POST'])
+@require_super_admin
+def edit_external(firm_id):
+    """Full-screen edit form for a DirectoryLawFirm record."""
+    from blueprints.directory import PRACTICE_AREA_LIST, NIGERIAN_STATES, ALL_COUNTRIES
+    from utils.validation import validate_firm_fields, detect_firm_duplicates
+
+    firm = DirectoryLawFirm.query.get_or_404(firm_id)
+
+    if request.method == 'POST':
+        data = request.form.to_dict(flat=True)
+        action = data.get('_action', 'publish')   # 'save_draft' or 'publish'
+
+        # Validate
+        errors = validate_firm_fields(data)
+        if errors:
+            for e in errors:
+                flash(e, 'error')
+            return render_template(
+                'directory_admin/edit_external.html',
+                firm=firm,
+                practice_areas=PRACTICE_AREA_LIST,
+                states=NIGERIAN_STATES,
+                countries=ALL_COUNTRIES,
+                errors=errors,
+            )
+
+        # Build change diff for audit log
+        changes = {}
+        def _track(field, old, new):
+            old_s = str(old) if old is not None else ''
+            new_s = str(new) if new is not None else ''
+            if old_s.strip() != new_s.strip():
+                changes[field] = (old, new)
+
+        # ── Scalar fields ──────────────────────────────────────────────────────
+        scalar_fields = [
+            'name', 'description', 'phone', 'email', 'website', 'whatsapp',
+            'address', 'city', 'state', 'country', 'postal_code',
+            'logo_url', 'contact_person', 'source_url', 'ai_summary',
+            'google_maps_url', 'crm_status', 'pipeline_stage', 'firm_size',
+            'founding_year', 'num_lawyers', 'ai_pitch_email', 'ai_call_script',
+        ]
+        for f in scalar_fields:
+            raw = data.get(f, '').strip() or None
+            _track(f, getattr(firm, f), raw)
+            setattr(firm, f, raw)
+
+        # ── Numeric fields ─────────────────────────────────────────────────────
+        for f in ('lead_score', 'confidence_score'):
+            try:
+                new_val = int(data.get(f, 0))
+            except (ValueError, TypeError):
+                new_val = 0
+            _track(f, getattr(firm, f), new_val)
+            setattr(firm, f, new_val)
+
+        # ── Boolean fields ─────────────────────────────────────────────────────
+        for f in ('is_active', 'gmb_verified', 'has_website'):
+            new_val = f in data or data.get(f) in ('1', 'true', 'on')
+            _track(f, getattr(firm, f), new_val)
+            setattr(firm, f, new_val)
+
+        # Derive has_website from website field
+        firm.has_website = bool(firm.website)
+
+        # ── Practice areas ─────────────────────────────────────────────────────
+        areas = request.form.getlist('practice_areas')
+        new_areas_json = json.dumps(areas) if areas else None
+        _track('practice_areas_json', firm.practice_areas_json, new_areas_json)
+        firm.practice_areas_json = new_areas_json
+
+        # ── Tags ───────────────────────────────────────────────────────────────
+        tags_raw = data.get('tags', '').strip()
+        tags_list = [t.strip() for t in tags_raw.split(',') if t.strip()] if tags_raw else []
+        new_tags_json = json.dumps(tags_list) if tags_list else None
+        _track('tags_json', firm.tags_json, new_tags_json)
+        firm.tags_json = new_tags_json
+
+        # ── Social links ───────────────────────────────────────────────────────
+        social = {}
+        for platform in ('facebook', 'linkedin', 'twitter', 'instagram', 'youtube', 'tiktok'):
+            v = data.get(f'social_{platform}', '').strip()
+            if v:
+                social[platform] = v
+        new_social_json = json.dumps(social) if social else None
+        _track('social_links_json', firm.social_links_json, new_social_json)
+        firm.social_links_json = new_social_json
+
+        # ── Draft / Publish ────────────────────────────────────────────────────
+        new_is_draft = (action == 'save_draft')
+        _track('is_draft', firm.is_draft, new_is_draft)
+        firm.is_draft = new_is_draft
+
+        firm.updated_at = datetime.now()
+
+        try:
+            db.session.commit()
+            _log_edit('law_firm', firm.id, firm.name, changes,
+                      'draft' if new_is_draft else 'form',
+                      request.headers.get('X-Forwarded-For', request.remote_addr))
+            if new_is_draft:
+                flash(f'Draft saved for "{firm.name}".', 'info')
+            else:
+                flash(f'"{firm.name}" updated and published.', 'success')
+            return redirect(url_for('dir_admin.external_detail', firm_id=firm.id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Save failed: {e}', 'error')
+
+    return render_template(
+        'directory_admin/edit_external.html',
+        firm=firm,
+        practice_areas=PRACTICE_AREA_LIST,
+        states=NIGERIAN_STATES,
+        countries=ALL_COUNTRIES,
+        errors=[],
+    )
+
+
+@dir_admin_bp.route('/external/<int:firm_id>/inline-edit', methods=['POST'])
+@require_super_admin
+def inline_edit_firm(firm_id):
+    """AJAX: Update a single field on a DirectoryLawFirm."""
+    from utils.validation import validate_url, validate_email, validate_phone
+    firm = DirectoryLawFirm.query.get_or_404(firm_id)
+    data = request.get_json(silent=True) or request.form.to_dict()
+    field = data.get('field', '').strip()
+    new_value = data.get('value', '')
+
+    # Allowed inline-editable fields
+    ALLOWED = {
+        'name', 'phone', 'email', 'website', 'whatsapp', 'city', 'state',
+        'country', 'address', 'description', 'crm_status', 'pipeline_stage',
+        'is_active', 'gmb_verified', 'logo_url', 'contact_person', 'source_url',
+        'ai_summary', 'lead_score', 'confidence_score',
+    }
+    if field not in ALLOWED:
+        return jsonify({'success': False, 'message': f'Field "{field}" is not inline-editable.'})
+
+    # Per-field validation
+    if field == 'website' or field == 'logo_url' or field == 'source_url':
+        ok, msg = validate_url(new_value)
+        if not ok:
+            return jsonify({'success': False, 'message': msg})
+    elif field == 'email':
+        ok, msg = validate_email(new_value)
+        if not ok:
+            return jsonify({'success': False, 'message': msg})
+    elif field in ('phone', 'whatsapp'):
+        ok, msg = validate_phone(new_value)
+        if not ok:
+            return jsonify({'success': False, 'message': msg})
+
+    old_value = getattr(firm, field)
+
+    # Type coercion
+    if field in ('is_active', 'gmb_verified'):
+        new_value = str(new_value).lower() in ('true', '1', 'on', 'yes')
+    elif field in ('lead_score', 'confidence_score'):
+        try:
+            new_value = int(new_value)
+        except (ValueError, TypeError):
+            new_value = 0
+    else:
+        new_value = new_value.strip() if isinstance(new_value, str) else new_value
+        new_value = new_value or None
+
+    setattr(firm, field, new_value)
+    if field == 'website':
+        firm.has_website = bool(new_value)
+    firm.updated_at = datetime.now()
+
+    try:
+        db.session.commit()
+        changes = {field: (old_value, new_value)}
+        _log_edit('law_firm', firm.id, firm.name, changes, 'inline',
+                  request.headers.get('X-Forwarded-For', request.remote_addr))
+        return jsonify({'success': True, 'field': field, 'value': str(new_value) if new_value is not None else ''})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
+
+@dir_admin_bp.route('/external/bulk-edit', methods=['POST'])
+@require_super_admin
+def bulk_edit_firms():
+    """AJAX: Apply a field value to multiple DirectoryLawFirm records."""
+    data = request.get_json(silent=True) or request.form.to_dict()
+    firm_ids = data.get('firm_ids', [])
+    field = data.get('field', '').strip()
+    value = data.get('value', '')
+
+    ALLOWED_BULK = {
+        'crm_status', 'pipeline_stage', 'is_active', 'is_draft',
+        'gmb_verified', 'country', 'state',
+    }
+    if field not in ALLOWED_BULK:
+        return jsonify({'success': False, 'message': f'Bulk edit not allowed for "{field}".'})
+    if not firm_ids:
+        return jsonify({'success': False, 'message': 'No records selected.'})
+
+    firms = DirectoryLawFirm.query.filter(DirectoryLawFirm.id.in_(firm_ids)).all()
+    if not firms:
+        return jsonify({'success': False, 'message': 'No matching records found.'})
+
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    updated = 0
+    for firm in firms:
+        old = getattr(firm, field)
+        # Coerce type
+        if field in ('is_active', 'is_draft', 'gmb_verified'):
+            typed_val = str(value).lower() in ('true', '1', 'on', 'yes')
+        else:
+            typed_val = value
+        setattr(firm, field, typed_val)
+        firm.updated_at = datetime.now()
+        changes = {field: (old, typed_val)}
+        _log_edit('law_firm', firm.id, firm.name, changes, 'bulk', ip)
+        updated += 1
+
+    try:
+        db.session.commit()
+        return jsonify({'success': True, 'updated': updated,
+                        'message': f'{updated} record(s) updated.'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
+
+@dir_admin_bp.route('/external/<int:firm_id>/audit-log')
+@require_super_admin
+def firm_audit_log(firm_id):
+    """JSON: Return edit history for a DirectoryLawFirm."""
+    firm = DirectoryLawFirm.query.get_or_404(firm_id)
+    logs = CrmEditLog.query.filter_by(
+        record_type='law_firm', record_id=firm_id
+    ).order_by(CrmEditLog.created_at.desc()).limit(100).all()
+    return jsonify([{
+        'id': l.id,
+        'field_name': l.field_name,
+        'old_value': l.old_value,
+        'new_value': l.new_value,
+        'edit_type': l.edit_type,
+        'editor': l.edited_by.full_name if l.edited_by else 'System',
+        'ip_address': l.ip_address,
+        'created_at': l.created_at.strftime('%b %d, %Y %H:%M'),
+    } for l in logs])
+
+
+@dir_admin_bp.route('/external/check-duplicate')
+@require_super_admin
+def check_firm_duplicate():
+    """JSON: Return potential duplicates for a given name + city."""
+    from utils.validation import detect_firm_duplicates
+    name = request.args.get('name', '').strip()
+    city = request.args.get('city', '').strip()
+    exclude_id = request.args.get('exclude_id', type=int)
+    dupes = detect_firm_duplicates(db, DirectoryLawFirm, name, city, exclude_id)
+    return jsonify([{
+        'id': d.id,
+        'name': d.name,
+        'city': d.city,
+        'state': d.state,
+        'crm_status': d.crm_status,
+    } for d in dupes])

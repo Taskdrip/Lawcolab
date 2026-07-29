@@ -8,7 +8,7 @@ on Facebook, LinkedIn, Reddit, X/Twitter, WhatsApp, Telegram and YouTube.
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
 from flask_login import current_user
 from app import db
-from models import SocialCommunity
+from models import SocialCommunity, CrmEditLog
 from utils.decorators import require_super_admin
 from datetime import datetime
 import json
@@ -603,3 +603,273 @@ def delete_community(community_id):
     db.session.commit()
     flash(f'"{name}" removed.', 'info')
     return redirect(url_for('social_communities.index'))
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# EDIT COMMUNITY — full form, inline, bulk, draft/publish, audit log
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _log_community_edit(record_id, record_name, changes, edit_type, ip):
+    """Write one CrmEditLog row per changed field."""
+    try:
+        for field, (old, new) in changes.items():
+            entry = CrmEditLog(
+                record_type='social_community',
+                record_id=record_id,
+                record_name=record_name,
+                field_name=field,
+                old_value=str(old) if old is not None else None,
+                new_value=str(new) if new is not None else None,
+                edit_type=edit_type,
+                edited_by_id=current_user.id if current_user.is_authenticated else None,
+                ip_address=ip,
+            )
+            db.session.add(entry)
+        db.session.commit()
+    except Exception as exc:
+        db.session.rollback()
+        import logging; logging.getLogger(__name__).warning('CrmEditLog failed: %s', exc)
+
+
+_COMMUNITY_CATEGORIES = [
+    'Legal General', 'Corporate Law', 'Criminal Law', 'Family Law',
+    'Real Estate', 'Employment & Labour', 'Intellectual Property',
+    'Tax Law', 'Immigration', 'Banking & Finance', 'Oil & Gas',
+    'Litigation', 'Human Rights', 'Technology Law', 'Environmental Law',
+    'Nigerian Law', 'African Law', 'Law Firm Growth', 'Law Students',
+    'Legal Tech', 'Arbitration', 'Legal Marketing',
+]
+
+_PLATFORMS = ['facebook', 'linkedin', 'reddit', 'twitter', 'whatsapp',
+              'telegram', 'youtube', 'instagram', 'other']
+
+
+@social_communities_bp.route('/<int:community_id>/edit', methods=['GET', 'POST'])
+@require_super_admin
+def edit_community(community_id):
+    """Full-screen edit form for a SocialCommunity record."""
+    from utils.validation import validate_community_fields, detect_community_duplicates
+
+    community = SocialCommunity.query.get_or_404(community_id)
+
+    if request.method == 'POST':
+        data = request.form.to_dict(flat=True)
+        action = data.get('_action', 'publish')
+
+        # Validate
+        errors = validate_community_fields(data)
+        if errors:
+            for e in errors:
+                flash(e, 'error')
+            return render_template(
+                'social_communities/edit.html',
+                community=community,
+                categories=_COMMUNITY_CATEGORIES,
+                platforms=_PLATFORMS,
+                errors=errors,
+            )
+
+        changes = {}
+        def _track(field, old, new):
+            old_s = str(old) if old is not None else ''
+            new_s = str(new) if new is not None else ''
+            if old_s.strip() != new_s.strip():
+                changes[field] = (old, new)
+
+        # ── Scalar fields ──────────────────────────────────────────────────────
+        scalar_fields = [
+            'platform', 'community_name', 'url', 'join_link',
+            'member_count_display', 'description', 'join_instructions',
+            'category', 'country_focus', 'language', 'source',
+            'outreach_status', 'notes', 'contact_person', 'logo_url',
+            'email', 'phone', 'whatsapp',
+        ]
+        for f in scalar_fields:
+            raw = data.get(f, '').strip() or None
+            _track(f, getattr(community, f), raw)
+            setattr(community, f, raw)
+
+        # ── Numeric member count ───────────────────────────────────────────────
+        mc_raw = data.get('member_count', '').strip().replace(',', '')
+        try:
+            mc = int(mc_raw) if mc_raw else None
+        except ValueError:
+            mc = None
+        _track('member_count', community.member_count, mc)
+        community.member_count = mc
+
+        # ── Booleans ──────────────────────────────────────────────────────────
+        for f in ('is_active', 'is_verified'):
+            new_val = f in data or data.get(f) in ('1', 'true', 'on')
+            _track(f, getattr(community, f), new_val)
+            setattr(community, f, new_val)
+
+        # ── Tags ───────────────────────────────────────────────────────────────
+        tags_raw = data.get('tags', '').strip()
+        tags_list = [t.strip() for t in tags_raw.split(',') if t.strip()] if tags_raw else []
+        new_tags_json = json.dumps(tags_list) if tags_list else None
+        _track('tags_json', community.tags_json, new_tags_json)
+        community.tags_json = new_tags_json
+
+        # ── Draft / Publish ────────────────────────────────────────────────────
+        new_is_draft = (action == 'save_draft')
+        _track('is_draft', community.is_draft, new_is_draft)
+        community.is_draft = new_is_draft
+
+        community.updated_at = datetime.now()
+
+        try:
+            db.session.commit()
+            _log_community_edit(community.id, community.community_name, changes,
+                                'draft' if new_is_draft else 'form',
+                                request.headers.get('X-Forwarded-For', request.remote_addr))
+            if new_is_draft:
+                flash(f'Draft saved for "{community.community_name}".', 'info')
+            else:
+                flash(f'"{community.community_name}" updated and published.', 'success')
+            return redirect(url_for('social_communities.detail', community_id=community.id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Save failed: {e}', 'error')
+
+    return render_template(
+        'social_communities/edit.html',
+        community=community,
+        categories=_COMMUNITY_CATEGORIES,
+        platforms=_PLATFORMS,
+        errors=[],
+    )
+
+
+@social_communities_bp.route('/<int:community_id>/inline-edit', methods=['POST'])
+@require_super_admin
+def inline_edit_community(community_id):
+    """AJAX: Update a single field on a SocialCommunity."""
+    from utils.validation import validate_url, validate_email, validate_phone
+    community = SocialCommunity.query.get_or_404(community_id)
+    data = request.get_json(silent=True) or request.form.to_dict()
+    field = data.get('field', '').strip()
+    new_value = data.get('value', '')
+
+    ALLOWED = {
+        'community_name', 'platform', 'url', 'join_link', 'member_count',
+        'member_count_display', 'description', 'category', 'country_focus',
+        'language', 'is_active', 'is_verified', 'outreach_status', 'notes',
+        'contact_person', 'logo_url', 'email', 'phone', 'whatsapp',
+    }
+    if field not in ALLOWED:
+        return jsonify({'success': False, 'message': f'Field "{field}" is not inline-editable.'})
+
+    if field in ('url', 'join_link', 'logo_url'):
+        ok, msg = validate_url(new_value)
+        if not ok:
+            return jsonify({'success': False, 'message': msg})
+    elif field == 'email':
+        ok, msg = validate_email(new_value)
+        if not ok:
+            return jsonify({'success': False, 'message': msg})
+    elif field in ('phone', 'whatsapp'):
+        ok, msg = validate_phone(new_value)
+        if not ok:
+            return jsonify({'success': False, 'message': msg})
+
+    old_value = getattr(community, field)
+    if field in ('is_active', 'is_verified'):
+        new_value = str(new_value).lower() in ('true', '1', 'on', 'yes')
+    elif field == 'member_count':
+        try:
+            new_value = int(new_value)
+        except (ValueError, TypeError):
+            new_value = None
+    else:
+        new_value = new_value.strip() if isinstance(new_value, str) else new_value
+        new_value = new_value or None
+
+    setattr(community, field, new_value)
+    community.updated_at = datetime.now()
+
+    try:
+        db.session.commit()
+        changes = {field: (old_value, new_value)}
+        _log_community_edit(community.id, community.community_name, changes, 'inline',
+                            request.headers.get('X-Forwarded-For', request.remote_addr))
+        return jsonify({'success': True, 'field': field, 'value': str(new_value) if new_value is not None else ''})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
+
+@social_communities_bp.route('/bulk-edit', methods=['POST'])
+@require_super_admin
+def bulk_edit_communities():
+    """AJAX: Apply a field value to multiple SocialCommunity records."""
+    data = request.get_json(silent=True) or request.form.to_dict()
+    ids = data.get('ids', [])
+    field = data.get('field', '').strip()
+    value = data.get('value', '')
+
+    ALLOWED_BULK = {'outreach_status', 'is_active', 'is_verified', 'is_draft',
+                    'platform', 'category', 'country_focus'}
+    if field not in ALLOWED_BULK:
+        return jsonify({'success': False, 'message': f'Bulk edit not allowed for "{field}".'})
+    if not ids:
+        return jsonify({'success': False, 'message': 'No records selected.'})
+
+    communities = SocialCommunity.query.filter(SocialCommunity.id.in_(ids)).all()
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    updated = 0
+    for c in communities:
+        old = getattr(c, field)
+        if field in ('is_active', 'is_verified', 'is_draft'):
+            typed_val = str(value).lower() in ('true', '1', 'on', 'yes')
+        else:
+            typed_val = value
+        setattr(c, field, typed_val)
+        c.updated_at = datetime.now()
+        _log_community_edit(c.id, c.community_name, {field: (old, typed_val)}, 'bulk', ip)
+        updated += 1
+
+    try:
+        db.session.commit()
+        return jsonify({'success': True, 'updated': updated,
+                        'message': f'{updated} record(s) updated.'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
+
+@social_communities_bp.route('/<int:community_id>/audit-log')
+@require_super_admin
+def community_audit_log(community_id):
+    """JSON: Return edit history for a SocialCommunity."""
+    community = SocialCommunity.query.get_or_404(community_id)
+    logs = CrmEditLog.query.filter_by(
+        record_type='social_community', record_id=community_id
+    ).order_by(CrmEditLog.created_at.desc()).limit(100).all()
+    return jsonify([{
+        'id': l.id,
+        'field_name': l.field_name,
+        'old_value': l.old_value,
+        'new_value': l.new_value,
+        'edit_type': l.edit_type,
+        'editor': l.edited_by.full_name if l.edited_by else 'System',
+        'ip_address': l.ip_address,
+        'created_at': l.created_at.strftime('%b %d, %Y %H:%M'),
+    } for l in logs])
+
+
+@social_communities_bp.route('/check-duplicate')
+@require_super_admin
+def check_community_duplicate():
+    """JSON: Return potential duplicates for a given name + platform."""
+    from utils.validation import detect_community_duplicates
+    name = request.args.get('name', '').strip()
+    platform = request.args.get('platform', '').strip()
+    exclude_id = request.args.get('exclude_id', type=int)
+    dupes = detect_community_duplicates(db, SocialCommunity, name, platform, exclude_id)
+    return jsonify([{
+        'id': d.id,
+        'name': d.community_name,
+        'platform': d.platform,
+        'outreach_status': d.outreach_status,
+    } for d in dupes])

@@ -1084,7 +1084,13 @@ class DirectoryLawFirm(db.Model):
     # CRM metadata (super admin use)
     crm_status = db.Column(db.String(50), default='new')  # new, contacted, converted, inactive
     logo_url = db.Column(db.String(500), nullable=True)
-    
+
+    # Edit-feature columns
+    contact_person = db.Column(db.String(200), nullable=True)
+    ai_summary = db.Column(db.Text, nullable=True)
+    source_url = db.Column(db.String(500), nullable=True)
+    is_draft = db.Column(db.Boolean, default=False)
+
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
@@ -1516,8 +1522,26 @@ class SocialCommunity(db.Model):
     # Admin notes
     notes          = db.Column(db.Text, nullable=True)
 
+    # Edit-feature columns
+    contact_person = db.Column(db.String(200), nullable=True)
+    logo_url       = db.Column(db.String(500), nullable=True)
+    email          = db.Column(db.String(200), nullable=True)
+    phone          = db.Column(db.String(100), nullable=True)
+    whatsapp       = db.Column(db.String(100), nullable=True)
+    tags_json      = db.Column(db.Text, nullable=True)
+    is_draft       = db.Column(db.Boolean, default=False)
+
     created_at     = db.Column(db.DateTime, default=datetime.now)
     updated_at     = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+
+    @property
+    def tags(self):
+        if self.tags_json:
+            try:
+                return json.loads(self.tags_json)
+            except Exception:
+                return []
+        return []
 
     @property
     def ai_outreach_messages(self):
@@ -1598,6 +1622,27 @@ class AdminNotification(db.Model):
 
 
 # ─── Message Templates ────────────────────────────────────────────────────────
+
+# ─── CRM Edit Audit Log ───────────────────────────────────────────────────────
+
+class CrmEditLog(db.Model):
+    """Field-level audit trail for every Super Admin edit to directory records."""
+    __tablename__ = 'crm_edit_logs'
+
+    id          = db.Column(db.Integer, primary_key=True)
+    record_type = db.Column(db.String(50), nullable=False)   # 'law_firm' | 'social_community'
+    record_id   = db.Column(db.Integer, nullable=False)
+    record_name = db.Column(db.String(300), nullable=True)   # snapshot of name at edit time
+    field_name  = db.Column(db.String(100), nullable=True)   # null means "full form save"
+    old_value   = db.Column(db.Text, nullable=True)
+    new_value   = db.Column(db.Text, nullable=True)
+    edit_type   = db.Column(db.String(30), default='form')   # form | inline | bulk | draft | publish
+    edited_by_id= db.Column(db.String, db.ForeignKey('users.id'), nullable=True)
+    ip_address  = db.Column(db.String(45), nullable=True)
+    created_at  = db.Column(db.DateTime, default=datetime.now)
+
+    edited_by   = db.relationship('User', foreign_keys=[edited_by_id])
+
 
 class MessageTemplate(db.Model):
     """Admin-editable outreach message templates used by the AI robot as

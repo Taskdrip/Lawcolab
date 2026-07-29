@@ -11,6 +11,7 @@
         <p class="text-muted mb-0 small d-none d-sm-block">Discover and reach legal communities on Facebook, LinkedIn, Reddit, WhatsApp &amp; more</p>
       </div>
       <div class="d-flex gap-2 flex-shrink-0">
+        <button id="communityBulkBtn" class="btn btn-sm fw-bold d-none" style="background:#6366f1;color:#fff;border-radius:10px;border:none;" onclick="openCommunityBulkModal()"><i class="fas fa-layer-group me-1"></i><span id="communityBulkCount">Bulk Edit</span></button>
         <button id="runRobotBtn" class="btn btn-sm fw-bold" style="background:#0d1b4b;color:#FFD700;border-radius:10px;border:none;">
           <i class="fas fa-robot me-1"></i><span class="d-none d-sm-inline">Run </span>Robot
         </button>
@@ -130,17 +131,24 @@
           <div class="text-muted small" style="line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ c.description }}</div>
           {% endif %}
 
-          <!-- AI messages count -->
-          {% if c.ai_outreach_messages %}
-          <div style="margin-top:.75rem;border-top:1px solid #f0f0f0;padding-top:.75rem;">
+          <!-- AI messages count + Draft badge -->
+          <div style="margin-top:.75rem;border-top:1px solid #f0f0f0;padding-top:.75rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.4rem;">
+            {% if c.ai_outreach_messages %}
             <span style="background:#e8f5e9;color:#2e7d32;font-size:.75rem;font-weight:600;padding:.25rem .6rem;border-radius:50px;">
-              <i class="fas fa-magic me-1"></i>{{ c.ai_outreach_messages|length }} AI message{{ 's' if c.ai_outreach_messages|length != 1 else '' }}
+              <i class="fas fa-magic me-1"></i>{{ c.ai_outreach_messages|length }} AI msg{{ 's' if c.ai_outreach_messages|length != 1 else '' }}
             </span>
-            {% if c.last_outreach_at %}
-            <span class="text-muted ms-2" style="font-size:.72rem;">Last: {{ c.last_outreach_at.strftime('%b %d') }}</span>
             {% endif %}
+            {% if c.is_draft %}<span style="background:#fef3c7;color:#92400e;font-size:.7rem;font-weight:700;padding:.15rem .5rem;border-radius:50px;border:1px solid #fbbf24;">Draft</span>{% endif %}
           </div>
-          {% endif %}
+          <!-- Card action row -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:.65rem;padding-top:.5rem;border-top:1px solid #f1f5f9;">
+            <div onclick="event.preventDefault();event.stopPropagation();">
+              <input type="checkbox" class="bulk-check form-check-input" data-community-id="{{ c.id }}" onchange="updateCommunityBulkBar()" style="width:16px;height:16px;cursor:pointer;border-radius:4px;" title="Select for bulk edit">
+            </div>
+            <a href="{{ url_for('social_communities.edit_community', community_id=c.id) }}" onclick="event.stopPropagation();" style="display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .7rem;background:#e0e7ff;color:#4338ca;border-radius:8px;font-size:.75rem;font-weight:700;border:1.5px solid #c7d2fe;text-decoration:none;">
+              <i class="fas fa-edit"></i>Edit
+            </a>
+          </div>
         </div>
       </a>
     </div>
@@ -246,5 +254,84 @@ function runRobot() {
 document.getElementById('runRobotBtn').addEventListener('click', runRobot);
 const btn2 = document.getElementById('runRobotBtn2');
 if (btn2) btn2.addEventListener('click', runRobot);
+
+// ── Community bulk edit ───────────────────────────────────────────────────
+function updateCommunityBulkBar() {
+  const checked = document.querySelectorAll('.bulk-check:checked');
+  const btn = document.getElementById('communityBulkBtn');
+  if (checked.length > 0) {
+    btn.classList.remove('d-none');
+    document.getElementById('communityBulkCount').textContent = `Bulk Edit (${checked.length})`;
+  } else {
+    btn.classList.add('d-none');
+  }
+}
+function openCommunityBulkModal() {
+  const modal = new bootstrap.Modal(document.getElementById('communityBulkModal'));
+  modal.show();
+}
+function updateCommunityBulkValueOptions() {
+  const field = document.getElementById('cbField').value;
+  const sel = document.getElementById('cbValue');
+  const opts = {
+    outreach_status:[['not_contacted','Not Contacted'],['draft','Draft Ready'],['contacted','Contacted'],['replied','Replied']],
+    is_active:[['true','Active'],['false','Inactive']],
+    is_verified:[['true','Verified'],['false','Unverified']],
+    is_draft:[['true','Draft'],['false','Published']],
+  };
+  sel.innerHTML = (opts[field]||[]).map(([v,l]) => `<option value="${v}">${l}</option>`).join('') || '<option>Select field first…</option>';
+  const cnt = document.querySelectorAll('.bulk-check:checked').length;
+  document.getElementById('cbSummary').textContent = `This will update ${cnt} selected community records.`;
+}
+document.getElementById('cbApplyBtn')?.addEventListener('click', async function() {
+  const ids = Array.from(document.querySelectorAll('.bulk-check:checked')).map(c => parseInt(c.dataset.communityId));
+  const field = document.getElementById('cbField').value;
+  const value = document.getElementById('cbValue').value;
+  if (!field || !value) { alert('Select a field and value.'); return; }
+  const r = await fetch('{{ url_for("social_communities.bulk_edit_communities") }}', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}'},
+    body: JSON.stringify({ids, field, value})
+  });
+  const d = await r.json();
+  if (d.success) {
+    bootstrap.Modal.getInstance(document.getElementById('communityBulkModal')).hide();
+    setTimeout(() => location.reload(), 500);
+  } else { alert(d.message); }
+});
 </script>
+
+<!-- ── Community Bulk Edit Modal ─────────────────────────────────────── -->
+<div class="modal fade" id="communityBulkModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:16px;border:none;">
+      <div class="modal-header" style="border-bottom:1px solid #f0f0f0;">
+        <h5 class="modal-title fw-bold" style="color:#0d1b4b;"><i class="fas fa-layer-group me-2"></i>Bulk Edit Communities</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label fw-semibold small">Field to Update</label>
+          <select class="form-select" id="cbField" style="border-radius:10px;" onchange="updateCommunityBulkValueOptions()">
+            <option value="">Choose field…</option>
+            <option value="outreach_status">Outreach Status</option>
+            <option value="is_active">Active / Inactive</option>
+            <option value="is_verified">Verified</option>
+            <option value="is_draft">Draft / Published</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold small">New Value</label>
+          <select class="form-select" id="cbValue" style="border-radius:10px;"><option>Select field first…</option></select>
+        </div>
+        <div id="cbSummary" class="text-muted small"></div>
+      </div>
+      <div class="modal-footer" style="border-top:1px solid #f0f0f0;">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius:8px;">Cancel</button>
+        <button class="btn fw-bold" id="cbApplyBtn" style="background:#0d1b4b;color:#fff;border-radius:8px;border:none;"><i class="fas fa-check me-1"></i>Apply</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}

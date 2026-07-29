@@ -113,6 +113,15 @@ pre{white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;max-widt
         </div>
       </div>
 
+      <!-- ── Edit History (Audit Log) ─────────────────────────────────── -->
+      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.75rem;margin-bottom:1.5rem;" id="auditSection">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h5 class="fw-bold mb-0" style="color:#0d1b4b;"><i class="fas fa-history me-2" style="color:#6c757d;"></i>Edit History</h5>
+          <button class="btn btn-sm btn-outline-secondary" style="border-radius:8px;font-size:.75rem;" onclick="loadAuditLog()" id="auditToggleBtn"><i class="fas fa-chevron-down me-1"></i>Show Log</button>
+        </div>
+        <div id="auditLogContent" style="display:none;"></div>
+      </div>
+
       <!-- ── AI Pitch Email ──────────────────────────────────────────── -->
       <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.75rem;margin-bottom:1.5rem;" id="pitchSection">
         <div class="d-flex align-items-center justify-content-between mb-3">
@@ -267,6 +276,11 @@ pre{white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;max-widt
         {% endif %}
 
         <hr>
+        <hr>
+        <a href="{{ url_for('dir_admin.edit_external', firm_id=firm.id) }}" class="btn btn-primary btn-sm w-100 fw-bold mb-2" style="background:#0d1b4b;border-color:#0d1b4b;border-radius:8px;">
+          <i class="fas fa-edit me-1"></i>Edit Listing
+        </a>
+        {% if firm.is_draft %}<div class="text-center mb-2"><span style="background:#fef3c7;color:#92400e;font-size:.72rem;font-weight:700;padding:.2rem .65rem;border-radius:50px;border:1.5px solid #fbbf24;"><i class="fas fa-pencil-alt me-1"></i>Draft — not published</span></div>{% endif %}
         <form method="POST" action="{{ url_for('dir_admin.delete_external', firm_id=firm.id) }}" onsubmit="return confirm('Delete this firm from the CRM? This cannot be undone.')">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="btn btn-outline-danger btn-sm w-100" style="border-radius:8px;"><i class="fas fa-trash me-1"></i>Delete from CRM</button>
@@ -398,6 +412,47 @@ document.getElementById('addNoteBtn').addEventListener('click', async function()
     showToast('Note added', '#10b981');
   }
 });
+
+// ── Audit Log ────────────────────────────────────────────────────────────
+let auditLoaded = false;
+async function loadAuditLog() {
+  const content = document.getElementById('auditLogContent');
+  const btn = document.getElementById('auditToggleBtn');
+  if (content.style.display !== 'none') {
+    content.style.display = 'none';
+    btn.innerHTML = '<i class="fas fa-chevron-down me-1"></i>Show Log';
+    return;
+  }
+  if (!auditLoaded) {
+    content.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-secondary"></div></div>';
+    content.style.display = 'block';
+    try {
+      const r = await fetch(`/superadmin/directory/external/${firmId}/audit-log`);
+      const logs = await r.json();
+      if (!logs.length) {
+        content.innerHTML = '<p class="text-muted small text-center py-2">No edit history yet.</p>';
+      } else {
+        const typeColors = {form:'#0d6efd',inline:'#198754',bulk:'#fd7e14',draft:'#f59e0b',publish:'#198754'};
+        content.innerHTML = '<div style="max-height:320px;overflow-y:auto;">' + logs.map(l => `
+          <div style="padding:.6rem .85rem;border-left:3px solid ${typeColors[l.edit_type]||'#ccc'};background:#f8fafc;border-radius:0 8px 8px 0;margin-bottom:.5rem;font-size:.8rem;">
+            <div style="display:flex;justify-content:space-between;gap:.5rem;flex-wrap:wrap;margin-bottom:.2rem;">
+              <strong style="color:#0d1b4b;">${l.field_name || 'Full edit'}</strong>
+              <span style="color:#888;">${l.created_at} · ${l.editor}</span>
+            </div>
+            ${l.old_value !== null ? `<div style="color:#dc3545;"><s>${l.old_value?.substring(0,80)||'—'}</s></div>` : ''}
+            <div style="color:#198754;">${l.new_value?.substring(0,80)||'—'}</div>
+            <span style="background:${typeColors[l.edit_type]||'#ccc'}22;color:${typeColors[l.edit_type]||'#888'};padding:.1rem .4rem;border-radius:4px;font-size:.7rem;font-weight:700;text-transform:uppercase;">${l.edit_type}</span>
+          </div>`).join('') + '</div>';
+      }
+      auditLoaded = true;
+    } catch(e) {
+      content.innerHTML = '<p class="text-danger small">Failed to load audit log.</p>';
+    }
+  } else {
+    content.style.display = 'block';
+  }
+  btn.innerHTML = '<i class="fas fa-chevron-up me-1"></i>Hide Log';
+}
 
 function showToast(msg, bg) {
   const t = document.createElement('div');
