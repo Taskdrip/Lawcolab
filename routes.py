@@ -472,7 +472,9 @@ def contact():
                        now=_now))
             db.session.commit()
 
-            flash(f"__SUCCESS__{first_name}", 'success')
+            # Redirect to a dedicated thank-you page (avoids Replit proxy session-cookie issues with flash)
+            from urllib.parse import quote
+            return redirect(url_for('contact_thankyou', name=quote(first_name)))
         except Exception as exc:
             import traceback; traceback.print_exc()
             db.session.rollback()
@@ -483,6 +485,13 @@ def contact():
     resp = make_response(render_template('contact.html'))
     resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     return resp
+
+@app.route('/contact/thank-you')
+def contact_thankyou():
+    """Dedicated thank-you page after contact form submission."""
+    from urllib.parse import unquote
+    name = unquote(request.args.get('name', 'there'))
+    return render_template('contact_thankyou.html', name=name)
 
 @app.route('/registration-success')
 def registration_success():

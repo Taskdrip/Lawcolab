@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Thank You — LAWCOLAB{% endblock %}
+
+{% block content %}
+<style>
+.ty-page {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f0f4f8 0%, #e8edf5 100%);
+    padding: 4rem 1rem;
+}
+.ty-card {
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(13,27,75,.12);
+    max-width: 560px;
+    width: 100%;
+    padding: 3.5rem 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.ty-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #FFD700, #0d1b4b, #FFD700);
+}
+.ty-ring {
+    width: 96px; height: 96px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0d1b4b, #1e3a8a);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.75rem;
+    box-shadow: 0 8px 30px rgba(13,27,75,.25);
+    animation: ty-pop .55s cubic-bezier(.34,1.56,.64,1) both;
+}
+.ty-ring i { color: #FFD700; font-size: 2.2rem; }
+@keyframes ty-pop {
+    from { transform: scale(.4); opacity: 0; }
+    to   { transform: scale(1);  opacity: 1; }
+}
+.ty-badge {
+    display: inline-flex; align-items: center; gap: .45rem;
+    background: #ecfdf5; color: #15803d;
+    border: 1px solid #bbf7d0; border-radius: 100px;
+    font-size: .78rem; font-weight: 700;
+    padding: .35rem 1rem; margin-bottom: 1.4rem;
+    letter-spacing: .03em;
+}
+.ty-name {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.7rem, 5vw, 2.2rem);
+    font-weight: 800;
+    color: #0d1b4b;
+    line-height: 1.2;
+    margin-bottom: .85rem;
+}
+.ty-sub {
+    color: #475569;
+    font-size: 1.02rem;
+    line-height: 1.75;
+    margin-bottom: 2rem;
+}
+.ty-steps {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.35rem 1.5rem;
+    margin-bottom: 2rem;
+    text-align: left;
+}
+.ty-steps-heading {
+    font-size: .72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #94a3b8;
+    margin-bottom: .85rem;
+}
+.ty-step {
+    display: flex; align-items: center; gap: .7rem;
+    font-size: .88rem; color: #334155;
+    padding: .4rem 0;
+}
+.ty-step i { color: #FFD700; font-size: .95rem; width: 18px; flex-shrink: 0; }
+.ty-timer {
+    display: inline-block;
+    color: #0d1b4b;
+    font-weight: 900;
+    font-size: 1.6rem;
+    font-family: 'Playfair Display', serif;
+}
+.ty-actions {
+    display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+}
+.ty-btn-primary {
+    background: #0d1b4b; color: #FFD700;
+    border: none; border-radius: 12px;
+    font-weight: 700; font-size: .95rem;
+    padding: .75rem 1.75rem;
+    text-decoration: none; display: inline-flex; align-items: center; gap: .5rem;
+    transition: transform .15s, box-shadow .15s;
+}
+.ty-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(13,27,75,.2); color: #FFD700; }
+.ty-btn-ghost {
+    background: transparent; color: #0d1b4b;
+    border: 2px solid #e2e8f0; border-radius: 12px;
+    font-weight: 600; font-size: .9rem;
+    padding: .7rem 1.6rem;
+    text-decoration: none; display: inline-flex; align-items: center; gap: .5rem;
+    transition: border-color .15s, background .15s;
+}
+.ty-btn-ghost:hover { border-color: #0d1b4b; background: #f1f5f9; color: #0d1b4b; }
+.ty-wa {
+    margin-top: 1.5rem;
+    font-size: .82rem;
+    color: #94a3b8;
+}
+.ty-wa a { color: #15803d; font-weight: 600; text-decoration: none; }
+.ty-wa a:hover { text-decoration: underline; }
+</style>
+
+<div class="ty-page">
+    <div class="ty-card">
+        <div class="ty-ring"><i class="fas fa-paper-plane"></i></div>
+
+        <div class="ty-badge">
+            <i class="fas fa-check-circle"></i> Message Delivered Successfully
+        </div>
+
+        <h1 class="ty-name">You're all set, {{ name }}! 🎉</h1>
+
+        <p class="ty-sub">
+            Your message has landed safely with the <strong>LAWCOLAB team</strong>.<br>
+            We're already on it — expect a personal reply within <span class="ty-timer">4 hrs</span> (usually faster!).
+        </p>
+
+        <div class="ty-steps">
+            <div class="ty-steps-heading">What happens next?</div>
+            <div class="ty-step"><i class="fas fa-envelope"></i> You'll receive a confirmation email shortly</div>
+            <div class="ty-step"><i class="fas fa-user-tie"></i> A LAWCOLAB specialist will review your enquiry</div>
+            <div class="ty-step"><i class="fas fa-comments"></i> We'll reach out via email or WhatsApp within 4 hours</div>
+        </div>
+
+        <div class="ty-actions">
+            <a href="{{ url_for('index') }}" class="ty-btn-primary">
+                <i class="fas fa-home"></i> Back to Home
+            </a>
+            <a href="{{ url_for('contact') }}" class="ty-btn-ghost">
+                <i class="fas fa-plus"></i> Send Another Message
+            </a>
+        </div>
+
+        <div class="ty-wa">
+            Need urgent help?
+            <a href="https://wa.me/2348036622568?text=Hello%20LAWCOLAB!%20I%20just%20filled%20your%20contact%20form." target="_blank">
+                <i class="fab fa-whatsapp"></i> Chat us on WhatsApp
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

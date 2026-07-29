@@ -805,10 +805,11 @@ def platform_users():
     """View all users across all law firms"""
     search = request.args.get('search', '')
     role_filter = request.args.get('role', '')
+    status_filter = request.args.get('status', '')
     page = request.args.get('page', 1, type=int)
-    
+
     query = User.query
-    
+
     if search:
         query = query.filter(
             or_(
@@ -817,17 +818,99 @@ def platform_users():
                 User.email.contains(search)
             )
         )
-    
+
     if role_filter:
         query = query.filter_by(role=role_filter)
-    
+
+    if status_filter == 'active':
+        query = query.filter_by(active=True)
+    elif status_filter == 'inactive':
+        query = query.filter_by(active=False)
+
     users = query.order_by(User.created_at.desc()).paginate(
         page=page, per_page=50, error_out=False)
-    
+
+    law_firms = LawFirm.query.order_by(LawFirm.name).all()
+
     return render_template('superadmin/platform_users.html',
-                         users=users,
-                         search=search,
-                         role_filter=role_filter)
+                           users=users,
+                           search=search,
+                           role_filter=role_filter,
+                           status_filter=status_filter,
+                           law_firms=law_firms)
+
+
+@superadmin_bp.route('/users/<user_id>/set-password', methods=['POST'])
+@require_super_admin
+def set_user_password(user_id):
+    """Reset a user's password via form from the super admin user management panel."""
+    user = User.query.get_or_404(user_id)
+    new_password = request.form.get('new_password', '').strip()
+    if not new_password or len(new_password) < 6:
+        flash('Password must be at least 6 characters.', 'error')
+        return redirect(request.referrer or url_for('superadmin.platform_users'))
+    user.set_password(new_password)
+    try:
+        db.session.commit()
+        flash(f'Password for {user.email} has been reset successfully.', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('Error resetting password. Please try again.', 'error')
+    return redirect(request.referrer or url_for('superadmin.platform_users'))
+
+
+@superadmin_bp.route('/users/<user_id>/change-role', methods=['POST'])
+@require_super_admin
+def change_user_role(user_id):
+    """Change a user's role from super admin panel."""
+    user = User.query.get_or_404(user_id)
+    new_role = request.form.get('new_role', '').strip()
+    valid_roles = [ROLE_CLIENT, ROLE_TEAM_MEMBER, ROLE_ADMIN, ROLE_SUPER_ADMIN]
+    if new_role not in valid_roles:
+        flash('Invalid role selected.', 'error')
+        return redirect(request.referrer or url_for('superadmin.platform_users'))
+    if user.is_super_admin() and new_role != ROLE_SUPER_ADMIN:
+        flash('Cannot demote another super admin.', 'error')
+        return redirect(request.referrer or url_for('superadmin.platform_users'))
+    old_role = user.role
+    user.role = new_role
+    try:
+        db.session.commit()
+        flash(f'{user.full_name} role changed from {old_role.replace("_"," ").title()} to {new_role.replace("_"," ").title()}.', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('Error changing role. Please try again.', 'error')
+    return redirect(request.referrer or url_for('superadmin.platform_users'))
+
+
+@superadmin_bp.route('/users/<user_id>/extend-subscription', methods=['POST'])
+@require_super_admin
+def extend_user_firm_subscription(user_id):
+    """Extend the subscription for the law firm of a given user."""
+    user = User.query.get_or_404(user_id)
+    if not user.law_firm_id:
+        flash('This user does not belong to a law firm.', 'error')
+        return redirect(request.referrer or url_for('superadmin.platform_users'))
+    firm = LawFirm.query.get_or_404(user.law_firm_id)
+    period = request.form.get('period', '1year')
+    period_map = {'30days': 30, '1month': 30, '3months': 90, '6months': 180, '1year': 365, '2years': 730}
+    days = period_map.get(period, 365)
+    now = datetime.now()
+    if firm.admin_access_expires and firm.admin_access_expires > now:
+        expiry = firm.admin_access_expires + timedelta(days=days)
+    else:
+        expiry = now + timedelta(days=days)
+    firm.admin_access_granted = True
+    firm.admin_access_expires = expiry
+    firm.subscription_period = period
+    user.active = True
+    try:
+        db.session.commit()
+        flash(f'Subscription for {firm.name} extended until {expiry.strftime("%B %d, %Y")}.', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('Error extending subscription.', 'error')
+    return redirect(request.referrer or url_for('superadmin.platform_users'))
 
 # ── Legal News Management (Super Admin Only) ──────────────────────────────────
 
