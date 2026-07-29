@@ -1,6 +1,7 @@
 from flask import session, render_template, redirect, url_for, send_from_directory, make_response, request, flash
 from flask_login import current_user
 from app import app, db, csrf
+from sqlalchemy import text
 from models import User, LawFirm, Project, ProjectAssignment
 from datetime import datetime, timedelta
 import os

@@ -897,7 +897,7 @@
                             <i class="fas fa-pen-nib me-1"></i>Blog
                         </a>
                     </li>
-                    <li class="nav-item"><a class="nav-link lc-link" href="{{ url_for('contact') }}">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link lc-link{% if request.endpoint == 'contact' %} active{% endif %}" href="{{ url_for('contact') }}">Contact Us</a></li>
                     <li class="nav-item"><a class="nav-link lc-link" href="{{ url_for('auth.login') }}">Login</a></li>
                     <li class="nav-item ms-lg-2">
                         <a class="btn lc-btn-signup" href="{{ url_for('auth.signup') }}">Sign Up Free</a>
