@@ -15,8 +15,9 @@ from models import (
 from utils.decorators import require_super_admin
 from datetime import datetime, timedelta
 from sqlalchemy import or_, func, desc, text
-import json, csv, io, re
+import json, csv, io, re, logging
 
+logger = logging.getLogger(__name__)
 crm_bp = Blueprint('crm', __name__)
 
 # ── Pipeline stage config ─────────────────────────────────────────────────────
@@ -358,57 +359,55 @@ def discovery():
 @crm_bp.route('/discovery/search', methods=['POST'])
 @require_super_admin
 def discovery_search():
-    """AI-powered lead discovery using Exa web search."""
-    query = request.json.get('query', '').strip()
+    """AI-powered lead discovery using multi-source web search (no API key required)."""
+    query = (request.json or {}).get('query', '').strip()
     if not query:
         return jsonify({'success': False, 'error': 'Query is required'}), 400
 
-    import requests as req_lib
-
-    # Build smart search query
-    search_query = f"law firm {query} contact phone email website"
-
     try:
-        # Call Exa search via internal proxy
-        resp = req_lib.post(
-            'https://api.exa.ai/search',
-            headers={
-                'x-api-key': 'replit_managed',  # Placeholder; use proper proxy in prod
-                'Content-Type': 'application/json',
-            },
-            json={
-                'query': search_query,
-                'numResults': 10,
-                'type': 'neural',
-                'contents': {
-                    'text': {'maxCharacters': 1000},
-                    'highlights': {'numSentences': 3},
-                },
-            },
-            timeout=15,
-        )
+        from utils.scraper_engine import _ddg_search, _extract_phone, _extract_address, _extract_email
+        import time
 
-        if resp.status_code != 200:
-            raise Exception(f"Exa returned {resp.status_code}")
+        legal_keywords = ['law', 'legal', 'attorney', 'solicitor', 'barrister',
+                          'advocate', 'counsel', 'chambers', 'llp', 'partner',
+                          'advocates', 'firm', 'lawyer']
 
-        results = resp.json().get('results', [])
+        # Build multiple targeted search queries for broader coverage
+        search_queries = [
+            f'"{query}" law firm contact phone email',
+            f'"{query}" lawyers attorneys website',
+            f'"{query}" solicitors barristers chambers',
+            f'site:linkedin.com "{query}" law firm',
+        ]
+
+        seen_domains = set()
+        raw_results = []
+        for sq in search_queries:
+            hits = _ddg_search(sq, max_results=12)
+            for h in hits:
+                domain = _extract_domain(h['url'])
+                if not domain or domain in seen_domains:
+                    continue
+                # Filter to legal-related results
+                combined = (h['title'] + ' ' + h['snippet']).lower()
+                if any(k in combined for k in legal_keywords):
+                    seen_domains.add(domain)
+                    raw_results.append(h)
+            if len(raw_results) >= 20:
+                break
+            time.sleep(0.3)
+
         found = []
+        location_words = _parse_location(query)
 
-        for r in results:
+        for r in raw_results[:20]:
             title = r.get('title', '').strip()
             url = r.get('url', '').strip()
-            snippet = (r.get('text') or '')[:500]
+            snippet = r.get('snippet', '')
 
             if not title or not url:
                 continue
 
-            # Skip non-law-firm results
-            legal_keywords = ['law', 'legal', 'attorney', 'solicitor', 'barrister',
-                               'advocate', 'counsel', 'chambers', 'llp', 'partner']
-            if not any(k in (title + snippet).lower() for k in legal_keywords):
-                continue
-
-            # Deduplicate by website domain
             domain = _extract_domain(url)
             if domain:
                 existing = DirectoryLawFirm.query.filter(
@@ -418,11 +417,18 @@ def discovery_search():
                     found.append({'status': 'duplicate', 'name': existing.name, 'id': existing.id})
                     continue
 
-            # Extract what we can from the snippet
+            # Extract contact info from snippet
+            phone = _extract_phone(snippet + ' ' + title)
+            email = _extract_email(snippet)
+            address = _extract_address(snippet)
+
             firm = DirectoryLawFirm(
                 name=_clean_title(title),
                 website=url,
                 description=snippet[:500] if snippet else None,
+                phone=phone or '',
+                email=email or '',
+                address=address or '',
                 source='ai_discovery',
                 has_website=True,
                 website_status='active',
@@ -432,8 +438,6 @@ def discovery_search():
                 lead_score=0,
             )
 
-            # Try to infer location from query
-            location_words = _parse_location(query)
             if location_words.get('city'):
                 firm.city = location_words['city']
             if location_words.get('country'):
@@ -443,7 +447,7 @@ def discovery_search():
             db.session.add(firm)
             db.session.flush()
             found.append({'status': 'added', 'name': firm.name, 'id': firm.id,
-                          'website': url})
+                          'website': url, 'phone': phone, 'email': email})
 
         db.session.commit()
         added = sum(1 for f in found if f['status'] == 'added')
@@ -453,10 +457,12 @@ def discovery_search():
             'found': found,
             'added': added,
             'duplicates': dupes,
-            'message': f'Found {len(results)} results → {added} new firms added, {dupes} duplicates skipped.',
+            'message': f'Discovered {added} new law firms, {dupes} already in your CRM.',
         })
 
     except Exception as e:
+        import traceback
+        logger.exception("discovery_search error")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 

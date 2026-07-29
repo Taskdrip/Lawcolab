@@ -27,6 +27,7 @@ import json
 import csv
 import io
 import logging
+import requests
 
 logger = logging.getLogger(__name__)
 

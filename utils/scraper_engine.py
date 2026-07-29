@@ -10,30 +10,41 @@ Results are returned as plain dicts ready to be stored as GrabbedResult rows.
 """
 import re
 import time
+import random
 import logging
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import quote_plus, urljoin, urlparse
+from urllib.parse import quote_plus, urljoin, urlparse, unquote
 
 logger = logging.getLogger(__name__)
 
-_HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/124.0 Safari/537.36"
-    ),
-    "Accept-Language": "en-US,en;q=0.9",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-}
-_TIMEOUT = 12
+# Rotate User-Agents to reduce bot detection
+_USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+]
 
+def _get_headers():
+    return {
+        "User-Agent": random.choice(_USER_AGENTS),
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Encoding": "gzip, deflate, br",
+        "DNT": "1",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+    }
+
+_TIMEOUT = 15
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 def _get(url, params=None):
     try:
-        r = requests.get(url, params=params, headers=_HEADERS,
+        r = requests.get(url, params=params, headers=_get_headers(),
                          timeout=_TIMEOUT, allow_redirects=True)
         r.raise_for_status()
         return r
@@ -43,11 +54,25 @@ def _get(url, params=None):
 
 
 def _ddg_search(query, max_results=20):
-    """DuckDuckGo HTML search — returns list of {title, url, snippet}."""
+    """DuckDuckGo HTML search — returns list of {title, url, snippet}.
+    Falls back to Bing if DDG blocks.
+    """
+    results = _ddg_search_direct(query, max_results)
+    if not results:
+        results = _bing_search_fallback(query, max_results)
+    return results
+
+
+def _ddg_search_direct(query, max_results=20):
+    """DuckDuckGo HTML search."""
     url = "https://html.duckduckgo.com/html/"
     try:
-        r = requests.post(url, data={"q": query, "b": "", "kl": "us-en"},
-                          headers=_HEADERS, timeout=_TIMEOUT)
+        r = requests.post(
+            url,
+            data={"q": query, "b": "", "kl": "us-en"},
+            headers=_get_headers(),
+            timeout=_TIMEOUT,
+        )
         r.raise_for_status()
     except Exception as exc:
         logger.warning("DDG search failed: %s", exc)
@@ -64,12 +89,47 @@ def _ddg_search(query, max_results=20):
         # DDG wraps href — extract real URL
         m = re.search(r"uddg=([^&]+)", href)
         if m:
-            from urllib.parse import unquote
             href = unquote(m.group(1))
+        if not href.startswith("http"):
+            continue
         results.append({
             "title":   a.get_text(strip=True),
             "url":     href,
             "snippet": snip.get_text(strip=True) if snip else "",
+        })
+    return results
+
+
+def _bing_search_fallback(query, max_results=20):
+    """Bing HTML search as fallback when DDG blocks."""
+    url = "https://www.bing.com/search"
+    try:
+        r = requests.get(
+            url,
+            params={"q": query, "count": max_results},
+            headers=_get_headers(),
+            timeout=_TIMEOUT,
+        )
+        r.raise_for_status()
+    except Exception as exc:
+        logger.warning("Bing search fallback failed: %s", exc)
+        return []
+
+    soup = BeautifulSoup(r.text, "lxml")
+    results = []
+    for li in soup.select("li.b_algo")[:max_results]:
+        a = li.select_one("h2 a")
+        snip_el = li.select_one(".b_caption p") or li.select_one("p")
+        if not a:
+            continue
+        href = a.get("href", "")
+        if not href.startswith("http"):
+            continue
+        snippet = snip_el.get_text(strip=True) if snip_el else ""
+        results.append({
+            "title":   a.get_text(strip=True),
+            "url":     href,
+            "snippet": snippet,
         })
     return results
 
@@ -125,18 +185,37 @@ def search_communities(keyword, platform="all", country="Global", max_results=25
 
     # Build platform-specific site: queries
     platform_queries = {
-        "facebook":  [f'site:facebook.com/groups "{keyword}" law OR legal'],
-        "linkedin":  [f'site:linkedin.com/groups "{keyword}" law OR legal'],
-        "reddit":    [f'site:reddit.com/r "{keyword}" law OR legal'],
-        "quora":     [f'site:quora.com "{keyword}" law OR legal'],
-        "youtube":   [f'site:youtube.com "{keyword}" law legal community'],
-        "telegram":  [f'site:t.me "{keyword}" law legal'],
+        "facebook":  [
+            f'site:facebook.com/groups "{keyword}" law OR legal',
+            f'facebook group "{keyword}" legal lawyers',
+        ],
+        "linkedin":  [
+            f'site:linkedin.com/groups "{keyword}" law OR legal',
+            f'linkedin group "{keyword}" legal professionals',
+        ],
+        "reddit":    [
+            f'site:reddit.com/r "{keyword}" law OR legal',
+            f'reddit subreddit "{keyword}" legal',
+        ],
+        "quora":     [
+            f'site:quora.com "{keyword}" law OR legal',
+            f'quora "{keyword}" legal question',
+        ],
+        "youtube":   [
+            f'site:youtube.com "{keyword}" law legal community',
+            f'youtube channel "{keyword}" legal',
+        ],
+        "telegram":  [
+            f'site:t.me "{keyword}" law legal',
+            f'telegram group "{keyword}" lawyers',
+        ],
         "all": [
+            f'"{keyword}" law firm legal directory',
+            f'"{keyword}" lawyers attorneys contact phone',
             f'site:facebook.com/groups "{keyword}" law OR legal community',
             f'site:linkedin.com/groups "{keyword}" law OR legal',
             f'site:reddit.com/r "{keyword}" legal OR law',
-            f'site:quora.com "{keyword}" legal question',
-            f'"{keyword}" legal community group forum site:meetup.com OR site:discord.com',
+            f'"{keyword}" legal community group forum',
         ],
     }
 
@@ -152,8 +231,6 @@ def search_communities(keyword, platform="all", country="Global", max_results=25
             seen_urls.add(item["url"])
             mc, mc_text = _extract_member_count(item["snippet"])
             plat = _guess_platform(item["url"])
-
-            # Determine category from keyword
             cat = _categorise(keyword)
 
             results.append({
@@ -173,7 +250,7 @@ def search_communities(keyword, platform="all", country="Global", max_results=25
                 break
         if len(results) >= max_results:
             break
-        time.sleep(0.4)
+        time.sleep(random.uniform(0.3, 0.7))
 
     return results
 
@@ -181,62 +258,51 @@ def search_communities(keyword, platform="all", country="Global", max_results=25
 def search_gmb_listings(keyword, location="", max_results=25):
     """
     Find Google My Business / law firm listings for `keyword` in `location`.
-    Uses Google Maps search via DuckDuckGo and Google Maps HTML.
+    Uses DuckDuckGo targeted queries.
     Returns result dicts ready for GrabbedResult (listing type).
     """
     results = []
     q_parts = [keyword, "law firm", location] if location else [keyword, "law firm"]
     query = " ".join(p for p in q_parts if p)
 
-    gmaps_query = f'site:maps.google.com OR site:google.com/maps "{keyword}" {location}'
-    google_query = f'"{keyword}" law firm {location} phone address'
+    # Multiple search strategies for better coverage
+    search_queries = [
+        f'"{keyword}" law firm {location} phone address contact',
+        f'"{keyword}" {location} attorney solicitor website email',
+        f'"{keyword}" law office {location} site:yellowpages.com OR site:yelp.com',
+        f'"{query}" contact details',
+    ]
 
     seen = set()
 
-    # 1) DuckDuckGo — general web results give phone/address snippets
-    for item in _ddg_search(google_query, max_results=30):
-        if item["url"] in seen:
-            continue
-        seen.add(item["url"])
+    for sq in search_queries:
+        for item in _ddg_search(sq, max_results=15):
+            if item["url"] in seen:
+                continue
+            seen.add(item["url"])
 
-        phone = _extract_phone(item["snippet"] + " " + item["title"])
-        addr  = _extract_address(item["snippet"])
+            phone = _extract_phone(item["snippet"] + " " + item["title"])
+            addr  = _extract_address(item["snippet"])
+            email = _extract_email(item["snippet"])
 
-        results.append({
-            "result_type": "listing",
-            "platform":    "google_gmb",
-            "name":        item["title"],
-            "url":         item["url"],
-            "description": item["snippet"],
-            "snippet":     item["snippet"],
-            "phone":       phone,
-            "address":     addr,
-            "website":     item["url"] if "maps.google" not in item["url"] else "",
-            "city":        location,
-        })
+            results.append({
+                "result_type": "listing",
+                "platform":    "google_gmb",
+                "name":        item["title"],
+                "url":         item["url"],
+                "description": item["snippet"],
+                "snippet":     item["snippet"],
+                "phone":       phone,
+                "email":       email,
+                "address":     addr,
+                "website":     item["url"],
+                "city":        location,
+            })
+            if len(results) >= max_results:
+                break
         if len(results) >= max_results:
             break
-
-    # 2) Try fetching Google Maps search page for richer data
-    gmaps_url = f"https://www.google.com/maps/search/{quote_plus(query)}"
-    r = _get(gmaps_url)
-    if r:
-        # Google Maps is JS-heavy but the initial HTML sometimes has metadata
-        soup = BeautifulSoup(r.text, "lxml")
-        for tag in soup.find_all("div", attrs={"aria-label": True}):
-            label = tag["aria-label"]
-            if any(w in label.lower() for w in ("law", "legal", "attorney", "solicitor")):
-                if label not in seen:
-                    seen.add(label)
-                    results.append({
-                        "result_type": "listing",
-                        "platform":    "google_gmb",
-                        "name":        label,
-                        "url":         gmaps_url,
-                        "description": label,
-                        "snippet":     label,
-                        "city":        location,
-                    })
+        time.sleep(random.uniform(0.3, 0.6))
 
     return results[:max_results]
 
@@ -247,6 +313,7 @@ def search_quora(keyword, max_results=20):
     queries = [
         f'site:quora.com "{keyword}" law legal',
         f'site:quora.com/topic "{keyword}" lawyer attorney',
+        f'quora "{keyword}" legal advice',
     ]
     seen = set()
     for q in queries:
@@ -277,6 +344,7 @@ def search_web(keyword, max_results=20):
     queries = [
         f'"{keyword}" law legal community forum directory',
         f'"{keyword}" lawyer attorney association network',
+        f'"{keyword}" legal professionals group online',
     ]
     seen = set()
     for q in queries:
@@ -421,7 +489,7 @@ def extract_page_contacts(html_text):
     # Member count
     mc, mc_text = _extract_member_count(text)
 
-    # External links (first 10 meaningful ones)
+    # External links (first 12 meaningful ones)
     links = []
     seen_l = set()
     for a in soup.find_all("a", href=True):
@@ -457,6 +525,7 @@ def search_twitter_x(keyword, max_results=20):
     queries = [
         f'site:twitter.com "{keyword}" law OR legal',
         f'site:x.com "{keyword}" lawyer attorney',
+        f'twitter "{keyword}" legal discussion',
     ]
     seen = set()
     for q in queries:
@@ -527,6 +596,7 @@ def search_reddit_threads(keyword, max_results=20):
         f'site:reddit.com "{keyword}" law legal',
         f'site:reddit.com/r/legaladvice "{keyword}"',
         f'site:reddit.com/r/business "{keyword}" legal',
+        f'reddit.com "{keyword}" lawyer attorney discussion',
     ]
     seen = set()
     for q in queries:
