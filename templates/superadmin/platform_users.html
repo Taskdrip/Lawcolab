@@ -4,22 +4,76 @@
 
 {% block content %}
 <style>
+/* ═══════════════════════════════════════════════════════════════════
+   LAWCOLAB — All Users / Platform Users Dashboard
+   Mobile-first · Animated · Touch-optimised
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Animations ─────────────────────────────────────────────────── */
+@keyframes fadeUp   { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeIn   { from{opacity:0} to{opacity:1} }
+@keyframes countUp  {}
+
+.anim-up   { animation: fadeUp .5s ease both; }
+.anim-1    { animation-delay: .06s; }
+.anim-2    { animation-delay: .12s; }
+.anim-3    { animation-delay: .18s; }
+.anim-4    { animation-delay: .24s; }
+.anim-in   { animation: fadeIn .4s ease both; }
+
+/* ── Hero header ────────────────────────────────────────────────── */
 .pu-header {
-    background: linear-gradient(135deg, #0d1b4b 0%, #1e3a8a 100%);
+    background: linear-gradient(135deg, #060e2a 0%, #0d1b4b 60%, #1e3a8a 100%);
     color: #fff;
-    padding: 2rem 0 1.5rem;
-    margin-bottom: 2rem;
+    padding: 2rem 0 0;
+    margin-bottom: 0;
+    position: relative;
+    overflow: hidden;
+}
+.pu-header::before {
+    content:'';
+    position:absolute;inset:0;
+    background: radial-gradient(ellipse 80% 60% at 80% 50%, rgba(255,215,0,.06) 0%, transparent 60%);
+    pointer-events: none;
 }
 .pu-stat-pill {
-    display: inline-block;
-    background: rgba(255,255,255,.15);
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.18);
     border-radius: 100px;
-    padding: .25rem .85rem;
-    font-size: .82rem;
+    padding: .28rem .85rem;
+    font-size: .8rem;
     font-weight: 600;
     color: #fff;
     margin-right: .4rem;
+    margin-bottom: .3rem;
 }
+
+/* ── Stat cards ─────────────────────────────────────────────────── */
+.pu-stat-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1.1rem 1.25rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,.07);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform .2s, box-shadow .2s;
+}
+.pu-stat-card:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,.12); }
+.pu-stat-icon {
+    width: 46px; height: 46px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+.pu-stat-val { font-size: 1.6rem; font-weight: 800; line-height: 1; color: #0d1b4b; }
+.pu-stat-lbl { font-size: .76rem; color: #64748b; margin-top: .15rem; }
+
+/* ── Avatar ─────────────────────────────────────────────────────── */
 .pu-avatar {
     width: 40px; height: 40px;
     border-radius: 50%;
@@ -27,33 +81,141 @@
     display: flex; align-items: center; justify-content: center;
     color: #FFD700; font-weight: 800; font-size: 1rem;
     flex-shrink: 0;
+    transition: transform .2s;
 }
+tr:hover .pu-avatar { transform: scale(1.1); }
+
 .role-badge { font-size: .72rem; font-weight: 700; letter-spacing: .03em; }
-.action-dropdown .dropdown-item { font-size: .88rem; padding: .45rem 1rem; }
+
+/* ── Dropdown ────────────────────────────────────────────────────── */
+.action-dropdown .dropdown-item { font-size: .86rem; padding: .5rem 1rem; transition: background .15s; }
 .action-dropdown .dropdown-item i { width: 18px; }
 .action-dropdown .dropdown-divider { margin: .25rem 0; }
+.action-dropdown .dropdown-toggle { min-width: 36px; min-height: 36px; }
+
+/* ── Table rows animate in ────────────────────────────────────────── */
+tbody tr {
+    animation: fadeUp .35s ease both;
+    transition: background .15s;
+}
+{% for i in range(1, 51) %}
+tbody tr:nth-child({{ i }}) { animation-delay: {{ i * 0.03 }}s; }
+{% endfor %}
+
+/* ── Mobile card view ────────────────────────────────────────────── */
+.user-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1rem;
+    margin-bottom: .75rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,.07);
+    display: none;
+    animation: fadeUp .35s ease both;
+    border-left: 3px solid transparent;
+    transition: border-color .2s, box-shadow .2s;
+}
+.user-card.sa   { border-left-color: #dc3545; }
+.user-card.admin{ border-left-color: #0d6efd; }
+.user-card.team { border-left-color: #0dcaf0; }
+.user-card.cli  { border-left-color: #6c757d; }
+.user-card:active { box-shadow: 0 1px 4px rgba(0,0,0,.12); transform: scale(.99); }
+
+/* Live search highlight */
+.search-highlight { background: #fff3cd; border-radius: 3px; }
+
+/* Filter bar sticky on mobile */
+@media(max-width:767px) {
+    .table-responsive table { display: none !important; }
+    .user-card { display: block !important; }
+    .pu-stat-card { padding: .85rem; }
+    .pu-stat-val { font-size: 1.3rem; }
+    .stats-row { margin-bottom: 0 !important; }
+}
+@media(min-width:768px) {
+    .user-card { display: none !important; }
+}
+
+/* ── Search bar live search ──────────────────────────────────────── */
+#live-search-input { transition: box-shadow .2s; }
+#live-search-input:focus { box-shadow: 0 0 0 3px rgba(13,27,75,.18); }
+
+/* ── Empty state ─────────────────────────────────────────────────── */
+.empty-state { text-align: center; padding: 3rem 1rem; color: #9aa3b0; }
+.empty-state i { font-size: 2.5rem; margin-bottom: .85rem; display: block; opacity: .35; }
 </style>
 
 <!-- Page Header -->
 <div class="pu-header">
     <div class="container-fluid px-4">
-        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 anim-up">
             <div>
                 <nav aria-label="breadcrumb" class="mb-1">
-                    <ol class="breadcrumb mb-0" style="font-size:.82rem;">
+                    <ol class="breadcrumb mb-0" style="font-size:.8rem;">
                         <li class="breadcrumb-item"><a href="{{ url_for('superadmin.dashboard') }}" class="text-white-50">SA Dashboard</a></li>
-                        <li class="breadcrumb-item active text-white">All Users</li>
+                        <li class="breadcrumb-item active" style="color:rgba(255,255,255,.7);">All Users</li>
                     </ol>
                 </nav>
-                <h1 class="h3 mb-1 fw-bold"><i class="fas fa-users me-2" style="color:#FFD700;"></i>User Management</h1>
-                <div>
-                    <span class="pu-stat-pill"><i class="fas fa-list me-1"></i>{{ users.total }} total</span>
-                    <span class="pu-stat-pill">Page {{ users.page }} of {{ users.pages }}</span>
+                <h1 class="h3 mb-2 fw-bold"><i class="fas fa-users-cog me-2" style="color:#FFD700;"></i>User Management</h1>
+                <div class="d-flex flex-wrap">
+                    <span class="pu-stat-pill"><i class="fas fa-users"></i>{{ users.total }} users</span>
+                    <span class="pu-stat-pill"><i class="fas fa-file-alt"></i>Page {{ users.page }}/{{ users.pages }}</span>
+                    {% if search or role_filter or status_filter %}
+                    <span class="pu-stat-pill" style="background:rgba(255,215,0,.2);border-color:rgba(255,215,0,.4);"><i class="fas fa-filter"></i>Filtered</span>
+                    {% endif %}
                 </div>
             </div>
-            <a href="{{ url_for('superadmin.dashboard') }}" class="btn btn-outline-light btn-sm">
-                <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+            <a href="{{ url_for('superadmin.dashboard') }}" class="btn btn-outline-light btn-sm rounded-pill">
+                <i class="fas fa-arrow-left me-1"></i>Dashboard
             </a>
+        </div>
+
+        <!-- Tab line -->
+        <div class="mt-3 d-flex gap-3 overflow-auto pb-0" style="border-bottom:2px solid rgba(255,255,255,.12);">
+            <div style="padding:.6rem 0 .5rem;font-size:.82rem;font-weight:700;color:#FFD700;border-bottom:2px solid #FFD700;margin-bottom:-2px;white-space:nowrap;">
+                <i class="fas fa-list me-1"></i>All Users
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stat Cards Row -->
+<div class="container-fluid px-4 py-3" style="background:#f8fafc;border-bottom:1px solid #e2e8f0;">
+    <div class="row g-3 stats-row">
+        <div class="col-6 col-lg-3 anim-up anim-1">
+            <div class="pu-stat-card">
+                <div class="pu-stat-icon" style="background:#eef2ff;color:#0d1b4b;"><i class="fas fa-users"></i></div>
+                <div>
+                    <div class="pu-stat-val" data-count="{{ users.total }}">{{ users.total }}</div>
+                    <div class="pu-stat-lbl">Total Users</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3 anim-up anim-2">
+            <div class="pu-stat-card">
+                <div class="pu-stat-icon" style="background:#fef3c7;color:#d97706;"><i class="fas fa-user-shield"></i></div>
+                <div>
+                    <div class="pu-stat-val">{{ users.items | selectattr('role', 'equalto', 'admin') | list | length + users.items | selectattr('role', 'equalto', 'super_admin') | list | length }}</div>
+                    <div class="pu-stat-lbl">Admins (this page)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3 anim-up anim-3">
+            <div class="pu-stat-card">
+                <div class="pu-stat-icon" style="background:#ecfdf5;color:#059669;"><i class="fas fa-check-circle"></i></div>
+                <div>
+                    <div class="pu-stat-val">{{ users.items | selectattr('active') | list | length }}</div>
+                    <div class="pu-stat-lbl">Active (this page)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3 anim-up anim-4">
+            <div class="pu-stat-card">
+                <div class="pu-stat-icon" style="background:#fff1f2;color:#e11d48;"><i class="fas fa-ban"></i></div>
+                <div>
+                    <div class="pu-stat-val">{{ users.items | rejectattr('active') | list | length }}</div>
+                    <div class="pu-stat-lbl">Inactive (this page)</div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -73,19 +235,25 @@
     {% endwith %}
 
     <!-- Filters -->
-    <div class="card border-0 shadow-sm mb-3" style="border-radius:16px;">
+    <div class="card border-0 shadow-sm mb-3 anim-in" style="border-radius:16px;">
         <div class="card-body">
-            <form method="GET" class="row g-3 align-items-end">
-                <div class="col-lg-4 col-md-6">
-                    <label class="form-label fw-semibold small">Search Users</label>
+            <form method="GET" class="row g-2 align-items-end" id="filterForm">
+                <div class="col-12 col-lg-4">
+                    <label class="form-label fw-semibold small text-muted">🔍 Search Users</label>
                     <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-search text-muted"></i></span>
-                        <input type="text" class="form-control" name="search" value="{{ search }}" placeholder="Name or email…">
+                        <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" class="form-control border-start-0 ps-0" name="search"
+                               value="{{ search }}" placeholder="Name or email…"
+                               id="live-search-input"
+                               autocomplete="off" style="font-size:.92rem;">
+                        <span class="input-group-text bg-white border-start-0 text-muted" id="search-spinner" style="display:none;">
+                            <i class="fas fa-circle-notch fa-spin"></i>
+                        </span>
                     </div>
                 </div>
-                <div class="col-lg-2 col-md-3">
-                    <label class="form-label fw-semibold small">Role</label>
-                    <select class="form-select" name="role">
+                <div class="col-6 col-sm-4 col-lg-2">
+                    <label class="form-label fw-semibold small text-muted">Role</label>
+                    <select class="form-select" name="role" id="roleFilter">
                         <option value="">All Roles</option>
                         <option value="super_admin" {{ 'selected' if role_filter == 'super_admin' }}>Super Admin</option>
                         <option value="admin"       {{ 'selected' if role_filter == 'admin' }}>Admin</option>
@@ -93,29 +261,85 @@
                         <option value="client"      {{ 'selected' if role_filter == 'client' }}>Client</option>
                     </select>
                 </div>
-                <div class="col-lg-2 col-md-3">
-                    <label class="form-label fw-semibold small">Status</label>
-                    <select class="form-select" name="status">
+                <div class="col-6 col-sm-4 col-lg-2">
+                    <label class="form-label fw-semibold small text-muted">Status</label>
+                    <select class="form-select" name="status" id="statusFilter">
                         <option value="">All Status</option>
-                        <option value="active"   {{ 'selected' if status_filter == 'active' }}>Active</option>
-                        <option value="inactive" {{ 'selected' if status_filter == 'inactive' }}>Inactive</option>
+                        <option value="active"   {{ 'selected' if status_filter == 'active' }}>✅ Active</option>
+                        <option value="inactive" {{ 'selected' if status_filter == 'inactive' }}>🚫 Inactive</option>
                     </select>
                 </div>
-                <div class="col-lg-2 col-md-3">
-                    <button type="submit" class="btn btn-primary w-100">
+                <div class="col-6 col-sm-4 col-lg-2">
+                    <button type="submit" class="btn btn-primary w-100" style="background:#0d1b4b;border-color:#0d1b4b;">
                         <i class="fas fa-filter me-1"></i>Filter
                     </button>
                 </div>
-                {% if search or role_filter or status_filter %}
-                <div class="col-lg-2 col-md-3">
+                <div class="col-6 col-lg-2">
                     <a href="{{ url_for('superadmin.platform_users') }}" class="btn btn-outline-secondary w-100">
                         <i class="fas fa-times me-1"></i>Clear
                     </a>
                 </div>
-                {% endif %}
             </form>
+            {% if search or role_filter or status_filter %}
+            <div class="mt-2 pt-2 border-top d-flex align-items-center gap-2" style="font-size:.82rem;color:#64748b;">
+                <i class="fas fa-info-circle text-primary"></i>
+                Showing filtered results for:
+                {% if search %}<span class="badge bg-primary">Search: "{{ search }}"</span>{% endif %}
+                {% if role_filter %}<span class="badge bg-secondary">Role: {{ role_filter.replace('_',' ').title() }}</span>{% endif %}
+                {% if status_filter %}<span class="badge bg-info text-dark">Status: {{ status_filter.title() }}</span>{% endif %}
+            </div>
+            {% endif %}
         </div>
     </div>
+
+    <!-- Mobile Cards (shown on small screens via CSS) -->
+    {% for user in users.items %}
+    <div class="user-card {{ 'sa' if user.is_super_admin() else ('admin' if user.role == 'admin' else ('team' if user.role == 'team_member' else 'cli')) }}"
+         data-name="{{ user.full_name|lower }}" data-email="{{ user.email|lower }}">
+        <div class="d-flex align-items-start justify-content-between">
+            <div class="d-flex gap-2 align-items-center">
+                <div class="pu-avatar" style="width:36px;height:36px;font-size:.85rem;">
+                    {{ (user.first_name[0] if user.first_name else user.email[0])|upper }}
+                </div>
+                <div>
+                    <div class="fw-bold" style="color:#0d1b4b;font-size:.9rem;">{{ user.full_name }}</div>
+                    <div style="font-size:.75rem;color:#64748b;">{{ user.email }}</div>
+                </div>
+            </div>
+            <span class="badge {{ 'bg-danger' if user.is_super_admin() else ('bg-primary' if user.role == 'admin' else ('bg-info text-dark' if user.role == 'team_member' else 'bg-secondary')) }} role-badge">
+                {{ user.role.replace('_',' ').title() }}
+            </span>
+        </div>
+        <div class="d-flex flex-wrap gap-2 mt-2" style="font-size:.78rem;">
+            {% if user.law_firm %}
+            <span><i class="fas fa-building text-primary me-1"></i>{{ user.law_firm.name[:24] }}</span>
+            {% endif %}
+            <span class="{{ 'text-success' if user.active else 'text-danger' }}">
+                <i class="fas fa-circle" style="font-size:.45rem;vertical-align:middle;"></i>
+                {{ 'Active' if user.active else 'Inactive' }}
+            </span>
+            <span class="text-muted">Joined {{ user.created_at.strftime('%b %Y') if user.created_at else '—' }}</span>
+        </div>
+        <div class="mt-2 d-flex gap-2">
+            <button class="btn btn-outline-secondary btn-sm flex-fill" style="font-size:.78rem;"
+                    data-bs-toggle="modal" data-bs-target="#resetPwModal{{ user.id }}">
+                <i class="fas fa-key me-1"></i>Reset PW
+            </button>
+            {% if user.law_firm %}
+            <button class="btn btn-outline-success btn-sm flex-fill" style="font-size:.78rem;"
+                    data-bs-toggle="modal" data-bs-target="#extendSubModal{{ user.id }}">
+                <i class="fas fa-calendar-plus me-1"></i>Extend
+            </button>
+            {% endif %}
+            {% if not user.is_super_admin() %}
+            <button class="btn btn-outline-danger btn-sm" style="font-size:.78rem;"
+                    data-bs-toggle="modal" data-bs-target="#deleteUserModal{{ user.id }}">
+                <i class="fas fa-trash"></i>
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
 
     <!-- Users Table -->
     <div class="card border-0 shadow-sm" style="border-radius:16px;">
@@ -171,13 +395,14 @@
                             <td style="font-size:.82rem;">
                                 {% if user.law_firm %}
                                     {% if user.law_firm.admin_access_granted and user.law_firm.admin_access_expires %}
-                                        {% set now = namespace(v=None) %}
                                         {% set exp = user.law_firm.admin_access_expires %}
-                                        {% if exp > self.__class__.__mro__[0].__subclasscheck__.__func__.__globals__.get('datetime', exp) %}
-                                        {% endif %}
+                                        {% if exp > now_dt %}
                                         <span class="badge bg-success-subtle text-success border border-success-subtle">
                                             Active · expires {{ exp.strftime('%d %b %Y') }}
                                         </span>
+                                        {% else %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Expired {{ exp.strftime('%d %b %Y') }}</span>
+                                        {% endif %}
                                     {% elif user.law_firm.admin_access_granted %}
                                         <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Expired</span>
                                     {% else %}
@@ -213,6 +438,7 @@
                                         <!-- Activate / Deactivate -->
                                         <li>
                                             <form method="POST" action="{{ url_for('superadmin.toggle_user_status') }}">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                 <input type="hidden" name="user_id" value="{{ user.id }}">
                                                 <button type="submit" class="dropdown-item">
                                                     <i class="fas fa-{{ 'ban' if user.active else 'check-circle' }} text-{{ 'warning' if user.active else 'success' }}"></i>
@@ -283,6 +509,7 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <form method="POST" action="{{ url_for('superadmin.set_user_password', user_id=user.id) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <div class="modal-body">
                                             <p class="text-muted mb-3">Set a new password for <strong>{{ user.full_name }}</strong> ({{ user.email }}).</p>
                                             <div class="mb-3">
@@ -312,6 +539,7 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <form method="POST" action="{{ url_for('superadmin.change_user_role', user_id=user.id) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <div class="modal-body">
                                             <p class="text-muted mb-3">Change the role of <strong>{{ user.full_name }}</strong>. Current: <span class="badge bg-secondary">{{ user.role.replace('_',' ').title() }}</span></p>
                                             <div class="mb-3">
@@ -350,6 +578,7 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <form method="POST" action="{{ url_for('superadmin.extend_user_firm_subscription', user_id=user.id) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <div class="modal-body">
                                             <p class="text-muted mb-3">Extend subscription for <strong>{{ user.law_firm.name }}</strong>.</p>
                                             {% if user.law_firm.admin_access_expires %}
@@ -393,6 +622,7 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <form method="POST" action="{{ url_for('superadmin.delete_user') }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <input type="hidden" name="user_id" value="{{ user.id }}">
                                         <div class="modal-body">
                                             <div class="alert alert-danger py-2 mb-3" style="border-radius:10px;font-size:.88rem;">
@@ -459,4 +689,93 @@
     </div>
 
 </div>
+
+<script>
+// ── Count-up animation ──────────────────────────────────────────────────────
+document.querySelectorAll('[data-count]').forEach(el => {
+  const target = parseInt(el.dataset.count, 10);
+  if (!target) return;
+  let start = 0;
+  const dur = 800, step = 16;
+  const inc = target / (dur / step);
+  const tick = () => {
+    start = Math.min(start + inc, target);
+    el.textContent = Math.round(start).toLocaleString();
+    if (start < target) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+});
+
+// ── Live client-side search (filters current page) ─────────────────────────
+const searchInput = document.getElementById('live-search-input');
+const roleFilter  = document.getElementById('roleFilter');
+const statusFilter= document.getElementById('statusFilter');
+
+function applyFilters() {
+  const q   = searchInput ? searchInput.value.trim().toLowerCase() : '';
+  const role= roleFilter ? roleFilter.value.toLowerCase() : '';
+  const stat= statusFilter ? statusFilter.value.toLowerCase() : '';
+
+  // Filter mobile cards
+  document.querySelectorAll('.user-card').forEach(card => {
+    const name  = card.dataset.name  || '';
+    const email = card.dataset.email || '';
+    const rBadge= card.querySelector('.badge') ? card.querySelector('.badge').textContent.toLowerCase().replace(/\s+/g,'_') : '';
+    const active= card.querySelector('.text-success') !== null;
+
+    const matchQ   = !q   || name.includes(q) || email.includes(q);
+    const matchRole= !role|| rBadge.includes(role);
+    const matchStat= !stat|| (stat === 'active' ? active : !active);
+    card.style.display = (matchQ && matchRole && matchStat) ? '' : 'none';
+  });
+
+  // Filter table rows
+  document.querySelectorAll('table tbody tr[data-user]').forEach(row => {
+    const name  = (row.dataset.name  || '').toLowerCase();
+    const email = (row.dataset.email || '').toLowerCase();
+    const role_ = (row.dataset.role  || '').toLowerCase();
+    const active= row.dataset.active === 'true';
+
+    const matchQ   = !q   || name.includes(q) || email.includes(q);
+    const matchRole= !role|| role_.includes(role);
+    const matchStat= !stat|| (stat === 'active' ? active : !active);
+    row.style.display = (matchQ && matchRole && matchStat) ? '' : 'none';
+  });
+}
+
+if (searchInput) {
+  let timer;
+  searchInput.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(applyFilters, 200);
+  });
+}
+if (roleFilter)   roleFilter.addEventListener('change', applyFilters);
+if (statusFilter) statusFilter.addEventListener('change', applyFilters);
+
+// Add data-user attributes to table rows for client-side filtering
+document.querySelectorAll('table tbody tr').forEach(row => {
+  const cells = row.querySelectorAll('td');
+  if (cells.length < 3) return;
+  const nameCell = cells[0] ? cells[0].querySelector('.fw-semibold') : null;
+  const emailCell= cells[1];
+  if (nameCell) row.dataset.name  = nameCell.textContent.trim().toLowerCase();
+  if (emailCell) row.dataset.email= emailCell.textContent.trim().toLowerCase();
+});
+
+// ── Tooltip on stat pills ───────────────────────────────────────────────────
+document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+  new bootstrap.Tooltip(el, { trigger: 'hover' });
+});
+
+// ── Confirm on deactivate ───────────────────────────────────────────────────
+document.querySelectorAll('form[action*="toggle_user_status"] button').forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    const action = this.textContent.trim().includes('Deactivate') ? 'deactivate' : 'activate';
+    if (!confirm(`Are you sure you want to ${action} this account?`)) {
+      e.preventDefault();
+    }
+  });
+});
+</script>
 {% endblock %}

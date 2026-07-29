@@ -188,30 +188,35 @@ def web_analytics():
     if days not in (7, 30, 90):
         days = 30
 
-    def _q(sql, **kw):
+    # Use Python datetime params for DB-agnostic queries (SQLite + PostgreSQL)
+    now_dt   = datetime.now()
+    start_dt = now_dt - timedelta(days=days)
+    prev_dt  = now_dt - timedelta(days=days * 2)
+    today_dt = now_dt.replace(hour=0, minute=0, second=0, microsecond=0)
+    day_ago  = now_dt - timedelta(hours=24)
+
+    def _q(sql, params=None):
         try:
-            return db.session.execute(text(sql), kw).fetchall()
+            return db.session.execute(text(sql), params or {}).fetchall()
         except Exception:
             return []
 
-    def _scalar(sql, **kw):
+    def _scalar(sql, params=None):
         try:
-            return db.session.execute(text(sql), kw).scalar() or 0
+            return db.session.execute(text(sql), params or {}).scalar() or 0
         except Exception:
             return 0
 
-    interval = f'{days} days'
-
     # ── KPIs ──────────────────────────────────────────────────────────────────
     total_visits = _scalar(
-        "SELECT COUNT(*) FROM page_analytics WHERE created_at > NOW() - INTERVAL :i",
-        i=interval)
+        "SELECT COUNT(*) FROM page_analytics WHERE created_at >= :s",
+        {"s": start_dt})
     unique_sessions = _scalar(
-        "SELECT COUNT(DISTINCT session_id) FROM page_analytics WHERE created_at > NOW() - INTERVAL :i",
-        i=interval)
+        "SELECT COUNT(DISTINCT session_id) FROM page_analytics WHERE created_at >= :s",
+        {"s": start_dt})
     prev_visits = _scalar(
-        "SELECT COUNT(*) FROM page_analytics WHERE created_at BETWEEN NOW()-INTERVAL :p AND NOW()-INTERVAL :i",
-        p=f'{days*2} days', i=interval)
+        "SELECT COUNT(*) FROM page_analytics WHERE created_at >= :p AND created_at < :s",
+        {"p": prev_dt, "s": start_dt})
     visits_delta = round(((total_visits - prev_visits) / prev_visits * 100), 1) if prev_visits > 0 else 0
 
     # Bounce rate: sessions with only 1 page view
@@ -219,10 +224,10 @@ def web_analytics():
     single_page_sessions = _scalar(
         """SELECT COUNT(*) FROM (
               SELECT session_id FROM page_analytics
-              WHERE created_at > NOW() - INTERVAL :i
+              WHERE created_at >= :s
               GROUP BY session_id HAVING COUNT(*) = 1
-           ) s""",
-        i=interval)
+           ) sub""",
+        {"s": start_dt})
     bounce_rate = round((single_page_sessions / total_sessions * 100), 1) if total_sessions > 0 else 0.0
 
     # Pages per session
@@ -230,33 +235,50 @@ def web_analytics():
 
     # Unique countries count
     unique_countries = _scalar(
-        "SELECT COUNT(DISTINCT country) FROM page_analytics WHERE created_at > NOW() - INTERVAL :i AND country IS NOT NULL AND country != 'Unknown'",
-        i=interval)
+        """SELECT COUNT(DISTINCT country) FROM page_analytics
+           WHERE created_at >= :s AND country IS NOT NULL AND country != '' AND country != 'Unknown'""",
+        {"s": start_dt})
 
     # Today's visits
     today_visits = _scalar(
-        "SELECT COUNT(*) FROM page_analytics WHERE created_at >= CURRENT_DATE",
-    )
+        "SELECT COUNT(*) FROM page_analytics WHERE created_at >= :t",
+        {"t": today_dt})
 
-    # ── Daily visits trend ────────────────────────────────────────────────────
-    daily_rows = _q(
-        """SELECT TO_CHAR(created_at::date, 'Mon DD') as day,
-                  DATE(created_at) as raw_date,
-                  COUNT(*) as visits
-           FROM page_analytics
-           WHERE created_at > NOW() - INTERVAL :i
-           GROUP BY DATE(created_at), TO_CHAR(created_at::date, 'Mon DD')
-           ORDER BY raw_date""",
-        i=interval)
-    daily_labels = [r[0] for r in daily_rows]
-    daily_data   = [r[2] for r in daily_rows]
+    # ── Daily visits trend (Python-side aggregation for DB-compat) ────────────
+    all_rows = _q(
+        "SELECT created_at FROM page_analytics WHERE created_at >= :s ORDER BY created_at",
+        {"s": start_dt})
+    from collections import defaultdict
+    daily_counts = defaultdict(int)
+    for row in all_rows:
+        dt_val = row[0]
+        if isinstance(dt_val, str):
+            try:
+                dt_val = datetime.fromisoformat(dt_val)
+            except Exception:
+                continue
+        daily_counts[dt_val.strftime('%b %d')] += 1
+    # Build ordered labels for last `days` days
+    daily_labels = []
+    daily_data   = []
+    for i in range(days - 1, -1, -1):
+        label = (now_dt - timedelta(days=i)).strftime('%b %d')
+        daily_labels.append(label)
+        daily_data.append(daily_counts.get(label, 0))
 
-    # ── Hourly breakdown (last 24h) ───────────────────────────────────────────
-    hourly_rows = _q(
-        """SELECT EXTRACT(HOUR FROM created_at)::int as hr, COUNT(*) as cnt
-           FROM page_analytics WHERE created_at > NOW() - INTERVAL '24 hours'
-           GROUP BY hr ORDER BY hr""")
-    hourly_map = {r[0]: r[1] for r in hourly_rows}
+    # ── Hourly breakdown (last 24h, Python-side) ──────────────────────────────
+    hourly_rows_raw = _q(
+        "SELECT created_at FROM page_analytics WHERE created_at >= :s",
+        {"s": day_ago})
+    hourly_map = defaultdict(int)
+    for row in hourly_rows_raw:
+        dt_val = row[0]
+        if isinstance(dt_val, str):
+            try:
+                dt_val = datetime.fromisoformat(dt_val)
+            except Exception:
+                continue
+        hourly_map[dt_val.hour] += 1
     hourly_labels = [f'{h:02d}:00' for h in range(24)]
     hourly_data   = [hourly_map.get(h, 0) for h in range(24)]
 
@@ -269,17 +291,17 @@ def web_analytics():
         """SELECT page_path, COUNT(*) as visits,
                   COUNT(DISTINCT session_id) as unique_vis
            FROM page_analytics
-           WHERE created_at > NOW() - INTERVAL :i
+           WHERE created_at >= :s
            GROUP BY page_path ORDER BY visits DESC LIMIT 10""",
-        i=interval)
+        {"s": start_dt})
     top_pages = [{'page_path': r[0], 'visits': r[1], 'unique_vis': r[2]} for r in top_pages_rows]
 
     # ── Device breakdown ──────────────────────────────────────────────────────
     device_rows = _q(
         """SELECT device_type, COUNT(*) as cnt
-           FROM page_analytics WHERE created_at > NOW() - INTERVAL :i
+           FROM page_analytics WHERE created_at >= :s
            GROUP BY device_type ORDER BY cnt DESC""",
-        i=interval)
+        {"s": start_dt})
     device_labels = [r[0].title() for r in device_rows]
     device_data   = [r[1] for r in device_rows]
     device_pcts   = {}
@@ -291,45 +313,45 @@ def web_analytics():
     # ── Browser breakdown ─────────────────────────────────────────────────────
     browser_rows = _q(
         """SELECT browser, COUNT(*) as cnt
-           FROM page_analytics WHERE created_at > NOW() - INTERVAL :i
+           FROM page_analytics WHERE created_at >= :s
            GROUP BY browser ORDER BY cnt DESC LIMIT 8""",
-        i=interval)
+        {"s": start_dt})
     browser_labels = [r[0] for r in browser_rows]
     browser_data   = [r[1] for r in browser_rows]
 
     # ── OS breakdown ──────────────────────────────────────────────────────────
     os_rows = _q(
         """SELECT os_name, COUNT(*) as cnt
-           FROM page_analytics WHERE created_at > NOW() - INTERVAL :i
+           FROM page_analytics WHERE created_at >= :s
            GROUP BY os_name ORDER BY cnt DESC LIMIT 6""",
-        i=interval)
+        {"s": start_dt})
 
     # ── Top referrers ─────────────────────────────────────────────────────────
     ref_rows = _q(
         """SELECT referrer, COUNT(*) as cnt
            FROM page_analytics
            WHERE referrer IS NOT NULL AND referrer != ''
-             AND created_at > NOW() - INTERVAL :i
+             AND created_at >= :s
            GROUP BY referrer ORDER BY cnt DESC LIMIT 10""",
-        i=interval)
+        {"s": start_dt})
     top_referrers = [{'referrer': r[0][:80], 'cnt': r[1]} for r in ref_rows]
 
     # ── Country breakdown ─────────────────────────────────────────────────────
     country_rows = _q(
         """SELECT country, COUNT(*) as cnt
-           FROM page_analytics WHERE created_at > NOW() - INTERVAL :i
+           FROM page_analytics WHERE created_at >= :s
            GROUP BY country ORDER BY cnt DESC LIMIT 15""",
-        i=interval)
+        {"s": start_dt})
 
     # ── New vs Returning (approximate by session first-seen) ──────────────────
     new_sessions = _scalar(
         """SELECT COUNT(DISTINCT session_id) FROM page_analytics
-           WHERE created_at > NOW() - INTERVAL :i
+           WHERE created_at >= :s
              AND session_id NOT IN (
                SELECT DISTINCT session_id FROM page_analytics
-               WHERE created_at <= NOW() - INTERVAL :i
+               WHERE created_at < :s
              )""",
-        i=interval)
+        {"s": start_dt})
     returning_sessions = max(0, unique_sessions - new_sessions)
     new_pct = round(new_sessions / unique_sessions * 100, 1) if unique_sessions > 0 else 0
 
@@ -837,7 +859,8 @@ def platform_users():
                            search=search,
                            role_filter=role_filter,
                            status_filter=status_filter,
-                           law_firms=law_firms)
+                           law_firms=law_firms,
+                           now_dt=datetime.now())
 
 
 @superadmin_bp.route('/users/<user_id>/set-password', methods=['POST'])
@@ -1506,13 +1529,22 @@ def _get_site_setting(key: str, default: str = '') -> str:
 
 
 def _set_site_setting(key: str, value: str) -> None:
-    """Upsert a value in site_settings."""
+    """Upsert a value in site_settings (works with SQLite and PostgreSQL)."""
     try:
-        db.session.execute(text("""
-            INSERT INTO site_settings (key, value, updated_at)
-            VALUES (:k, :v, NOW())
-            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()
-        """), {"k": key, "v": value})
+        now_ts = datetime.now()
+        existing = db.session.execute(
+            text("SELECT key FROM site_settings WHERE key = :k"), {"k": key}
+        ).fetchone()
+        if existing:
+            db.session.execute(
+                text("UPDATE site_settings SET value = :v, updated_at = :t WHERE key = :k"),
+                {"k": key, "v": value, "t": now_ts}
+            )
+        else:
+            db.session.execute(
+                text("INSERT INTO site_settings (key, value, updated_at) VALUES (:k, :v, :t)"),
+                {"k": key, "v": value, "t": now_ts}
+            )
         db.session.commit()
     except Exception:
         db.session.rollback()

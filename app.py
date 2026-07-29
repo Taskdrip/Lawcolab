@@ -91,6 +91,16 @@ csrf = CSRFProtect(app)
 
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
+# ── Jinja2 globals (Python built-ins not auto-exposed in templates) ───────────
+from datetime import datetime as _dt  # noqa: E402
+app.jinja_env.globals.update(
+    max=max,
+    min=min,
+    abs=abs,
+    datetime=_dt,
+    now=_dt.now,
+)
+
 # ── Flask-Login ───────────────────────────────────────────────────────────────
 from flask_login import LoginManager  # noqa: E402
 

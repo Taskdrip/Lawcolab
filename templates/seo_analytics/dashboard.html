@@ -165,11 +165,11 @@
       <div class="chart-wrap mb-4">
         <div class="chart-title"><i class="fas fa-trophy me-2" style="color:#FFD700;"></i>Top Pages</div>
         {% if top_pages %}
-          {% set max_v = top_pages[0].views %}
+          {% set max_v = top_pages[0].views if top_pages[0].views > 0 else 1 %}
           {% for p in top_pages %}
           <div class="prog-bar-wrap">
             <div class="pb-label" title="{{ p.path }}">{{ p.path }}</div>
-            <div class="pb-bar"><div class="pb-bar-fill" style="width:{{ (p.views / max(max_v, 1) * 100)|int }}%;"></div></div>
+            <div class="pb-bar"><div class="pb-bar-fill" style="width:{{ (p.views / max_v * 100)|int }}%;"></div></div>
             <div class="pb-cnt">{{ p.views }}</div>
           </div>
           {% endfor %}
@@ -204,11 +204,11 @@
           <div class="chart-wrap h-100">
             <div class="chart-title"><i class="fas fa-share-alt me-2" style="color:#0d1b4b;"></i>Traffic Sources</div>
             {% if referrers %}
-              {% set max_r = referrers[0].cnt %}
+              {% set max_r = referrers[0].cnt if referrers[0].cnt > 0 else 1 %}
               {% for r in referrers %}
               <div class="prog-bar-wrap">
                 <div class="pb-label">{{ r.src[:28] }}</div>
-                <div class="pb-bar"><div class="pb-bar-fill" style="width:{{ (r.cnt / max(max_r, 1) * 100)|int }}%;"></div></div>
+                <div class="pb-bar"><div class="pb-bar-fill" style="width:{{ (r.cnt / max_r * 100)|int }}%;"></div></div>
                 <div class="pb-cnt">{{ r.cnt }}</div>
               </div>
               {% endfor %}
@@ -223,11 +223,11 @@
       <div class="chart-wrap mb-4">
         <div class="chart-title"><i class="fas fa-globe-africa me-2" style="color:#0d1b4b;"></i>Top Countries</div>
         {% if countries %}
-          {% set max_c = countries[0].cnt %}
+          {% set max_c = countries[0].cnt if countries[0].cnt > 0 else 1 %}
           {% for c in countries %}
           <div class="prog-bar-wrap">
             <div class="pb-label">{{ c.country }}</div>
-            <div class="pb-bar"><div class="pb-bar-fill" style="width:{{ (c.cnt / max(max_c, 1) * 100)|int }}%;background:#198754;"></div></div>
+            <div class="pb-bar"><div class="pb-bar-fill" style="width:{{ (c.cnt / max_c * 100)|int }}%;background:#198754;"></div></div>
             <div class="pb-cnt">{{ c.cnt }}</div>
           </div>
           {% endfor %}
