@@ -50,9 +50,12 @@
     <div class="card border-0 shadow-sm mb-3" style="border-radius:14px;">
       <div class="card-body p-4">
         <h6 class="fw-700 mb-3" style="color:var(--navy);"><i class="fas fa-pen me-2" style="color:#7c3aed;"></i>Log a Social Post</h6>
-        <button class="btn w-100 fw-600" style="background:#7c3aed;color:#fff;border-radius:10px;" onclick="document.getElementById('engModal').classList.add('open')">
+        <button class="btn w-100 fw-600 mb-2" style="background:#7c3aed;color:#fff;border-radius:10px;" onclick="document.getElementById('engModal').classList.add('open')">
           <i class="fas fa-plus me-1"></i> Record Engagement
         </button>
+        <a href="{{ url_for('research_robot.post_templates') }}" class="btn w-100 btn-outline-secondary fw-600" style="border-radius:10px;font-size:.82rem;">
+          <i class="fas fa-file-alt me-1"></i> Browse Templates
+        </a>
       </div>
     </div>
 
@@ -223,9 +226,14 @@
           <input type="url" class="form-control form-control-sm" name="target_url" placeholder="https://facebook.com/groups/...">
         </div>
         <div class="col-12">
-          <label class="form-label fw-600 small">Post / Comment Content *</label>
-          <textarea class="form-control form-control-sm" name="post_content" rows="4" required
-            placeholder="Paste the text of your post or comment here…"></textarea>
+          <div class="d-flex align-items-center justify-content-between mb-1">
+            <label class="form-label fw-600 small mb-0">Post / Comment Content *</label>
+            <button type="button" class="btn btn-xs btn-outline-secondary" style="font-size:.68rem;padding:.15rem .5rem;" onclick="openTemplatePicker()">
+              <i class="fas fa-file-alt me-1"></i>Templates
+            </button>
+          </div>
+          <textarea class="form-control form-control-sm" name="post_content" id="engPostContent" rows="4" required
+            placeholder="Paste the text of your post or comment here, or use a template…"></textarea>
         </div>
         <div class="col-12">
           <label class="form-label fw-600 small">URL of Your Post (if available)</label>
@@ -283,6 +291,21 @@
 
 {% block extra_js %}
 <script>
+async function openTemplatePicker(){
+  // Open templates page in a small window for quick pick
+  const w = window.open('{{ url_for("research_robot.post_templates") }}', '_blank',
+    'width=900,height=700,scrollbars=yes,resizable=yes');
+  // Tell user to click "Use" on a template; the clipboard content will be pasted
+  setTimeout(()=>{
+    const ta = document.getElementById('engPostContent');
+    if(ta){
+      navigator.clipboard.readText().then(txt => {
+        if(txt) ta.value = txt;
+      }).catch(()=>{});
+    }
+  }, 3000);
+}
+
 function toggleMetrics(id){
   const f = document.getElementById('metrics-form-'+id);
   f.style.display = f.style.display === 'none' ? 'block' : 'none';

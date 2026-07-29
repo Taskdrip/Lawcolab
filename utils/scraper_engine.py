@@ -343,3 +343,209 @@ def _extract_address(text):
         if m:
             return m.group(0)
     return ""
+
+
+_EMAIL_RE = re.compile(r'[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}')
+
+def _extract_email(text):
+    """Extract first email address found in text."""
+    m = _EMAIL_RE.search(text)
+    return m.group(0) if m else ""
+
+
+def _guess_platform_from_content(text, title=""):
+    """Detect social platform from page body text."""
+    t = (text + " " + title).lower()
+    if "facebook.com" in t or "fb group" in t:  return "facebook"
+    if "linkedin.com" in t:                      return "linkedin"
+    if "reddit.com"   in t or "subreddit" in t:  return "reddit"
+    if "quora.com"    in t or "quora"    in t:   return "quora"
+    if "twitter.com"  in t or "tweet"    in t:   return "twitter"
+    if "youtube.com"  in t:                      return "youtube"
+    if "telegram"     in t or "t.me"     in t:   return "telegram"
+    if "whatsapp"     in t:                       return "whatsapp"
+    if "google maps"  in t or "place_id" in t:   return "google_gmb"
+    return "web"
+
+
+def extract_page_contacts(html_text):
+    """
+    Parse raw HTML and extract structured contact + metadata.
+    Returns: title, description, phones, emails, address, member_count,
+             member_count_text, links, platform, text_preview.
+    """
+    soup = BeautifulSoup(html_text[:300000], "lxml")
+    for tag in soup(["script", "style", "noscript", "nav", "footer"]):
+        tag.decompose()
+
+    text = soup.get_text(separator=" ", strip=True)
+
+    # Title
+    title = ""
+    if soup.find("title"):
+        title = soup.find("title").get_text(strip=True)[:300]
+    if not title and soup.find("h1"):
+        title = soup.find("h1").get_text(strip=True)[:300]
+
+    # Description — meta or first long paragraph
+    desc = ""
+    meta = soup.find("meta", attrs={"name": "description"}) or \
+           soup.find("meta", attrs={"property": "og:description"})
+    if meta:
+        desc = (meta.get("content") or "")[:500]
+    if not desc:
+        for p in soup.find_all(["p", "div"]):
+            t = p.get_text(strip=True)
+            if len(t) > 80:
+                desc = t[:500]
+                break
+
+    # OG image
+    og_img = ""
+    og = soup.find("meta", attrs={"property": "og:image"})
+    if og:
+        og_img = og.get("content", "")[:500]
+
+    # Phones
+    phones = list(dict.fromkeys(
+        m.strip() for m in _PHONE_RE.findall(text)
+        if len(m.strip()) >= 7
+    ))[:5]
+
+    # Emails
+    emails = list(dict.fromkeys(_EMAIL_RE.findall(text)))[:5]
+
+    # Address
+    address = _extract_address(text)
+
+    # Member count
+    mc, mc_text = _extract_member_count(text)
+
+    # External links (first 10 meaningful ones)
+    links = []
+    seen_l = set()
+    for a in soup.find_all("a", href=True):
+        href = a["href"].strip()
+        if href.startswith("http") and href not in seen_l:
+            label = a.get_text(strip=True)[:80]
+            if label and len(label) > 2:
+                links.append({"url": href, "label": label})
+                seen_l.add(href)
+        if len(links) >= 12:
+            break
+
+    platform = _guess_platform_from_content(text, title)
+
+    return {
+        "title":             title,
+        "description":       desc,
+        "phones":            phones,
+        "emails":            emails,
+        "address":           address,
+        "member_count":      mc,
+        "member_count_text": mc_text or "",
+        "links":             links,
+        "platform":          platform,
+        "og_image":          og_img,
+        "text_preview":      text[:1200],
+    }
+
+
+def search_twitter_x(keyword, max_results=20):
+    """Search Twitter / X for legal discussions around keyword."""
+    results = []
+    queries = [
+        f'site:twitter.com "{keyword}" law OR legal',
+        f'site:x.com "{keyword}" lawyer attorney',
+    ]
+    seen = set()
+    for q in queries:
+        for item in _ddg_search(q, max_results=12):
+            if item["url"] in seen:
+                continue
+            seen.add(item["url"])
+            results.append({
+                "result_type": "community",
+                "platform":    "twitter",
+                "name":        item["title"],
+                "url":         item["url"],
+                "join_link":   item["url"],
+                "description": item["snippet"],
+                "snippet":     item["snippet"],
+                "category":    _categorise(keyword),
+                "country_focus": "Global",
+            })
+            if len(results) >= max_results:
+                break
+        time.sleep(0.3)
+    return results
+
+
+def search_ask_the_public(keyword, max_results=20):
+    """
+    Surface 'people also ask' style questions and public discussions.
+    Targets Reddit legal advice, Quora Q&A, general forums.
+    """
+    results = []
+    queries = [
+        f'"{keyword}" law "how do I" OR "what is" OR "can I" OR "is it legal"',
+        f'site:reddit.com/r/legaladvice "{keyword}"',
+        f'site:reddit.com/r/law "{keyword}"',
+        f'site:quora.com/q "{keyword}" legal',
+        f'"{keyword}" legal question discussion forum answers',
+    ]
+    seen = set()
+    for q in queries:
+        for item in _ddg_search(q, max_results=8):
+            if item["url"] in seen:
+                continue
+            seen.add(item["url"])
+            plat = _guess_platform(item["url"])
+            results.append({
+                "result_type": "community",
+                "platform":    plat,
+                "name":        item["title"],
+                "url":         item["url"],
+                "join_link":   item["url"],
+                "description": item["snippet"],
+                "snippet":     item["snippet"],
+                "category":    _categorise(keyword),
+                "country_focus": "Global",
+            })
+            if len(results) >= max_results:
+                break
+        if len(results) >= max_results:
+            break
+        time.sleep(0.3)
+    return results
+
+
+def search_reddit_threads(keyword, max_results=20):
+    """Find Reddit posts and threads on legal topics."""
+    results = []
+    queries = [
+        f'site:reddit.com "{keyword}" law legal',
+        f'site:reddit.com/r/legaladvice "{keyword}"',
+        f'site:reddit.com/r/business "{keyword}" legal',
+    ]
+    seen = set()
+    for q in queries:
+        for item in _ddg_search(q, max_results=10):
+            if item["url"] in seen:
+                continue
+            seen.add(item["url"])
+            results.append({
+                "result_type": "community",
+                "platform":    "reddit",
+                "name":        item["title"],
+                "url":         item["url"],
+                "join_link":   item["url"],
+                "description": item["snippet"],
+                "snippet":     item["snippet"],
+                "category":    _categorise(keyword),
+                "country_focus": "Global",
+            })
+            if len(results) >= max_results:
+                break
+        time.sleep(0.3)
+    return results

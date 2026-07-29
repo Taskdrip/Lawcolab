@@ -133,3 +133,29 @@ class SocialEngagement(db.Model):
     @property
     def engagement_score(self):
         return (self.likes or 0) + (self.comments or 0) * 2 + (self.shares or 0) * 3 + (self.clicks or 0)
+
+
+class PostTemplate(db.Model):
+    """
+    Pre-written post / comment templates for social media engagement.
+    Supports {{firm_name}}, {{topic}}, {{location}} placeholders.
+    """
+    __tablename__ = "post_templates"
+
+    id              = db.Column(Integer, primary_key=True)
+    title           = db.Column(String(200), nullable=False)
+    platform        = db.Column(String(60), default="all")
+    # all | facebook | linkedin | reddit | quora | twitter | youtube | telegram
+    category        = db.Column(String(100))
+    content         = db.Column(Text, nullable=False)
+    hashtags        = db.Column(String(500))
+    engagement_type = db.Column(String(40), default="comment")
+    # comment | post | share | reply | dm
+    use_count       = db.Column(Integer, default=0)
+    is_active       = db.Column(Boolean, default=True)
+    created_by_id   = db.Column(String, db.ForeignKey("users.id"), nullable=True)
+    created_at      = db.Column(DateTime, default=datetime.utcnow)
+    updated_at      = db.Column(DateTime, default=datetime.utcnow,
+                                onupdate=datetime.utcnow)
+
+    created_by = relationship("User", foreign_keys=[created_by_id])

@@ -10,18 +10,22 @@ Features:
   • Session history with stats
 """
 from flask import (Blueprint, render_template, request, jsonify, redirect,
-                   url_for, flash)
+                   url_for, flash, Response)
 from flask_login import current_user
 from app import db
 from models import DirectoryLawFirm, SocialCommunity
-from models_grabber import ResearchSession, GrabbedResult, SocialEngagement
+from models_grabber import ResearchSession, GrabbedResult, SocialEngagement, PostTemplate
 from utils.decorators import require_super_admin
 from utils.scraper_engine import (
-    search_communities, search_gmb_listings, search_quora, search_web
+    search_communities, search_gmb_listings, search_quora, search_web,
+    search_twitter_x, search_ask_the_public, search_reddit_threads,
+    extract_page_contacts,
 )
 from datetime import datetime
 from sqlalchemy import desc, func
 import json
+import csv
+import io
 import logging
 
 logger = logging.getLogger(__name__)
@@ -136,6 +140,14 @@ def scan():
             raw = search_gmb_listings(keyword, location=location or country, max_results=25)
         elif search_type == "quora":
             raw = search_quora(keyword, max_results=20)
+        elif search_type == "twitter":
+            raw = search_twitter_x(keyword, max_results=20)
+        elif search_type == "ask_public":
+            raw = search_ask_the_public(keyword, max_results=20)
+        elif search_type == "reddit":
+            raw = search_reddit_threads(keyword, max_results=20)
+        elif platform == "twitter":
+            raw = search_twitter_x(keyword, max_results=20)
         elif platform == "all" or search_type == "web":
             raw = search_communities(keyword, platform="all", country=country, max_results=30)
         else:
@@ -618,6 +630,14 @@ def browser():
                    .order_by(SocialCommunity.community_name)
                    .limit(100).all())
 
+    # Smart extraction from fetched HTML
+    extracted = {}
+    if content and not error:
+        try:
+            extracted = extract_page_contacts(content)
+        except Exception:
+            pass
+
     return render_template(
         "research_robot/browser.html",
         url=url,
@@ -625,4 +645,230 @@ def browser():
         error=error,
         communities=communities,
         platform_meta=PLATFORM_META,
+        extracted=extracted,
+    )
+
+
+# ── Smart URL Scrape (AJAX) ────────────────────────────────────────────────────
+
+@research_robot_bp.route("/scrape-url", methods=["POST"])
+@require_super_admin
+def scrape_url():
+    """Fetch a URL server-side and return extracted contacts/metadata as JSON."""
+    import socket, ipaddress
+    from urllib.parse import urlparse as _parse
+
+    data = request.get_json(force=True) or {}
+    url  = (data.get("url") or "").strip()
+    if not url:
+        return jsonify({"error": "url required"}), 400
+
+    _PRIVATE_NETS = [
+        ipaddress.ip_network("10.0.0.0/8"), ipaddress.ip_network("172.16.0.0/12"),
+        ipaddress.ip_network("192.168.0.0/16"), ipaddress.ip_network("127.0.0.0/8"),
+        ipaddress.ip_network("169.254.0.0/16"),
+    ]
+    try:
+        parsed = _parse(url)
+        if parsed.scheme not in ("http", "https"):
+            return jsonify({"error": "Only http/https URLs allowed"}), 400
+        for info in socket.getaddrinfo(parsed.hostname, None):
+            ip = ipaddress.ip_address(info[4][0])
+            if any(ip in net for net in _PRIVATE_NETS):
+                return jsonify({"error": "Private/internal address blocked"}), 400
+    except Exception as exc:
+        return jsonify({"error": str(exc)}), 400
+
+    try:
+        import requests as _req
+        r = _req.get(url, headers={
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36"
+        }, timeout=12, allow_redirects=True)
+        html = r.text[:400000]
+        extracted = extract_page_contacts(html)
+        return jsonify({"ok": True, "url": url, **extracted})
+    except Exception as exc:
+        return jsonify({"error": str(exc)}), 500
+
+
+# ── Manual Quick-Add (AJAX) ────────────────────────────────────────────────────
+
+@research_robot_bp.route("/quick-add", methods=["POST"])
+@require_super_admin
+def quick_add():
+    """Directly add a community or law firm record without running a full scan."""
+    d      = request.get_json(force=True) or {}
+    target = d.get("target", "community")  # 'community' | 'crm'
+    name   = (d.get("name") or "").strip()
+    url_   = (d.get("url") or "").strip()
+
+    if not name:
+        return jsonify({"error": "name required"}), 400
+
+    if target == "community":
+        exists = SocialCommunity.query.filter(
+            SocialCommunity.community_name.ilike(f"%{name}%")
+        ).first()
+        if exists:
+            return jsonify({"ok": True, "status": "duplicate", "id": exists.id})
+        sc = SocialCommunity(
+            platform=d.get("platform", "web"),
+            community_name=name,
+            url=url_,
+            join_link=url_,
+            description=d.get("description", ""),
+            category=d.get("category", "Legal General"),
+            country_focus=d.get("country", "Global"),
+            member_count=d.get("member_count"),
+            member_count_display=d.get("member_count_text", ""),
+            language="English",
+            source="manual_browser",
+            is_active=True,
+            outreach_status="not_contacted",
+        )
+        db.session.add(sc)
+        db.session.commit()
+        return jsonify({"ok": True, "status": "added_community", "id": sc.id})
+
+    # CRM / Law Firm Directory
+    exists = DirectoryLawFirm.query.filter(
+        DirectoryLawFirm.name.ilike(f"%{name}%")
+    ).first()
+    if exists:
+        return jsonify({"ok": True, "status": "duplicate", "id": exists.id})
+    firm = DirectoryLawFirm(
+        name=name,
+        description=d.get("description", ""),
+        phone=d.get("phone", ""),
+        email=d.get("email", ""),
+        website=url_,
+        address=d.get("address", ""),
+        city=d.get("city", ""),
+        country=d.get("country", "Global"),
+        source="manual_browser",
+        is_active=True,
+        pipeline_stage="discovered",
+        crm_status="active",
+    )
+    db.session.add(firm)
+    db.session.commit()
+    return jsonify({"ok": True, "status": "added_crm", "id": firm.id})
+
+
+# ── Post Templates ─────────────────────────────────────────────────────────────
+
+@research_robot_bp.route("/post-templates")
+@require_super_admin
+def post_templates():
+    platform = request.args.get("platform", "")
+    etype    = request.args.get("type", "")
+    q = PostTemplate.query.filter_by(is_active=True)
+    if platform:
+        q = q.filter(PostTemplate.platform.in_([platform, "all"]))
+    if etype:
+        q = q.filter_by(engagement_type=etype)
+    templates = q.order_by(PostTemplate.use_count.desc()).all()
+    return render_template(
+        "research_robot/post_templates.html",
+        templates=templates,
+        platform_meta=PLATFORM_META,
+        filter_platform=platform,
+        filter_type=etype,
+    )
+
+
+@research_robot_bp.route("/post-templates/add", methods=["POST"])
+@require_super_admin
+def add_post_template():
+    d = request.form
+    tpl = PostTemplate(
+        title=d.get("title", "")[:200],
+        platform=d.get("platform", "all"),
+        category=d.get("category", "Legal General"),
+        content=d.get("content", ""),
+        hashtags=d.get("hashtags", "")[:500],
+        engagement_type=d.get("engagement_type", "comment"),
+        created_by_id=current_user.id if current_user.is_authenticated else None,
+    )
+    db.session.add(tpl)
+    db.session.commit()
+    if request.headers.get("X-Requested-With") == "fetch":
+        return jsonify({"ok": True, "id": tpl.id})
+    flash("Template saved.", "success")
+    return redirect(url_for("research_robot.post_templates"))
+
+
+@research_robot_bp.route("/post-templates/<int:tpl_id>/delete", methods=["POST"])
+@require_super_admin
+def delete_post_template(tpl_id):
+    tpl = PostTemplate.query.get_or_404(tpl_id)
+    db.session.delete(tpl)
+    db.session.commit()
+    return jsonify({"ok": True})
+
+
+@research_robot_bp.route("/post-templates/<int:tpl_id>/use", methods=["POST"])
+@require_super_admin
+def use_post_template(tpl_id):
+    """Return template content and increment use count."""
+    tpl = PostTemplate.query.get_or_404(tpl_id)
+    tpl.use_count = (tpl.use_count or 0) + 1
+    db.session.commit()
+    return jsonify({
+        "ok": True,
+        "content":  tpl.content,
+        "hashtags": tpl.hashtags or "",
+        "platform": tpl.platform,
+        "type":     tpl.engagement_type,
+    })
+
+
+# ── CSV Export ─────────────────────────────────────────────────────────────────
+
+@research_robot_bp.route("/export")
+@require_super_admin
+def export_results():
+    """Export grabbed results (all or by session) as CSV."""
+    session_id = request.args.get("session_id", type=int)
+    export_type = request.args.get("type", "results")  # results | engagements
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    if export_type == "engagements":
+        writer.writerow(["ID", "Platform", "Type", "Target", "URL", "Content",
+                         "Status", "Views", "Likes", "Comments", "Shares",
+                         "Score", "Campaign", "Posted At"])
+        rows = SocialEngagement.query.order_by(desc(SocialEngagement.posted_at)).all()
+        for e in rows:
+            writer.writerow([
+                e.id, e.platform, e.engagement_type, e.target_name or "",
+                e.target_url or "", (e.post_content or "")[:500],
+                e.status, e.views or 0, e.likes or 0, e.comments or 0,
+                e.shares or 0, e.engagement_score, e.campaign_tag or "",
+                e.posted_at.strftime("%Y-%m-%d %H:%M") if e.posted_at else "",
+            ])
+        filename = "social_engagements.csv"
+    else:
+        writer.writerow(["ID", "Session ID", "Type", "Platform", "Name", "URL",
+                         "Phone", "Email", "Address", "City", "Rating",
+                         "Members", "Category", "Status", "Created"])
+        q = GrabbedResult.query
+        if session_id:
+            q = q.filter_by(session_id=session_id)
+        for gr in q.order_by(GrabbedResult.id).all():
+            writer.writerow([
+                gr.id, gr.session_id, gr.result_type, gr.platform,
+                gr.name or "", gr.url or "", gr.phone or "", gr.email or "",
+                gr.address or "", gr.city or "", gr.rating or "",
+                gr.member_count or "", gr.category or "", gr.status,
+                gr.created_at.strftime("%Y-%m-%d") if gr.created_at else "",
+            ])
+        filename = f"grabbed_results{'_session_'+str(session_id) if session_id else ''}.csv"
+
+    output.seek(0)
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
     )

@@ -154,8 +154,12 @@
   <div class="sidebar-section">Social</div>
   <ul class="sidebar-nav">
     <li><a href="{{ url_for('research_robot.engagement') }}"
-           class="{{ 'active' if 'engagement' in request.endpoint else '' }}">
+           class="{{ 'active' if request.endpoint in ('research_robot.engagement','research_robot.add_engagement','research_robot.update_metrics','research_robot.delete_engagement') else '' }}">
       <span class="nav-icon"><i class="fas fa-comments"></i></span> Engagement Tracker
+    </a></li>
+    <li><a href="{{ url_for('research_robot.post_templates') }}"
+           class="{{ 'active' if 'post_template' in request.endpoint else '' }}">
+      <span class="nav-icon"><i class="fas fa-file-alt"></i></span> Post Templates
     </a></li>
   </ul>
 
@@ -177,7 +181,7 @@
 
   <div class="mt-auto p-3 border-top" style="border-color:rgba(255,255,255,.08)!important;">
     <div class="text-center" style="color:rgba(255,255,255,.3);font-size:.65rem;">
-      <i class="fas fa-robot me-1"></i> Research Robot v1.0
+      <i class="fas fa-robot me-1"></i> Research Robot v2.0
     </div>
   </div>
 </aside>

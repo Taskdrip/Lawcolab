@@ -607,6 +607,24 @@ def run_migrations(db):
     is_sqlite = str(db.engine.url).startswith("sqlite")
 
     with db.engine.connect() as conn:
+        # ── post_templates table (Research Robot) ────────────────────────────
+        migrations.append("""
+        CREATE TABLE IF NOT EXISTS post_templates (
+            id SERIAL PRIMARY KEY,
+            title VARCHAR(200) NOT NULL,
+            platform VARCHAR(60) DEFAULT 'all',
+            category VARCHAR(100),
+            content TEXT NOT NULL,
+            hashtags VARCHAR(500),
+            engagement_type VARCHAR(40) DEFAULT 'comment',
+            use_count INTEGER DEFAULT 0,
+            is_active BOOLEAN DEFAULT TRUE,
+            created_by_id VARCHAR REFERENCES users(id),
+            created_at TIMESTAMP DEFAULT NOW(),
+            updated_at TIMESTAMP DEFAULT NOW()
+        )
+        """)
+
         for sql in migrations:
             exec_sql = sql
             if is_sqlite:

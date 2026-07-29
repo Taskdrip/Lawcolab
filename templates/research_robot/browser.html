@@ -5,39 +5,52 @@
 
 {% block extra_css %}
 <style>
-.browser-bar{background:#fff;border:1px solid var(--border);border-radius:12px;padding:.6rem 1rem;display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;}
-.browser-bar input{flex:1;border:none;outline:none;font-size:.9rem;}
-.browser-frame{background:#fff;border:1px solid var(--border);border-radius:12px;min-height:70vh;overflow:hidden;}
-.quick-link{display:inline-flex;align-items:center;gap:.4rem;padding:.35rem .75rem;border-radius:8px;font-size:.78rem;font-weight:600;text-decoration:none;border:1px solid var(--border);color:var(--text);transition:all .15s;}
+.browser-bar{background:#fff;border:1px solid var(--border);border-radius:12px;padding:.6rem 1rem;display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;box-shadow:0 1px 6px rgba(0,0,0,.04);}
+.browser-bar input{flex:1;border:none;outline:none;font-size:.88rem;background:transparent;}
+.browser-frame{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.quick-link{display:inline-flex;align-items:center;gap:.4rem;padding:.3rem .7rem;border-radius:8px;font-size:.76rem;font-weight:600;text-decoration:none;border:1px solid var(--border);color:var(--text);transition:all .15s;}
 .quick-link:hover{border-color:#7c3aed;color:#7c3aed;background:#faf5ff;}
-.scraped-section{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-top:1rem;}
+.extract-panel{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.25rem;}
+.contact-chip{display:inline-flex;align-items:center;gap:.35rem;padding:.22rem .65rem;background:#f3f4f6;border-radius:20px;font-size:.75rem;font-weight:500;cursor:pointer;transition:background .12s;}
+.contact-chip:hover{background:#ede9fe;color:#7c3aed;}
+.contact-chip.used{background:#d1fae5;color:#065f46;}
+.ext-section{margin-bottom:.9rem;}
+.ext-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6c757d;margin-bottom:.4rem;}
+.grab-comm{background:#ede9fe;color:#7c3aed;border:none;padding:.28rem .75rem;border-radius:6px;font-size:.72rem;font-weight:700;cursor:pointer;}
+.grab-comm:hover{background:#7c3aed;color:#fff;}
+.grab-crm{background:#dbeafe;color:#1d4ed8;border:none;padding:.28rem .75rem;border-radius:6px;font-size:.72rem;font-weight:700;cursor:pointer;}
+.grab-crm:hover{background:#1d4ed8;color:#fff;}
+.tab-btn{background:none;border:none;padding:.45rem .9rem;border-radius:8px;font-size:.78rem;font-weight:600;color:#6c757d;cursor:pointer;transition:all .12s;}
+.tab-btn.active{background:var(--robot-light);color:var(--robot);}
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="row g-3">
-  <div class="col-lg-9">
+  <!-- ── Main browsing area ── -->
+  <div class="col-lg-8">
+
     <!-- Address bar -->
     <form method="GET" action="{{ url_for('research_robot.browser') }}" class="browser-bar">
-      <div class="d-flex align-items-center gap-2" style="color:#6c757d;font-size:.85rem;">
-        <i class="fas fa-lock text-success"></i>
-      </div>
-      <input type="url" name="url" value="{{ url }}" placeholder="Enter a URL to browse and research — e.g. https://facebook.com/groups/…">
-      <button type="submit" class="btn btn-sm fw-600" style="background:#7c3aed;color:#fff;border-radius:8px;">
+      <i class="fas fa-lock text-success" style="font-size:.8rem;flex-shrink:0;"></i>
+      <input type="url" name="url" id="urlBar" value="{{ url }}"
+             placeholder="Enter URL — e.g. https://facebook.com/groups/…, https://quora.com/topic/…">
+      <button type="submit" class="btn btn-sm fw-700" style="background:#7c3aed;color:#fff;border-radius:8px;flex-shrink:0;">
         <i class="fas fa-arrow-right"></i>
       </button>
     </form>
 
     <!-- Quick links -->
-    <div class="mb-3 d-flex flex-wrap gap-2">
-      <span class="text-muted small fw-600 me-1" style="line-height:2;">Quick Links:</span>
+    <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
+      <span class="text-muted small fw-600" style="line-height:2.2;">Quick:</span>
       {% set quick = [
-        ('Facebook Groups', 'https://www.facebook.com/groups/', 'facebook', '#1877F2'),
-        ('LinkedIn Groups', 'https://www.linkedin.com/groups/', 'linkedin', '#0A66C2'),
-        ('Reddit Legal', 'https://www.reddit.com/r/legaladvice/', 'reddit', '#FF4500'),
-        ('Quora Law', 'https://www.quora.com/topic/Law', 'quora', '#A82400'),
-        ('Google Maps', 'https://www.google.com/maps/search/law+firm/', 'google', '#4285F4'),
-        ('Bar Assoc.', 'https://www.americanbar.org/groups/', 'globe', '#0d1b4b'),
+        ('FB Groups', 'https://www.facebook.com/groups/','facebook','#1877F2'),
+        ('LI Groups', 'https://www.linkedin.com/groups/','linkedin','#0A66C2'),
+        ('Reddit Legal', 'https://www.reddit.com/r/legaladvice/','reddit','#FF4500'),
+        ('Quora Law', 'https://www.quora.com/topic/Law','quora','#A82400'),
+        ('Twitter/X Legal', 'https://twitter.com/search?q=law+legal','twitter','#000'),
+        ('Google Maps', 'https://www.google.com/maps/search/law+firm/','google','#4285F4'),
+        ('ABA Groups', 'https://www.americanbar.org/groups/','globe','#0d1b4b'),
       ] %}
       {% for label, link, icon, color in quick %}
       <a href="{{ url_for('research_robot.browser', url=link) }}" class="quick-link">
@@ -46,49 +59,151 @@
       {% endfor %}
     </div>
 
-    <!-- Page content display -->
+    <!-- Error -->
     {% if error %}
-    <div class="alert alert-warning">
-      <i class="fas fa-exclamation-triangle me-2"></i><strong>Could not load page:</strong> {{ error }}
-      <p class="mb-0 mt-1 small">Some sites block external requests. Use the URL as a reference and open it in a new tab.</p>
+    <div class="alert alert-warning mb-3">
+      <i class="fas fa-exclamation-triangle me-2"></i><strong>Could not load:</strong> {{ error }}
+      {% if url %}<br><small class="mt-1 d-block">Some sites block server-side requests. <a href="{{ url }}" target="_blank" rel="noopener">Open directly in new tab</a>.</small>{% endif %}
     </div>
     {% endif %}
 
     {% if url %}
-      <!-- Iframe embed attempt -->
-      <div class="browser-frame mb-3">
-        <div class="p-3 border-bottom d-flex align-items-center gap-2" style="background:#f8f9fa;">
-          <span class="text-muted small text-truncate flex-grow-1">{{ url }}</span>
-          <a href="{{ url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-external-link-alt me-1"></i>Open in Tab
-          </a>
+    <!-- Tab bar -->
+    <div class="mb-2 d-flex gap-1">
+      <button class="tab-btn active" onclick="switchTab(this,'tabIframe')"><i class="fas fa-desktop me-1"></i>Live Preview</button>
+      {% if content %}<button class="tab-btn" onclick="switchTab(this,'tabText')"><i class="fas fa-file-alt me-1"></i>Page Text</button>{% endif %}
+      {% if extracted %}<button class="tab-btn" onclick="switchTab(this,'tabExtract')"><i class="fas fa-magic me-1"></i>Smart Extraction <span class="badge bg-success ms-1" style="font-size:.6rem;">NEW</span></button>{% endif %}
+    </div>
+
+    <!-- Tab: Live iframe -->
+    <div id="tabIframe" class="browser-frame" style="min-height:60vh;">
+      <div class="p-3 border-bottom d-flex align-items-center gap-2" style="background:#f8f9fa;">
+        <span class="text-muted small text-truncate flex-grow-1" style="font-size:.78rem;">{{ url }}</span>
+        <a href="{{ url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary" style="font-size:.72rem;">
+          <i class="fas fa-external-link-alt me-1"></i>New Tab
+        </a>
+        <button class="btn btn-sm btn-outline-secondary" style="font-size:.72rem;" onclick="reloadFrame()">
+          <i class="fas fa-redo"></i>
+        </button>
+      </div>
+      <iframe id="mainFrame" src="{{ url }}" style="width:100%;height:60vh;border:none;"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+              onload="handleFrameLoad(this)"
+              onerror="document.getElementById('iframeError').style.display='block';this.style.display='none'">
+      </iframe>
+      <div id="iframeError" style="display:none;" class="text-center py-5 text-muted">
+        <i class="fas fa-ban fa-2x mb-3 d-block opacity-30"></i>
+        <p class="mb-2">This site blocks embedding. Use the Smart Extraction tab to see page data.</p>
+        <a href="{{ url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">Open in New Tab</a>
+      </div>
+    </div>
+
+    {% if content %}
+    <!-- Tab: Page text -->
+    <div id="tabText" class="browser-frame d-none" style="padding:1.25rem;">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-700 mb-0" style="color:var(--navy);font-size:.88rem;"><i class="fas fa-file-alt me-2" style="color:#7c3aed;"></i>Extracted Page Content</h6>
+        <button class="btn btn-sm btn-outline-secondary" onclick="copyText()"><i class="fas fa-copy me-1"></i>Copy</button>
+      </div>
+      <pre id="scrapedText" style="max-height:55vh;overflow-y:auto;background:#f8f9fa;border-radius:8px;padding:1rem;font-size:.78rem;line-height:1.65;white-space:pre-wrap;font-family:inherit;">{{ content | truncate(4000) }}</pre>
+    </div>
+    {% endif %}
+
+    {% if extracted %}
+    <!-- Tab: Smart extraction -->
+    <div id="tabExtract" class="browser-frame d-none" style="padding:1.5rem;">
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="flex-grow-1">
+          <h6 class="fw-700 mb-1" style="color:var(--navy);">
+            <i class="fas fa-magic me-2" style="color:#7c3aed;"></i>Smart Data Extraction
+          </h6>
+          <div class="text-muted" style="font-size:.78rem;">Auto-detected from page content. Click any value to copy to the Quick-Add form.</div>
         </div>
-        <iframe src="{{ url }}" style="width:100%;height:65vh;border:none;"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                onerror="this.style.display='none';document.getElementById('iframeError').style.display='block'">
-        </iframe>
-        <div id="iframeError" style="display:none;" class="text-center py-5 text-muted">
-          <i class="fas fa-ban fa-2x mb-3 d-block opacity-25"></i>
-          <p>This site cannot be embedded. <a href="{{ url }}" target="_blank" rel="noopener">Open it in a new tab</a> instead.</p>
+        <span class="platform-badge pb-{{ extracted.platform }}">{{ platform_meta.get(extracted.platform, {'label': extracted.platform}).label }}</span>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          {% if extracted.title %}
+          <div class="ext-section">
+            <div class="ext-label"><i class="fas fa-heading me-1"></i>Title / Name</div>
+            <span class="contact-chip" onclick="fillField('qa-name','{{ extracted.title|replace("'","\\'")|replace("\n"," ") }}')">
+              <i class="fas fa-tag me-1"></i>{{ extracted.title[:80] }}
+            </span>
+          </div>
+          {% endif %}
+
+          {% if extracted.phones %}
+          <div class="ext-section">
+            <div class="ext-label"><i class="fas fa-phone me-1"></i>Phone Numbers</div>
+            <div class="d-flex flex-wrap gap-1">
+              {% for ph in extracted.phones %}
+              <span class="contact-chip" onclick="fillField('qa-phone','{{ ph }}')">
+                <i class="fas fa-phone me-1 text-success"></i>{{ ph }}
+              </span>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          {% if extracted.emails %}
+          <div class="ext-section">
+            <div class="ext-label"><i class="fas fa-envelope me-1"></i>Email Addresses</div>
+            <div class="d-flex flex-wrap gap-1">
+              {% for em in extracted.emails %}
+              <span class="contact-chip" onclick="fillField('qa-email','{{ em }}')">
+                <i class="fas fa-envelope me-1 text-primary"></i>{{ em }}
+              </span>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6">
+          {% if extracted.description %}
+          <div class="ext-section">
+            <div class="ext-label"><i class="fas fa-align-left me-1"></i>Description</div>
+            <div style="background:#f8f9fa;border-radius:8px;padding:.65rem;font-size:.78rem;line-height:1.5;cursor:pointer;"
+                 onclick="fillField('qa-desc','{{ extracted.description[:400]|replace("'","\\'")|replace("\n"," ") }}')">
+              {{ extracted.description[:200] }}{% if extracted.description|length > 200 %}…{% endif %}
+              <div class="text-muted mt-1" style="font-size:.68rem;"><i class="fas fa-hand-pointer me-1"></i>Click to copy to form</div>
+            </div>
+          </div>
+          {% endif %}
+
+          {% if extracted.address %}
+          <div class="ext-section">
+            <div class="ext-label"><i class="fas fa-map-marker-alt me-1"></i>Address</div>
+            <span class="contact-chip" onclick="fillField('qa-address','{{ extracted.address|replace("'","\\'")|replace("\n"," ") }}')">
+              <i class="fas fa-map-marker-alt me-1 text-danger"></i>{{ extracted.address[:80] }}
+            </span>
+          </div>
+          {% endif %}
+
+          {% if extracted.member_count %}
+          <div class="ext-section">
+            <div class="ext-label"><i class="fas fa-users me-1"></i>Members / Followers</div>
+            <span class="contact-chip" style="background:#ede9fe;color:#7c3aed;">
+              <i class="fas fa-users me-1"></i>{{ extracted.member_count_text or extracted.member_count }}
+            </span>
+          </div>
+          {% endif %}
         </div>
       </div>
 
-      <!-- Scraped text content -->
-      {% if content %}
-      <div class="scraped-section">
-        <div class="d-flex align-items-center justify-content-between mb-3">
-          <h6 class="fw-700 mb-0" style="color:var(--navy);">
-            <i class="fas fa-file-alt me-2" style="color:#7c3aed;"></i>Extracted Page Content
-          </h6>
-          <div class="d-flex gap-2">
-            <button class="btn btn-sm grab-comm" onclick="addToResearch()"><i class="fas fa-plus me-1"></i>Add to Research</button>
-          </div>
-        </div>
-        <div id="scrapedText" style="max-height:300px;overflow-y:auto;background:#f8f9fa;border-radius:8px;padding:1rem;font-size:.8rem;line-height:1.6;white-space:pre-wrap;">
-{{ content | truncate(3000) }}
-        </div>
+      <!-- Action buttons -->
+      <div class="d-flex gap-2 mt-3 pt-3 border-top flex-wrap">
+        <button class="grab-comm" onclick="saveExtractedToCRM('community')">
+          <i class="fas fa-users me-1"></i>Save to Communities CRM
+        </button>
+        <button class="grab-crm" onclick="saveExtractedToCRM('crm')">
+          <i class="fas fa-building me-1"></i>Save to Law Firm CRM
+        </button>
+        <div id="extract-save-status" class="small text-muted d-flex align-items-center ms-2"></div>
       </div>
-      {% endif %}
+    </div>
+    {% endif %}
 
     {% else %}
     <!-- Empty state -->
@@ -97,84 +212,103 @@
         <div style="font-size:4rem;">🌐</div>
         <h5 class="fw-700 mt-2 mb-1" style="color:var(--navy);">Research Browser</h5>
         <p class="text-muted px-4">
-          Enter a URL above to browse and extract data from social media communities,
-          law firm directories, and legal Q&amp;A sites. Content you find can be
-          added directly to your Communities CRM or Law Firm Directory.
+          Enter any URL above — Facebook groups, LinkedIn pages, Quora topics, law firm websites, or Google Maps results.
+          The Smart Extraction engine will automatically pull out names, phone numbers, emails, addresses, and member counts,
+          ready to save directly to your CRM.
         </p>
-        <div class="mt-3">
-          <p class="fw-600 small" style="color:var(--navy);">What you can do:</p>
-          <div class="d-flex flex-wrap justify-content-center gap-2 px-4">
-            <span class="badge bg-light text-dark border"><i class="fas fa-users me-1"></i>Browse Facebook Groups</span>
-            <span class="badge bg-light text-dark border"><i class="fas fa-map-marker-alt me-1"></i>Find GMB Listings</span>
-            <span class="badge bg-light text-dark border"><i class="fas fa-question-circle me-1"></i>Quora Legal Topics</span>
-            <span class="badge bg-light text-dark border"><i class="fas fa-linkedin me-1"></i>LinkedIn Groups</span>
-            <span class="badge bg-light text-dark border"><i class="fas fa-comments me-1"></i>Log Comments</span>
-          </div>
+        <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
+          <span class="badge bg-light text-dark border"><i class="fas fa-magic me-1" style="color:#7c3aed;"></i>Smart Data Extraction</span>
+          <span class="badge bg-light text-dark border"><i class="fas fa-phone me-1 text-success"></i>Phone & Email Detection</span>
+          <span class="badge bg-light text-dark border"><i class="fas fa-users me-1" style="color:#7c3aed;"></i>Member Count Detection</span>
+          <span class="badge bg-light text-dark border"><i class="fas fa-map-marker-alt me-1 text-danger"></i>Address Extraction</span>
+          <span class="badge bg-light text-dark border"><i class="fas fa-comment me-1 text-warning"></i>Log Social Posts</span>
         </div>
       </div>
     </div>
     {% endif %}
   </div>
 
-  <!-- Right sidebar: quick add panel -->
-  <div class="col-lg-3">
+  <!-- ── Right sidebar ── -->
+  <div class="col-lg-4">
+
+    <!-- Quick Add to CRM -->
     <div class="card border-0 shadow-sm mb-3" style="border-radius:14px;">
       <div class="card-body p-3">
         <h6 class="fw-700 mb-3" style="color:var(--navy);font-size:.85rem;">
           <i class="fas fa-plus-circle me-2" style="color:#7c3aed;"></i>Quick Add to CRM
         </h6>
         <div class="mb-2">
-          <label class="form-label fw-600" style="font-size:.75rem;">Name / Title</label>
-          <input type="text" class="form-control form-control-sm" id="qa-name" placeholder="Group or firm name">
+          <label class="form-label fw-600" style="font-size:.73rem;">Name / Title</label>
+          <input type="text" class="form-control form-control-sm" id="qa-name"
+                 placeholder="Group or firm name"
+                 value="{{ extracted.title[:100] if extracted and extracted.title else '' }}">
         </div>
         <div class="mb-2">
-          <label class="form-label fw-600" style="font-size:.75rem;">URL</label>
+          <label class="form-label fw-600" style="font-size:.73rem;">URL</label>
           <input type="text" class="form-control form-control-sm" id="qa-url" value="{{ url }}">
         </div>
         <div class="mb-2">
-          <label class="form-label fw-600" style="font-size:.75rem;">Description</label>
-          <textarea class="form-control form-control-sm" id="qa-desc" rows="3" placeholder="What is this group/firm about?"></textarea>
+          <label class="form-label fw-600" style="font-size:.73rem;">Phone</label>
+          <input type="text" class="form-control form-control-sm" id="qa-phone"
+                 placeholder="+1 555 000 0000"
+                 value="{{ extracted.phones[0] if extracted and extracted.phones else '' }}">
         </div>
         <div class="mb-2">
-          <label class="form-label fw-600" style="font-size:.75rem;">Add to</label>
+          <label class="form-label fw-600" style="font-size:.73rem;">Email</label>
+          <input type="text" class="form-control form-control-sm" id="qa-email"
+                 placeholder="contact@example.com"
+                 value="{{ extracted.emails[0] if extracted and extracted.emails else '' }}">
+        </div>
+        <div class="mb-2">
+          <label class="form-label fw-600" style="font-size:.73rem;">Address</label>
+          <input type="text" class="form-control form-control-sm" id="qa-address"
+                 placeholder="Street, City"
+                 value="{{ extracted.address if extracted and extracted.address else '' }}">
+        </div>
+        <div class="mb-2">
+          <label class="form-label fw-600" style="font-size:.73rem;">Description</label>
+          <textarea class="form-control form-control-sm" id="qa-desc" rows="2"
+            placeholder="What is this group / firm about?">{{ extracted.description[:300] if extracted and extracted.description else '' }}</textarea>
+        </div>
+        <div class="mb-2">
+          <label class="form-label fw-600" style="font-size:.73rem;">Platform</label>
+          <select class="form-select form-select-sm" id="qa-platform">
+            {% for p, meta in platform_meta.items() %}
+            <option value="{{ p }}"
+              {% if extracted and extracted.platform == p %}selected
+              {% elif p in url %}selected{% endif %}>{{ meta.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-600" style="font-size:.73rem;">Add to</label>
           <select class="form-select form-select-sm" id="qa-target">
             <option value="community">Communities CRM</option>
             <option value="crm">Law Firm CRM</option>
           </select>
         </div>
-        <div class="mb-3">
-          <label class="form-label fw-600" style="font-size:.75rem;">Platform</label>
-          <select class="form-select form-select-sm" id="qa-platform">
-            {% for p, meta in platform_meta.items() %}
-            <option value="{{ p }}"
-              {{ 'selected' if p in url else '' }}>{{ meta.label }}</option>
-            {% endfor %}
-          </select>
-        </div>
         <button class="btn w-100 btn-sm fw-600" style="background:#7c3aed;color:#fff;" onclick="quickAdd()">
-          <i class="fas fa-save me-1"></i> Save to CRM
+          <i class="fas fa-save me-1"></i>Save to CRM
         </button>
         <div id="qa-status" class="mt-2"></div>
       </div>
     </div>
 
-    <!-- Log engagement from current page -->
-    <div class="card border-0 shadow-sm" style="border-radius:14px;">
+    <!-- Log Engagement -->
+    <div class="card border-0 shadow-sm mb-3" style="border-radius:14px;">
       <div class="card-body p-3">
         <h6 class="fw-700 mb-3" style="color:var(--navy);font-size:.85rem;">
-          <i class="fas fa-comment me-2" style="color:#f59e0b;"></i>Log Engagement Here
+          <i class="fas fa-comment me-2" style="color:#f59e0b;"></i>Log Social Post
         </h6>
         <form method="POST" action="{{ url_for('research_robot.add_engagement') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="target_url" value="{{ url }}">
-          <div class="mb-2">
+          <div class="mb-2 d-flex gap-2">
             <select class="form-select form-select-sm" name="platform">
               {% for p, meta in platform_meta.items() %}
               <option value="{{ p }}" {{ 'selected' if p in url else '' }}>{{ meta.label }}</option>
               {% endfor %}
             </select>
-          </div>
-          <div class="mb-2">
             <select class="form-select form-select-sm" name="engagement_type">
               <option value="comment">Comment</option>
               <option value="post">Post</option>
@@ -183,8 +317,16 @@
             </select>
           </div>
           <div class="mb-2">
-            <textarea class="form-control form-control-sm" name="post_content" rows="4"
-              placeholder="Paste your comment/post text here…" required></textarea>
+            <textarea class="form-control form-control-sm" name="post_content" id="eng-content" rows="4"
+              placeholder="Paste your comment or post text here…" required></textarea>
+          </div>
+          <div class="mb-2 d-flex gap-2 align-items-center">
+            <input type="text" class="form-control form-control-sm" name="hashtags" placeholder="#legaltech #lawfirm">
+            <a href="{{ url_for('research_robot.post_templates') }}" target="_blank"
+               class="btn btn-sm btn-outline-secondary flex-shrink-0" style="font-size:.7rem;"
+               title="Browse post templates">
+              <i class="fas fa-file-alt"></i>
+            </a>
           </div>
           <input type="hidden" name="status" value="posted">
           <button type="submit" class="btn btn-sm w-100" style="background:#f59e0b;color:#fff;">
@@ -194,18 +336,22 @@
       </div>
     </div>
 
-    <!-- Communities list -->
+    <!-- Communities sidebar -->
     {% if communities %}
-    <div class="card border-0 shadow-sm mt-3" style="border-radius:12px;">
+    <div class="card border-0 shadow-sm" style="border-radius:12px;">
       <div class="card-body p-3">
-        <h6 class="fw-700 mb-2" style="font-size:.8rem;color:var(--navy);">
-          <i class="fas fa-users me-1" style="color:#7c3aed;"></i>Your Communities
-        </h6>
-        {% for c in communities[:8] %}
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h6 class="fw-700 mb-0" style="font-size:.8rem;color:var(--navy);">
+            <i class="fas fa-users me-1" style="color:#7c3aed;"></i>Your Communities
+          </h6>
+          <a href="{{ url_for('social_communities.index') }}" class="text-muted" style="font-size:.7rem;">All →</a>
+        </div>
+        {% for c in communities[:10] %}
         <a href="{{ url_for('research_robot.browser', url=c.url) }}"
            class="d-flex align-items-center gap-2 py-1 text-decoration-none text-dark" style="font-size:.75rem;">
-          <span class="platform-badge pb-{{ c.platform }}" style="padding:.08rem .35rem;font-size:.62rem;">{{ c.platform[:2]|upper }}</span>
-          <span class="text-truncate">{{ c.community_name[:30] }}</span>
+          <span class="platform-badge pb-{{ c.platform }}" style="padding:.06rem .3rem;font-size:.6rem;">{{ c.platform[:2]|upper }}</span>
+          <span class="text-truncate flex-grow-1">{{ c.community_name[:35] }}</span>
+          {% if c.member_count %}<span class="text-muted flex-shrink-0" style="font-size:.68rem;">{{ '{:,}'.format(c.member_count) }}</span>{% endif %}
         </a>
         {% endfor %}
       </div>
@@ -216,27 +362,49 @@
 {% endblock %}
 
 {% block extra_js %}
-<style>
-.grab-comm{background:#ede9fe;color:#7c3aed;border:none;padding:.25rem .7rem;border-radius:6px;font-size:.72rem;font-weight:700;cursor:pointer;}
-</style>
 <script>
-// Auto-detect iframe blocked
-document.addEventListener('DOMContentLoaded', function(){
-  const iframe = document.querySelector('iframe');
-  if(!iframe) return;
-  iframe.addEventListener('error', function(){
-    iframe.style.display = 'none';
-    document.getElementById('iframeError').style.display = 'block';
+function switchTab(btn, tabId){
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ['tabIframe','tabText','tabExtract'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.classList.toggle('d-none', id !== tabId);
   });
-  setTimeout(function(){
-    try {
-      const d = iframe.contentDocument || iframe.contentWindow.document;
-      // If we can access it, it loaded
-    } catch(e){
-      // Cross-origin — just leave it showing
+}
+
+function handleFrameLoad(frame){
+  try {
+    const doc = frame.contentDocument || frame.contentWindow.document;
+    if(!doc || !doc.body || doc.body.innerHTML.trim() === ''){
+      document.getElementById('iframeError').style.display = 'block';
+      frame.style.display = 'none';
     }
-  }, 3000);
-});
+  } catch(e){
+    // Cross-origin — the frame loaded, leave it showing
+  }
+}
+
+function reloadFrame(){
+  const f = document.getElementById('mainFrame');
+  if(f) f.src = f.src;
+}
+
+function fillField(fieldId, value){
+  const el = document.getElementById(fieldId);
+  if(!el) return;
+  el.value = value;
+  el.focus();
+  // Flash green
+  el.style.background = '#d1fae5';
+  setTimeout(()=>{ el.style.background = ''; }, 800);
+  // Mark chip as used
+  event.target.closest('.contact-chip')?.classList.add('used');
+}
+
+function copyText(){
+  const txt = document.getElementById('scrapedText')?.innerText || '';
+  navigator.clipboard.writeText(txt).catch(()=>{});
+}
 
 async function quickAdd(){
   const name    = document.getElementById('qa-name').value.trim();
@@ -244,30 +412,64 @@ async function quickAdd(){
   const desc    = document.getElementById('qa-desc').value.trim();
   const target  = document.getElementById('qa-target').value;
   const platform= document.getElementById('qa-platform').value;
+  const phone   = document.getElementById('qa-phone')?.value.trim() || '';
+  const email   = document.getElementById('qa-email')?.value.trim() || '';
+  const address = document.getElementById('qa-address')?.value.trim() || '';
   const status  = document.getElementById('qa-status');
 
-  if(!name || !url){ status.innerHTML = '<div class="text-danger small">Name and URL required.</div>'; return; }
+  if(!name){ status.innerHTML = '<div class="text-danger small">Name is required.</div>'; return; }
 
-  // First create a one-off scan session with a single result
-  status.innerHTML = '<div class="spinner-border spinner-border-sm text-primary"></div>';
+  status.innerHTML = '<div class="spinner-border spinner-border-sm text-primary me-1"></div> <span class="text-muted small">Saving…</span>';
 
-  const r = await csrfJsonFetch('{{ url_for("research_robot.scan") }}', {keyword: name, platform, search_type: target === 'crm' ? 'gmb_listing' : 'community', country:'Global'});
-  const d = await r.json();
-  if(d.error){ status.innerHTML = `<div class="text-danger small">${d.error}</div>`; return; }
-
-  if(d.results && d.results.length){
-    const firstId = d.results[0].id;
-    const fd = new FormData();
-    fd.append('target', target);
-    const r2 = await csrfFormFetch(`/superadmin/research-robot/grab/${firstId}`, fd);
-    const d2 = await r2.json();
-    if(d2.ok){
-      status.innerHTML = `<div class="text-success small"><i class="fas fa-check me-1"></i>Added! <a href="${target==='crm'?'/superadmin/crm/leads':'/superadmin/crm/communities/'}">View →</a></div>`;
+  try {
+    const r = await csrfJsonFetch('{{ url_for("research_robot.quick_add") }}', {
+      name, url, description: desc, target, platform, phone, email, address
+    });
+    const d = await r.json();
+    if(d.ok){
+      const href = target === 'community'
+        ? '{{ url_for("social_communities.index") }}'
+        : '{{ url_for("crm.leads") }}';
+      if(d.status === 'duplicate'){
+        status.innerHTML = `<div class="text-warning small"><i class="fas fa-exclamation-triangle me-1"></i>Already exists. <a href="${href}">View →</a></div>`;
+      } else {
+        status.innerHTML = `<div class="text-success small"><i class="fas fa-check me-1"></i>Saved! <a href="${href}">View in CRM →</a></div>`;
+      }
     } else {
-      status.innerHTML = `<div class="text-warning small">${d2.error||'Already exists'}</div>`;
+      status.innerHTML = `<div class="text-danger small">${d.error||'Error'}</div>`;
     }
-  } else {
-    status.innerHTML = `<div class="text-muted small">Scan returned 0 results — try a more specific keyword.</div>`;
+  } catch(e){
+    status.innerHTML = `<div class="text-danger small">${e.message}</div>`;
+  }
+}
+
+async function saveExtractedToCRM(target){
+  const name = document.getElementById('qa-name')?.value.trim()
+    || '{{ extracted.title[:80]|replace("'","\\'")|replace("\n","") if extracted and extracted.title else "" }}';
+  const url  = '{{ url }}';
+  const status = document.getElementById('extract-save-status');
+  if(!name){ status.innerHTML = '<span class="text-danger">No name detected.</span>'; return; }
+
+  status.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>';
+  try {
+    const r = await csrfJsonFetch('{{ url_for("research_robot.quick_add") }}', {
+      name,
+      url,
+      description: document.getElementById('qa-desc')?.value || '{{ extracted.description[:200]|replace("'","\\'")|replace("\n"," ") if extracted and extracted.description else "" }}',
+      phone:   document.getElementById('qa-phone')?.value || '',
+      email:   document.getElementById('qa-email')?.value || '',
+      address: document.getElementById('qa-address')?.value || '',
+      platform: '{{ extracted.platform if extracted and extracted.platform else "web" }}',
+      target,
+    });
+    const d = await r.json();
+    if(d.ok){
+      status.innerHTML = `<span class="text-success fw-600"><i class="fas fa-check me-1"></i>${d.status === 'duplicate' ? 'Already in CRM' : 'Saved!'}</span>`;
+    } else {
+      status.innerHTML = `<span class="text-danger">${d.error}</span>`;
+    }
+  } catch(e){
+    status.innerHTML = `<span class="text-danger">${e.message}</span>`;
   }
 }
 </script>
