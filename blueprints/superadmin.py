@@ -116,10 +116,48 @@ def toggle_user_status():
     flash(f'User {user.email} has been {status}.', 'success')
     return redirect(request.referrer or url_for('superadmin.manage_users'))
 
+def _sa_cleanup_user_fk(uid):
+    """Remove FK-dependent records before hard-deleting a user (superadmin version)."""
+    steps = [
+        "DELETE FROM project_messages WHERE user_id=:u",
+        "DELETE FROM direct_messages WHERE sender_id=:u OR receiver_id=:u",
+        "DELETE FROM chat_conversations WHERE user1_id=:u OR user2_id=:u",
+        "UPDATE support_requests SET resolved_by_id=NULL WHERE resolved_by_id=:u",
+        "DELETE FROM support_requests WHERE user_id=:u",
+        "DELETE FROM client_notes WHERE client_id=:u OR created_by_id=:u",
+        "DELETE FROM calendar_event_attendees WHERE user_id=:u",
+        "DELETE FROM calendar_events WHERE created_by_id=:u",
+        "DELETE FROM invoice_chat_attachments WHERE uploaded_by_id=:u",
+        "DELETE FROM invoice_chat_messages WHERE sender_id=:u",
+        "DELETE FROM invoice_chats WHERE client_id=:u OR created_by_id=:u",
+        "DELETE FROM invoice_notifications WHERE user_id=:u",
+        "DELETE FROM payment_records WHERE recorded_by_id=:u",
+        ("DELETE FROM invoice_line_items WHERE invoice_id IN "
+         "(SELECT id FROM invoices WHERE client_id=:u OR created_by_id=:u)"),
+        "DELETE FROM invoices WHERE client_id=:u OR created_by_id=:u",
+        "DELETE FROM project_files WHERE uploaded_by_id=:u",
+        ("DELETE FROM project_messages WHERE project_id IN "
+         "(SELECT id FROM projects WHERE created_by_id=:u)"),
+        ("DELETE FROM project_files WHERE project_id IN "
+         "(SELECT id FROM projects WHERE created_by_id=:u)"),
+        "UPDATE project_assignments SET assigned_by_id=NULL WHERE assigned_by_id=:u",
+        "DELETE FROM project_assignments WHERE user_id=:u",
+        ("DELETE FROM project_assignments WHERE project_id IN "
+         "(SELECT id FROM projects WHERE created_by_id=:u)"),
+        "DELETE FROM projects WHERE created_by_id=:u",
+    ]
+    for sql in steps:
+        try:
+            db.session.execute(text(sql), {"u": uid})
+        except Exception:
+            db.session.rollback()
+
 @superadmin_bp.route('/users/delete', methods=['POST'])
 @require_super_admin
 def delete_user():
     """Delete user account"""
+    import logging as _log
+    _logger = _log.getLogger(__name__)
     user_id = request.form.get('user_id')
     user = User.query.get_or_404(user_id)
     
@@ -127,11 +165,17 @@ def delete_user():
         flash('Cannot delete super admin account.', 'error')
         return redirect(request.referrer or url_for('superadmin.manage_users'))
     
-    email = user.email
-    db.session.delete(user)
-    db.session.commit()
-    
-    flash(f'User {email} has been permanently deleted.', 'success')
+    try:
+        email = user.email
+        _sa_cleanup_user_fk(user.id)
+        db.session.delete(user)
+        db.session.commit()
+        flash(f'User {email} has been permanently deleted.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        _logger.error("superadmin delete_user error: %s", e)
+        flash(f'Failed to delete user. Error: {str(e)[:120]}', 'error')
+
     return redirect(url_for('superadmin.manage_users'))
 
 @superadmin_bp.route('/analytics')

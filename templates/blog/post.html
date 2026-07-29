@@ -12,192 +12,155 @@
 
 {% block structured_data %}
 <script type="application/ld+json">
-{
-  "@context":"https://schema.org",
-  "@type":"BlogPosting",
-  "headline":"{{ post.title | replace('"',"'") }}",
-  "description":"{{ og_desc[:200] | replace('"',"'") }}",
-  "image":"{{ post.hero_image or '' }}",
-  "author":{"@type":"Person","name":"{{ post.author }}"},
-  "publisher":{"@type":"Organization","name":"LAWCOLAB","url":"https://lawcolab.com"},
-  "datePublished":"{{ post.published_at.isoformat() if post.published_at else '' }}",
-  "dateModified":"{{ post.updated_at.isoformat() if post.updated_at else '' }}",
-  "url":"https://lawcolab.com/blog/{{ post.slug }}"
-}
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"{{ post.title | replace('"',"'") }}","description":"{{ og_desc[:200] | replace('"',"'") }}","image":"{{ post.hero_image or '' }}","author":{"@type":"Person","name":"{{ post.author }}"},"publisher":{"@type":"Organization","name":"LAWCOLAB","url":"https://lawcolab.com"},"datePublished":"{{ post.published_at.isoformat() if post.published_at else '' }}","dateModified":"{{ post.updated_at.isoformat() if post.updated_at else '' }}","url":"{{ request.url }}"}
 </script>
 {% endblock %}
 
 {% block additional_css %}
 <style>
-/* ── Post Hero ── */
-.post-hero{
-  position:relative;overflow:hidden;
-  background:#070f2b;
-  min-height:420px;display:flex;align-items:flex-end;
-  padding-bottom:3rem;
-}
-.post-hero .ph-bg{
-  position:absolute;inset:0;
-  background-size:cover;background-position:center;
-  transition:transform 8s ease;
-}
-.post-hero:hover .ph-bg{transform:scale(1.03);}
-.post-hero .ph-overlay{
-  position:absolute;inset:0;
-  background:linear-gradient(to top,rgba(5,12,45,.97) 0%,rgba(5,12,45,.55) 55%,rgba(5,12,45,.2) 100%);
-}
-.post-hero .ph-content{position:relative;z-index:2;}
-.post-hero .breadcrumb-item a,.post-hero .breadcrumb-item{color:rgba(255,255,255,.55);font-size:.78rem;}
-.post-hero .breadcrumb-item.active{color:rgba(255,255,255,.8);}
-.post-hero .breadcrumb-item+.breadcrumb-item::before{color:rgba(255,255,255,.3);}
-.post-cat-badge{
-  display:inline-flex;align-items:center;gap:.35rem;
-  background:rgba(255,215,0,.18);border:1px solid rgba(255,215,0,.4);
-  color:#FFD700;font-size:.72rem;font-weight:700;
-  padding:.3rem .8rem;border-radius:50px;letter-spacing:.04em;
-  margin-bottom:1rem;text-transform:uppercase;
-}
-.post-hero h1{
-  font-family:'Playfair Display',Georgia,serif;
-  color:#fff;font-size:clamp(1.6rem,4vw,2.6rem);font-weight:800;
-  line-height:1.2;letter-spacing:-.02em;margin-bottom:1rem;
-}
-.post-meta-bar{
-  display:flex;flex-wrap:wrap;align-items:center;gap:1rem;
-  color:rgba(255,255,255,.65);font-size:.82rem;
-}
-.post-meta-bar .meta-item{display:flex;align-items:center;gap:.35rem;}
+/* ── Reading progress bar ── */
+#read-progress{position:fixed;top:0;left:0;width:0%;height:3px;background:linear-gradient(90deg,#FFD700,#f5a623);z-index:9999;transition:width .1s linear;border-radius:0 2px 2px 0;}
+
+/* ── Hero ── */
+.post-hero{position:relative;overflow:hidden;background:#060d24;min-height:440px;display:flex;align-items:flex-end;padding-bottom:3rem;}
+.ph-bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform 8s ease;}
+.post-hero:hover .ph-bg{transform:scale(1.025);}
+.ph-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(4,10,38,.98) 0%,rgba(4,10,38,.58) 55%,rgba(4,10,38,.18) 100%);}
+.ph-content{position:relative;z-index:2;}
+.ph-content .breadcrumb-item a,.ph-content .breadcrumb-item{color:rgba(255,255,255,.5);font-size:.75rem;}
+.ph-content .breadcrumb-item.active{color:rgba(255,255,255,.78);}
+.ph-content .breadcrumb-item+.breadcrumb-item::before{color:rgba(255,255,255,.28);}
+.post-cat-badge{display:inline-flex;align-items:center;gap:.3rem;background:rgba(255,215,0,.18);border:1px solid rgba(255,215,0,.4);color:#FFD700;font-size:.7rem;font-weight:700;padding:.28rem .75rem;border-radius:50px;letter-spacing:.04em;margin-bottom:.9rem;text-transform:uppercase;}
+.post-hero h1{font-family:'Playfair Display',Georgia,serif;color:#fff;font-size:clamp(1.5rem,4vw,2.5rem);font-weight:800;line-height:1.2;letter-spacing:-.02em;margin-bottom:.9rem;}
+.post-subtitle{color:rgba(255,255,255,.7);font-size:1rem;line-height:1.55;margin-bottom:1rem;font-style:italic;}
+.post-meta-bar{display:flex;flex-wrap:wrap;align-items:center;gap:.9rem;color:rgba(255,255,255,.6);font-size:.8rem;}
+.pmi{display:flex;align-items:center;gap:.32rem;}
+.rt-badge{background:rgba(255,215,0,.18);color:#FFD700;padding:.18rem .55rem;border-radius:50px;font-size:.72rem;font-weight:600;}
+
+/* ── Sticky float share (desktop) ── */
+.float-share{position:fixed;left:1rem;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:.5rem;z-index:500;}
+@media(max-width:1200px){.float-share{display:none;}}
+.fs-btn{width:42px;height:42px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.88rem;color:#fff;transition:transform .18s,box-shadow .18s;text-decoration:none;}
+.fs-btn:hover{transform:scale(1.15);color:#fff;}
+@keyframes float-glow{0%,100%{box-shadow:0 0 0 0 rgba(255,215,0,.5)}50%{box-shadow:0 0 14px 4px rgba(255,215,0,.35)}}
+.fs-btn.glow-float{animation:float-glow 2.8s ease-in-out infinite;}
 
 /* ── Article body ── */
-.article-body{
-  font-size:1.05rem;line-height:1.85;color:#1e2533;
-}
-.article-body h2{
-  font-family:'Playfair Display',Georgia,serif;
-  font-size:1.5rem;font-weight:700;color:#0d1b4b;
-  margin:2.25rem 0 1rem;padding-bottom:.5rem;
-  border-bottom:2px solid #f0f3fa;
-}
-.article-body h3{font-size:1.2rem;font-weight:700;color:#0d1b4b;margin:1.75rem 0 .75rem;}
+.article-body{font-size:1.05rem;line-height:1.88;color:#1e2533;}
+.article-body h2{font-family:'Playfair Display',Georgia,serif;font-size:1.5rem;font-weight:700;color:#0d1b4b;margin:2.25rem 0 1rem;padding-bottom:.5rem;border-bottom:2px solid #f0f3fa;}
+.article-body h3{font-size:1.18rem;font-weight:700;color:#0d1b4b;margin:1.75rem 0 .65rem;}
 .article-body p{margin-bottom:1.25rem;}
-.article-body ul,
-.article-body ol{margin-bottom:1.25rem;padding-left:1.5rem;}
+.article-body ul,.article-body ol{margin-bottom:1.25rem;padding-left:1.5rem;}
 .article-body li{margin-bottom:.4rem;}
 .article-body a{color:#0d1b4b;font-weight:600;text-underline-offset:3px;}
-.article-body a:hover{color:#FFD700;}
-.article-body blockquote{
-  border-left:4px solid #FFD700;background:#f8f9fd;
-  padding:1rem 1.5rem;border-radius:0 10px 10px 0;
-  font-style:italic;color:#3d4c6e;margin:1.5rem 0;
-}
+.article-body a:hover{color:#e6a200;}
+.article-body blockquote{border-left:4px solid #FFD700;background:#f8f9fd;padding:1.1rem 1.5rem;border-radius:0 12px 12px 0;font-style:italic;color:#3d4c6e;margin:1.75rem 0;}
 .article-body img{max-width:100%;border-radius:12px;margin:1.5rem 0;}
 .article-body strong{color:#0d1b4b;}
 
+/* ── Glowing inline CTA ── */
+@keyframes glow-text{0%,100%{text-shadow:0 0 6px rgba(255,215,0,.5),0 0 12px rgba(255,215,0,.2)}50%{text-shadow:0 0 16px rgba(255,215,0,1),0 0 30px rgba(255,215,0,.5)}}
+@keyframes pulse-border{0%,100%{box-shadow:0 0 0 0 rgba(255,215,0,.4),0 4px 24px rgba(13,27,75,.08)}50%{box-shadow:0 0 0 6px rgba(255,215,0,.12),0 4px 24px rgba(13,27,75,.1)}}
+.inline-cta{display:flex;align-items:center;justify-content:space-between;gap:1rem;background:linear-gradient(135deg,#0d1b4b 0%,#172a72 100%);border-radius:14px;padding:1.1rem 1.4rem;margin:2rem 0;animation:pulse-border 3s ease-in-out infinite;flex-wrap:wrap;}
+.inline-cta .cta-text{color:#fff;font-size:.92rem;font-weight:600;line-height:1.45;}
+.inline-cta .cta-text span{color:#FFD700;animation:glow-text 2.5s ease-in-out infinite;}
+.inline-cta .cta-btns{display:flex;gap:.5rem;flex-shrink:0;flex-wrap:wrap;}
+.cta-like-btn{display:inline-flex;align-items:center;gap:.35rem;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:50px;padding:.35rem .85rem;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .18s;text-decoration:none;}
+.cta-like-btn:hover{background:#FFD700;color:#0d1b4b;border-color:#FFD700;color:#0d1b4b;}
+.cta-share-btn{display:inline-flex;align-items:center;gap:.35rem;background:#FFD700;color:#0d1b4b;border:none;border-radius:50px;padding:.35rem .85rem;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .18s;animation:glow-text 2s ease-in-out infinite;}
+.cta-share-btn:hover{background:#fff;color:#0d1b4b;}
+
+/* ── Share section ── */
+@keyframes glow-btn{0%,100%{box-shadow:0 0 0 0 currentColor}50%{box-shadow:0 0 14px 3px currentColor}}
+.share-section{background:#f8f9fd;border-radius:18px;padding:1.75rem;margin:2.5rem 0;border:1.5px solid #eef0f8;}
+.share-section h4{font-family:'Playfair Display',serif;color:#0d1b4b;font-size:1.15rem;font-weight:700;margin-bottom:.35rem;}
+.share-section .share-sub{font-size:.82rem;color:#6c757d;margin-bottom:1.25rem;}
+.share-grid{display:flex;flex-wrap:wrap;gap:.55rem;}
+.sb{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1rem;border-radius:10px;font-size:.8rem;font-weight:700;text-decoration:none;color:#fff!important;border:none;cursor:pointer;transition:transform .15s,opacity .15s;position:relative;overflow:hidden;}
+.sb::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,.12);opacity:0;transition:opacity .15s;}
+.sb:hover::after{opacity:1;}
+.sb:hover{transform:translateY(-2px);}
+.sb-twitter{background:#1da1f2;}
+.sb-x{background:#000;}
+.sb-linkedin{background:#0077b5;}
+.sb-whatsapp{background:#25d366;}
+.sb-facebook{background:#1877f2;}
+.sb-telegram{background:#229ed9;}
+.sb-reddit{background:#ff4500;}
+.sb-email{background:#6c757d;}
+.sb-pinterest{background:#bd081c;}
+.sb-instagram{background:linear-gradient(135deg,#405de6,#5851db,#833ab4,#c13584,#e1306c,#fd1d1d);}
+.sb-copy{background:#495057;}
+.sb.glow-active{animation:glow-btn .4s ease-out;}
+/* Count badges */
+.share-counts{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem;}
+.sc-item{display:inline-flex;align-items:center;gap:.3rem;background:#fff;border-radius:50px;padding:.2rem .65rem;font-size:.72rem;font-weight:600;color:#5a6474;border:1px solid #e2e8f0;}
+.sc-item i{font-size:.72rem;}
+
 /* ── Like button ── */
-.like-btn{
-  display:inline-flex;align-items:center;gap:.5rem;
-  background:#fff;border:2px solid #e2e8f0;
-  color:#5a6474;font-size:.88rem;font-weight:600;
-  padding:.5rem 1.25rem;border-radius:50px;cursor:pointer;
-  transition:all .2s;
-}
-.like-btn:hover,.like-btn.liked{
-  background:#fff0f0;border-color:#e74c3c;color:#e74c3c;
-}
+.like-btn{display:inline-flex;align-items:center;gap:.5rem;background:#fff;border:2px solid #e2e8f0;color:#5a6474;font-size:.88rem;font-weight:600;padding:.5rem 1.25rem;border-radius:50px;cursor:pointer;transition:all .2s;}
+.like-btn:hover,.like-btn.liked{background:#fff0f0;border-color:#e74c3c;color:#e74c3c;}
 .like-btn i{font-size:1rem;transition:transform .2s;}
-.like-btn:active i{transform:scale(1.4);}
+.like-btn:active i,.like-btn.liked i{animation:heart-pop .3s ease;}
+@keyframes heart-pop{0%{transform:scale(1)}50%{transform:scale(1.5)}100%{transform:scale(1)}}
 
 /* ── Tags ── */
-.tag-chip{
-  display:inline-flex;align-items:center;
-  background:#f0f4ff;color:#3d4c6e;
-  font-size:.75rem;font-weight:600;
-  padding:.3rem .7rem;border-radius:50px;margin:.2rem;
-  text-decoration:none;transition:background .15s;
-}
+.tag-chip{display:inline-flex;align-items:center;background:#f0f4ff;color:#3d4c6e;font-size:.74rem;font-weight:600;padding:.28rem .7rem;border-radius:50px;margin:.2rem;text-decoration:none;transition:all .14s;}
 .tag-chip:hover{background:#0d1b4b;color:#fff;}
 
 /* ── Comments ── */
-.comment-item{
-  background:#f8f9fd;border-radius:12px;
-  padding:1rem 1.25rem;margin-bottom:1rem;
-  border-left:3px solid #0d1b4b;
-}
-.comment-item .ci-header{
-  display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;
-}
-.ci-avatar{
-  width:36px;height:36px;border-radius:50%;
-  background:linear-gradient(135deg,#0d1b4b,#FFD700);
-  display:flex;align-items:center;justify-content:center;
-  color:#fff;font-weight:700;font-size:.85rem;flex-shrink:0;
-}
+.comment-item{background:#f8f9fd;border-radius:12px;padding:1rem 1.25rem;margin-bottom:.9rem;border-left:3px solid #0d1b4b;}
+.ci-header{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;}
+.ci-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0d1b4b,#FFD700);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.85rem;flex-shrink:0;}
 .ci-name{font-weight:700;font-size:.88rem;color:#0d1b4b;}
-.ci-date{font-size:.75rem;color:#9aa3b0;margin-left:auto;}
+.ci-date{font-size:.73rem;color:#9aa3b0;margin-left:auto;}
 .ci-text{font-size:.88rem;line-height:1.65;color:#3d4c6e;}
-.comment-form textarea{
-  border-radius:12px;border:1.5px solid #e2e8f0;
-  font-size:.9rem;padding:.85rem 1rem;resize:vertical;min-height:100px;
-}
-.comment-form textarea:focus{border-color:#0d1b4b;box-shadow:0 0 0 3px rgba(13,27,75,.1);}
-.comment-form input{
-  border-radius:10px;border:1.5px solid #e2e8f0;
-  font-size:.88rem;padding:.6rem 1rem;
-}
-.comment-form input:focus{border-color:#0d1b4b;box-shadow:0 0 0 3px rgba(13,27,75,.1);}
-.submit-comment-btn{
-  background:#0d1b4b;color:#fff;border:none;border-radius:10px;
-  padding:.6rem 1.5rem;font-size:.88rem;font-weight:600;
-  cursor:pointer;transition:background .15s;
-}
-.submit-comment-btn:hover{background:#1a2d6b;}
+.comment-form textarea{border-radius:12px;border:1.5px solid #e2e8f0;font-size:.9rem;padding:.85rem 1rem;resize:vertical;min-height:100px;}
+.comment-form textarea:focus{border-color:#0d1b4b;box-shadow:0 0 0 3px rgba(13,27,75,.08);}
+.comment-form input{border-radius:10px;border:1.5px solid #e2e8f0;font-size:.88rem;padding:.6rem 1rem;}
+.comment-form input:focus{border-color:#0d1b4b;box-shadow:0 0 0 3px rgba(13,27,75,.08);}
+.submit-comment-btn{background:#0d1b4b;color:#fff;border:none;border-radius:10px;padding:.6rem 1.5rem;font-size:.88rem;font-weight:600;cursor:pointer;transition:background .15s;}
+.submit-comment-btn:hover{background:#172a72;}
 
-/* ── Related posts ── */
-.related-card{
-  border-radius:14px;overflow:hidden;background:#fff;
-  box-shadow:0 2px 10px rgba(0,0,0,.07);
-  text-decoration:none;color:inherit;
-  display:flex;flex-direction:column;
-  transition:transform .2s,box-shadow .2s;
-}
+/* ── Related ── */
+.related-card{border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.07);text-decoration:none;color:inherit;display:flex;flex-direction:column;transition:transform .2s,box-shadow .2s;}
 .related-card:hover{transform:translateY(-4px);box-shadow:0 10px 30px rgba(0,0,0,.12);}
 .related-card img{aspect-ratio:16/9;object-fit:cover;width:100%;}
 .related-card .rc-body{padding:1rem;}
-.related-card h4{
-  font-family:'Playfair Display',Georgia,serif;
-  font-size:.95rem;font-weight:700;color:#0d1b4b;
-  line-height:1.35;margin-bottom:.4rem;
-}
-.related-card .rc-meta{font-size:.75rem;color:#9aa3b0;}
+.related-card h4{font-family:'Playfair Display',serif;font-size:.93rem;font-weight:700;color:#0d1b4b;line-height:1.35;margin-bottom:.3rem;}
+.related-card .rc-meta{font-size:.73rem;color:#9aa3b0;}
 
-/* ── Share bar ── */
-.share-bar{
-  display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;
-  padding:1rem 0;border-top:1px solid #f0f2f7;border-bottom:1px solid #f0f2f7;
-  margin:1.5rem 0;
-}
-.share-btn{
-  display:inline-flex;align-items:center;gap:.4rem;
-  padding:.4rem .95rem;border-radius:8px;font-size:.8rem;font-weight:600;
-  text-decoration:none;transition:opacity .15s;
-  color:#fff !important;
-}
-.share-btn:hover{opacity:.85;}
-.share-linkedin{background:#0077b5;}
-.share-twitter{background:#1da1f2;}
-.share-whatsapp{background:#25d366;}
-.share-copy{background:#6c757d;cursor:pointer;border:none;}
+/* ── Sidebar ── */
+.blog-sidebar .sc{background:#fff;border-radius:14px;padding:1.2rem;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:1.5rem;}
+.blog-sidebar .sc h5{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#0d1b4b;margin-bottom:.9rem;padding-bottom:.55rem;border-bottom:2px solid #FFD700;}
+.cat-pill{display:inline-flex;align-items:center;gap:.25rem;background:#f0f4ff;color:#0d1b4b;font-size:.76rem;font-weight:600;padding:.28rem .7rem;border-radius:50px;margin:.2rem;text-decoration:none;transition:all .14s;}
+.cat-pill:hover,.cat-pill.active{background:#0d1b4b;color:#fff;}
+.pop-item{display:flex;gap:.65rem;align-items:flex-start;padding:.55rem 0;border-bottom:1px solid #f0f2f7;text-decoration:none;}
+.pop-item:last-child{border-bottom:none;}
+.pop-item img{width:56px;height:44px;object-fit:cover;border-radius:7px;flex-shrink:0;}
+.pop-item .pi-ph{width:56px;height:44px;border-radius:7px;flex-shrink:0;background:linear-gradient(135deg,#0d1b4b,#1a2d6b);display:flex;align-items:center;justify-content:center;color:#FFD700;font-size:.85rem;}
+.pop-title{font-size:.77rem;font-weight:600;color:#0d1b4b;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.pop-meta{font-size:.68rem;color:#9aa3b0;margin-top:.2rem;}
 
-@media(max-width:768px){
-  .post-hero{min-height:300px;}
-  .post-hero h1{font-size:1.5rem;}
-  .article-body{font-size:.97rem;}
-}
+@media(max-width:768px){.post-hero{min-height:300px;padding-bottom:2rem;}.post-hero h1{font-size:1.45rem;}.article-body{font-size:.97rem;}.share-grid{gap:.4rem;}.sb{font-size:.76rem;padding:.4rem .85rem;}}
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Post Hero -->
+<!-- Reading progress -->
+<div id="read-progress"></div>
+
+<!-- Sticky floating share (desktop) -->
+<div class="float-share" id="float-share" style="display:none;">
+  <a class="fs-btn glow-float" style="background:#1da1f2;" href="#" onclick="shareOn('twitter');return false;" title="Share on Twitter/X"><i class="fab fa-twitter"></i></a>
+  <a class="fs-btn" style="background:#0077b5;" href="#" onclick="shareOn('linkedin');return false;" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+  <a class="fs-btn" style="background:#25d366;" href="#" onclick="shareOn('whatsapp');return false;" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+  <a class="fs-btn" style="background:#1877f2;" href="#" onclick="shareOn('facebook');return false;" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+  <a class="fs-btn" style="background:#229ed9;" href="#" onclick="shareOn('telegram');return false;" title="Telegram"><i class="fab fa-telegram-plane"></i></a>
+  <button class="fs-btn" style="background:#495057;" onclick="copyLink()" title="Copy link"><i class="fas fa-link"></i></button>
+</div>
+
+<!-- Hero -->
 <section class="post-hero">
   <div class="ph-bg" style="background-image:url('{{ post.hero_image or 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1400&q=70' }}')"></div>
   <div class="ph-overlay"></div>
@@ -206,19 +169,21 @@
       <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
         <li class="breadcrumb-item"><a href="{{ url_for('blog.index') }}">Blog</a></li>
-        <li class="breadcrumb-item active" aria-current="page">{{ post.category }}</li>
+        <li class="breadcrumb-item active">{{ post.category }}</li>
       </ol>
     </nav>
     <div class="post-cat-badge"><i class="fas fa-tag me-1"></i>{{ post.category }}</div>
     <h1>{{ post.title }}</h1>
+    {% if post.subtitle %}<div class="post-subtitle">{{ post.subtitle }}</div>{% endif %}
     <div class="post-meta-bar">
-      <span class="meta-item"><i class="fas fa-user-circle"></i>{{ post.author }}</span>
-      {% if post.published_at %}
-      <span class="meta-item"><i class="fas fa-calendar-alt"></i>{{ post.published_at.strftime('%B %d, %Y') if post.published_at else '' }}</span>
-      {% endif %}
-      <span class="meta-item"><i class="fas fa-eye"></i>{{ post.view_count or 0 }} views</span>
-      <span class="meta-item"><i class="fas fa-comments"></i>{{ comment_count }} comments</span>
-      <span class="meta-item"><i class="fas fa-heart"></i>{{ like_count }} likes</span>
+      <span class="pmi"><i class="fas fa-user-circle"></i>{{ post.author }}</span>
+      {% if post.published_at %}<span class="pmi"><i class="fas fa-calendar-alt"></i>{{ post.published_at.strftime('%B %d, %Y') }}</span>{% endif %}
+      <span class="pmi rt-badge"><i class="fas fa-clock me-1"></i>{{ read_time }} min read</span>
+      <span class="pmi"><i class="fas fa-eye"></i>{{ post.view_count or 0 | int }} views</span>
+      <span class="pmi"><i class="fas fa-users"></i>{{ unique_views }} unique</span>
+      <span class="pmi"><i class="fas fa-comments"></i>{{ comment_count }} comments</span>
+      <span class="pmi"><i class="fas fa-heart"></i>{{ like_count }} likes</span>
+      {% if post.share_count %}<span class="pmi"><i class="fas fa-share-alt"></i>{{ post.share_count | int }} shares</span>{% endif %}
     </div>
   </div>
 </section>
@@ -228,45 +193,60 @@
     <!-- Article -->
     <div class="col-lg-8">
 
-      <!-- Share bar -->
-      <div class="share-bar">
-        <span style="font-size:.8rem;font-weight:600;color:#5a6474;margin-right:.25rem;">Share:</span>
-        <a class="share-btn share-linkedin" href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.url | urlencode }}" target="_blank" rel="noopener">
-          <i class="fab fa-linkedin-in"></i>LinkedIn
-        </a>
-        <a class="share-btn share-twitter" href="https://twitter.com/intent/tweet?text={{ post.title | urlencode }}&url={{ request.url | urlencode }}" target="_blank" rel="noopener">
-          <i class="fab fa-twitter"></i>Twitter
-        </a>
-        <a class="share-btn share-whatsapp" href="https://wa.me/?text={{ (post.title + ' ' + request.url) | urlencode }}" target="_blank" rel="noopener">
-          <i class="fab fa-whatsapp"></i>WhatsApp
-        </a>
-        <button class="share-btn share-copy" onclick="copyLink()" id="copy-btn">
-          <i class="fas fa-link"></i>Copy link
-        </button>
-      </div>
-
       <!-- Article body -->
-      <article class="article-body py-2">
+      <article class="article-body py-2" id="article-body">
         {{ post.content | safe }}
       </article>
 
       <!-- Tags -->
       {% if post.tags %}
-      <div class="mt-3 mb-4">
-        <span style="font-size:.78rem;font-weight:600;color:#9aa3b0;margin-right:.5rem;">TAGS:</span>
-        {% for tag in post.tags.split(',') %}
-        <a class="tag-chip" href="{{ url_for('blog.index', tag=tag.strip()) }}">{{ tag.strip() }}</a>
+      <div class="mt-1 mb-4">
+        <span style="font-size:.75rem;font-weight:600;color:#9aa3b0;margin-right:.4rem;">TAGS:</span>
+        {% for t in post.tags.split(',') %}
+        <a class="tag-chip" href="{{ url_for('blog.index', tag=t.strip()) }}">{{ t.strip() }}</a>
         {% endfor %}
       </div>
       {% endif %}
 
-      <!-- Like button -->
-      <div class="d-flex align-items-center gap-3 mb-4 pt-2 border-top">
+      <!-- Like & share prompt -->
+      <div class="d-flex align-items-center gap-3 mb-4 pt-3 border-top" style="flex-wrap:wrap;">
         <button class="like-btn {% if user_liked %}liked{% endif %}" id="like-btn" onclick="toggleLike()">
           <i class="{% if user_liked %}fas{% else %}far{% endif %} fa-heart"></i>
           <span id="like-count">{{ like_count }}</span> Likes
         </button>
-        <span style="font-size:.82rem;color:#9aa3b0;">Enjoyed this article? Show some love ❤️</span>
+        <span style="font-size:.82rem;color:#9aa3b0;font-style:italic;">Enjoyed this article? Share it with a colleague ⬇️</span>
+      </div>
+
+      <!-- Full share section -->
+      <div class="share-section">
+        <h4>📣 Share This Article</h4>
+        <p class="share-sub">Help other legal professionals discover this insight — choose your platform below.</p>
+
+        <div class="share-grid">
+          <button class="sb sb-twitter" onclick="shareOn('twitter')"><i class="fab fa-twitter"></i>Twitter / X</button>
+          <button class="sb sb-linkedin" onclick="shareOn('linkedin')"><i class="fab fa-linkedin-in"></i>LinkedIn</button>
+          <button class="sb sb-whatsapp" onclick="shareOn('whatsapp')"><i class="fab fa-whatsapp"></i>WhatsApp</button>
+          <button class="sb sb-facebook" onclick="shareOn('facebook')"><i class="fab fa-facebook-f"></i>Facebook</button>
+          <button class="sb sb-telegram" onclick="shareOn('telegram')"><i class="fab fa-telegram-plane"></i>Telegram</button>
+          <button class="sb sb-reddit" onclick="shareOn('reddit')"><i class="fab fa-reddit-alien"></i>Reddit</button>
+          <button class="sb sb-email" onclick="shareOn('email')"><i class="fas fa-envelope"></i>Email</button>
+          <button class="sb sb-pinterest" onclick="shareOn('pinterest')"><i class="fab fa-pinterest-p"></i>Pinterest</button>
+          <button class="sb sb-instagram" onclick="shareOn('instagram')"><i class="fab fa-instagram"></i>Instagram</button>
+          <button class="sb sb-copy" onclick="copySharePackage()" id="copy-full-btn"><i class="fas fa-copy"></i>Copy &amp; Share</button>
+          <button class="sb sb-copy" onclick="copyLink()" id="copy-btn" style="background:#6c757d;"><i class="fas fa-link"></i>Copy Link</button>
+        </div>
+
+        {% if shares.total and shares.total > 0 %}
+        <div class="share-counts mt-3">
+          <span style="font-size:.72rem;font-weight:700;color:#9aa3b0;text-transform:uppercase;letter-spacing:.05em;width:100%;margin-bottom:.2rem;">Shared on:</span>
+          {% for platform, icon_class in [('twitter','fab fa-twitter'),('linkedin','fab fa-linkedin-in'),('whatsapp','fab fa-whatsapp'),('facebook','fab fa-facebook-f'),('telegram','fab fa-telegram-plane'),('reddit','fab fa-reddit-alien'),('email','fas fa-envelope'),('copy','fas fa-link')] %}
+          {% if shares.get(platform) %}
+          <span class="sc-item"><i class="{{ icon_class }}"></i>{{ platform | capitalize }}: {{ shares[platform] }}</span>
+          {% endif %}
+          {% endfor %}
+          <span class="sc-item fw-bold" style="background:#0d1b4b;color:#FFD700;border-color:#0d1b4b;"><i class="fas fa-share-alt"></i>Total: {{ shares.total }}</span>
+        </div>
+        {% endif %}
       </div>
 
       <!-- Author card -->
@@ -276,23 +256,22 @@
         </div>
         <div>
           <div style="font-weight:700;color:#0d1b4b;font-size:.95rem;">{{ post.author }}</div>
-          <div style="font-size:.8rem;color:#5a6474;line-height:1.5;">LAWCOLAB contributor. Writing about legal technology, practice management, and law firm growth in Africa.</div>
+          <div style="font-size:.8rem;color:#5a6474;line-height:1.55;margin-top:.15rem;">LAWCOLAB contributor. Writing on legal technology, practice management, and law firm growth across Africa.</div>
         </div>
       </div>
 
-      <!-- Comments section -->
+      <!-- Comments -->
       <section id="comments">
-        <h3 style="font-family:'Playfair Display',serif;color:#0d1b4b;font-size:1.35rem;margin-bottom:1.5rem;">
+        <h3 style="font-family:'Playfair Display',serif;color:#0d1b4b;font-size:1.3rem;margin-bottom:1.25rem;">
           <i class="fas fa-comments me-2" style="color:#FFD700;"></i>{{ comment_count }} Comment{% if comment_count != 1 %}s{% endif %}
         </h3>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% for cat, msg in messages %}
+        {% with msgs = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in msgs %}
           <div class="alert alert-{% if cat=='success' %}success{% else %}danger{% endif %} py-2 mb-3" style="font-size:.85rem;border-radius:10px;">{{ msg }}</div>
           {% endfor %}
         {% endwith %}
 
-        <!-- Comment list -->
         {% if comments %}
         <div class="mb-4">
           {% for c in comments %}
@@ -304,9 +283,7 @@
               {% if current_user.is_authenticated and current_user.is_super_admin() %}
               <form method="POST" action="{{ url_for('blog.admin_delete_comment', cid=c.id) }}" style="margin-left:.5rem;">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" style="background:none;border:none;color:#e74c3c;font-size:.75rem;cursor:pointer;" title="Delete">
-                  <i class="fas fa-trash"></i>
-                </button>
+                <button type="submit" style="background:none;border:none;color:#e74c3c;font-size:.73rem;cursor:pointer;" title="Delete"><i class="fas fa-trash"></i></button>
               </form>
               {% endif %}
             </div>
@@ -315,28 +292,20 @@
           {% endfor %}
         </div>
         {% else %}
-        <p style="color:#9aa3b0;font-size:.88rem;margin-bottom:1.5rem;">Be the first to leave a comment!</p>
+        <p style="color:#9aa3b0;font-size:.88rem;margin-bottom:1.5rem;">Be the first to share your thoughts on this article!</p>
         {% endif %}
 
         <!-- Comment form -->
         <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:16px;padding:1.5rem;">
-          <h4 style="font-size:1rem;font-weight:700;color:#0d1b4b;margin-bottom:1.25rem;">
-            <i class="fas fa-pen me-2"></i>Leave a Comment
-          </h4>
+          <h4 style="font-size:1rem;font-weight:700;color:#0d1b4b;margin-bottom:1.25rem;"><i class="fas fa-pen me-2"></i>Leave a Comment</h4>
           <form class="comment-form" method="POST" action="{{ url_for('blog.add_comment', slug=post.slug) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="row g-3 mb-3">
-              <div class="col-sm-6">
-                <input type="text" name="name" class="form-control" placeholder="Your Name *" required maxlength="100">
-              </div>
-              <div class="col-sm-6">
-                <input type="email" name="email" class="form-control" placeholder="Email (optional)" maxlength="200">
-              </div>
+              <div class="col-sm-6"><input type="text" name="name" class="form-control" placeholder="Your Name *" required maxlength="100"></div>
+              <div class="col-sm-6"><input type="email" name="email" class="form-control" placeholder="Email (optional)" maxlength="200"></div>
             </div>
-            <textarea name="content" class="form-control mb-3" placeholder="Write your comment here…" required maxlength="2000"></textarea>
-            <button type="submit" class="submit-comment-btn">
-              <i class="fas fa-paper-plane me-2"></i>Post Comment
-            </button>
+            <textarea name="content" class="form-control mb-3" placeholder="Share your thoughts on this article…" required maxlength="2000"></textarea>
+            <button type="submit" class="submit-comment-btn"><i class="fas fa-paper-plane me-2"></i>Post Comment</button>
           </form>
         </div>
       </section>
@@ -344,73 +313,82 @@
 
     <!-- Sidebar -->
     <div class="col-lg-4 blog-sidebar">
-      <!-- CTA -->
-      <div style="background:linear-gradient(135deg,#0d1b4b,#1a2d6b);border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;text-align:center;">
-        <div style="font-size:2.5rem;margin-bottom:.5rem;">⚖️</div>
-        <h4 style="color:#FFD700;font-family:'Playfair Display',serif;font-size:1.15rem;margin-bottom:.5rem;">Run Your Firm Smarter</h4>
-        <p style="font-size:.82rem;color:rgba(255,255,255,.78);line-height:1.6;margin-bottom:1rem;">Case management, billing, and client portal — all in one place.</p>
-        <a href="/auth/signup" class="btn btn-warning w-100 fw-bold" style="color:#0d1b4b;border-radius:10px;">
-          Start Free Trial <i class="fas fa-arrow-right ms-1"></i>
-        </a>
+
+      <!-- Engagement nudge -->
+      <div class="sc" style="background:linear-gradient(135deg,#0d1b4b,#172a72);color:#fff;text-align:center;">
+        <div style="font-size:2rem;margin-bottom:.5rem;">💡</div>
+        <h5 style="color:#FFD700;border-bottom-color:rgba(255,215,0,.28);font-size:.85rem;">Found this useful?</h5>
+        <p style="font-size:.82rem;color:rgba(255,255,255,.78);line-height:1.5;margin-bottom:.9rem;">Share it with a colleague — it takes 5 seconds and could save them hours.</p>
+        <div class="d-flex gap-2 justify-content-center flex-wrap">
+          <button onclick="shareOn('whatsapp')" class="btn btn-sm fw-bold" style="background:#25d366;color:#fff;border-radius:50px;font-size:.75rem;"><i class="fab fa-whatsapp me-1"></i>WhatsApp</button>
+          <button onclick="shareOn('linkedin')" class="btn btn-sm fw-bold" style="background:#0077b5;color:#fff;border-radius:50px;font-size:.75rem;"><i class="fab fa-linkedin-in me-1"></i>LinkedIn</button>
+        </div>
       </div>
 
-      <!-- Popular -->
-      <div style="background:#fff;border-radius:14px;padding:1.25rem;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:1.5rem;">
-        <h5 style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#0d1b4b;margin-bottom:1rem;padding-bottom:.6rem;border-bottom:2px solid #FFD700;">
-          <i class="fas fa-fire me-2"></i>Most Read
-        </h5>
-        {% for p in popular %}
-        {% if p.id != post.id %}
-        <a class="popular-item" href="{{ url_for('blog.post', slug=p.slug) }}" style="display:flex;gap:.75rem;align-items:flex-start;padding:.6rem 0;border-bottom:1px solid #f0f2f7;text-decoration:none;">
-          {% if p.hero_image %}
-          <img src="{{ p.hero_image }}" alt="{{ p.title }}" style="width:60px;height:48px;object-fit:cover;border-radius:8px;flex-shrink:0;" loading="lazy">
-          {% else %}
-          <div style="width:60px;height:48px;border-radius:8px;background:linear-gradient(135deg,#0d1b4b,#1a2d6b);display:flex;align-items:center;justify-content:center;color:#FFD700;flex-shrink:0;"><i class="fas fa-balance-scale"></i></div>
-          {% endif %}
+      <!-- CTA -->
+      <div class="sc" style="background:#fff;border:2px solid #FFD700;">
+        <div style="font-size:1.8rem;margin-bottom:.5rem;text-align:center;">⚖️</div>
+        <h5 style="text-align:center;color:#0d1b4b;border-bottom-color:#FFD700;">Run Your Firm Smarter</h5>
+        <p style="font-size:.8rem;color:#5a6474;line-height:1.6;text-align:center;margin-bottom:1rem;">Case management, billing, and client portal — all in one place.</p>
+        <a href="/auth/signup" class="btn btn-warning w-100 fw-bold" style="color:#0d1b4b;border-radius:10px;">Start Free Trial <i class="fas fa-arrow-right ms-1"></i></a>
+      </div>
+
+      <!-- Most Read -->
+      <div class="sc">
+        <h5><i class="fas fa-fire me-2"></i>Most Read</h5>
+        {% for p in popular %}{% if p.id != post.id %}
+        <a class="pop-item" href="{{ url_for('blog.post', slug=p.slug) }}">
+          {% if p.hero_image %}<img src="{{ p.hero_image }}" alt="{{ p.title }}" loading="lazy">
+          {% else %}<div class="pi-ph"><i class="fas fa-balance-scale"></i></div>{% endif %}
           <div>
-            <div style="font-size:.8rem;font-weight:600;color:#0d1b4b;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ p.title }}</div>
-            <div style="font-size:.72rem;color:#9aa3b0;margin-top:.2rem;"><i class="fas fa-eye me-1"></i>{{ p.view_count or 0 }} views</div>
+            <div class="pop-title">{{ p.title }}</div>
+            <div class="pop-meta"><i class="fas fa-eye me-1"></i>{{ p.view_count or 0 | int }} views
+              {% if p.read_time_minutes %} · {{ p.read_time_minutes }}m read{% endif %}
+            </div>
           </div>
         </a>
-        {% endif %}
-        {% endfor %}
+        {% endif %}{% endfor %}
       </div>
 
       <!-- Categories -->
-      <div style="background:#fff;border-radius:14px;padding:1.25rem;box-shadow:0 2px 10px rgba(0,0,0,.07);">
-        <h5 style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#0d1b4b;margin-bottom:1rem;padding-bottom:.6rem;border-bottom:2px solid #FFD700;">
-          <i class="fas fa-folder me-2"></i>Categories
-        </h5>
+      <div class="sc">
+        <h5><i class="fas fa-folder me-2"></i>Categories</h5>
         {% for c in cats %}
-        <a href="{{ url_for('blog.index', category=c.category) }}"
-           class="cat-pill {% if post.category == c.category %}active{% endif %}"
-           style="display:inline-flex;align-items:center;gap:.3rem;background:#f0f4ff;color:#0d1b4b;font-size:.78rem;font-weight:600;padding:.3rem .75rem;border-radius:50px;margin:.2rem;text-decoration:none;">
-          {{ c.category }} <span style="font-size:.68rem;opacity:.7;">({{ c.cnt }})</span>
-        </a>
+        <a href="{{ url_for('blog.index', category=c.category) }}" class="cat-pill {% if post.category==c.category %}active{% endif %}">{{ c.category }} <span style="opacity:.55;">({{ c.cnt }})</span></a>
         {% endfor %}
       </div>
+
+      {% if current_user.is_authenticated and current_user.is_super_admin() %}
+      <div class="sc border border-warning">
+        <h5 style="color:#856404;border-bottom-color:#ffc107;"><i class="fas fa-cog me-2"></i>Admin</h5>
+        <div class="d-grid gap-2">
+          <a href="{{ url_for('blog.admin_edit', post_id=post.id) }}" class="btn btn-sm btn-outline-warning rounded-pill"><i class="fas fa-edit me-1"></i>Edit Post</a>
+          <a href="{{ url_for('blog.admin_analytics') }}" class="btn btn-sm btn-outline-info rounded-pill"><i class="fas fa-chart-bar me-1"></i>Analytics</a>
+        </div>
+      </div>
+      {% endif %}
     </div>
   </div>
 
-  <!-- Related posts -->
+  <!-- Related -->
   {% if related %}
-  <div class="mt-5 pt-3 border-top">
-    <h3 style="font-family:'Playfair Display',serif;color:#0d1b4b;font-size:1.35rem;margin-bottom:1.5rem;">
+  <div class="mt-5 pt-4 border-top">
+    <h3 style="font-family:'Playfair Display',serif;color:#0d1b4b;font-size:1.3rem;margin-bottom:1.5rem;">
       <i class="fas fa-newspaper me-2" style="color:#FFD700;"></i>Related Articles
     </h3>
     <div class="row g-3">
       {% for rp in related %}
       <div class="col-sm-6 col-md-4">
         <a class="related-card" href="{{ url_for('blog.post', slug=rp.slug) }}">
-          {% if rp.hero_image %}
-          <img src="{{ rp.hero_image }}" alt="{{ rp.title }}" loading="lazy">
-          {% else %}
-          <div style="aspect-ratio:16/9;background:linear-gradient(135deg,#0d1b4b,#1a2d6b);display:flex;align-items:center;justify-content:center;color:#FFD700;font-size:2rem;"><i class="fas fa-balance-scale"></i></div>
-          {% endif %}
+          {% if rp.hero_image %}<img src="{{ rp.hero_image }}" alt="{{ rp.title }}" loading="lazy">
+          {% else %}<div style="aspect-ratio:16/9;background:linear-gradient(135deg,#0d1b4b,#1a2d6b);display:flex;align-items:center;justify-content:center;color:#FFD700;font-size:2rem;"><i class="fas fa-balance-scale"></i></div>{% endif %}
           <div class="rc-body">
-            <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;color:#0d1b4b;margin-bottom:.4rem;">{{ rp.category }}</div>
+            <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:#0d1b4b;margin-bottom:.3rem;">{{ rp.category }}</div>
             <h4>{{ rp.title }}</h4>
-            <div class="rc-meta"><i class="fas fa-eye me-1"></i>{{ rp.view_count or 0 }} views</div>
+            <div class="rc-meta">
+              <i class="fas fa-eye me-1"></i>{{ rp.view_count or 0 | int }} views
+              {% if rp.read_time_minutes %} · {{ rp.read_time_minutes }}m read{% endif %}
+            </div>
           </div>
         </a>
       </div>
@@ -423,32 +401,169 @@
 
 {% block javascript %}
 <script>
-function toggleLike(){
-  fetch('{{ url_for("blog.like_post", slug=post.slug) }}', {method:'POST',headers:{'X-CSRFToken':'{{ csrf_token() }}'}})
-    .then(r=>r.json()).then(d=>{
-      const btn=document.getElementById('like-btn');
-      const icon=btn.querySelector('i');
-      document.getElementById('like-count').textContent=d.likes;
-      if(d.liked){
-        btn.classList.add('liked');
-        icon.className='fas fa-heart';
-      } else {
-        btn.classList.remove('liked');
-        icon.className='far fa-heart';
-      }
-      // Animate
-      icon.style.transform='scale(1.5)';
-      setTimeout(()=>icon.style.transform='',300);
+// ── Share data ─────────────────────────────────────────────────────────────────
+const POST_TITLE   = {{ post.title | tojson }};
+const POST_EXCERPT = {{ (post.excerpt or og_desc[:200]) | tojson }};
+const POST_URL     = {{ request.url | tojson }};
+const POST_IMAGE   = {{ (post.hero_image or '') | tojson }};
+const SHARE_URL    = {{ url_for('blog.track_share', slug=post.slug) | tojson }};
+const CSRF_TOKEN   = {{ csrf_token() | tojson }};
+
+// ── Reading progress ───────────────────────────────────────────────────────────
+(function(){
+  const bar = document.getElementById('read-progress');
+  const art = document.getElementById('article-body');
+  if(!bar || !art) return;
+  window.addEventListener('scroll', () => {
+    const rect = art.getBoundingClientRect();
+    const total = art.offsetHeight - window.innerHeight;
+    const scrolled = -rect.top;
+    const pct = Math.min(100, Math.max(0, (scrolled / total) * 100));
+    bar.style.width = pct + '%';
+  }, {passive:true});
+})();
+
+// ── Floating share: show after scrolling 300px ────────────────────────────────
+(function(){
+  const fs = document.getElementById('float-share');
+  if(!fs) return;
+  window.addEventListener('scroll', () => {
+    fs.style.display = window.scrollY > 300 ? 'flex' : 'none';
+  }, {passive:true});
+})();
+
+// ── Inline CTAs: inject after 2nd and 4th paragraph ──────────────────────────
+(function(){
+  const art = document.getElementById('article-body');
+  if(!art) return;
+  const paras = art.querySelectorAll('p');
+  function makeInlineCta(emoji, text, glowWord, likeLabel, shareLabel){
+    const div = document.createElement('div');
+    div.className = 'inline-cta';
+    div.innerHTML = `
+      <div class="cta-text">${emoji} ${text} <span>${glowWord}</span></div>
+      <div class="cta-btns">
+        <button class="cta-like-btn" onclick="toggleLike()"><i class="fas fa-heart"></i>${likeLabel}</button>
+        <button class="cta-share-btn" onclick="scrollToShare()"><i class="fas fa-share-alt"></i>${shareLabel}</button>
+      </div>`;
+    return div;
+  }
+  if(paras.length > 2){
+    paras[1].after(makeInlineCta('💡','Finding this useful?','Share it →','Like','Share'));
+  }
+  if(paras.length > 5){
+    paras[Math.floor(paras.length/2)].after(
+      makeInlineCta('🔥','Enjoying this article?','Help others find it.','Like this','Share now'));
+  }
+  if(paras.length > 3){
+    paras[paras.length-2].after(
+      makeInlineCta('✨','Know a colleague who needs to read this?','Send it their way.','👍 Like','🚀 Share'));
+  }
+})();
+
+// ── Share ───────────────────────────────────────────────────────────────────────
+function scrollToShare(){
+  document.querySelector('.share-section').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+async function _recordShare(platform){
+  try{
+    await fetch(SHARE_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':CSRF_TOKEN},
+      body:JSON.stringify({platform})
     });
+  }catch(e){}
+}
+
+function shareOn(platform){
+  const enc   = encodeURIComponent;
+  const title = enc(POST_TITLE);
+  const url   = enc(POST_URL);
+  const text  = enc(`${POST_TITLE}\n\n${POST_EXCERPT}\n\nRead more: ${POST_URL}`);
+  const img   = enc(POST_IMAGE);
+
+  let shareUrl = '';
+  switch(platform){
+    case 'twitter':   shareUrl = `https://twitter.com/intent/tweet?text=${enc(POST_TITLE + ' — ' + POST_EXCERPT.substring(0,100)+'...')}&url=${url}&via=LAWCOLAB`; break;
+    case 'x':         shareUrl = `https://twitter.com/intent/tweet?text=${title}&url=${url}`; break;
+    case 'linkedin':  shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`; break;
+    case 'whatsapp':  shareUrl = `https://wa.me/?text=${enc(POST_TITLE + '\n' + POST_EXCERPT.substring(0,120) + '...\n\nRead: ' + POST_URL)}`; break;
+    case 'facebook':  shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`; break;
+    case 'telegram':  shareUrl = `https://t.me/share/url?url=${url}&text=${enc(POST_TITLE)}`; break;
+    case 'reddit':    shareUrl = `https://reddit.com/submit?url=${url}&title=${title}`; break;
+    case 'email':     shareUrl = `mailto:?subject=${enc('Must Read: '+POST_TITLE)}&body=${enc('I thought you might find this article valuable:\n\n'+POST_TITLE+'\n\n'+POST_EXCERPT+'\n\nRead the full article: '+POST_URL)}`; break;
+    case 'pinterest': shareUrl = `https://pinterest.com/pin/create/button/?url=${url}&media=${img}&description=${title}`; break;
+    case 'instagram': _recordShare('instagram'); copySharePackage(); return;
+    default: return;
+  }
+
+  _recordShare(platform);
+  if(shareUrl.startsWith('mailto:')){
+    window.location.href = shareUrl;
+  } else {
+    window.open(shareUrl,'_blank','noopener,noreferrer,width=600,height=600');
+  }
+  // Brief glow feedback
+  const btns = document.querySelectorAll(`.sb-${platform}`);
+  btns.forEach(b=>{ b.classList.add('glow-active'); setTimeout(()=>b.classList.remove('glow-active'),600); });
+}
+
+// ── Copy full share package ────────────────────────────────────────────────────
+function copySharePackage(){
+  const text = `📖 ${POST_TITLE}\n\n${POST_EXCERPT}\n\n🔗 Read the full article: ${POST_URL}`;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn = document.getElementById('copy-full-btn');
+    const orig = btn.innerHTML;
+    btn.innerHTML='<i class="fas fa-check"></i> Copied! Paste anywhere';
+    btn.style.background='#198754';
+    setTimeout(()=>{ btn.innerHTML=orig; btn.style.background=''; }, 3000);
+    _recordShare('copy');
+  }).catch(()=>{ copyLink(); });
 }
 
 function copyLink(){
-  navigator.clipboard.writeText(window.location.href).then(()=>{
-    const btn=document.getElementById('copy-btn');
+  navigator.clipboard.writeText(POST_URL).then(()=>{
+    const btn = document.getElementById('copy-btn');
+    const orig = btn.innerHTML;
     btn.innerHTML='<i class="fas fa-check"></i>Copied!';
     btn.style.background='#198754';
-    setTimeout(()=>{btn.innerHTML='<i class="fas fa-link"></i>Copy link';btn.style.background='';},2000);
+    setTimeout(()=>{ btn.innerHTML=orig; btn.style.background=''; },2500);
   });
+}
+
+// ── Like ────────────────────────────────────────────────────────────────────────
+function toggleLike(){
+  fetch('{{ url_for("blog.like_post", slug=post.slug) }}',{
+    method:'POST',
+    headers:{'X-CSRFToken':CSRF_TOKEN}
+  }).then(r=>r.json()).then(d=>{
+    const btn  = document.getElementById('like-btn');
+    const icon = btn.querySelector('i');
+    document.getElementById('like-count').textContent = d.likes;
+    if(d.liked){
+      btn.classList.add('liked');
+      icon.className='fas fa-heart';
+    } else {
+      btn.classList.remove('liked');
+      icon.className='far fa-heart';
+    }
+  }).catch(()=>{});
+}
+
+// ── Native share API fallback ──────────────────────────────────────────────────
+if(navigator.share){
+  const nativeBtn = document.createElement('button');
+  nativeBtn.className='sb';
+  nativeBtn.style.background='#6f42c1';
+  nativeBtn.innerHTML='<i class="fas fa-share"></i>Share via App';
+  nativeBtn.onclick = ()=>{
+    navigator.share({title:POST_TITLE,text:POST_EXCERPT,url:POST_URL})
+      .then(()=>_recordShare('native'))
+      .catch(()=>{});
+  };
+  const grid = document.querySelector('.share-grid');
+  if(grid) grid.prepend(nativeBtn);
 }
 </script>
 {% endblock %}

@@ -1,217 +1,94 @@
 {% extends 'base.html' %}
-{% block title %}LAWCOLAB Blog — Legal Tech Insights for African Law Firms{% endblock %}
-{% block meta_description %}Expert articles on legal technology, practice management, and law firm growth in Nigeria and Africa. Updated weekly by the LAWCOLAB team.{% endblock %}
-{% block og_title %}LAWCOLAB Blog — Legal Tech Insights{% endblock %}
+{% block title %}LAWCOLAB Blog — Legal Insights for African Law Firms{% endblock %}
+{% block meta_description %}Expert articles on legal technology, practice management, billing, and law firm growth in Nigeria and Africa. Updated weekly by the LAWCOLAB team.{% endblock %}
 
 {% block structured_data %}
 <script type="application/ld+json">
-{
-  "@context":"https://schema.org",
-  "@type":"Blog",
-  "name":"LAWCOLAB Blog",
-  "url":"https://lawcolab.com/blog",
-  "description":"Legal tech insights and practice management guides for Nigerian law firms.",
-  "publisher":{"@type":"Organization","name":"LAWCOLAB","url":"https://lawcolab.com"}
-}
+{"@context":"https://schema.org","@type":"Blog","name":"LAWCOLAB Blog","url":"https://lawcolab.com/blog","description":"Legal insights and practice management guides for Nigerian law firms.","publisher":{"@type":"Organization","name":"LAWCOLAB","url":"https://lawcolab.com"}}
 </script>
 {% endblock %}
 
 {% block additional_css %}
 <style>
-/* ── Blog Layout ── */
-.blog-hero{
-  position:relative;overflow:hidden;
-  background:linear-gradient(135deg,#070f2b 0%,#0d1b4b 60%,#1a2d6b 100%);
-  padding:5rem 0 4rem;
-  margin-bottom:0;
-}
-.blog-hero::before{
-  content:'';position:absolute;inset:0;
-  background:url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1600&q=70') center/cover;
-  opacity:.12;
-}
+/* ── Hero ── */
+.blog-hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#060d24 0%,#0d1b4b 55%,#172a72 100%);padding:5rem 0 4rem;}
+.blog-hero::before{content:'';position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1600&q=60') center/cover;opacity:.1;}
 .blog-hero .container{position:relative;z-index:2;}
-.blog-hero h1{
-  font-family:'Playfair Display',Georgia,serif;
-  color:#fff;font-size:clamp(2rem,5vw,3.2rem);font-weight:800;
-  letter-spacing:-.025em;line-height:1.15;margin-bottom:.75rem;
-}
-.blog-hero .badge-pill{
-  display:inline-flex;align-items:center;gap:.4rem;
-  background:rgba(255,215,0,.15);border:1px solid rgba(255,215,0,.35);
-  color:#FFD700;font-size:.75rem;font-weight:600;
-  padding:.35rem .85rem;border-radius:50px;margin-bottom:1.25rem;
-}
-.blog-hero p{color:rgba(255,255,255,.78);font-size:1.05rem;max-width:520px;}
-.blog-search-bar{
-  background:#fff;border-radius:50px;
-  display:flex;align-items:center;
-  padding:.35rem .35rem .35rem 1.25rem;
-  max-width:520px;box-shadow:0 4px 20px rgba(0,0,0,.25);
-  margin-top:2rem;
-}
-.blog-search-bar input{
-  border:none;outline:none;font-size:.95rem;flex:1;background:transparent;
-  color:#0d1b4b;
-}
-.blog-search-bar button{
-  background:#0d1b4b;color:#fff;border:none;border-radius:50px;
-  padding:.5rem 1.25rem;font-size:.85rem;font-weight:600;
-  cursor:pointer;transition:background .15s;white-space:nowrap;
-}
-.blog-search-bar button:hover{background:#1a2d6b;}
+.blog-hero h1{font-family:'Playfair Display',Georgia,serif;color:#fff;font-size:clamp(2rem,5vw,3rem);font-weight:800;line-height:1.15;margin-bottom:.5rem;}
+.hero-badge{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,215,0,.15);border:1px solid rgba(255,215,0,.35);color:#FFD700;font-size:.73rem;font-weight:600;padding:.3rem .8rem;border-radius:50px;margin-bottom:1.2rem;}
+.blog-hero p{color:rgba(255,255,255,.75);font-size:1rem;max-width:500px;}
+.blog-search-wrap{background:#fff;border-radius:50px;display:flex;align-items:center;padding:.3rem .35rem .3rem 1.1rem;max-width:500px;box-shadow:0 4px 24px rgba(0,0,0,.28);margin-top:1.75rem;}
+.blog-search-wrap input{border:none;outline:none;font-size:.93rem;flex:1;background:transparent;color:#0d1b4b;}
+.blog-search-wrap button{background:#FFD700;color:#0d1b4b;border:none;border-radius:50px;padding:.45rem 1.1rem;font-size:.83rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .15s;}
+.blog-search-wrap button:hover{background:#e6c200;}
 
-/* Featured post */
-.featured-post{
-  position:relative;border-radius:20px;overflow:hidden;
-  min-height:420px;display:flex;align-items:flex-end;
-  box-shadow:0 8px 40px rgba(0,0,0,.18);
-  text-decoration:none;transition:transform .2s,box-shadow .2s;
-  margin-bottom:2.5rem;
-}
-.featured-post:hover{transform:translateY(-4px);box-shadow:0 16px 50px rgba(0,0,0,.22);}
-.featured-post .fp-bg{
-  position:absolute;inset:0;background-size:cover;background-position:center;
-  transition:transform .5s;
-}
+/* ── Filters ── */
+.filter-bar{background:#fff;border-radius:14px;padding:1rem 1.25rem;box-shadow:0 2px 12px rgba(0,0,0,.07);margin-bottom:1.75rem;display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;}
+.filter-bar .fb-label{font-size:.78rem;font-weight:700;color:#9aa3b0;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+.filter-pill{display:inline-flex;align-items:center;gap:.25rem;font-size:.78rem;font-weight:600;padding:.3rem .75rem;border-radius:50px;border:1.5px solid #e2e8f0;color:#5a6474;text-decoration:none;white-space:nowrap;transition:all .14s;cursor:pointer;background:#fff;}
+.filter-pill:hover,.filter-pill.active{background:#0d1b4b;color:#fff;border-color:#0d1b4b;}
+.filter-pill.gold.active{background:#FFD700;color:#0d1b4b;border-color:#FFD700;}
+.sort-select{font-size:.8rem;font-weight:600;padding:.3rem .75rem;border-radius:50px;border:1.5px solid #e2e8f0;color:#5a6474;background:#fff;cursor:pointer;outline:none;}
+.sort-select:focus{border-color:#0d1b4b;}
+.fb-divider{width:1px;height:22px;background:#e9ecef;flex-shrink:0;}
+
+/* ── Featured post ── */
+.featured-post{position:relative;border-radius:20px;overflow:hidden;min-height:400px;display:flex;align-items:flex-end;box-shadow:0 8px 40px rgba(0,0,0,.18);text-decoration:none;transition:transform .22s,box-shadow .22s;margin-bottom:2rem;}
+.featured-post:hover{transform:translateY(-4px);box-shadow:0 18px 55px rgba(0,0,0,.24);}
+.fp-bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform .5s;}
 .featured-post:hover .fp-bg{transform:scale(1.04);}
-.featured-post .fp-overlay{
-  position:absolute;inset:0;
-  background:linear-gradient(to top,rgba(5,12,45,.95) 0%,rgba(5,12,45,.4) 60%,transparent 100%);
-}
-.featured-post .fp-content{
-  position:relative;z-index:2;padding:2rem 2rem 1.75rem;width:100%;
-}
-.featured-post .fp-badge{
-  background:#FFD700;color:#0d1b4b;font-size:.7rem;font-weight:800;
-  padding:.25rem .7rem;border-radius:50px;letter-spacing:.06em;
-  display:inline-block;margin-bottom:.75rem;text-transform:uppercase;
-}
-.featured-post h2{
-  font-family:'Playfair Display',Georgia,serif;
-  color:#fff;font-size:clamp(1.35rem,3vw,2rem);font-weight:700;
-  line-height:1.25;margin-bottom:.5rem;
-}
-.featured-post .fp-meta{
-  color:rgba(255,255,255,.7);font-size:.8rem;display:flex;gap:1rem;flex-wrap:wrap;
-}
+.fp-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(4,10,38,.97) 0%,rgba(4,10,38,.45) 55%,transparent 100%);}
+.fp-content{position:relative;z-index:2;padding:2rem 2rem 1.75rem;width:100%;}
+.fp-badge{background:#FFD700;color:#0d1b4b;font-size:.68rem;font-weight:800;padding:.2rem .65rem;border-radius:50px;letter-spacing:.06em;display:inline-block;margin-bottom:.75rem;text-transform:uppercase;}
+.fp-title{font-family:'Playfair Display',Georgia,serif;color:#fff;font-size:clamp(1.35rem,3vw,1.9rem);font-weight:700;line-height:1.25;margin-bottom:.45rem;}
+.fp-excerpt{color:rgba(255,255,255,.72);font-size:.87rem;margin-bottom:.75rem;line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.fp-meta{color:rgba(255,255,255,.6);font-size:.78rem;display:flex;gap:1rem;flex-wrap:wrap;}
+.fp-rt{display:inline-flex;align-items:center;gap:.3rem;background:rgba(255,215,0,.15);color:#FFD700;padding:.15rem .55rem;border-radius:50px;font-size:.7rem;font-weight:600;}
 
-/* Post grid */
-.blog-card{
-  background:#fff;border-radius:16px;overflow:hidden;
-  box-shadow:0 2px 12px rgba(0,0,0,.07);
-  transition:transform .2s,box-shadow .2s;height:100%;
-  display:flex;flex-direction:column;
-  text-decoration:none;color:inherit;
-}
-.blog-card:hover{transform:translateY(-5px);box-shadow:0 12px 35px rgba(0,0,0,.13);}
-.blog-card .bc-img{
-  aspect-ratio:16/9;overflow:hidden;flex-shrink:0;
-  background:#e8ecf5;
-}
-.blog-card .bc-img img{
-  width:100%;height:100%;object-fit:cover;
-  transition:transform .4s;
-}
+/* ── Post cards ── */
+.blog-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.07);transition:transform .2s,box-shadow .2s;height:100%;display:flex;flex-direction:column;text-decoration:none;color:inherit;}
+.blog-card:hover{transform:translateY(-5px);box-shadow:0 14px 40px rgba(0,0,0,.13);}
+.bc-img{aspect-ratio:16/9;overflow:hidden;flex-shrink:0;background:#e8ecf5;}
+.bc-img img{width:100%;height:100%;object-fit:cover;transition:transform .4s;}
 .blog-card:hover .bc-img img{transform:scale(1.06);}
-.blog-card .bc-body{padding:1.25rem;flex:1;display:flex;flex-direction:column;}
-.blog-card .bc-cat{
-  font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
-  color:#0d1b4b;margin-bottom:.5rem;
-}
-.blog-card h3{
-  font-family:'Playfair Display',Georgia,serif;
-  font-size:1.05rem;font-weight:700;line-height:1.35;
-  color:#0d1b4b;margin-bottom:.5rem;flex:1;
-}
-.blog-card .bc-excerpt{
-  font-size:.82rem;color:#5a6474;line-height:1.6;
-  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
-  margin-bottom:.75rem;
-}
-.blog-card .bc-meta{
-  font-size:.76rem;color:#9aa3b0;
-  display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-top:auto;
-}
-.bc-views{display:flex;align-items:center;gap:.3rem;}
+.bc-img-placeholder{background:linear-gradient(135deg,#0d1b4b,#1a2d6b);height:100%;display:flex;align-items:center;justify-content:center;color:#FFD700;font-size:2rem;}
+.bc-body{padding:1.1rem 1.1rem 1rem;flex:1;display:flex;flex-direction:column;}
+.bc-cat{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#0d1b4b;margin-bottom:.4rem;}
+.bc-title{font-family:'Playfair Display',Georgia,serif;font-size:.97rem;font-weight:700;line-height:1.35;color:#0d1b4b;margin-bottom:.4rem;flex:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.bc-excerpt{font-size:.8rem;color:#5a6474;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:.65rem;}
+.bc-meta{font-size:.72rem;color:#9aa3b0;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-top:auto;}
+.bc-rt{background:#f0f4ff;color:#0d1b4b;padding:.12rem .45rem;border-radius:50px;font-size:.68rem;font-weight:600;}
 
-/* Sidebar */
-.blog-sidebar .sidebar-card{
-  background:#fff;border-radius:14px;padding:1.25rem;
-  box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:1.5rem;
-}
-.blog-sidebar .sidebar-card h5{
-  font-size:.85rem;font-weight:700;text-transform:uppercase;
-  letter-spacing:.06em;color:#0d1b4b;margin-bottom:1rem;
-  padding-bottom:.6rem;border-bottom:2px solid #FFD700;
-}
-.cat-pill{
-  display:inline-flex;align-items:center;gap:.3rem;
-  background:#f0f4ff;color:#0d1b4b;font-size:.78rem;font-weight:600;
-  padding:.3rem .75rem;border-radius:50px;margin:.2rem;
-  text-decoration:none;transition:background .15s;
-}
+/* ── Sidebar ── */
+.blog-sidebar .sc{background:#fff;border-radius:14px;padding:1.2rem;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:1.5rem;}
+.blog-sidebar .sc h5{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#0d1b4b;margin-bottom:.9rem;padding-bottom:.55rem;border-bottom:2px solid #FFD700;}
+.cat-pill{display:inline-flex;align-items:center;gap:.25rem;background:#f0f4ff;color:#0d1b4b;font-size:.76rem;font-weight:600;padding:.28rem .7rem;border-radius:50px;margin:.2rem;text-decoration:none;transition:all .14s;}
 .cat-pill:hover,.cat-pill.active{background:#0d1b4b;color:#fff;}
-.cat-pill .cnt{font-size:.68rem;opacity:.7;}
+.pop-item{display:flex;gap:.65rem;align-items:flex-start;padding:.55rem 0;border-bottom:1px solid #f0f2f7;text-decoration:none;}
+.pop-item:last-child{border-bottom:none;}
+.pop-item img{width:56px;height:44px;object-fit:cover;border-radius:7px;flex-shrink:0;}
+.pop-item .pi-ph{width:56px;height:44px;border-radius:7px;flex-shrink:0;background:linear-gradient(135deg,#0d1b4b,#1a2d6b);display:flex;align-items:center;justify-content:center;color:#FFD700;font-size:.85rem;}
+.pop-title{font-size:.77rem;font-weight:600;color:#0d1b4b;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.pop-meta{font-size:.68rem;color:#9aa3b0;margin-top:.2rem;}
 
-.popular-item{
-  display:flex;gap:.75rem;align-items:flex-start;
-  padding:.6rem 0;border-bottom:1px solid #f0f2f7;
-  text-decoration:none;
-}
-.popular-item:last-child{border-bottom:none;}
-.popular-item img{width:60px;height:48px;object-fit:cover;border-radius:8px;flex-shrink:0;}
-.popular-item .pi-fallback{
-  width:60px;height:48px;border-radius:8px;flex-shrink:0;
-  background:linear-gradient(135deg,#0d1b4b,#1a2d6b);
-  display:flex;align-items:center;justify-content:center;
-  color:#FFD700;font-size:.9rem;
-}
-.popular-item .pi-title{
-  font-size:.8rem;font-weight:600;color:#0d1b4b;line-height:1.35;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
-}
-.popular-item .pi-views{font-size:.72rem;color:#9aa3b0;margin-top:.2rem;}
+/* ── Pagination ── */
+.blog-pagination .page-link{border-radius:8px!important;margin:0 2px;color:#0d1b4b;border:1px solid #e2e8f0;font-size:.85rem;}
+.blog-pagination .page-item.active .page-link{background:#0d1b4b;border-color:#0d1b4b;color:#fff;}
 
-/* Pagination */
-.blog-pagination .page-link{
-  border-radius:8px !important;margin:0 2px;
-  color:#0d1b4b;border:1px solid #e2e8f0;
-}
-.blog-pagination .page-item.active .page-link{
-  background:#0d1b4b;border-color:#0d1b4b;color:#fff;
-}
+/* ── Animations ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.ani{animation:fadeUp .45s ease both;}
+.ani:nth-child(1){animation-delay:.04s}.ani:nth-child(2){animation-delay:.09s}.ani:nth-child(3){animation-delay:.14s}
+.ani:nth-child(4){animation-delay:.18s}.ani:nth-child(5){animation-delay:.22s}.ani:nth-child(6){animation-delay:.26s}
+.ani:nth-child(7){animation-delay:.3s}.ani:nth-child(8){animation-delay:.34s}.ani:nth-child(9){animation-delay:.38s}
 
-/* Category filter strip */
-.cat-strip{
-  display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;
-  padding:1rem 0;border-bottom:1px solid #eaecf0;margin-bottom:1.5rem;
-}
-.cat-strip a{
-  font-size:.8rem;font-weight:600;padding:.35rem .85rem;
-  border-radius:50px;border:1.5px solid #e2e8f0;
-  color:#5a6474;text-decoration:none;white-space:nowrap;
-  transition:all .15s;
-}
-.cat-strip a:hover,.cat-strip a.active{
-  background:#0d1b4b;color:#fff;border-color:#0d1b4b;
-}
+/* ── Results header ── */
+.results-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:.5rem;}
+.results-count{font-size:.83rem;color:#6c757d;}
+.clear-link{font-size:.78rem;color:#0d1b4b;text-decoration:none;display:flex;align-items:center;gap:.3rem;}
+.clear-link:hover{color:#FFD700;}
 
-/* Animate in */
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-.animate-in{animation:fadeUp .5s ease both;}
-.animate-in:nth-child(1){animation-delay:.05s}
-.animate-in:nth-child(2){animation-delay:.1s}
-.animate-in:nth-child(3){animation-delay:.15s}
-.animate-in:nth-child(4){animation-delay:.2s}
-.animate-in:nth-child(5){animation-delay:.25s}
-.animate-in:nth-child(6){animation-delay:.3s}
-
-@media(max-width:768px){
-  .blog-hero{padding:3rem 0 2.5rem;}
-  .featured-post{min-height:300px;}
-  .featured-post .fp-content{padding:1.25rem;}
-}
+@media(max-width:768px){.blog-hero{padding:3rem 0 2.5rem;}.fp-content{padding:1.25rem;}.featured-post{min-height:280px;}}
 </style>
 {% endblock %}
 
@@ -219,12 +96,14 @@
 <!-- Hero -->
 <section class="blog-hero">
   <div class="container">
-    <div class="badge-pill"><i class="fas fa-pen-nib"></i>Legal Insights & Tech</div>
+    <div class="hero-badge"><i class="fas fa-pen-nib"></i>Legal Insights &amp; Tech</div>
     <h1>The LAWCOLAB Blog</h1>
-    <p>Expert articles on legal technology, practice management, and law firm growth in Nigeria and across Africa.</p>
-    <form class="blog-search-bar" method="GET" action="{{ url_for('blog.index') }}">
-      <i class="fas fa-search" style="color:#9aa3b0;margin-right:.5rem;"></i>
-      <input name="q" value="{{ search or '' }}" placeholder="Search articles…" autocomplete="off">
+    <p>Expert guides on legal technology, practice management, billing, and law firm growth in Nigeria and across Africa.</p>
+    <form class="blog-search-wrap" method="GET" action="{{ url_for('blog.index') }}">
+      <i class="fas fa-search" style="color:#9aa3b0;margin-right:.5rem;flex-shrink:0;"></i>
+      <input name="q" value="{{ search or '' }}" placeholder="Search articles, topics, categories…" autocomplete="off">
+      {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+      {% if sort and sort != 'newest' %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
       <button type="submit"><i class="fas fa-arrow-right me-1"></i>Search</button>
     </form>
   </div>
@@ -232,88 +111,92 @@
 
 <div class="container py-4">
   <div class="row g-4">
-    <!-- Main content -->
+
+    <!-- Main -->
     <div class="col-lg-8">
 
-      <!-- Featured post -->
+      <!-- Featured -->
       {% if featured %}
       <a class="featured-post d-block" href="{{ url_for('blog.post', slug=featured.slug) }}">
         <div class="fp-bg" style="background-image:url('{{ featured.hero_image or 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1200&q=70' }}')"></div>
         <div class="fp-overlay"></div>
         <div class="fp-content">
           <span class="fp-badge">⭐ Featured</span>
-          <h2>{{ featured.title }}</h2>
-          {% if featured.excerpt %}
-          <p style="color:rgba(255,255,255,.75);font-size:.9rem;margin-bottom:.75rem;line-height:1.55;">{{ featured.excerpt }}</p>
-          {% endif %}
+          <div class="fp-title">{{ featured.title }}</div>
+          {% if featured.excerpt %}<div class="fp-excerpt">{{ featured.excerpt }}</div>{% endif %}
           <div class="fp-meta">
             <span><i class="fas fa-user-circle me-1"></i>{{ featured.author }}</span>
-            {% if featured.published_at %}
-            <span><i class="fas fa-calendar me-1"></i>{{ featured.published_at.strftime('%b %d, %Y') if featured.published_at else '' }}</span>
-            {% endif %}
-            <span><i class="fas fa-eye me-1"></i>{{ featured.view_count or 0 }} views</span>
+            {% if featured.published_at %}<span><i class="fas fa-calendar me-1"></i>{{ featured.published_at.strftime('%b %d, %Y') }}</span>{% endif %}
+            <span><i class="fas fa-eye me-1"></i>{{ featured.view_count or 0 | int }} views</span>
             <span><i class="fas fa-tag me-1"></i>{{ featured.category }}</span>
+            {% if featured.read_time_minutes %}<span class="fp-rt"><i class="fas fa-clock"></i>{{ featured.read_time_minutes }} min read</span>{% endif %}
           </div>
         </div>
       </a>
       {% endif %}
 
-      <!-- Category filter strip -->
-      <div class="cat-strip">
-        <a href="{{ url_for('blog.index') }}" class="{% if not category %}active{% endif %}">All</a>
+      <!-- Filter bar -->
+      <div class="filter-bar">
+        <span class="fb-label">Filter:</span>
+        <a href="{{ url_for('blog.index', sort=sort) }}" class="filter-pill {% if not category %}active{% endif %}">All</a>
         {% for c in cats %}
-        <a href="{{ url_for('blog.index', category=c.category) }}"
-           class="{% if category == c.category %}active{% endif %}">
-          {{ c.category }} <small style="opacity:.6;">({{ c.cnt }})</small>
+        <a href="{{ url_for('blog.index', category=c.category, sort=sort) }}"
+           class="filter-pill {% if category==c.category %}active{% endif %}">
+          {{ c.category }}<span style="opacity:.55;font-size:.68rem;margin-left:.2rem;">({{ c.cnt }})</span>
         </a>
         {% endfor %}
-      </div>
-
-      <!-- Results header -->
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <div style="font-size:.85rem;color:#6c757d;">
-          {% if search %}
-            <strong>{{ total }}</strong> results for "<em>{{ search }}</em>"
-          {% elif category %}
-            <strong>{{ total }}</strong> posts in <em>{{ category }}</em>
-          {% else %}
-            <strong>{{ total }}</strong> articles
-          {% endif %}
-        </div>
+        <div class="fb-divider"></div>
+        <span class="fb-label">Sort:</span>
+        <form method="GET" action="{{ url_for('blog.index') }}" style="display:inline;">
+          {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+          {% if search %}<input type="hidden" name="q" value="{{ search }}">{% endif %}
+          <select name="sort" class="sort-select" onchange="this.form.submit()">
+            <option value="newest" {% if sort=='newest' %}selected{% endif %}>Newest First</option>
+            <option value="oldest" {% if sort=='oldest' %}selected{% endif %}>Oldest First</option>
+            <option value="popular" {% if sort=='popular' %}selected{% endif %}>Most Views</option>
+            <option value="liked" {% if sort=='liked' %}selected{% endif %}>Most Shared</option>
+            <option value="commented" {% if sort=='commented' %}selected{% endif %}>Most Discussed</option>
+          </select>
+        </form>
         {% if search or category or tag %}
-        <a href="{{ url_for('blog.index') }}" style="font-size:.8rem;color:#0d1b4b;">
-          <i class="fas fa-times-circle me-1"></i>Clear filter
-        </a>
+        <a href="{{ url_for('blog.index') }}" class="clear-link ms-auto"><i class="fas fa-times-circle"></i>Clear</a>
         {% endif %}
       </div>
 
-      <!-- Post grid -->
+      <!-- Results header -->
+      <div class="results-header">
+        <div class="results-count">
+          {% if search %}<strong>{{ total }}</strong> results for "<em>{{ search }}</em>"
+          {% elif category %}<strong>{{ total }}</strong> posts in <em>{{ category }}</em>
+          {% elif tag %}<strong>{{ total }}</strong> posts tagged <em>#{{ tag }}</em>
+          {% else %}<strong>{{ total }}</strong> articles
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Grid -->
       {% if posts %}
       <div class="row g-3 mb-4">
         {% for p in posts %}
-        <div class="col-sm-6 col-md-4 animate-in">
+        <div class="col-sm-6 col-md-4 ani">
           <a class="blog-card" href="{{ url_for('blog.post', slug=p.slug) }}">
             <div class="bc-img">
               {% if p.hero_image %}
               <img src="{{ p.hero_image }}" alt="{{ p.title }}" loading="lazy">
               {% else %}
-              <div style="background:linear-gradient(135deg,#0d1b4b,#1a2d6b);height:180px;display:flex;align-items:center;justify-content:center;color:#FFD700;font-size:2rem;">
-                <i class="fas fa-balance-scale"></i>
-              </div>
+              <div class="bc-img-placeholder"><i class="fas fa-balance-scale"></i></div>
               {% endif %}
             </div>
             <div class="bc-body">
               <div class="bc-cat">{{ p.category }}</div>
-              <h3>{{ p.title }}</h3>
-              {% if p.excerpt %}
-              <p class="bc-excerpt">{{ p.excerpt }}</p>
-              {% endif %}
+              <div class="bc-title">{{ p.title }}</div>
+              {% if p.excerpt %}<div class="bc-excerpt">{{ p.excerpt }}</div>{% endif %}
               <div class="bc-meta">
-                <span class="bc-views"><i class="fas fa-eye"></i>{{ p.view_count or 0 }}</span>
-                <span><i class="fas fa-comments"></i>{{ p.comment_count or 0 }}</span>
-                {% if p.published_at %}
-                <span>{{ p.published_at.strftime('%b %d') if p.published_at else '' }}</span>
-                {% endif %}
+                {% if p.read_time_minutes %}<span class="bc-rt"><i class="fas fa-clock me-1"></i>{{ p.read_time_minutes }}m</span>{% endif %}
+                <span><i class="fas fa-eye me-1"></i>{{ p.view_count or 0 | int }}</span>
+                <span><i class="fas fa-comments me-1"></i>{{ p.comment_count or 0 | int }}</span>
+                {% if p.share_count %}<span><i class="fas fa-share-alt me-1"></i>{{ p.share_count | int }}</span>{% endif %}
+                {% if p.published_at %}<span class="ms-auto">{{ p.published_at.strftime('%b %d') }}</span>{% endif %}
               </div>
             </div>
           </a>
@@ -322,28 +205,32 @@
       </div>
       {% else %}
       <div class="text-center py-5" style="color:#9aa3b0;">
-        <i class="fas fa-file-alt" style="font-size:3rem;opacity:.3;display:block;margin-bottom:1rem;"></i>
-        <p>No posts found{% if search %} for "{{ search }}"{% endif %}.</p>
-        {% if search %}<a href="{{ url_for('blog.index') }}" class="btn btn-sm btn-outline-secondary mt-2">Clear search</a>{% endif %}
+        <i class="fas fa-file-alt" style="font-size:3rem;opacity:.25;display:block;margin-bottom:1rem;"></i>
+        <p class="mb-2">No posts found{% if search %} for "{{ search }}"{% endif %}.</p>
+        {% if search or category %}<a href="{{ url_for('blog.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill mt-1">Clear filters</a>{% endif %}
       </div>
       {% endif %}
 
       <!-- Pagination -->
       {% if total_pages > 1 %}
-      <nav class="blog-pagination d-flex justify-content-center mt-2">
+      <nav class="blog-pagination d-flex justify-content-center mt-3">
         <ul class="pagination">
           {% if page > 1 %}
-          <li class="page-item"><a class="page-link" href="{{ url_for('blog.index', page=page-1, category=category, q=search) }}"><i class="fas fa-chevron-left"></i></a></li>
+          <li class="page-item"><a class="page-link" href="{{ url_for('blog.index', page=page-1, category=category, q=search, sort=sort) }}"><i class="fas fa-chevron-left"></i></a></li>
           {% endif %}
           {% for pg in range(1, total_pages+1) %}
-          {% if pg == page or (pg >= page-2 and pg <= page+2) %}
+          {% if pg == page or (pg >= page-2 and pg <= page+2) or pg == 1 or pg == total_pages %}
+          {% if pg == page-3 or pg == page+3 %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+          {% else %}
           <li class="page-item {% if pg==page %}active{% endif %}">
-            <a class="page-link" href="{{ url_for('blog.index', page=pg, category=category, q=search) }}">{{ pg }}</a>
+            <a class="page-link" href="{{ url_for('blog.index', page=pg, category=category, q=search, sort=sort) }}">{{ pg }}</a>
           </li>
+          {% endif %}
           {% endif %}
           {% endfor %}
           {% if page < total_pages %}
-          <li class="page-item"><a class="page-link" href="{{ url_for('blog.index', page=page+1, category=category, q=search) }}"><i class="fas fa-chevron-right"></i></a></li>
+          <li class="page-item"><a class="page-link" href="{{ url_for('blog.index', page=page+1, category=category, q=search, sort=sort) }}"><i class="fas fa-chevron-right"></i></a></li>
           {% endif %}
         </ul>
       </nav>
@@ -352,58 +239,55 @@
 
     <!-- Sidebar -->
     <div class="col-lg-4 blog-sidebar">
+
       <!-- Categories -->
-      <div class="sidebar-card">
+      <div class="sc">
         <h5><i class="fas fa-folder me-2"></i>Categories</h5>
-        <div>
-          <a href="{{ url_for('blog.index') }}" class="cat-pill {% if not category %}active{% endif %}">
-            All <span class="cnt">({{ total }})</span>
-          </a>
-          {% for c in cats %}
-          <a href="{{ url_for('blog.index', category=c.category) }}"
-             class="cat-pill {% if category==c.category %}active{% endif %}">
-            {{ c.category }} <span class="cnt">({{ c.cnt }})</span>
-          </a>
-          {% endfor %}
-        </div>
+        <a href="{{ url_for('blog.index') }}" class="cat-pill {% if not category %}active{% endif %}">All <span style="opacity:.55;">({{ total }})</span></a>
+        {% for c in cats %}
+        <a href="{{ url_for('blog.index', category=c.category) }}" class="cat-pill {% if category==c.category %}active{% endif %}">{{ c.category }} <span style="opacity:.55;">({{ c.cnt }})</span></a>
+        {% endfor %}
       </div>
 
-      <!-- Popular posts -->
-      <div class="sidebar-card">
+      <!-- Most Read -->
+      <div class="sc">
         <h5><i class="fas fa-fire me-2"></i>Most Read</h5>
         {% for p in popular %}
-        <a class="popular-item" href="{{ url_for('blog.post', slug=p.slug) }}">
-          {% if p.hero_image %}
-          <img src="{{ p.hero_image }}" alt="{{ p.title }}" loading="lazy">
-          {% else %}
-          <div class="pi-fallback"><i class="fas fa-balance-scale"></i></div>
-          {% endif %}
+        <a class="pop-item" href="{{ url_for('blog.post', slug=p.slug) }}">
+          {% if p.hero_image %}<img src="{{ p.hero_image }}" alt="{{ p.title }}" loading="lazy">
+          {% else %}<div class="pi-ph"><i class="fas fa-balance-scale"></i></div>{% endif %}
           <div>
-            <div class="pi-title">{{ p.title }}</div>
-            <div class="pi-views"><i class="fas fa-eye me-1"></i>{{ p.view_count or 0 }} views</div>
+            <div class="pop-title">{{ p.title }}</div>
+            <div class="pop-meta"><i class="fas fa-eye me-1"></i>{{ p.view_count or 0 | int }} views
+              {% if p.comment_count %} · <i class="fas fa-comments me-1"></i>{{ p.comment_count }}{% endif %}
+            </div>
           </div>
         </a>
         {% endfor %}
       </div>
 
       <!-- CTA -->
-      <div class="sidebar-card" style="background:linear-gradient(135deg,#0d1b4b,#1a2d6b);color:#fff;">
-        <div style="font-size:1.5rem;margin-bottom:.5rem;">⚖️</div>
+      <div class="sc" style="background:linear-gradient(135deg,#0d1b4b,#172a72);color:#fff;">
+        <div style="font-size:1.6rem;margin-bottom:.5rem;">⚖️</div>
         <h5 style="color:#FFD700;border-bottom-color:rgba(255,215,0,.3);">Run Your Firm Smarter</h5>
-        <p style="font-size:.82rem;color:rgba(255,255,255,.8);line-height:1.6;">Join 500+ law firms using LAWCOLAB to manage cases, billing, and clients in one place.</p>
-        <a href="/auth/signup" class="btn btn-warning btn-sm w-100 fw-bold mt-2" style="color:#0d1b4b;">Start Free Trial →</a>
+        <p style="font-size:.82rem;color:rgba(255,255,255,.78);line-height:1.6;margin-bottom:1rem;">Join hundreds of law firms using LAWCOLAB to manage cases, billing, and clients in one place.</p>
+        <a href="/auth/signup" class="btn btn-warning btn-sm w-100 fw-bold" style="color:#0d1b4b;border-radius:50px;">Start Free Trial →</a>
+      </div>
+
+      <!-- Newsletter teaser -->
+      <div class="sc" style="border:2px solid #f0f2f7;">
+        <h5><i class="fas fa-bell me-2"></i>Never Miss an Article</h5>
+        <p style="font-size:.8rem;color:#6c757d;line-height:1.6;margin-bottom:.75rem;">New legal insights published weekly. Join 2,000+ legal professionals.</p>
+        <a href="/auth/signup" class="btn btn-outline-dark btn-sm w-100 fw-bold" style="border-radius:50px;font-size:.82rem;">Create Free Account</a>
       </div>
 
       {% if current_user.is_authenticated and current_user.is_super_admin() %}
-      <div class="sidebar-card border border-warning">
+      <div class="sc border border-warning">
         <h5 style="color:#856404;border-bottom-color:#ffc107;"><i class="fas fa-cog me-2"></i>Admin</h5>
         <div class="d-grid gap-2">
-          <a href="{{ url_for('blog.admin_list') }}" class="btn btn-outline-warning btn-sm">
-            <i class="fas fa-list me-1"></i>Manage Posts
-          </a>
-          <a href="{{ url_for('blog.admin_new') }}" class="btn btn-warning btn-sm fw-bold" style="color:#0d1b4b;">
-            <i class="fas fa-plus me-1"></i>New Post
-          </a>
+          <a href="{{ url_for('blog.admin_analytics') }}" class="btn btn-sm btn-outline-info rounded-pill"><i class="fas fa-chart-bar me-1"></i>Analytics</a>
+          <a href="{{ url_for('blog.admin_list') }}" class="btn btn-sm btn-outline-warning rounded-pill"><i class="fas fa-list me-1"></i>Manage Posts</a>
+          <a href="{{ url_for('blog.admin_new') }}" class="btn btn-sm btn-warning fw-bold rounded-pill" style="color:#0d1b4b;"><i class="fas fa-plus me-1"></i>New Post</a>
         </div>
       </div>
       {% endif %}

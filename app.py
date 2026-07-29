@@ -161,6 +161,10 @@ with app.app_context():
     from utils.email_migrations import run_email_migrations
     run_email_migrations(db)
 
+    # Apply Blog / Content analytics schema migrations
+    from utils.content_migrations import run_content_migrations
+    run_content_migrations(db)
+
     _sa_email = os.environ.get("SUPER_ADMIN_EMAIL", "").strip().lower()
     _sa_password = os.environ.get("SUPER_ADMIN_PASSWORD", "").strip()
     _sa_first = os.environ.get("SUPER_ADMIN_FIRST_NAME", "Super").strip()

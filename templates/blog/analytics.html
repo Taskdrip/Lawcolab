@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+{% block title %}Blog Analytics — LAWCOLAB Super Admin{% endblock %}
+
+{% block additional_css %}
+<style>
+.analytics-header{background:linear-gradient(135deg,#060d24,#0d1b4b);padding:2.5rem 0 2rem;margin-bottom:2rem;}
+.analytics-header h1{color:#fff;font-family:'Playfair Display',Georgia,serif;font-size:1.9rem;font-weight:700;margin-bottom:.25rem;}
+.analytics-header p{color:rgba(255,255,255,.65);font-size:.9rem;}
+
+.stat-card{background:#fff;border-radius:14px;padding:1.4rem 1.5rem;box-shadow:0 2px 12px rgba(0,0,0,.07);height:100%;}
+.stat-card .stat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.stat-card .stat-value{font-size:2rem;font-weight:800;color:#0d1b4b;line-height:1;}
+.stat-card .stat-label{font-size:.78rem;color:#9aa3b0;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:.25rem;}
+.stat-card .stat-sub{font-size:.75rem;color:#6c757d;margin-top:.4rem;}
+
+.section-card{background:#fff;border-radius:14px;padding:1.5rem;box-shadow:0 2px 12px rgba(0,0,0,.07);margin-bottom:1.5rem;}
+.section-card h4{font-size:.9rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#0d1b4b;margin-bottom:1.2rem;padding-bottom:.65rem;border-bottom:2px solid #FFD700;}
+
+.platform-row{display:flex;align-items:center;gap:.75rem;padding:.65rem 0;border-bottom:1px solid #f5f6fa;}
+.platform-row:last-child{border-bottom:none;}
+.platform-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.85rem;color:#fff;flex-shrink:0;}
+.platform-name{font-size:.85rem;font-weight:600;color:#1e2533;flex:1;}
+.platform-bar-wrap{flex:2;background:#f0f4ff;border-radius:50px;height:8px;overflow:hidden;}
+.platform-bar{height:100%;border-radius:50px;background:linear-gradient(90deg,#0d1b4b,#1a2d6b);transition:width .6s ease;}
+.platform-count{font-size:.82rem;font-weight:700;color:#0d1b4b;min-width:40px;text-align:right;}
+
+.top-post-row{display:flex;align-items:flex-start;gap:.85rem;padding:.75rem 0;border-bottom:1px solid #f5f6fa;}
+.top-post-row:last-child{border-bottom:none;}
+.top-post-rank{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0d1b4b,#1a2d6b);color:#FFD700;font-size:.78rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.top-post-rank.gold{background:linear-gradient(135deg,#e6a200,#FFD700);color:#0d1b4b;}
+.top-post-title{font-size:.85rem;font-weight:600;color:#0d1b4b;line-height:1.35;margin-bottom:.2rem;}
+.top-post-meta{font-size:.73rem;color:#9aa3b0;display:flex;gap:.65rem;flex-wrap:wrap;}
+.top-post-score{font-size:.78rem;font-weight:700;color:#FFD700;background:#0d1b4b;padding:.15rem .5rem;border-radius:50px;white-space:nowrap;}
+
+.referrer-row{display:flex;align-items:center;gap:.65rem;padding:.5rem 0;border-bottom:1px solid #f5f6fa;}
+.referrer-row:last-child{border-bottom:none;}
+.referrer-name{font-size:.83rem;font-weight:600;color:#1e2533;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.referrer-count{font-size:.8rem;font-weight:700;color:#0d1b4b;}
+
+.device-badge{display:inline-flex;align-items:center;gap:.4rem;background:#f0f4ff;color:#0d1b4b;padding:.4rem 1rem;border-radius:50px;font-size:.82rem;font-weight:600;margin:.25rem;}
+.device-badge i{font-size:.9rem;}
+
+.back-bar{background:#fff;border-bottom:1px solid #f0f2f7;padding:.75rem 0;margin-bottom:0;}
+.back-bar a{font-size:.82rem;color:#0d1b4b;text-decoration:none;font-weight:600;}
+.back-bar a:hover{color:#FFD700;}
+
+.empty-analytics{text-align:center;color:#9aa3b0;padding:2rem;}
+.empty-analytics i{font-size:2rem;opacity:.3;display:block;margin-bottom:.75rem;}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Back bar -->
+<div class="back-bar">
+  <div class="container">
+    <a href="{{ url_for('blog.index') }}"><i class="fas fa-arrow-left me-2"></i>Back to Blog</a>
+    <span style="color:#dee2e6;margin:0 .75rem;">|</span>
+    <a href="{{ url_for('blog.admin_list') }}"><i class="fas fa-list me-2"></i>Manage Posts</a>
+    <span style="color:#dee2e6;margin:0 .75rem;">|</span>
+    <a href="{{ url_for('blog.admin_new') }}"><i class="fas fa-plus me-2"></i>New Post</a>
+  </div>
+</div>
+
+<!-- Header -->
+<div class="analytics-header">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <h1><i class="fas fa-chart-bar me-2" style="color:#FFD700;"></i>Blog Analytics</h1>
+        <p>Engagement, reach, and share performance across all published articles.</p>
+      </div>
+      <div style="text-align:right;">
+        <div style="color:rgba(255,255,255,.5);font-size:.75rem;">Last updated</div>
+        <div style="color:#FFD700;font-weight:700;font-size:.88rem;">Live data</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+
+  <!-- Top stat cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="stat-card">
+        <div class="d-flex align-items-start gap-2 mb-2">
+          <div class="stat-icon" style="background:#e8f0fe;color:#0d1b4b;"><i class="fas fa-file-alt"></i></div>
+        </div>
+        <div class="stat-value">{{ totals.total_posts or 0 }}</div>
+        <div class="stat-label">Published Posts</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="stat-card">
+        <div class="d-flex align-items-start gap-2 mb-2">
+          <div class="stat-icon" style="background:#fff3cd;color:#856404;"><i class="fas fa-eye"></i></div>
+        </div>
+        <div class="stat-value">{{ "{:,}".format(totals.total_views | int if totals.total_views else 0) }}</div>
+        <div class="stat-label">Total Views</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="stat-card">
+        <div class="d-flex align-items-start gap-2 mb-2">
+          <div class="stat-icon" style="background:#f8d7da;color:#842029;"><i class="fas fa-users"></i></div>
+        </div>
+        <div class="stat-value">{{ "{:,}".format(totals.unique_visitors | int if totals.unique_visitors else 0) }}</div>
+        <div class="stat-label">Unique Visitors</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="stat-card">
+        <div class="d-flex align-items-start gap-2 mb-2">
+          <div class="stat-icon" style="background:#d1ecf1;color:#0c5460;"><i class="fas fa-share-alt"></i></div>
+        </div>
+        <div class="stat-value">{{ "{:,}".format(totals.total_shares | int if totals.total_shares else 0) }}</div>
+        <div class="stat-label">Total Shares</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="stat-card">
+        <div class="d-flex align-items-start gap-2 mb-2">
+          <div class="stat-icon" style="background:#f0f4ff;color:#e74c3c;"><i class="fas fa-heart"></i></div>
+        </div>
+        <div class="stat-value">{{ "{:,}".format(totals.total_likes | int if totals.total_likes else 0) }}</div>
+        <div class="stat-label">Total Likes</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="stat-card">
+        <div class="d-flex align-items-start gap-2 mb-2">
+          <div class="stat-icon" style="background:#d4edda;color:#155724;"><i class="fas fa-comments"></i></div>
+        </div>
+        <div class="stat-value">{{ "{:,}".format(totals.total_comments | int if totals.total_comments else 0) }}</div>
+        <div class="stat-label">Comments</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- Left: Top posts + referrers -->
+    <div class="col-lg-8">
+
+      <!-- Top articles by engagement -->
+      <div class="section-card">
+        <h4><i class="fas fa-trophy me-2" style="color:#FFD700;"></i>Top Articles by Engagement</h4>
+        {% if top_posts %}
+        {% for p in top_posts %}
+        <div class="top-post-row">
+          <div class="top-post-rank {% if loop.index == 1 %}gold{% endif %}">{{ loop.index }}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="top-post-title">
+              <a href="{{ url_for('blog.post', slug=p.slug) }}" style="color:inherit;text-decoration:none;">{{ p.title }}</a>
+            </div>
+            <div class="top-post-meta">
+              <span><i class="fas fa-eye me-1"></i>{{ "{:,}".format(p.view_count | int) }} views</span>
+              <span><i class="fas fa-share-alt me-1"></i>{{ p.share_count | int }} shares</span>
+              <span><i class="fas fa-comments me-1"></i>{{ p.comment_count | int }} comments</span>
+              <span class="top-post-score">Score: {{ p.engagement_score | int }}</span>
+            </div>
+          </div>
+          <a href="{{ url_for('blog.admin_edit', post_id=p.id) }}" class="btn btn-sm btn-outline-warning" style="border-radius:50px;font-size:.72rem;white-space:nowrap;"><i class="fas fa-edit"></i></a>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-analytics"><i class="fas fa-chart-bar"></i><p>No published posts yet.</p></div>
+        {% endif %}
+      </div>
+
+      <!-- Traffic referrers -->
+      <div class="section-card">
+        <h4><i class="fas fa-external-link-alt me-2" style="color:#FFD700;"></i>Traffic Sources</h4>
+        <p style="font-size:.8rem;color:#6c757d;margin-bottom:1rem;">Where your readers are coming from (referrer domains).</p>
+        {% if referrers %}
+        {% set max_ref = referrers[0].cnt if referrers else 1 %}
+        {% for r in referrers %}
+        <div class="referrer-row">
+          <i class="fas fa-globe" style="color:#9aa3b0;font-size:.8rem;flex-shrink:0;"></i>
+          <div class="referrer-name" title="{{ r.referrer_domain }}">{{ r.referrer_domain }}</div>
+          <div class="platform-bar-wrap">
+            <div class="platform-bar" style="width:{{ [(r.cnt / max_ref * 100), 3]|max | int }}%;"></div>
+          </div>
+          <div class="referrer-count">{{ r.cnt }}</div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-analytics"><i class="fas fa-external-link-alt"></i><p>Referrer data will appear once readers start visiting from external links.</p></div>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <!-- Right: Share platforms + device breakdown -->
+    <div class="col-lg-4">
+
+      <!-- Share by platform -->
+      <div class="section-card">
+        <h4><i class="fas fa-share-alt me-2" style="color:#FFD700;"></i>Shares by Platform</h4>
+        {% if share_by_platform %}
+        {% set max_share = share_by_platform[0].cnt if share_by_platform else 1 %}
+
+        {% set plat_meta = {
+          'twitter':   ('#1da1f2', 'fab fa-twitter'),
+          'x':         ('#000000', 'fab fa-x-twitter'),
+          'linkedin':  ('#0077b5', 'fab fa-linkedin-in'),
+          'whatsapp':  ('#25d366', 'fab fa-whatsapp'),
+          'facebook':  ('#1877f2', 'fab fa-facebook-f'),
+          'telegram':  ('#229ed9', 'fab fa-telegram-plane'),
+          'reddit':    ('#ff4500', 'fab fa-reddit-alien'),
+          'email':     ('#6c757d', 'fas fa-envelope'),
+          'copy':      ('#495057', 'fas fa-link'),
+          'pinterest': ('#bd081c', 'fab fa-pinterest-p'),
+          'instagram': ('#e1306c', 'fab fa-instagram'),
+          'native':    ('#6f42c1', 'fas fa-share'),
+        } %}
+
+        {% for s in share_by_platform %}
+        {% set meta = plat_meta.get(s.platform, ('#9aa3b0', 'fas fa-share-alt')) %}
+        <div class="platform-row">
+          <div class="platform-icon" style="background:{{ meta[0] }};"><i class="{{ meta[1] }}"></i></div>
+          <div class="platform-name">{{ s.platform | capitalize }}</div>
+          <div class="platform-bar-wrap">
+            <div class="platform-bar" style="width:{{ [(s.cnt / max_share * 100), 3]|max | int }}%;background:{{ meta[0] }};"></div>
+          </div>
+          <div class="platform-count">{{ s.cnt }}</div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-analytics"><i class="fas fa-share-alt"></i><p>Share data will appear when readers start sharing your articles.</p></div>
+        {% endif %}
+      </div>
+
+      <!-- Device breakdown -->
+      <div class="section-card">
+        <h4><i class="fas fa-mobile-alt me-2" style="color:#FFD700;"></i>Device Types</h4>
+        {% if device_breakdown %}
+        {% set total_devices = device_breakdown | sum(attribute='cnt') %}
+        {% for d in device_breakdown %}
+        {% set icon = 'fa-mobile-alt' if d.device_type == 'mobile' else ('fa-tablet-alt' if d.device_type == 'tablet' else 'fa-desktop') %}
+        {% set pct = (d.cnt / total_devices * 100) | int if total_devices else 0 %}
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <div class="device-badge">
+            <i class="fas {{ icon }}"></i>{{ d.device_type | capitalize }}
+            <strong style="margin-left:.25rem;">{{ pct }}%</strong>
+          </div>
+          <span style="font-size:.78rem;color:#9aa3b0;">{{ d.cnt }} visits</span>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-analytics" style="padding:1rem;"><i class="fas fa-mobile-alt"></i><p style="font-size:.82rem;">Device data will appear once visitors arrive.</p></div>
+        {% endif %}
+      </div>
+
+      <!-- Quick actions -->
+      <div class="section-card" style="border:2px solid #FFD700;">
+        <h4 style="color:#856404;border-bottom-color:#ffc107;"><i class="fas fa-bolt me-2"></i>Quick Actions</h4>
+        <div class="d-grid gap-2">
+          <a href="{{ url_for('blog.admin_new') }}" class="btn btn-warning fw-bold" style="color:#0d1b4b;border-radius:10px;"><i class="fas fa-plus me-2"></i>Write New Article</a>
+          <a href="{{ url_for('blog.admin_list') }}" class="btn btn-outline-secondary" style="border-radius:10px;"><i class="fas fa-list me-2"></i>Manage All Posts</a>
+          <a href="{{ url_for('blog.index') }}" class="btn btn-outline-primary" style="border-radius:10px;"><i class="fas fa-eye me-2"></i>View Live Blog</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Engagement formula explanation -->
+  <div class="section-card mt-2" style="background:#f8f9fd;">
+    <div class="d-flex align-items-start gap-3">
+      <div style="font-size:1.5rem;flex-shrink:0;">📐</div>
+      <div>
+        <div style="font-weight:700;color:#0d1b4b;font-size:.88rem;margin-bottom:.25rem;">Engagement Score Formula</div>
+        <div style="font-size:.8rem;color:#6c757d;line-height:1.65;">
+          Engagement Score = <strong>Views × 1</strong> + <strong>Shares × 3</strong> + <strong>Comments × 5</strong>.
+          Shares and comments receive higher weight because they represent active intent — a reader who shares or comments is far more engaged than one who simply views. Use this score to identify your best-performing content and replicate its structure, tone, and topic depth.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

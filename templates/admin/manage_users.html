@@ -289,6 +289,7 @@
                                 {% if user.id != current_user.id %}
                                 <div class="user-actions">
                                     <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=user.id) }}" style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="action-btn btn-toggle" title="{{ 'Deactivate' if user.active else 'Activate' }} User">
                                             <i class="fas fa-{{ 'pause' if user.active else 'play' }}"></i>
                                             {{ 'Deactivate' if user.active else 'Activate' }}
@@ -298,6 +299,7 @@
                                     <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" 
                                           onsubmit="return confirm('Are you sure you want to permanently delete {{ user.full_name or user.email }}? This action cannot be undone.')" 
                                           style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="action-btn btn-delete" title="Delete User">
                                             <i class="fas fa-trash"></i>
                                             Delete
@@ -353,6 +355,7 @@
                                 {% if user.id != current_user.id %}
                                 <div class="user-actions">
                                     <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=user.id) }}" style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="action-btn btn-toggle">
                                             <i class="fas fa-{{ 'pause' if user.active else 'play' }}"></i>
                                             {{ 'Deactivate' if user.active else 'Activate' }}

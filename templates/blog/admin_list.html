@@ -11,7 +11,10 @@
         <h1>Blog Posts</h1>
         <p class="lc-ph-sub">Manage all LAWCOLAB blog articles.</p>
       </div>
-      <a href="{{ url_for('blog.admin_new') }}" class="btn btn-warning ms-auto fw-bold" style="color:#0d1b4b;border-radius:10px;">
+      <a href="{{ url_for('blog.admin_analytics') }}" class="btn btn-outline-info fw-bold" style="border-radius:10px;">
+        <i class="fas fa-chart-bar me-1"></i>Analytics
+      </a>
+      <a href="{{ url_for('blog.admin_new') }}" class="btn btn-warning fw-bold" style="color:#0d1b4b;border-radius:10px;">
         <i class="fas fa-plus me-1"></i>New Post
       </a>
     </div>

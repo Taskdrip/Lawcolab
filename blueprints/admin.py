@@ -269,10 +269,56 @@ def manage_users():
                          team_members=team_members,
                          clients=clients)
 
+def _cleanup_user_fk(uid):
+    """Remove all FK-dependent records before hard-deleting a user.
+    Each step is wrapped individually so unknown/missing tables are silently skipped."""
+    from sqlalchemy import text as _t
+    steps = [
+        # Messaging & chat
+        "DELETE FROM project_messages WHERE user_id=:u",
+        "DELETE FROM direct_messages WHERE sender_id=:u OR receiver_id=:u",
+        "DELETE FROM chat_conversations WHERE user1_id=:u OR user2_id=:u",
+        # Support tickets
+        "UPDATE support_requests SET resolved_by_id=NULL WHERE resolved_by_id=:u",
+        "DELETE FROM support_requests WHERE user_id=:u",
+        # Client notes
+        "DELETE FROM client_notes WHERE client_id=:u OR created_by_id=:u",
+        # Calendar
+        "DELETE FROM calendar_event_attendees WHERE user_id=:u",
+        "DELETE FROM calendar_events WHERE created_by_id=:u",
+        # Invoice ecosystem (deepest children first)
+        "DELETE FROM invoice_chat_attachments WHERE uploaded_by_id=:u",
+        "DELETE FROM invoice_chat_messages WHERE sender_id=:u",
+        "DELETE FROM invoice_chats WHERE client_id=:u OR created_by_id=:u",
+        "DELETE FROM invoice_notifications WHERE user_id=:u",
+        "DELETE FROM payment_records WHERE recorded_by_id=:u",
+        ("DELETE FROM invoice_line_items WHERE invoice_id IN "
+         "(SELECT id FROM invoices WHERE client_id=:u OR created_by_id=:u)"),
+        "DELETE FROM invoices WHERE client_id=:u OR created_by_id=:u",
+        # Projects — clean their children before removing the projects
+        "DELETE FROM project_files WHERE uploaded_by_id=:u",
+        ("DELETE FROM project_messages WHERE project_id IN "
+         "(SELECT id FROM projects WHERE created_by_id=:u)"),
+        ("DELETE FROM project_files WHERE project_id IN "
+         "(SELECT id FROM projects WHERE created_by_id=:u)"),
+        "UPDATE project_assignments SET assigned_by_id=NULL WHERE assigned_by_id=:u",
+        "DELETE FROM project_assignments WHERE user_id=:u",
+        ("DELETE FROM project_assignments WHERE project_id IN "
+         "(SELECT id FROM projects WHERE created_by_id=:u)"),
+        "DELETE FROM projects WHERE created_by_id=:u",
+    ]
+    for sql in steps:
+        try:
+            db.session.execute(_t(sql), {"u": uid})
+        except Exception:
+            db.session.rollback()   # table may not exist in this env — skip
+
 @admin_bp.route('/delete-user/<user_id>', methods=['POST'])
 @require_admin
 def delete_user(user_id):
     """Delete a user from the database"""
+    import logging as _log
+    _logger = _log.getLogger(__name__)
     user = User.query.get_or_404(user_id)
     
     # Security check: ensure user belongs to admin's law firm
@@ -286,17 +332,19 @@ def delete_user(user_id):
         return redirect(url_for('admin.manage_users'))
     
     try:
-        # Store name for confirmation message
-        user_name = user.full_name
-        
-        # Delete user
+        user_name = user.full_name or user.email
+        uid = user.id
+
+        # Remove all FK-dependent records first so the DELETE can't violate constraints
+        _cleanup_user_fk(uid)
+
         db.session.delete(user)
         db.session.commit()
-        
         flash(f'User {user_name} has been permanently deleted.', 'success')
     except Exception as e:
         db.session.rollback()
-        flash('Failed to delete user. Please try again.', 'error')
+        _logger.error("delete_user error for %s: %s", user_id, e)
+        flash(f'Failed to delete user. Error: {str(e)[:120]}', 'error')
     
     return redirect(url_for('admin.manage_users'))
 
