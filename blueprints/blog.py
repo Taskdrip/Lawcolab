@@ -78,7 +78,7 @@ def _share_counts(post_id):
 
 
 def _get_posts(limit=12, offset=0, category=None, tag=None,
-               search=None, sort='newest'):
+               search=None, sort='newest', read_time=None):
     sql = "SELECT * FROM blog_posts WHERE published=TRUE"
     params: dict = {}
     if category:
@@ -90,6 +90,12 @@ def _get_posts(limit=12, offset=0, category=None, tag=None,
     if search:
         sql += " AND (title ILIKE :s OR excerpt ILIKE :s OR content ILIKE :s)"
         params['s'] = f'%{search}%'
+    if read_time == 'quick':
+        sql += " AND read_time_minutes < 5"
+    elif read_time == 'medium':
+        sql += " AND read_time_minutes >= 5 AND read_time_minutes <= 10"
+    elif read_time == 'long':
+        sql += " AND read_time_minutes > 10"
 
     order_map = {
         'newest':    'published_at DESC',
@@ -97,6 +103,7 @@ def _get_posts(limit=12, offset=0, category=None, tag=None,
         'popular':   'view_count DESC, published_at DESC',
         'liked':     'share_count DESC, view_count DESC',
         'commented': 'comment_count DESC, published_at DESC',
+        'read_time': 'read_time_minutes DESC, published_at DESC',
     }
     sql += f" ORDER BY {order_map.get(sort, 'published_at DESC')} LIMIT :lim OFFSET :off"
     params['lim'] = limit
@@ -131,7 +138,7 @@ def _get_comments(post_id):
         return []
 
 
-def _post_count(category=None, tag=None, search=None):
+def _post_count(category=None, tag=None, search=None, read_time=None):
     sql = "SELECT COUNT(*) FROM blog_posts WHERE published=TRUE"
     params: dict = {}
     if category:
@@ -143,6 +150,12 @@ def _post_count(category=None, tag=None, search=None):
     if search:
         sql += " AND (title ILIKE :s OR excerpt ILIKE :s OR content ILIKE :s)"
         params['s'] = f'%{search}%'
+    if read_time == 'quick':
+        sql += " AND read_time_minutes < 5"
+    elif read_time == 'medium':
+        sql += " AND read_time_minutes >= 5 AND read_time_minutes <= 10"
+    elif read_time == 'long':
+        sql += " AND read_time_minutes > 10"
     try:
         return db.session.execute(text(sql), params).scalar() or 0
     except Exception:
@@ -178,41 +191,64 @@ def _popular_posts(limit=5):
 
 @blog_bp.route('/')
 def index():
-    page     = request.args.get('page', 1, type=int)
-    per_page = 9
-    category = request.args.get('category', '').strip() or None
-    tag      = request.args.get('tag', '').strip() or None
-    search   = request.args.get('q', '').strip() or None
-    sort     = request.args.get('sort', 'newest').strip()
-    if sort not in ('newest', 'oldest', 'popular', 'liked', 'commented'):
+    page      = request.args.get('page', 1, type=int)
+    per_page  = 9
+    category  = request.args.get('category', '').strip() or None
+    tag       = request.args.get('tag', '').strip() or None
+    search    = request.args.get('q', '').strip() or None
+    sort      = request.args.get('sort', 'newest').strip()
+    read_time = request.args.get('read_time', '').strip() or None
+    if sort not in ('newest', 'oldest', 'popular', 'liked', 'commented', 'read_time'):
         sort = 'newest'
+    if read_time not in ('quick', 'medium', 'long', None):
+        read_time = None
 
     posts      = _get_posts(limit=per_page, offset=(page - 1) * per_page,
-                            category=category, tag=tag, search=search, sort=sort)
-    total      = _post_count(category=category, tag=tag, search=search)
+                            category=category, tag=tag, search=search,
+                            sort=sort, read_time=read_time)
+    total      = _post_count(category=category, tag=tag, search=search,
+                             read_time=read_time)
     total_pages = max(1, (total + per_page - 1) // per_page)
 
-    featured = None
-    if page == 1 and not category and not tag and not search:
+    # Featured slider — up to 5 featured posts shown on page 1 with no filters
+    featured_list = []
+    if page == 1 and not category and not tag and not search and not read_time:
         try:
-            row = db.session.execute(text(
+            rows = db.session.execute(text(
                 "SELECT * FROM blog_posts WHERE published=TRUE AND featured=TRUE "
-                "ORDER BY published_at DESC LIMIT 1"
-            )).fetchone()
-            if row:
-                featured = dict(row._mapping)
-                posts = [p for p in posts if p['id'] != featured['id']]
+                "ORDER BY published_at DESC LIMIT 5"
+            )).fetchall()
+            featured_list = [dict(r._mapping) for r in rows]
+            featured_ids  = {f['id'] for f in featured_list}
+            posts = [p for p in posts if p['id'] not in featured_ids]
         except Exception:
             pass
+
+    # Collect all unique tags for the advanced filter tag cloud
+    all_tags = []
+    try:
+        rows = db.session.execute(text(
+            "SELECT tags FROM blog_posts WHERE published=TRUE AND tags IS NOT NULL AND tags != ''"
+        )).fetchall()
+        tag_set = set()
+        for r in rows:
+            for t in (r[0] or '').split(','):
+                t = t.strip()
+                if t and len(t) > 2:
+                    tag_set.add(t)
+        all_tags = sorted(tag_set)[:20]  # cap at 20 tags for UI
+    except Exception:
+        pass
 
     cats    = _categories()
     popular = _popular_posts()
 
     return render_template('blog/index.html',
-                           posts=posts, featured=featured,
+                           posts=posts, featured_list=featured_list,
                            page=page, total_pages=total_pages, total=total,
-                           category=category, tag=tag, search=search, sort=sort,
-                           cats=cats, popular=popular)
+                           category=category, tag=tag, search=search,
+                           sort=sort, read_time=read_time,
+                           cats=cats, popular=popular, all_tags=all_tags)
 
 
 @blog_bp.route('/<slug>')

@@ -80,27 +80,64 @@ def dashboard():
 @require_super_admin
 def manage_users():
     """Manage all users on the platform"""
-    search = request.args.get('search', '')
-    role_filter = request.args.get('role', '')
-    page = request.args.get('page', 1, type=int)
-    
+    search      = request.args.get('search', '').strip()
+    role_filter = request.args.get('role', '').strip()
+    status_filter = request.args.get('status', '').strip()
+    sort_by     = request.args.get('sort', 'newest').strip()
+    page        = request.args.get('page', 1, type=int)
+
     query = User.query
     if search:
         query = query.filter(
             or_(
-                User.email.contains(search),
-                User.first_name.contains(search),
-                User.last_name.contains(search)
+                User.email.ilike(f'%{search}%'),
+                User.first_name.ilike(f'%{search}%'),
+                User.last_name.ilike(f'%{search}%'),
+                User.phone.ilike(f'%{search}%'),
             )
         )
     if role_filter:
         query = query.filter_by(role=role_filter)
-    
-    users = query.order_by(User.created_at.desc()).paginate(
-        page=page, per_page=20, error_out=False
-    )
-    
-    return render_template('superadmin/manage_users.html', users=users, search=search, role_filter=role_filter)
+    if status_filter == 'active':
+        query = query.filter_by(active=True)
+    elif status_filter == 'inactive':
+        query = query.filter_by(active=False)
+
+    sort_map = {
+        'newest':     User.created_at.desc(),
+        'oldest':     User.created_at.asc(),
+        'name':       User.first_name.asc(),
+        'email':      User.email.asc(),
+        'last_login': User.last_login_at.desc().nullslast() if hasattr(User, 'last_login_at') else User.created_at.desc(),
+    }
+    query = query.order_by(sort_map.get(sort_by, User.created_at.desc()))
+
+    users = query.paginate(page=page, per_page=25, error_out=False)
+
+    # Quick stats for the header cards
+    try:
+        total_users    = User.query.count()
+        active_users   = User.query.filter_by(active=True).count()
+        inactive_users = User.query.filter_by(active=False).count()
+        admin_users    = User.query.filter(User.role.in_(['admin', 'super_admin'])).count()
+        from datetime import datetime, timedelta
+        new_this_week  = User.query.filter(
+            User.created_at >= datetime.utcnow() - timedelta(days=7)
+        ).count()
+    except Exception:
+        total_users = active_users = inactive_users = admin_users = new_this_week = 0
+
+    return render_template('superadmin/manage_users.html',
+                           users=users,
+                           search=search,
+                           role_filter=role_filter,
+                           status_filter=status_filter,
+                           sort_by=sort_by,
+                           total_users=total_users,
+                           active_users=active_users,
+                           inactive_users=inactive_users,
+                           admin_users=admin_users,
+                           new_this_week=new_this_week)
 
 @superadmin_bp.route('/users/toggle-status', methods=['POST'])
 @require_super_admin
@@ -117,41 +154,78 @@ def toggle_user_status():
     return redirect(request.referrer or url_for('superadmin.manage_users'))
 
 def _sa_cleanup_user_fk(uid):
-    """Remove FK-dependent records before hard-deleting a user (superadmin version).
+    """Remove every FK reference to a user before hard-deleting them.
 
-    IMPORTANT: all steps run in ONE transaction with no per-step rollback.
-    A per-step rollback would undo earlier deletes, leaving orphan FK rows that
-    cause NOT NULL violations when SQLAlchemy tries to nullify created_by_id on
-    calendar_events (or similar nullable=False columns) during the user delete.
+    Strategy:
+    - Each step runs inside its own SAVEPOINT so a schema-mismatch error (column
+      or table doesn't exist on this DB version) is silently skipped without
+      rolling back the steps that already succeeded.
+    - Real errors (FK violations, integrity errors) are re-raised so the caller
+      can rollback the outer transaction and surface the problem.
+    - Steps are ordered children-before-parents to respect FK constraints.
     """
+    import logging as _log
+    _logger = _log.getLogger(__name__)
+
     steps = [
-        # Nullify soft back-references first so they don't block later deletes
-        "UPDATE support_requests SET resolved_by_id=NULL WHERE resolved_by_id=:u",
-        "UPDATE project_assignments SET assigned_by_id=NULL WHERE assigned_by_id=:u",
-        # Calendar: remove attendee rows (children) before events (parent)
+        # ── Nullify soft back-references (don't break other rows) ─────────────
+        "UPDATE support_requests      SET resolved_by_id=NULL  WHERE resolved_by_id=:u",
+        "UPDATE project_assignments   SET assigned_by_id=NULL  WHERE assigned_by_id=:u",
+        "UPDATE court_date_history    SET recorded_by_id=NULL  WHERE recorded_by_id=:u",
+        "UPDATE directory_law_firms   SET assigned_to_id=NULL  WHERE assigned_to_id=:u",
+        "UPDATE directory_notes       SET created_by_id=NULL   WHERE created_by_id=:u",
+        "UPDATE crm_campaigns         SET created_by_id=NULL   WHERE created_by_id=:u",
+        "UPDATE crm_edit_logs         SET edited_by_id=NULL    WHERE edited_by_id=:u",
+        "UPDATE email_automations     SET created_by_id=NULL   WHERE created_by_id=:u",
+        "UPDATE email_templates       SET created_by_id=NULL   WHERE created_by_id=:u",
+        "UPDATE escrow_milestones     SET approved_by_id=NULL  WHERE approved_by_id=:u",
+        "UPDATE escrow_transaction_logs SET performed_by_id=NULL WHERE performed_by_id=:u",
+        "UPDATE escrow_transactions   SET assigned_lawyer_id=NULL WHERE assigned_lawyer_id=:u",
+        "UPDATE escrow_transactions   SET escrow_released_by_id=NULL WHERE escrow_released_by_id=:u",
+        "UPDATE law_firm_showcases    SET approved_by_id=NULL  WHERE approved_by_id=:u",
+        "UPDATE law_firm_showcases    SET verified_by_id=NULL  WHERE verified_by_id=:u",
+        "UPDATE lead_tasks            SET assigned_to_id=NULL  WHERE assigned_to_id=:u",
+        "UPDATE lead_tasks            SET created_by_id=NULL   WHERE created_by_id=:u",
+        "UPDATE legal_news            SET created_by_id=NULL   WHERE created_by_id=:u",
+        "UPDATE outreach_messages     SET created_by_id=NULL   WHERE created_by_id=:u",
+        "UPDATE payment_gateways      SET created_by_id=NULL   WHERE created_by_id=:u",
+        "UPDATE payment_transactions  SET verified_by=NULL     WHERE verified_by=:u",
+        "UPDATE platform_notifications SET sent_by_id=NULL     WHERE sent_by_id=:u",
+        "UPDATE superadmin_broadcasts SET sender_id=NULL       WHERE sender_id=:u",
+        # ── Calendar (attendees are children of events) ────────────────────────
         "DELETE FROM calendar_event_attendees WHERE user_id=:u",
         ("DELETE FROM calendar_event_attendees WHERE event_id IN "
          "(SELECT id FROM calendar_events WHERE created_by_id=:u)"),
         "DELETE FROM calendar_events WHERE created_by_id=:u",
-        # Messages / chat
-        "DELETE FROM project_messages WHERE user_id=:u",
-        "DELETE FROM direct_messages WHERE sender_id=:u OR receiver_id=:u",
+        # ── Chat / messaging ───────────────────────────────────────────────────
+        "DELETE FROM chat_messages    WHERE sender_id=:u",
+        "DELETE FROM chat_participants WHERE user_id=:u",
+        "DELETE FROM chat_rooms       WHERE created_by_id=:u",
+        "DELETE FROM direct_messages  WHERE sender_id=:u OR receiver_id=:u",
         "DELETE FROM chat_conversations WHERE user1_id=:u OR user2_id=:u",
-        # Support
+        # ── Support requests ───────────────────────────────────────────────────
         "DELETE FROM support_requests WHERE user_id=:u",
-        # Notes
-        "DELETE FROM client_notes WHERE client_id=:u OR created_by_id=:u",
-        # Invoices (children before parent)
+        # ── Notes ─────────────────────────────────────────────────────────────
+        "DELETE FROM client_notes     WHERE client_id=:u",
+        "DELETE FROM client_notes     WHERE created_by_id=:u",
+        # ── Invoices (line items & attachments before invoice rows) ───────────
         "DELETE FROM invoice_chat_attachments WHERE uploaded_by_id=:u",
-        "DELETE FROM invoice_chat_messages WHERE sender_id=:u",
-        "DELETE FROM invoice_chats WHERE client_id=:u OR created_by_id=:u",
-        "DELETE FROM invoice_notifications WHERE user_id=:u",
-        "DELETE FROM payment_records WHERE recorded_by_id=:u",
+        "DELETE FROM invoice_chat_messages    WHERE sender_id=:u",
+        "DELETE FROM invoice_notifications    WHERE user_id=:u",
         ("DELETE FROM invoice_line_items WHERE invoice_id IN "
          "(SELECT id FROM invoices WHERE client_id=:u OR created_by_id=:u)"),
-        "DELETE FROM invoices WHERE client_id=:u OR created_by_id=:u",
-        # Projects (children before parent)
-        "DELETE FROM project_files WHERE uploaded_by_id=:u",
+        # invoice_chats has only client_id FK — no created_by_id column
+        "DELETE FROM invoice_chats    WHERE client_id=:u",
+        "DELETE FROM invoices         WHERE client_id=:u OR created_by_id=:u",
+        # ── Escrow ─────────────────────────────────────────────────────────────
+        "DELETE FROM escrow_transactions WHERE client_id=:u",
+        # ── Payments & finance ─────────────────────────────────────────────────
+        "DELETE FROM payment_records  WHERE recorded_by_id=:u",
+        "DELETE FROM bank_accounts    WHERE created_by_id=:u",
+        "DELETE FROM crypto_wallets   WHERE created_by_id=:u",
+        # ── Projects (messages/files/assignments before project row) ───────────
+        "DELETE FROM project_messages WHERE user_id=:u",
+        "DELETE FROM project_files    WHERE uploaded_by_id=:u",
         ("DELETE FROM project_messages WHERE project_id IN "
          "(SELECT id FROM projects WHERE created_by_id=:u)"),
         ("DELETE FROM project_files WHERE project_id IN "
@@ -159,12 +233,32 @@ def _sa_cleanup_user_fk(uid):
         ("DELETE FROM project_assignments WHERE project_id IN "
          "(SELECT id FROM projects WHERE created_by_id=:u)"),
         "DELETE FROM project_assignments WHERE user_id=:u",
-        "DELETE FROM projects WHERE created_by_id=:u",
+        "DELETE FROM projects         WHERE created_by_id=:u",
+        # ── Misc ──────────────────────────────────────────────────────────────
+        "DELETE FROM audit_logs       WHERE user_id=:u",
+        "DELETE FROM flask_dance_oauth WHERE user_id=:u",
     ]
+
     for sql in steps:
-        db.session.execute(text(sql), {"u": uid})
-    # Flush all cleanup to the DB before the caller does db.session.delete(user),
-    # so no FK references to this user remain when the ORM removes the user row.
+        # Each step gets its own SAVEPOINT — a schema-mismatch (column/table
+        # doesn't exist in this DB version) rolls back only this one step and
+        # execution continues.  A real integrity error bubbles up.
+        sp = db.session.begin_nested()
+        try:
+            db.session.execute(text(sql), {"u": uid})
+            sp.commit()
+        except Exception as exc:
+            sp.rollback()
+            err_lower = str(exc).lower()
+            if any(kw in err_lower for kw in (
+                'does not exist', 'undefined_table', 'undefined_column',
+                'no such table', 'no such column',
+            )):
+                _logger.debug("cleanup skip (schema drift): %s", str(exc)[:120])
+            else:
+                raise  # re-raise real errors (FK violations, etc.)
+
+    # Push all deletions to the DB before the ORM removes the user row
     db.session.flush()
 
 @superadmin_bp.route('/users/delete', methods=['POST'])

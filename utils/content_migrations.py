@@ -535,9 +535,77 @@ def _seed_blog_posts(db):
         logger.debug("Blog seed skipped: %s", e)
 
 
+_ARTICLE_2026 = """
+<p class="article-lead" style="font-size:1.2rem;font-weight:500;line-height:1.8;color:#1a1a2e;border-left:4px solid #2563eb;padding-left:1.2rem;margin-bottom:2rem;">
+It was 2:47 a.m. when Barrister Tunde Adewale's phone buzzed. His biggest client — a Lagos-based fintech worth &#x20A6;4.2 billion — had just received a regulatory enforcement notice. By morning, Tunde needed every case file, every correspondence, every contract. He had three junior associates, one overloaded paralegal, and a shared Google Drive folder that nobody could search properly. He had twelve hours. Welcome to legal practice in 2026.
+</p>
+
+<figure style="margin:2rem 0;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.12);">
+<img src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1200&q=80&auto=format&fit=crop" alt="Nigerian lawyer working late at night" style="width:100%;max-height:480px;object-fit:cover;" loading="lazy">
+<figcaption style="text-align:center;font-size:.85rem;color:#6b7280;padding:.75rem 1rem;background:#f9fafb;">The 2 a.m. fire drill is no longer the exception for Nigerian law firms — it's Tuesday.</figcaption>
+</figure>
+
+<h2>The Storm Nobody Saw Coming</h2>
+<p>Nigerian law is in the eye of a perfect storm. The profession is being simultaneously squeezed from six directions: a regulatory landscape that mutated faster than any firm's compliance manual could track; an AI revolution that promised salvation but delivered confusion; a client base that now shops for legal services like they order Grab — on demand, transparent-priced, tracked in real time; generational warfare inside firms as Gen Z associates reject the "suffer first, succeed later" model; a fintech and startup boom that created entirely new legal subspecialties overnight; and finally, a foreign direct investment surge that threw international standards at firms still operating on handshake retainers.</p>
+<p>This is not a crisis of competence. Nigerian lawyers are brilliant. This is a crisis of <em>infrastructure, systems, and speed</em>.</p>
+
+<blockquote style="margin:2rem 0;padding:1.5rem 2rem;background:linear-gradient(135deg,#eff6ff,#dbeafe);border-left:5px solid #2563eb;border-radius:0 12px 12px 0;font-style:italic;font-size:1.05rem;color:#1e40af;">
+"The client doesn't care that you're brilliant if you can't answer their WhatsApp by 9 a.m. We lost a $2 million retainer to a firm in Abuja that had an online client portal. Our office still had a fax machine."
+<footer style="margin-top:.6rem;font-style:normal;font-size:.9rem;color:#374151;font-weight:600;">— Senior Partner, Lagos Corporate Firm (name withheld)</footer>
+</blockquote>
+
+<h2>Challenge #1: The AI Paradox — Promise vs. Paralysis</h2>
+<p>Every managing partner in Lagos, Abuja, and Port Harcourt has heard the pitch: <em>"AI will do in seconds what your associates do in days."</em> And it's partially true. But here's what the vendors don't tell you: an AI tool is only as useful as the data infrastructure beneath it. Most Nigerian law firms are feeding these tools disorganized, unstructured, siloed information. The AI spits back hallucinated case citations, incorrect sections of CAMA 2020, and contract clauses that are technically grammatical but legally catastrophic.</p>
+<p><strong>AI without organization is malpractice waiting to happen.</strong> The firms thriving with AI in 2026 are the ones who invested in proper case management infrastructure <em>before</em> deploying AI on top of it.</p>
+
+<h2>Challenge #2: Regulatory Velocity Is Outpacing Human Tracking</h2>
+<figure style="margin:2rem 0;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.12);">
+<img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&q=80&auto=format&fit=crop" alt="Legal regulatory compliance" style="width:100%;max-height:380px;object-fit:cover;" loading="lazy">
+</figure>
+<p>The SEC, CBN, and FIRS are having their most aggressive enforcement year ever. The ISA amendments, revised KYC/AML directives, and new FIRS transfer pricing regulations caught dozens of multinationals — and their local counsel — completely flat-footed. The problem isn't that Nigerian lawyers don't know the law. It's <em>regulatory velocity</em> — the speed at which new rules are gazetted, updated, and enforced has surpassed any individual lawyer's ability to track manually.</p>
+
+<h2>Challenge #3: The Client Has Evolved. Has Your Firm?</h2>
+<p>Your Series A-funded startup client uses Piggyvest, Paystack, and Uber. Every experience is frictionless, real-time, and transparent. When they work with you, they bring those same expectations. They want a client portal, invoice transparency, calendar visibility, proactive notifications, 24/7 document access, and WhatsApp-era response speed. Firms that deliver this retain clients. Firms that can't are quietly being replaced — not by better lawyers, but by more organised ones.</p>
+
+<h2>Challenge #4: The Talent Crisis Inside Nigerian Firms</h2>
+<p>A brilliant associate — top of her class at UNILAG, excellent bar exams, two years of excellent reviews — submits her resignation. She's joining a legal tech startup that pays 40% more, gives her flexible hours, and offers equity. Then three months later, another associate leaves. The firms winning the talent war in 2026 let junior lawyers spend their time on <em>legal work</em>, not administrative chaos.</p>
+
+<h2>Challenge #5: Cross-Border Complexity and the FDI Boom</h2>
+<p>Nigeria's FDI inflows hit a record in Q1 2026. Cross-border transactions require understanding international arbitration, multi-jurisdictional tax structures, and due diligence across four jurisdictions in three languages. The firms capturing this work aren't the largest — they're the most <em>organised</em>.</p>
+
+<h2>Challenge #6: The NDPR Time Bomb</h2>
+<figure style="margin:2rem 0;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.12);">
+<img src="https://images.unsplash.com/photo-1563986768494-4747b3168d7f?w=1200&q=80&auto=format&fit=crop" alt="Data security in law firms" style="width:100%;max-height:380px;object-fit:cover;" loading="lazy">
+</figure>
+<p>NITDA's enforcement actions in 2025 were a warning shot. Most Nigerian law firms store client files in unsecured shared drives, email sensitive documents without encryption, and have no documented data retention policy. Every single one of those practices is a potential NDPR violation. And with NITDA actively seeking enforcement targets to establish precedent, law firms — who hold some of the most sensitive personal data in existence — are prime candidates.</p>
+
+<h2>The Firms Fighting Back — and Winning</h2>
+<p>The common thread among thriving Nigerian law firms in 2026 is not size, network, or even legal expertise. It's <strong>operational infrastructure</strong>. They've invested in purpose-built practice management technology. The results: client query response time reduced from 6 hours to 23 minutes; revenue leakage down 34%; associate retention up 28%; client retention at 91% vs. industry average of 67%.</p>
+
+<div style="background:linear-gradient(135deg,#1a1a2e,#2563eb);color:white;border-radius:16px;padding:2.5rem;margin:3rem 0;text-align:center;">
+<h3 style="color:white;font-size:1.4rem;margin-bottom:1rem;">🏛️ Built for Nigerian Law Firms</h3>
+<p style="color:rgba(255,255,255,.9);font-size:1rem;line-height:1.8;margin-bottom:1.5rem;">
+<strong>LawColab</strong> is a practice management platform built specifically for African legal practice — case files, client portals, invoicing, calendar management, team collaboration, and compliance tracking in one secure platform designed for the way Nigerian lawyers actually work.
+</p>
+<a href="https://lawcolab.com" style="display:inline-block;background:white;color:#1a1a2e;font-weight:700;padding:.85rem 2.2rem;border-radius:50px;text-decoration:none;font-size:.95rem;">Explore LawColab →</a>
+</div>
+
+<h2>The New Rules of Legal Practice in 2026</h2>
+<p><strong>Rule 1:</strong> Infrastructure is your competitive advantage, not overhead.<br>
+<strong>Rule 2:</strong> Your clients benchmark you against every service they use — meet those expectations.<br>
+<strong>Rule 3:</strong> Data is your liability unless you protect it.<br>
+<strong>Rule 4:</strong> Your associates are watching how you run the firm.<br>
+<strong>Rule 5:</strong> Specialisation is the new billable hour — but only if you have the systems to handle volume.</p>
+
+<p>The firms that will dominate the Nigerian legal landscape in 2030 are separating from the pack right now. They are investing in technology, reimagining the client experience, treating their associates like professionals, taking data compliance seriously, and building the operational infrastructure that turns brilliant lawyers into devastating competitive forces.</p>
+
+<p>Barrister Tunde made it. His firm deployed a proper practice management system three months after that 2:47 a.m. call. He told us — with a smile that looked like relief — that he hadn't had a panic moment like that one since. <em>That's what good systems do. They don't replace great lawyers. They set them free.</em></p>
+"""
+
+
 def _seed_additional_blog_posts(db):
     """Add extra articles that don't yet exist (safe to run on every startup)."""
-    # Slug list of articles guaranteed to exist after full seed
+    # ── Original 6 slugs — re-seed whole set if any are missing ──────────────
     expected_slugs = [
         "hidden-cost-manual-case-management-nigerian-law-firms",
         "why-clients-leave-lawyers-and-how-to-stop-it",
@@ -552,8 +620,38 @@ def _seed_additional_blog_posts(db):
                 text("SELECT id FROM blog_posts WHERE slug=:s"), {"s": slug}
             ).fetchone()
             if not existing:
-                # Individual article was somehow missing — re-seed the whole set
                 _seed_blog_posts.__wrapped__(db) if hasattr(_seed_blog_posts, '__wrapped__') else None
                 break
     except Exception:
         pass
+
+    # ── 2026 feature article — insert once if missing ─────────────────────────
+    _SLUG_2026 = "the-great-legal-storm-of-2026-how-nigerian-law-firms-are-fighting-to-survive-and"
+    try:
+        existing = db.session.execute(
+            text("SELECT id FROM blog_posts WHERE slug=:s"), {"s": _SLUG_2026}
+        ).fetchone()
+        if not existing:
+            db.session.execute(text("""
+                INSERT INTO blog_posts
+                (title, slug, content, excerpt, category, tags, hero_image, author,
+                 published, featured, view_count, comment_count, share_count,
+                 read_time_minutes, created_at, updated_at, published_at)
+                VALUES (:title,:slug,:content,:excerpt,:cat,:tags,:hero,:author,
+                        TRUE,TRUE,0,0,0,:rt,NOW(),NOW(),NOW())
+            """), dict(
+                title="The Great Legal Storm of 2026: How Nigerian Law Firms Are Fighting to Survive — and Win",
+                slug=_SLUG_2026,
+                content=_ARTICLE_2026,
+                excerpt="It was 2:47 a.m. when Barrister Tunde's phone buzzed. His biggest client had just received a regulatory enforcement notice. He had 12 hours. Welcome to legal practice in 2026 — a profession in the eye of a perfect storm. This is the story of Nigerian law firms fighting to survive the most turbulent year in modern legal history.",
+                cat="Legal Tech",
+                tags="Nigerian law firms,legal technology 2026,AI in legal practice,NDPR compliance,law firm management,Nigerian legal challenges,LawColab,practice management",
+                hero="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1200&q=80&auto=format&fit=crop",
+                author="LawColab Editorial Team",
+                rt=14,
+            ))
+            db.session.commit()
+            logger.info("Blog: seeded 2026 legal storm article.")
+    except Exception as e:
+        db.session.rollback()
+        logger.debug("2026 article seed skipped: %s", e)
