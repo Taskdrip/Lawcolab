@@ -19,6 +19,116 @@ import json
 dir_admin_bp = Blueprint('dir_admin', __name__)
 
 
+# ─── Robot AI Analysis Helpers ─────────────────────────────────────────────────
+
+def _completeness_score(sc):
+    """Return 0–100 integer completeness score for a showcase."""
+    fields = [
+        (sc.logo_image_url,        15, 'logo'),
+        (sc.hero_image_url,        15, 'hero image'),
+        (sc.public_description,    15, 'description'),
+        (sc.phone,                 10, 'phone number'),
+        (sc.practice_areas_json,   15, 'practice areas'),
+        (sc.locations_json,        15, 'office locations'),
+        (sc.tagline,                5, 'tagline'),
+        (sc.website_url,            5, 'website'),
+        (sc.linkedin_url or sc.facebook_url or sc.instagram_url, 5, 'social media'),
+    ]
+    total = sum(w for _, w, _ in fields)
+    earned = sum(w for v, w, _ in fields if v)
+    return int(earned / total * 100)
+
+
+def _missing_fields(sc):
+    """Return list of human-readable missing fields."""
+    checks = [
+        (sc.logo_image_url,        'firm logo'),
+        (sc.hero_image_url,        'cover/hero image'),
+        (sc.public_description,    'firm description'),
+        (sc.phone,                 'phone number'),
+        (sc.practice_areas_json,   'practice areas'),
+        (sc.locations_json,        'office locations'),
+        (sc.tagline,               'tagline / slogan'),
+        (sc.website_url,           'website URL'),
+        (sc.linkedin_url or sc.facebook_url or sc.instagram_url, 'social media links'),
+    ]
+    return [label for val, label in checks if not val]
+
+
+def _robot_recommendation(sc):
+    """Generate a smart AI-style recommendation message for a submission."""
+    score = _completeness_score(sc)
+    missing = _missing_fields(sc)
+    firm_name = sc.public_title or sc.law_firm.name
+
+    intro = f"Hi, I've reviewed the showcase profile for **{firm_name}**. "
+
+    if score == 100:
+        return (
+            intro + "Your profile is 100% complete — excellent work! It's well-positioned "
+            "to attract clients from the directory. Your listing is ready to go live."
+        )
+    elif score >= 75:
+        tip = f"To reach 100%, please add: {', '.join(missing)}." if missing else ""
+        return (
+            intro + f"Your profile is {score}% complete — looking great! "
+            + tip + " A complete profile gets up to 3× more directory views."
+        )
+    elif score >= 50:
+        tip = f"Key items still needed: {', '.join(missing[:3])}." if missing else ""
+        return (
+            intro + f"Your profile is {score}% complete. "
+            + tip + " Profiles with a logo, hero image, and full description are featured first "
+            "in search results. Taking 10 minutes to complete these fields will significantly "
+            "boost your visibility."
+        )
+    else:
+        tip = f"Please start with: {', '.join(missing[:4])}." if missing else ""
+        return (
+            intro + f"Your profile is only {score}% complete — a few key items are missing. "
+            + tip + " Law firms with complete profiles receive 5× more enquiries. "
+            "Head to your Showcase Profile editor to fill these in before resubmitting."
+        )
+
+
+def _send_admin_notification(title, message, link_url=None, notif_type='general'):
+    """Create an AdminNotification record for the super admin."""
+    try:
+        from models import AdminNotification
+        notif = AdminNotification(
+            title=title,
+            message=message,
+            notification_type=notif_type,
+            link_url=link_url,
+            is_read=False,
+        )
+        db.session.add(notif)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+
+def _send_firm_notification(law_firm, title, message, notif_type='general', sent_by=None):
+    """Create a PlatformNotification for a law firm."""
+    try:
+        from models import PlatformNotification, NOTIF_TYPE_GENERAL, User, ROLE_SUPER_ADMIN
+        if sent_by is None:
+            sent_by = User.query.filter_by(role=ROLE_SUPER_ADMIN).first()
+        if sent_by:
+            notif = PlatformNotification(
+                law_firm_id=law_firm.id,
+                sent_by_id=sent_by.id,
+                title=title,
+                message=message,
+                notification_type=notif_type,
+                is_auto=True,
+            )
+            db.session.add(notif)
+            db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+
 # ─── Showcase Approval Queue ──────────────────────────────────────────────────
 
 @dir_admin_bp.route('/')
@@ -47,11 +157,23 @@ def index():
 @dir_admin_bp.route('/submissions')
 @require_super_admin
 def submissions():
-    """Approve / reject law firm showcase submissions."""
+    """Advanced showcase submission queue with filters, counts, and AI analysis."""
     status_filter = request.args.get('status', 'submitted')
-    page = request.args.get('page', 1, type=int)
+    search        = request.args.get('q', '').strip()
+    sort          = request.args.get('sort', 'newest')
+    page          = request.args.get('page', 1, type=int)
+
+    # Status counts for tab badges
+    counts = {
+        'submitted': LawFirmShowcase.query.filter_by(submission_status='submitted').count(),
+        'approved':  LawFirmShowcase.query.filter_by(submission_status='approved').count(),
+        'rejected':  LawFirmShowcase.query.filter_by(submission_status='rejected').count(),
+        'draft':     LawFirmShowcase.query.filter_by(submission_status='draft').count(),
+    }
+    counts['all'] = sum(counts.values())
 
     q = LawFirmShowcase.query.join(LawFirm)
+
     if status_filter and status_filter != 'all':
         q = q.filter(LawFirmShowcase.submission_status == status_filter)
     else:
@@ -59,26 +181,82 @@ def submissions():
             ['submitted', 'approved', 'rejected', 'draft']
         ))
 
-    showcases = q.order_by(desc(LawFirmShowcase.submitted_at)).paginate(
-        page=page, per_page=20, error_out=False
-    )
+    if search:
+        q = q.filter(or_(
+            LawFirm.name.ilike(f'%{search}%'),
+            LawFirm.email.ilike(f'%{search}%'),
+            LawFirmShowcase.public_title.ilike(f'%{search}%'),
+        ))
+
+    if sort == 'oldest':
+        q = q.order_by(LawFirmShowcase.submitted_at.asc())
+    elif sort == 'name':
+        q = q.order_by(LawFirm.name.asc())
+    else:
+        q = q.order_by(desc(LawFirmShowcase.submitted_at))
+
+    showcases = q.paginate(page=page, per_page=20, error_out=False)
+
+    # Attach completeness scores and robot recommendations for pending
+    scored = []
+    for sc in showcases.items:
+        score = _completeness_score(sc)
+        missing = _missing_fields(sc)
+        scored.append({'sc': sc, 'score': score, 'missing': missing})
+
+    # Robot-generated summary for pending batch
+    pending_insights = []
+    if status_filter == 'submitted' and counts['submitted'] > 0:
+        pending_insights = [
+            {'icon': 'fas fa-robot', 'color': '#6610f2',
+             'text': f'{counts["submitted"]} submission{"s" if counts["submitted"] != 1 else ""} awaiting review. Robot analysis below each entry shows completeness and missing fields.'},
+        ]
+        incomplete = [s for s in scored if s['score'] < 80]
+        if incomplete:
+            pending_insights.append({
+                'icon': 'fas fa-exclamation-circle', 'color': '#f59e0b',
+                'text': f'{len(incomplete)} submission{"s" if len(incomplete) != 1 else ""} '
+                        f'{"have" if len(incomplete) != 1 else "has"} a profile completeness below 80%. '
+                        'Consider requesting updates before approving for best directory results.',
+            })
+        ready = [s for s in scored if s['score'] >= 80]
+        if ready:
+            pending_insights.append({
+                'icon': 'fas fa-check-circle', 'color': '#16a34a',
+                'text': f'{len(ready)} submission{"s" if len(ready) != 1 else ""} '
+                        f'{"are" if len(ready) != 1 else "is"} ≥80% complete and ready to approve.',
+            })
+
     return render_template('directory_admin/submissions.html',
                            showcases=showcases,
-                           status_filter=status_filter)
+                           scored=scored,
+                           status_filter=status_filter,
+                           search=search,
+                           sort=sort,
+                           counts=counts,
+                           pending_insights=pending_insights)
 
 
 @dir_admin_bp.route('/submissions/<int:showcase_id>/review')
 @require_super_admin
 def review_submission(showcase_id):
-    """Detailed review of a single showcase submission."""
+    """Detailed review of a single showcase submission with AI robot analysis."""
     showcase = LawFirmShowcase.query.get_or_404(showcase_id)
-    return render_template('directory_admin/review_submission.html', showcase=showcase)
+    score       = _completeness_score(showcase)
+    missing     = _missing_fields(showcase)
+    robot_rec   = _robot_recommendation(showcase)
+    return render_template('directory_admin/review_submission.html',
+                           showcase=showcase,
+                           score=score,
+                           missing=missing,
+                           robot_rec=robot_rec)
 
 
 @dir_admin_bp.route('/submissions/<int:showcase_id>/approve', methods=['POST'])
 @require_super_admin
 def approve_submission(showcase_id):
     showcase = LawFirmShowcase.query.get_or_404(showcase_id)
+    firm_name = showcase.public_title or showcase.law_firm.name
     try:
         showcase.submission_status = 'approved'
         showcase.is_active = True
@@ -86,7 +264,31 @@ def approve_submission(showcase_id):
         showcase.approved_by_id = current_user.id
         showcase.rejection_reason = None
         db.session.commit()
-        flash(f'✅ {showcase.public_title or showcase.law_firm.name} has been approved and is now live in the directory.', 'success')
+
+        # Notify the firm
+        _send_firm_notification(
+            showcase.law_firm,
+            title=f'🎉 Your Showcase Profile is Now Live!',
+            message=(
+                f'Congratulations! Your showcase profile for **{firm_name}** has been approved '
+                f'and is now live in the LAWCOLAB Law Firm Directory.\n\n'
+                f'🔗 Your profile is visible to thousands of potential clients searching for legal services.\n\n'
+                f'💡 **Robot Tip:** {_robot_recommendation(showcase)}\n\n'
+                f'Log in to your dashboard to view your profile statistics and manage client enquiries.'
+            ),
+            notif_type='general',
+            sent_by=current_user,
+        )
+
+        # Notify super admin log
+        _send_admin_notification(
+            title=f'Showcase Approved: {firm_name}',
+            message=f'You approved the showcase profile for {firm_name}. Firm notification sent automatically.',
+            link_url=f'/superadmin/directory/submissions/{showcase_id}/review',
+            notif_type='claim_approved',
+        )
+
+        flash(f'✅ {firm_name} approved and is now live. Firm has been notified.', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f'Error approving: {str(e)}', 'error')
@@ -97,12 +299,37 @@ def approve_submission(showcase_id):
 @require_super_admin
 def reject_submission(showcase_id):
     showcase = LawFirmShowcase.query.get_or_404(showcase_id)
+    firm_name = showcase.public_title or showcase.law_firm.name
     try:
         reason = request.form.get('reason', '').strip()
         showcase.submission_status = 'rejected'
         showcase.rejection_reason = reason
         db.session.commit()
-        flash(f'❌ {showcase.law_firm.name} submission rejected.', 'warning')
+
+        # Smart notification with AI recommendations
+        missing = _missing_fields(showcase)
+        tip_list = '\n'.join(f'• Add your {m}' for m in missing[:4]) if missing else ''
+        robot_msg = (
+            f'Your showcase profile for **{firm_name}** needs some updates before it can be published.\n\n'
+            f'📋 **Review Feedback:** {reason or "Profile requires more detail before approval."}\n\n'
+        )
+        if tip_list:
+            robot_msg += f'🤖 **Robot Recommendations — complete these to get approved:**\n{tip_list}\n\n'
+        robot_msg += (
+            f'Profile completeness: **{_completeness_score(showcase)}%**\n\n'
+            f'Log in to your dashboard, go to **Showcase Profile → Edit**, make the updates, '
+            f'and resubmit for review. We aim to review submissions within 24 hours.'
+        )
+
+        _send_firm_notification(
+            showcase.law_firm,
+            title='📋 Showcase Profile Needs Updates',
+            message=robot_msg,
+            notif_type='general',
+            sent_by=current_user,
+        )
+
+        flash(f'❌ {firm_name} rejected. Feedback sent to the firm.', 'warning')
     except Exception as e:
         db.session.rollback()
         flash(f'Error rejecting: {str(e)}', 'error')
@@ -116,8 +343,53 @@ def toggle_feature(showcase_id):
     showcase.is_featured = not showcase.is_featured
     db.session.commit()
     state = 'featured' if showcase.is_featured else 'unfeatured'
+    if showcase.is_featured:
+        _send_firm_notification(
+            showcase.law_firm,
+            title='⭐ Your Firm is Now Featured in the Spotlight!',
+            message=(
+                f'Great news! **{showcase.public_title or showcase.law_firm.name}** has been selected '
+                f'for the LAWCOLAB Spotlight — your profile will appear prominently at the top of the directory '
+                f'and on the homepage, giving you maximum visibility with potential clients.'
+            ),
+            notif_type='general',
+            sent_by=current_user,
+        )
     return jsonify({'success': True, 'is_featured': showcase.is_featured,
                     'message': f'Firm {state} in spotlight.'})
+
+
+@dir_admin_bp.route('/submissions/<int:showcase_id>/robot-notify', methods=['POST'])
+@require_super_admin
+def robot_notify_firm(showcase_id):
+    """Send AI robot recommendations to the firm to help them improve their profile."""
+    showcase = LawFirmShowcase.query.get_or_404(showcase_id)
+    firm_name = showcase.public_title or showcase.law_firm.name
+    score = _completeness_score(showcase)
+    robot_msg = _robot_recommendation(showcase)
+    missing = _missing_fields(showcase)
+
+    full_message = (
+        f'🤖 **LAWCOLAB Robot Analysis for {firm_name}**\n\n'
+        f'{robot_msg}\n\n'
+        f'📊 **Profile Completeness: {score}%**\n'
+    )
+    if missing:
+        full_message += '\n**Missing items:**\n' + '\n'.join(f'• {m}' for m in missing)
+    full_message += (
+        '\n\nLog in to your dashboard and go to **Showcase Profile → Edit** to make improvements. '
+        'A complete profile is approved faster and gets significantly more enquiries.'
+    )
+
+    _send_firm_notification(
+        showcase.law_firm,
+        title=f'🤖 Robot Profile Analysis: {score}% Complete',
+        message=full_message,
+        notif_type='general',
+        sent_by=current_user,
+    )
+
+    return jsonify({'success': True, 'message': f'Robot analysis sent to {firm_name}.', 'score': score})
 
 
 # ─── External (Google Maps) Directory ─────────────────────────────────────────

@@ -1,96 +1,651 @@
 {% extends "base.html" %}
 {% block title %}Showcase Submissions — Directory CRM{% endblock %}
+
 {% block content %}
-<div class="container-fluid py-4">
-  <div class="d-flex align-items-center gap-3 mb-4">
-    <a href="{{ url_for('dir_admin.index') }}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;"><i class="fas fa-arrow-left"></i></a>
-    <h3 class="mb-0 fw-bold">Showcase Submissions</h3>
-  </div>
+<style>
+/* ── Page shell ── */
+.ss-header {
+    background: linear-gradient(135deg, #0d1b4b 0%, #1e3a8a 100%);
+    color: #fff;
+    padding: 1.5rem 0 1rem;
+    margin-bottom: 0;
+}
+.ss-header-inner { padding: 0 1.25rem; }
+@media(min-width:768px){ .ss-header-inner { padding: 0 2rem; } }
 
-  <!-- Status tabs -->
-  <ul class="nav nav-pills mb-4 gap-2">
-    {% for s, label in [('submitted','Pending'), ('approved','Approved'), ('rejected','Rejected'), ('draft','Drafts'), ('all','All')] %}
-    <li class="nav-item">
-      <a class="nav-link {% if status_filter == s %}active{% endif %}" href="?status={{ s }}" style="border-radius:50px;font-weight:600;{% if status_filter == s %}background:#0d1b4b;{% endif %}">
-        {{ label }}
-      </a>
-    </li>
-    {% endfor %}
-  </ul>
+/* ── Status tabs ── */
+.ss-tabs {
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 0 1.25rem;
+    scrollbar-width: none;
+}
+.ss-tabs::-webkit-scrollbar { display: none; }
+.ss-tab {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .85rem 1rem;
+    font-size: .88rem; font-weight: 600;
+    color: #6b7280;
+    border-bottom: 3px solid transparent;
+    text-decoration: none;
+    transition: color .15s, border-color .15s;
+    white-space: nowrap;
+}
+.ss-tab:hover { color: #0d1b4b; }
+.ss-tab.active { color: #0d1b4b; border-color: #FFD700; }
+.ss-tab-badge {
+    background: #f3f4f6; color: #374151;
+    font-size: .68rem; font-weight: 800;
+    padding: .12rem .5rem;
+    border-radius: 100px;
+    min-width: 20px; text-align: center;
+}
+.ss-tab.active .ss-tab-badge { background: #0d1b4b; color: #FFD700; }
+.ss-tab-badge.has-new { background: #ef4444; color: #fff; }
 
-  <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;overflow:hidden;">
-    <table class="table table-hover mb-0">
-      <thead style="background:#f8fafc;">
-        <tr>
-          <th class="ps-4">Firm</th>
-          <th>Submitted</th>
-          <th>Status</th>
-          <th>Completeness</th>
-          <th class="pe-4 text-end">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for sc in showcases.items %}
-        <tr>
-          <td class="ps-4">
-            <div class="d-flex align-items-center gap-3">
-              <div style="width:40px;height:40px;border-radius:8px;background:#f0f4ff;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
-                {% if sc.logo_image_url %}<img src="{{ sc.logo_image_url }}" style="width:100%;height:100%;object-fit:cover;">
-                {% else %}<i class="fas fa-balance-scale" style="color:#0d1b4b;font-size:.9rem;"></i>{% endif %}
-              </div>
-              <div>
-                <div class="fw-semibold" style="font-size:.9rem;">{{ sc.public_title or sc.law_firm.name }}</div>
-                <div class="text-muted" style="font-size:.75rem;">{{ sc.law_firm.email or '' }}</div>
-              </div>
-            </div>
-          </td>
-          <td class="text-muted" style="font-size:.82rem;">{{ sc.submitted_at.strftime('%b %d, %Y') if sc.submitted_at else '—' }}</td>
-          <td>
-            {% if sc.submission_status == 'approved' %}<span class="badge bg-success">Live</span>
-            {% elif sc.submission_status == 'submitted' %}<span class="badge bg-warning text-dark">Pending</span>
-            {% elif sc.submission_status == 'rejected' %}<span class="badge bg-danger">Rejected</span>
-            {% else %}<span class="badge bg-secondary">Draft</span>{% endif %}
-            {% if sc.is_featured %}<span class="badge bg-info ms-1">Featured</span>{% endif %}
-            {% if sc.is_verified %}<span class="badge" style="background:#2e7d32;font-size:.68rem;">✓ Verified</span>{% endif %}
-          </td>
-          <td>
-            {% set fields = [sc.logo_image_url, sc.hero_image_url, sc.public_description, sc.phone, sc.practice_areas_json, sc.locations_json] %}
-            {% set done = fields|select|list|length %}
-            <div style="display:flex;align-items:center;gap:.5rem;">
-              <div style="width:80px;height:6px;background:#e8ecf0;border-radius:50px;overflow:hidden;">
-                <div style="width:{{ (done/fields|length*100)|round }}%;height:100%;background:#0d1b4b;border-radius:50px;"></div>
-              </div>
-              <span style="font-size:.75rem;color:#888;">{{ (done/fields|length*100)|round|int }}%</span>
-            </div>
-          </td>
-          <td class="pe-4 text-end">
-            <div class="d-flex gap-1 justify-content-end">
-              <a href="{{ url_for('dir_admin.review_submission', showcase_id=sc.id) }}" class="btn btn-sm btn-outline-primary" style="border-radius:8px;">Review</a>
-              {% if sc.submission_status == 'submitted' %}
-              <form method="POST" action="{{ url_for('dir_admin.approve_submission', showcase_id=sc.id) }}" style="display:inline;">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn btn-sm btn-success" style="border-radius:8px;" onclick="return confirm('Approve and publish this firm?')">✓ Approve</button>
-              </form>
-              {% endif %}
-            </div>
-          </td>
-        </tr>
-        {% else %}
-        <tr><td colspan="5" class="text-center py-5 text-muted"><i class="fas fa-inbox fa-2x mb-2 d-block"></i>No submissions in this category</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+/* ── Filter bar ── */
+.ss-filter-bar {
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    padding: .75rem 1.25rem;
+}
+@media(min-width:768px){ .ss-filter-bar { padding: .75rem 2rem; } }
+.ss-filter-bar form { display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; }
+.ss-search-wrap { position: relative; flex: 1; min-width: 200px; }
+.ss-search-wrap i { position: absolute; left: .75rem; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: .85rem; }
+.ss-search-wrap input { padding-left: 2.2rem; border-radius: 10px; font-size: .875rem; }
 
-  <!-- Pagination -->
-  {% if showcases.pages > 1 %}
-  <nav class="mt-3">
-    <ul class="pagination justify-content-center">
-      {% if showcases.has_prev %}<li class="page-item"><a class="page-link" href="?status={{ status_filter }}&page={{ showcases.prev_num }}">‹</a></li>{% endif %}
-      {% for p in showcases.iter_pages() %}{% if p %}<li class="page-item {% if p == showcases.page %}active{% endif %}"><a class="page-link" href="?status={{ status_filter }}&page={{ p }}">{{ p }}</a></li>{% else %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}{% endfor %}
-      {% if showcases.has_next %}<li class="page-item"><a class="page-link" href="?status={{ status_filter }}&page={{ showcases.next_num }}">›</a></li>{% endif %}
-    </ul>
-  </nav>
-  {% endif %}
+/* ── Robot insight banner ── */
+.ss-robot-banner {
+    margin: 1rem 1.25rem 0;
+    background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+    border: 1px solid #c4b5fd;
+    border-radius: 14px;
+    padding: .9rem 1.1rem;
+}
+@media(min-width:768px){ .ss-robot-banner { margin: 1.25rem 2rem 0; } }
+.ss-robot-insight {
+    display: flex; align-items: flex-start; gap: .65rem;
+    font-size: .83rem; color: #3730a3;
+    padding: .3rem 0;
+}
+.ss-robot-insight + .ss-robot-insight { border-top: 1px solid rgba(99,102,241,.15); margin-top: .35rem; padding-top: .5rem; }
+.ss-robot-insight i { margin-top: .15rem; flex-shrink: 0; }
+
+/* ── Cards (mobile default) ── */
+.ss-list { padding: 1rem 1.25rem; }
+@media(min-width:768px){ .ss-list { padding: 1.25rem 2rem; } }
+
+.ss-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 1.1rem 1.25rem;
+    margin-bottom: .85rem;
+    transition: box-shadow .15s, border-color .15s;
+    position: relative;
+}
+.ss-card:hover { box-shadow: 0 4px 20px rgba(13,27,75,.08); border-color: #c7d2fe; }
+.ss-card-header { display: flex; gap: .85rem; align-items: flex-start; margin-bottom: .85rem; }
+.ss-avatar {
+    width: 48px; height: 48px;
+    border-radius: 10px;
+    background: #eef2ff;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; flex-shrink: 0;
+    border: 1px solid #e0e7ff;
+}
+.ss-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.ss-avatar i { color: #4f46e5; font-size: 1.2rem; }
+.ss-firm-name { font-weight: 700; color: #0d1b4b; font-size: .95rem; line-height: 1.3; }
+.ss-firm-email { font-size: .75rem; color: #9ca3af; margin-top: .1rem; }
+.ss-badges { display: flex; flex-wrap: wrap; gap: .3rem; margin-left: auto; flex-shrink: 0; }
+
+/* completeness bar */
+.ss-progress-wrap { margin-bottom: .85rem; }
+.ss-progress-label { display: flex; justify-content: space-between; font-size: .75rem; color: #6b7280; margin-bottom: .3rem; }
+.ss-progress-label strong { color: #0d1b4b; }
+.ss-progress { height: 8px; background: #f3f4f6; border-radius: 100px; overflow: hidden; }
+.ss-progress-fill { height: 100%; border-radius: 100px; transition: width .3s; }
+.ss-progress-fill.high { background: linear-gradient(90deg, #16a34a, #4ade80); }
+.ss-progress-fill.mid  { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.ss-progress-fill.low  { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+/* missing chips */
+.ss-missing { display: flex; flex-wrap: wrap; gap: .3rem; margin-bottom: .85rem; }
+.ss-chip {
+    display: inline-flex; align-items: center; gap: .25rem;
+    background: #fff7ed; color: #c2410c;
+    border: 1px solid #fed7aa;
+    font-size: .7rem; font-weight: 600;
+    padding: .15rem .55rem; border-radius: 100px;
+}
+.ss-chip i { font-size: .6rem; }
+
+/* meta row */
+.ss-meta { display: flex; align-items: center; gap: .65rem; flex-wrap: wrap; font-size: .78rem; color: #6b7280; margin-bottom: .85rem; }
+.ss-meta i { color: #9ca3af; }
+
+/* actions */
+.ss-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+.ss-btn { border-radius: 9px; font-size: .83rem; font-weight: 600; padding: .45rem .9rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: .35rem; text-decoration: none; transition: filter .15s; }
+.ss-btn:hover { filter: brightness(.93); }
+.ss-btn-review  { background: #eef2ff; color: #4f46e5; }
+.ss-btn-approve { background: #dcfce7; color: #15803d; }
+.ss-btn-reject  { background: #fee2e2; color: #b91c1c; }
+.ss-btn-robot   { background: #f5f3ff; color: #7c3aed; }
+.ss-btn-feature { background: #fffbeb; color: #92400e; }
+
+/* reject modal */
+.ss-reject-panel {
+    background: #fff5f5;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    padding: .85rem;
+    margin-top: .75rem;
+    display: none;
+}
+.ss-reject-panel.open { display: block; }
+
+/* ── Desktop table (≥992px) ── */
+@media(min-width:992px){
+    .ss-card-view { display: none; }
+    .ss-table-view { display: block; }
+}
+@media(max-width:991px){
+    .ss-card-view { display: block; }
+    .ss-table-view { display: none; }
+}
+
+/* table */
+.ss-table { background: #fff; border-radius: 16px; border: 1px solid #e5e7eb; overflow: hidden; }
+.ss-table table { margin: 0; }
+.ss-table thead th { background: #f9fafb; font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #6b7280; border-bottom: 1px solid #e5e7eb; padding: .85rem 1rem; white-space: nowrap; }
+.ss-table tbody td { padding: .85rem 1rem; vertical-align: middle; font-size: .875rem; border-bottom: 1px solid #f3f4f6; }
+.ss-table tbody tr:last-child td { border-bottom: none; }
+.ss-table tbody tr:hover td { background: #fafbff; }
+
+/* empty state */
+.ss-empty { text-align: center; padding: 4rem 1rem; color: #9ca3af; }
+.ss-empty i { font-size: 3rem; display: block; margin-bottom: 1rem; opacity: .35; }
+
+/* pagination */
+.ss-pagination { padding: 1rem 1.25rem; border-top: 1px solid #f3f4f6; background: #fff; border-radius: 0 0 16px 16px; }
+@media(min-width:768px){ .ss-pagination { padding: 1rem 2rem; } }
+</style>
+
+<!-- ── Page Header ── -->
+<div class="ss-header">
+    <div class="ss-header-inner">
+        <div class="d-flex align-items-center gap-3 mb-2">
+            <a href="{{ url_for('dir_admin.index') }}" class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border-radius:8px;padding:.35rem .75rem;">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div>
+                <h4 class="mb-0 fw-bold">Showcase Submissions</h4>
+                <div style="font-size:.78rem;color:rgba(255,255,255,.6);margin-top:.1rem;">
+                    <i class="fas fa-robot me-1" style="color:#FFD700;"></i>AI Robot · Profile Analysis &amp; Smart Notifications
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- ── Status Tabs ── -->
+<div class="ss-tabs">
+    {% for s, label in [('submitted','Pending'), ('approved','Approved'), ('rejected','Rejected'), ('draft','Drafts'), ('all','All')] %}
+    <a href="?status={{ s }}{% if search %}&q={{ search }}{% endif %}"
+       class="ss-tab{% if status_filter == s %} active{% endif %}">
+        {{ label }}
+        <span class="ss-tab-badge{% if s == 'submitted' and counts.submitted > 0 %} has-new{% endif %}">
+            {{ counts[s] }}
+        </span>
+    </a>
+    {% endfor %}
+</div>
+
+<!-- ── Filter Bar ── -->
+<div class="ss-filter-bar">
+    <form method="GET">
+        <input type="hidden" name="status" value="{{ status_filter }}">
+        <div class="ss-search-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" class="form-control form-control-sm" name="q"
+                   value="{{ search }}" placeholder="Search firm name or email…">
+        </div>
+        <select class="form-select form-select-sm" name="sort" style="width:auto;border-radius:10px;font-size:.83rem;">
+            <option value="newest" {{ 'selected' if sort == 'newest' }}>Newest first</option>
+            <option value="oldest" {{ 'selected' if sort == 'oldest' }}>Oldest first</option>
+            <option value="name"   {{ 'selected' if sort == 'name' }}>A–Z Name</option>
+        </select>
+        <button type="submit" class="btn btn-sm btn-primary" style="border-radius:10px;font-size:.83rem;">
+            <i class="fas fa-filter me-1"></i>Filter
+        </button>
+        {% if search %}
+        <a href="?status={{ status_filter }}" class="btn btn-sm btn-outline-secondary" style="border-radius:10px;font-size:.83rem;">
+            <i class="fas fa-times me-1"></i>Clear
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- ── Robot Insights Banner ── -->
+{% if pending_insights %}
+<div class="ss-robot-banner">
+    <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#6d28d9;margin-bottom:.5rem;">
+        <i class="fas fa-robot me-1"></i>Robot Analysis
+    </div>
+    {% for insight in pending_insights %}
+    <div class="ss-robot-insight">
+        <i class="{{ insight.icon }}" style="color:{{ insight.color }};"></i>
+        <span>{{ insight.text }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Flash messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div style="padding:.75rem 1.25rem 0;">
+{% for category, message in messages %}
+<div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'warning' }} alert-dismissible fade show mb-2" style="border-radius:12px;font-size:.88rem;">
+    <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }} me-2"></i>{{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<!-- ════════════════════════════════════════════════
+     CARD VIEW  (mobile / tablet < 992px)
+═════════════════════════════════════════════════ -->
+<div class="ss-list ss-card-view">
+    {% if scored %}
+    {% for item in scored %}
+    {% set sc = item.sc %}
+    {% set score = item.score %}
+    {% set missing = item.missing %}
+
+    <div class="ss-card">
+        <!-- Header -->
+        <div class="ss-card-header">
+            <div class="ss-avatar">
+                {% if sc.logo_image_url %}<img src="{{ sc.logo_image_url }}" alt="">
+                {% else %}<i class="fas fa-balance-scale"></i>{% endif %}
+            </div>
+            <div style="min-width:0;flex:1;">
+                <div class="ss-firm-name">{{ sc.public_title or sc.law_firm.name }}</div>
+                <div class="ss-firm-email">{{ sc.law_firm.email or '' }}</div>
+            </div>
+            <div class="ss-badges">
+                {% if sc.submission_status == 'approved' %}
+                    <span class="badge bg-success" style="font-size:.7rem;">Live</span>
+                {% elif sc.submission_status == 'submitted' %}
+                    <span class="badge bg-warning text-dark" style="font-size:.7rem;">Pending</span>
+                {% elif sc.submission_status == 'rejected' %}
+                    <span class="badge bg-danger" style="font-size:.7rem;">Rejected</span>
+                {% else %}
+                    <span class="badge bg-secondary" style="font-size:.7rem;">Draft</span>
+                {% endif %}
+                {% if sc.is_featured %}<span class="badge" style="background:#f59e0b;font-size:.7rem;">⭐ Featured</span>{% endif %}
+                {% if sc.is_verified %}<span class="badge" style="background:#15803d;font-size:.7rem;">✓ Verified</span>{% endif %}
+            </div>
+        </div>
+
+        <!-- Completeness bar -->
+        <div class="ss-progress-wrap">
+            <div class="ss-progress-label">
+                <span>Profile completeness</span>
+                <strong>{{ score }}%</strong>
+            </div>
+            <div class="ss-progress">
+                <div class="ss-progress-fill {{ 'high' if score >= 80 else 'mid' if score >= 50 else 'low' }}"
+                     style="width:{{ score }}%;"></div>
+            </div>
+        </div>
+
+        <!-- Missing chips -->
+        {% if missing %}
+        <div class="ss-missing">
+            {% for m in missing[:4] %}
+            <span class="ss-chip"><i class="fas fa-plus"></i>{{ m }}</span>
+            {% endfor %}
+            {% if missing|length > 4 %}<span class="ss-chip" style="background:#f1f5f9;color:#475569;border-color:#e2e8f0;">+{{ missing|length - 4 }} more</span>{% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Meta -->
+        <div class="ss-meta">
+            <span><i class="fas fa-clock"></i>{{ sc.submitted_at.strftime('%d %b %Y') if sc.submitted_at else 'Not submitted' }}</span>
+            {% if sc.firm_size %}<span><i class="fas fa-users"></i>{{ sc.firm_size }}</span>{% endif %}
+            {% if sc.practice_areas %}<span><i class="fas fa-gavel"></i>{{ sc.practice_areas[:2]|join(', ') }}{% if sc.practice_areas|length > 2 %} +{{ sc.practice_areas|length - 2 }}{% endif %}</span>{% endif %}
+        </div>
+
+        <!-- Actions -->
+        <div class="ss-actions">
+            <a href="{{ url_for('dir_admin.review_submission', showcase_id=sc.id) }}" class="ss-btn ss-btn-review">
+                <i class="fas fa-eye"></i>Review
+            </a>
+            {% if sc.submission_status == 'submitted' %}
+            <form method="POST" action="{{ url_for('dir_admin.approve_submission', showcase_id=sc.id) }}" style="display:contents;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="ss-btn ss-btn-approve" onclick="return confirm('Approve & publish {{ (sc.public_title or sc.law_firm.name)|replace("'","'") }}?')">
+                    <i class="fas fa-check"></i>Approve
+                </button>
+            </form>
+            <button class="ss-btn ss-btn-reject" onclick="toggleReject(this)">
+                <i class="fas fa-times"></i>Reject
+            </button>
+            {% endif %}
+            {% if sc.submission_status == 'approved' %}
+            <button class="ss-btn ss-btn-feature" onclick="toggleFeature({{ sc.id }}, this)">
+                <i class="fas fa-star"></i>{% if sc.is_featured %}Unfeature{% else %}Feature{% endif %}
+            </button>
+            {% endif %}
+            <button class="ss-btn ss-btn-robot" onclick="sendRobotNotify({{ sc.id }}, this)"
+                    title="Send AI robot analysis to firm">
+                <i class="fas fa-robot"></i>Notify
+            </button>
+        </div>
+
+        <!-- Reject panel (inline) -->
+        {% if sc.submission_status == 'submitted' %}
+        <div class="ss-reject-panel" id="rp-{{ sc.id }}">
+            <form method="POST" action="{{ url_for('dir_admin.reject_submission', showcase_id=sc.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <label class="form-label fw-semibold" style="font-size:.82rem;">Rejection reason (sent to firm):</label>
+                <textarea class="form-control mb-2" name="reason" rows="2" required
+                          placeholder="e.g. Please add a firm logo and description before resubmitting."
+                          style="border-radius:8px;font-size:.82rem;"></textarea>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-danger btn-sm" style="border-radius:8px;font-size:.82rem;">
+                        <i class="fas fa-times me-1"></i>Confirm Rejection
+                    </button>
+                    <button type="button" class="btn btn-light btn-sm" style="border-radius:8px;font-size:.82rem;"
+                            onclick="closeReject('{{ sc.id }}')">Cancel</button>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+
+        {% if sc.rejection_reason %}
+        <div style="margin-top:.75rem;padding:.65rem .85rem;background:#fff5f5;border:1px solid #fecaca;border-radius:10px;font-size:.78rem;color:#b91c1c;">
+            <i class="fas fa-exclamation-circle me-1"></i><strong>Rejection note:</strong> {{ sc.rejection_reason }}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="ss-empty">
+        <i class="fas fa-inbox"></i>
+        No submissions in this category
+        {% if search %}<p class="mt-2" style="font-size:.88rem;">Try clearing the search filter.</p>{% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- ════════════════════════════════════════════════
+     TABLE VIEW  (desktop ≥ 992px)
+═════════════════════════════════════════════════ -->
+<div class="ss-list ss-table-view" style="padding-top:1.25rem;">
+    <div class="ss-table">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th style="padding-left:1.5rem;">Firm</th>
+                    <th>Status</th>
+                    <th>Completeness</th>
+                    <th>Submitted</th>
+                    <th>Practice Areas</th>
+                    <th class="text-end" style="padding-right:1.5rem;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for item in scored %}
+            {% set sc = item.sc %}
+            {% set score = item.score %}
+            {% set missing = item.missing %}
+            <tr>
+                <td style="padding-left:1.5rem;">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="ss-avatar" style="width:40px;height:40px;border-radius:8px;">
+                            {% if sc.logo_image_url %}<img src="{{ sc.logo_image_url }}" alt="">
+                            {% else %}<i class="fas fa-balance-scale" style="font-size:.9rem;"></i>{% endif %}
+                        </div>
+                        <div>
+                            <div class="fw-semibold" style="font-size:.88rem;color:#0d1b4b;">{{ sc.public_title or sc.law_firm.name }}</div>
+                            <div style="font-size:.72rem;color:#9ca3af;">{{ sc.law_firm.email or '' }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    {% if sc.submission_status == 'approved' %}<span class="badge bg-success">Live</span>
+                    {% elif sc.submission_status == 'submitted' %}<span class="badge bg-warning text-dark">Pending</span>
+                    {% elif sc.submission_status == 'rejected' %}<span class="badge bg-danger">Rejected</span>
+                    {% else %}<span class="badge bg-secondary">Draft</span>{% endif %}
+                    {% if sc.is_featured %}<span class="badge ms-1" style="background:#f59e0b;font-size:.65rem;">⭐</span>{% endif %}
+                    {% if sc.is_verified %}<span class="badge ms-1" style="background:#15803d;font-size:.65rem;">✓</span>{% endif %}
+                </td>
+                <td style="min-width:140px;">
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="flex:1;height:6px;background:#f3f4f6;border-radius:100px;overflow:hidden;">
+                            <div style="width:{{ score }}%;height:100%;border-radius:100px;background:{{ '#16a34a' if score >= 80 else '#f59e0b' if score >= 50 else '#ef4444' }};"></div>
+                        </div>
+                        <span style="font-size:.75rem;font-weight:700;color:{{ '#16a34a' if score >= 80 else '#f59e0b' if score >= 50 else '#ef4444' }};">{{ score }}%</span>
+                    </div>
+                    {% if missing %}<div style="font-size:.67rem;color:#9ca3af;margin-top:.2rem;">Missing: {{ missing[:2]|join(', ') }}{% if missing|length > 2 %} +{{ missing|length - 2 }}{% endif %}</div>{% endif %}
+                </td>
+                <td style="font-size:.82rem;color:#6b7280;white-space:nowrap;">
+                    {{ sc.submitted_at.strftime('%d %b %Y') if sc.submitted_at else '—' }}
+                </td>
+                <td>
+                    {% if sc.practice_areas %}
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for a in sc.practice_areas[:2] %}
+                        <span style="background:#f0f4ff;color:#0d1b4b;font-size:.65rem;font-weight:600;padding:.1rem .45rem;border-radius:100px;">{{ a }}</span>
+                        {% endfor %}
+                        {% if sc.practice_areas|length > 2 %}<span style="font-size:.65rem;color:#9ca3af;">+{{ sc.practice_areas|length - 2 }}</span>{% endif %}
+                    </div>
+                    {% else %}<span style="font-size:.75rem;color:#9ca3af;">—</span>{% endif %}
+                </td>
+                <td class="text-end" style="padding-right:1.5rem;">
+                    <div class="d-flex gap-1 justify-content-end align-items-center">
+                        <a href="{{ url_for('dir_admin.review_submission', showcase_id=sc.id) }}"
+                           class="btn btn-sm" style="background:#eef2ff;color:#4f46e5;border-radius:8px;font-size:.78rem;" title="Review">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        {% if sc.submission_status == 'submitted' %}
+                        <form method="POST" action="{{ url_for('dir_admin.approve_submission', showcase_id=sc.id) }}" style="display:contents;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm" style="background:#dcfce7;color:#15803d;border-radius:8px;font-size:.78rem;" title="Approve"
+                                    onclick="return confirm('Approve {{ (sc.public_title or sc.law_firm.name)|replace("'","'") }}?')">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </form>
+                        <button class="btn btn-sm" style="background:#fee2e2;color:#b91c1c;border-radius:8px;font-size:.78rem;"
+                                title="Reject" data-bs-toggle="modal" data-bs-target="#rejectModal{{ sc.id }}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        {% endif %}
+                        {% if sc.submission_status == 'approved' %}
+                        <button class="btn btn-sm" style="background:#fffbeb;color:#92400e;border-radius:8px;font-size:.78rem;"
+                                onclick="toggleFeature({{ sc.id }}, this)" title="{{ 'Unfeature' if sc.is_featured else 'Feature' }}">
+                            <i class="fas fa-star"></i>
+                        </button>
+                        {% endif %}
+                        <button class="btn btn-sm" style="background:#f5f3ff;color:#7c3aed;border-radius:8px;font-size:.78rem;"
+                                onclick="sendRobotNotify({{ sc.id }}, this)" title="Send robot analysis to firm">
+                            <i class="fas fa-robot"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+
+            <!-- Reject modal (desktop) -->
+            {% if sc.submission_status == 'submitted' %}
+            <div class="modal fade" id="rejectModal{{ sc.id }}" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content" style="border-radius:16px;">
+                        <div class="modal-header border-0">
+                            <h5 class="modal-title text-danger"><i class="fas fa-times-circle me-2"></i>Reject Submission</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form method="POST" action="{{ url_for('dir_admin.reject_submission', showcase_id=sc.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <div class="modal-body">
+                                <p class="text-muted mb-3" style="font-size:.88rem;">
+                                    This feedback will be sent to <strong>{{ sc.law_firm.name }}</strong> along with the AI robot's recommendations.
+                                </p>
+                                <textarea class="form-control" name="reason" rows="3" required
+                                          placeholder="e.g. Please add a firm logo, complete the description, and list your main practice areas before resubmitting."
+                                          style="border-radius:10px;font-size:.85rem;"></textarea>
+                            </div>
+                            <div class="modal-footer border-0">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-danger" style="border-radius:10px;">
+                                    <i class="fas fa-times me-1"></i>Reject &amp; Notify Firm
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% else %}
+            <tr>
+                <td colspan="6" class="ss-empty">
+                    <i class="fas fa-inbox"></i>
+                    No submissions in this category
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Pagination (inside table card) -->
+        {% if showcases.pages > 1 %}
+        <div class="ss-pagination">
+            <nav>
+                <ul class="pagination justify-content-center mb-0" style="font-size:.85rem;">
+                    {% if showcases.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="?status={{ status_filter }}&q={{ search }}&sort={{ sort }}&page={{ showcases.prev_num }}" style="border-radius:8px;">‹</a>
+                    </li>
+                    {% endif %}
+                    {% for p in showcases.iter_pages(left_edge=2, right_edge=2, left_current=2, right_current=2) %}
+                        {% if p %}
+                        <li class="page-item {{ 'active' if p == showcases.page }}">
+                            <a class="page-link" href="?status={{ status_filter }}&q={{ search }}&sort={{ sort }}&page={{ p }}" style="border-radius:8px;">{{ p }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if showcases.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?status={{ status_filter }}&q={{ search }}&sort={{ sort }}&page={{ showcases.next_num }}" style="border-radius:8px;">›</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Mobile pagination -->
+{% if showcases.pages > 1 %}
+<div class="ss-card-view" style="padding:0 1.25rem 1.5rem;text-align:center;">
+    <nav>
+        <ul class="pagination justify-content-center mb-0" style="font-size:.82rem;">
+            {% if showcases.has_prev %}<li class="page-item"><a class="page-link" href="?status={{ status_filter }}&q={{ search }}&sort={{ sort }}&page={{ showcases.prev_num }}">‹ Prev</a></li>{% endif %}
+            <li class="page-item active"><span class="page-link">{{ showcases.page }} / {{ showcases.pages }}</span></li>
+            {% if showcases.has_next %}<li class="page-item"><a class="page-link" href="?status={{ status_filter }}&q={{ search }}&sort={{ sort }}&page={{ showcases.next_num }}">Next ›</a></li>{% endif %}
+        </ul>
+    </nav>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* ── Reject panel toggle (mobile) ── */
+function toggleReject(btn) {
+    var card = btn.closest('.ss-card');
+    var panel = card.querySelector('.ss-reject-panel');
+    if (panel) {
+        panel.classList.toggle('open');
+        if (panel.classList.contains('open')) btn.textContent = '✕ Cancel';
+        else btn.innerHTML = '<i class="fas fa-times"></i> Reject';
+    }
+}
+function closeReject(id) {
+    var panel = document.getElementById('rp-' + id);
+    if (panel) panel.classList.remove('open');
+    var card = panel && panel.closest('.ss-card');
+    if (card) {
+        var btn = card.querySelector('.ss-btn-reject');
+        if (btn) btn.innerHTML = '<i class="fas fa-times"></i> Reject';
+    }
+}
+
+/* ── Feature toggle (AJAX) ── */
+function toggleFeature(id, btn) {
+    var token = document.querySelector('meta[name="csrf-token"]') ?
+        document.querySelector('meta[name="csrf-token"]').content : '';
+    fetch('/superadmin/directory/submissions/' + id + '/feature', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'csrf_token=' + encodeURIComponent(token)
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+        if (d.success) {
+            btn.textContent = d.is_featured ? '★ Unfeature' : '☆ Feature';
+            showToast(d.message, 'success');
+        }
+    });
+}
+
+/* ── Robot notify (AJAX) ── */
+function sendRobotNotify(id, btn) {
+    var orig = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+    var token = document.querySelector('meta[name="csrf-token"]') ?
+        document.querySelector('meta[name="csrf-token"]').content : '';
+    fetch('/superadmin/directory/submissions/' + id + '/robot-notify', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'csrf_token=' + encodeURIComponent(token)
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+        btn.disabled = false;
+        btn.innerHTML = orig;
+        showToast(d.message || 'Notification sent!', d.success ? 'success' : 'error');
+    })
+    .catch(function(){
+        btn.disabled = false;
+        btn.innerHTML = orig;
+        showToast('Error sending notification.', 'error');
+    });
+}
+
+/* ── Toast helper ── */
+function showToast(msg, type) {
+    var el = document.createElement('div');
+    el.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;padding:.75rem 1.25rem;border-radius:12px;font-size:.88rem;font-weight:600;color:#fff;max-width:320px;box-shadow:0 8px 24px rgba(0,0,0,.18);transition:opacity .3s;';
+    el.style.background = type === 'success' ? '#15803d' : '#b91c1c';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(function(){ el.style.opacity = '0'; setTimeout(function(){ el.remove(); }, 300); }, 3500);
+}
+</script>
 {% endblock %}

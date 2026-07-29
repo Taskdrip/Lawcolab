@@ -1,109 +1,374 @@
 {% extends "base.html" %}
 {% block title %}Review: {{ showcase.law_firm.name }}{% endblock %}
+
 {% block content %}
-<div class="container py-4">
-  <div class="d-flex align-items-center gap-3 mb-4">
-    <a href="{{ url_for('dir_admin.submissions') }}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;"><i class="fas fa-arrow-left"></i></a>
-    <h3 class="mb-0 fw-bold">Review Submission: {{ showcase.public_title or showcase.law_firm.name }}</h3>
-    {% if showcase.submission_status == 'submitted' %}<span class="badge bg-warning text-dark fs-6">Pending Review</span>
-    {% elif showcase.submission_status == 'approved' %}<span class="badge bg-success fs-6">Live</span>
-    {% elif showcase.submission_status == 'rejected' %}<span class="badge bg-danger fs-6">Rejected</span>
-    {% else %}<span class="badge bg-secondary fs-6">Draft</span>{% endif %}
-  </div>
+<style>
+.rv-hero { height: 220px; overflow: hidden; position: relative; }
+.rv-hero img { width: 100%; height: 100%; object-fit: cover; }
+.rv-hero-empty { height: 160px; background: linear-gradient(135deg, #0d1b4b, #1a3a6b); }
+.rv-card { background: #fff; border-radius: 16px; border: 1px solid #e5e7eb; overflow: hidden; margin-bottom: 1.25rem; }
+.rv-card-body { padding: 1.25rem 1.5rem; }
+.rv-logo {
+    width: 72px; height: 72px; border-radius: 14px;
+    border: 4px solid #fff; background: #f0f4ff;
+    box-shadow: 0 4px 16px rgba(0,0,0,.12);
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+    margin-top: -36px; margin-bottom: 1rem;
+}
+.rv-logo img { width: 100%; height: 100%; object-fit: cover; }
+.rv-logo i { color: #0d1b4b; font-size: 1.5rem; }
+.rv-section-title { font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: #9ca3af; margin-bottom: .6rem; }
 
-  <div class="row g-4">
-    <div class="col-lg-8">
-      <!-- Profile preview -->
-      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;overflow:hidden;margin-bottom:1.5rem;">
-        {% if showcase.hero_image_url %}
-        <div style="height:200px;overflow:hidden;"><img src="{{ showcase.hero_image_url }}" alt="" style="width:100%;height:100%;object-fit:cover;"></div>
-        {% else %}
-        <div style="height:120px;background:linear-gradient(135deg,#0d1b4b,#1a3a6b);"></div>
-        {% endif %}
-        <div style="padding:1.5rem;margin-top:-24px;position:relative;">
-          <div style="width:72px;height:72px;border-radius:14px;border:4px solid #fff;background:#f0f4ff;box-shadow:0 4px 16px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:1rem;">
-            {% if showcase.logo_image_url %}<img src="{{ showcase.logo_image_url }}" style="width:100%;height:100%;object-fit:cover;">{% else %}<i class="fas fa-balance-scale" style="color:#0d1b4b;font-size:1.5rem;"></i>{% endif %}
-          </div>
-          <h4 class="fw-bold">{{ showcase.public_title or showcase.law_firm.name }}</h4>
-          {% if showcase.tagline %}<p class="text-muted fst-italic">{{ showcase.tagline }}</p>{% endif %}
-          <p>{{ showcase.public_description or '(No description)' }}</p>
+/* Completeness ring */
+.rv-ring-wrap { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 1.25rem; }
+.rv-ring-svg { flex-shrink: 0; }
+.rv-ring-text strong { font-size: 1.4rem; font-weight: 900; color: #0d1b4b; }
+.rv-ring-text p { font-size: .82rem; color: #6b7280; margin: 0; }
 
-          <div class="row g-3 mt-2">
-            <div class="col-md-6">
-              <div class="text-muted small fw-semibold mb-1">CONTACT</div>
-              {% if showcase.phone %}<div><i class="fas fa-phone me-1 text-primary"></i> {{ showcase.phone }}</div>{% endif %}
-              {% if showcase.whatsapp %}<div><i class="fab fa-whatsapp me-1 text-success"></i> {{ showcase.whatsapp }}</div>{% endif %}
-              {% if showcase.website_url %}<div><i class="fas fa-globe me-1" style="color:#0d1b4b;"></i> <a href="{{ showcase.website_url }}" target="_blank">{{ showcase.website_url }}</a></div>{% endif %}
+/* Missing list */
+.rv-missing-item {
+    display: flex; align-items: center; gap: .65rem;
+    padding: .45rem 0;
+    font-size: .85rem; color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+}
+.rv-missing-item:last-child { border-bottom: none; }
+.rv-missing-dot { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; flex-shrink: 0; }
+
+/* Robot panel */
+.rv-robot-panel {
+    background: linear-gradient(135deg, #1e1b4b, #312e81);
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+    color: #fff;
+}
+.rv-robot-header { display: flex; align-items: center; gap: .65rem; margin-bottom: .85rem; }
+.rv-robot-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,.1); display: flex; align-items: center; justify-content: center; }
+.rv-robot-icon i { color: #FFD700; font-size: 1rem; }
+.rv-robot-label { font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: rgba(255,255,255,.55); }
+.rv-robot-name { font-weight: 700; color: #fff; font-size: .9rem; }
+.rv-robot-msg { font-size: .88rem; line-height: 1.75; color: rgba(255,255,255,.82); }
+.rv-robot-actions { margin-top: 1rem; display: flex; gap: .5rem; flex-wrap: wrap; }
+.rv-robot-btn { background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.15); border-radius: 9px; font-size: .78rem; font-weight: 600; padding: .4rem .85rem; cursor: pointer; transition: background .15s; display: inline-flex; align-items: center; gap: .35rem; }
+.rv-robot-btn:hover { background: rgba(255,255,255,.22); }
+
+/* Actions sidebar */
+.rv-action-panel { position: sticky; top: 80px; }
+.rv-action-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 1.25rem; margin-bottom: 1rem; }
+.rv-act-btn { width: 100%; border-radius: 11px; font-weight: 700; padding: .65rem 1rem; margin-bottom: .5rem; display: flex; align-items: center; justify-content: center; gap: .45rem; font-size: .9rem; }
+
+/* Chip tags */
+.rv-chip { display: inline-block; background: #f0f4ff; color: #0d1b4b; font-size: .75rem; font-weight: 600; padding: .2rem .65rem; border-radius: 50px; margin: .15rem; }
+</style>
+
+<div class="container-fluid py-4" style="max-width:1200px;">
+
+    <!-- Breadcrumb + title -->
+    <div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
+        <a href="{{ url_for('dir_admin.submissions') }}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;white-space:nowrap;">
+            <i class="fas fa-arrow-left me-1"></i>All Submissions
+        </a>
+        <div>
+            <h4 class="mb-0 fw-bold">{{ showcase.public_title or showcase.law_firm.name }}</h4>
+            <div style="font-size:.78rem;color:#6b7280;margin-top:.15rem;">
+                Reviewing showcase submission — ID #{{ showcase.id }}
             </div>
-            <div class="col-md-6">
-              <div class="text-muted small fw-semibold mb-1">PRACTICE AREAS</div>
-              {% if showcase.practice_areas %}
-              <div class="d-flex flex-wrap gap-1">{% for a in showcase.practice_areas %}<span style="background:#f0f4ff;color:#0d1b4b;font-size:.75rem;font-weight:600;padding:.2rem .65rem;border-radius:50px;">{{ a }}</span>{% endfor %}</div>
-              {% else %}<span class="text-muted small">None listed</span>{% endif %}
-            </div>
-            <div class="col-md-6">
-              <div class="text-muted small fw-semibold mb-1">LOCATIONS</div>
-              {% if showcase.locations %}
-              {% for loc in showcase.locations %}<div class="small"><i class="fas fa-map-marker-alt me-1 text-danger"></i>{{ loc.get('city','') }}{% if loc.get('state') %}, {{ loc.get('state') }}{% endif %} {{ '(Main)' if loc.get('is_primary') else '' }}</div>{% endfor %}
-              {% else %}<span class="text-muted small">None listed</span>{% endif %}
-            </div>
-            <div class="col-md-6">
-              <div class="text-muted small fw-semibold mb-1">SOCIAL</div>
-              {% if showcase.linkedin_url %}<div class="small"><i class="fab fa-linkedin text-primary me-1"></i>LinkedIn</div>{% endif %}
-              {% if showcase.twitter_url %}<div class="small"><i class="fab fa-twitter" style="color:#1da1f2;" ></i> Twitter</div>{% endif %}
-              {% if showcase.facebook_url %}<div class="small"><i class="fab fa-facebook" style="color:#1877f2;"></i> Facebook</div>{% endif %}
-              {% if showcase.instagram_url %}<div class="small"><i class="fab fa-instagram" style="color:#c13584;"></i> Instagram</div>{% endif %}
-            </div>
-          </div>
         </div>
-      </div>
+        <div class="ms-auto d-flex gap-2 flex-wrap">
+            {% if showcase.submission_status == 'approved' %}<span class="badge bg-success">Live</span>
+            {% elif showcase.submission_status == 'submitted' %}<span class="badge bg-warning text-dark">Pending Review</span>
+            {% elif showcase.submission_status == 'rejected' %}<span class="badge bg-danger">Rejected</span>
+            {% else %}<span class="badge bg-secondary">Draft</span>{% endif %}
+            {% if showcase.is_featured %}<span class="badge" style="background:#f59e0b;">⭐ Featured</span>{% endif %}
+            {% if showcase.is_verified %}<span class="badge" style="background:#15803d;">✓ Verified</span>{% endif %}
+        </div>
     </div>
 
-    <!-- Actions Panel -->
-    <div class="col-lg-4">
-      <div style="background:#fff;border-radius:16px;border:1px solid #e8ecf0;padding:1.5rem;position:sticky;top:80px;">
-        <h6 class="fw-bold mb-3">Actions</h6>
-
-        {% if showcase.submission_status == 'submitted' %}
-        <form method="POST" action="{{ url_for('dir_admin.approve_submission', showcase_id=showcase.id) }}" class="mb-2">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button type="submit" class="btn btn-success fw-bold w-100" style="border-radius:10px;">
-            <i class="fas fa-check-circle me-2"></i>Approve & Publish
-          </button>
-        </form>
-
-        <button class="btn btn-danger fw-bold w-100 mb-3" style="border-radius:10px;" data-bs-toggle="collapse" data-bs-target="#rejectForm">
-          <i class="fas fa-times-circle me-2"></i>Reject
-        </button>
-        <div class="collapse mb-3" id="rejectForm">
-          <form method="POST" action="{{ url_for('dir_admin.reject_submission', showcase_id=showcase.id) }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <textarea class="form-control mb-2" name="reason" rows="3" placeholder="Reason for rejection (shown to the firm)..." required style="border-radius:10px;font-size:.85rem;"></textarea>
-            <button type="submit" class="btn btn-danger w-100" style="border-radius:8px;">Confirm Rejection</button>
-          </form>
-        </div>
-        {% endif %}
-
-        {% if showcase.submission_status == 'approved' %}
-        <form method="POST" action="{{ url_for('dir_admin.toggle_feature', showcase_id=showcase.id) }}" class="mb-2">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button type="submit" class="btn {% if showcase.is_featured %}btn-warning{% else %}btn-outline-warning{% endif %} w-100 fw-bold" style="border-radius:10px;">
-            <i class="fas fa-star me-2"></i>{% if showcase.is_featured %}Unfeature{% else %}Feature in Spotlight{% endif %}
-          </button>
-        </form>
-        {% endif %}
-
-        <!-- Firm info -->
-        <hr>
-        <div class="text-muted small">
-          <div><strong>Law Firm:</strong> {{ showcase.law_firm.name }}</div>
-          <div><strong>Email:</strong> {{ showcase.law_firm.email or '—' }}</div>
-          <div><strong>Submitted:</strong> {{ showcase.submitted_at.strftime('%b %d, %Y %H:%M') if showcase.submitted_at else '—' }}</div>
-          {% if showcase.approved_at %}<div><strong>Approved:</strong> {{ showcase.approved_at.strftime('%b %d, %Y') }}</div>{% endif %}
-          {% if showcase.rejection_reason %}<div class="mt-2 text-danger"><strong>Last rejection:</strong> {{ showcase.rejection_reason }}</div>{% endif %}
-        </div>
-      </div>
+    <!-- Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'warning' }} alert-dismissible fade show mb-3" style="border-radius:12px;font-size:.88rem;">
+        <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }} me-2"></i>{{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
-  </div>
+    {% endfor %}{% endif %}{% endwith %}
+
+    <div class="row g-4">
+        <!-- LEFT: Profile preview -->
+        <div class="col-lg-8">
+
+            <!-- Hero + Profile Card -->
+            <div class="rv-card">
+                {% if showcase.hero_image_url %}
+                <div class="rv-hero"><img src="{{ showcase.hero_image_url }}" alt="Hero"></div>
+                {% else %}
+                <div class="rv-hero-empty"></div>
+                {% endif %}
+                <div class="rv-card-body" style="padding-top:0;">
+                    <div class="rv-logo">
+                        {% if showcase.logo_image_url %}<img src="{{ showcase.logo_image_url }}" alt="Logo">
+                        {% else %}<i class="fas fa-balance-scale"></i>{% endif %}
+                    </div>
+                    <h4 class="fw-bold mb-1">{{ showcase.public_title or showcase.law_firm.name }}</h4>
+                    {% if showcase.tagline %}<p class="text-muted fst-italic mb-2" style="font-size:.9rem;">{{ showcase.tagline }}</p>{% endif %}
+                    <p style="font-size:.9rem;line-height:1.7;color:#374151;">{{ showcase.public_description or '(No description provided)' }}</p>
+
+                    <div class="row g-3 mt-1">
+                        <div class="col-sm-6">
+                            <div class="rv-section-title">Contact</div>
+                            {% if showcase.phone %}<div style="font-size:.85rem;"><i class="fas fa-phone me-2 text-primary"></i>{{ showcase.phone }}</div>{% endif %}
+                            {% if showcase.whatsapp %}<div style="font-size:.85rem;"><i class="fab fa-whatsapp me-2 text-success"></i>{{ showcase.whatsapp }}</div>{% endif %}
+                            {% if showcase.website_url %}<div style="font-size:.85rem;"><i class="fas fa-globe me-2" style="color:#0d1b4b;"></i><a href="{{ showcase.website_url }}" target="_blank" class="text-decoration-none">{{ showcase.website_url[:40] }}{% if showcase.website_url|length > 40 %}…{% endif %}</a></div>{% endif %}
+                            {% if not showcase.phone and not showcase.whatsapp and not showcase.website_url %}<span class="text-muted small">None provided</span>{% endif %}
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="rv-section-title">Practice Areas</div>
+                            {% if showcase.practice_areas %}
+                            <div>{% for a in showcase.practice_areas %}<span class="rv-chip">{{ a }}</span>{% endfor %}</div>
+                            {% else %}<span class="text-muted small">None listed</span>{% endif %}
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="rv-section-title">Locations</div>
+                            {% if showcase.locations %}
+                            {% for loc in showcase.locations %}
+                            <div style="font-size:.83rem;"><i class="fas fa-map-marker-alt me-1 text-danger"></i>{{ loc.get('city','') }}{% if loc.get('state') %}, {{ loc.get('state') }}{% endif %}{% if loc.get('is_primary') %} <span style="color:#16a34a;font-size:.7rem;">(Main)</span>{% endif %}</div>
+                            {% endfor %}
+                            {% else %}<span class="text-muted small">None listed</span>{% endif %}
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="rv-section-title">Social Media</div>
+                            <div class="d-flex gap-2 flex-wrap">
+                                {% if showcase.linkedin_url %}<a href="{{ showcase.linkedin_url }}" target="_blank" style="color:#0077b5;font-size:1.1rem;"><i class="fab fa-linkedin"></i></a>{% endif %}
+                                {% if showcase.twitter_url %}<a href="{{ showcase.twitter_url }}" target="_blank" style="color:#1da1f2;font-size:1.1rem;"><i class="fab fa-twitter"></i></a>{% endif %}
+                                {% if showcase.facebook_url %}<a href="{{ showcase.facebook_url }}" target="_blank" style="color:#1877f2;font-size:1.1rem;"><i class="fab fa-facebook"></i></a>{% endif %}
+                                {% if showcase.instagram_url %}<a href="{{ showcase.instagram_url }}" target="_blank" style="color:#c13584;font-size:1.1rem;"><i class="fab fa-instagram"></i></a>{% endif %}
+                                {% if not showcase.linkedin_url and not showcase.twitter_url and not showcase.facebook_url and not showcase.instagram_url %}
+                                <span class="text-muted small">No social links</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if showcase.firm_size or showcase.founded_year %}
+                        <div class="col-sm-6">
+                            <div class="rv-section-title">Firm Info</div>
+                            {% if showcase.firm_size %}<div style="font-size:.83rem;"><i class="fas fa-users me-1 text-muted"></i>{{ showcase.firm_size }}</div>{% endif %}
+                            {% if showcase.founded_year %}<div style="font-size:.83rem;"><i class="fas fa-calendar me-1 text-muted"></i>Est. {{ showcase.founded_year }}</div>{% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Completeness Card -->
+            <div class="rv-card rv-card-body">
+                <div class="rv-section-title">Profile Completeness</div>
+                <div class="rv-ring-wrap">
+                    <!-- SVG ring -->
+                    {% set r = 36 %}{% set circ = (2 * 3.14159 * r)|round %}{% set dash = (score / 100 * circ)|round %}
+                    <svg class="rv-ring-svg" width="90" height="90" viewBox="0 0 90 90">
+                        <circle cx="45" cy="45" r="{{ r }}" fill="none" stroke="#f3f4f6" stroke-width="8"/>
+                        <circle cx="45" cy="45" r="{{ r }}" fill="none"
+                            stroke="{{ '#16a34a' if score >= 80 else '#f59e0b' if score >= 50 else '#ef4444' }}"
+                            stroke-width="8"
+                            stroke-dasharray="{{ dash }} {{ circ - dash }}"
+                            stroke-dashoffset="{{ circ * 0.25 }}"
+                            stroke-linecap="round"
+                            transform="rotate(-90 45 45)"/>
+                        <text x="45" y="49" text-anchor="middle" font-size="16" font-weight="900" fill="#0d1b4b">{{ score }}%</text>
+                    </svg>
+                    <div class="rv-ring-text">
+                        <strong>{{ score }}%</strong>
+                        <p>Profile completeness</p>
+                        {% if score >= 80 %}<span class="badge bg-success">Ready to approve</span>
+                        {% elif score >= 50 %}<span class="badge bg-warning text-dark">Needs improvement</span>
+                        {% else %}<span class="badge bg-danger">Incomplete</span>{% endif %}
+                    </div>
+                </div>
+                {% if missing %}
+                <div class="rv-section-title mt-2">Missing Fields</div>
+                <div>
+                {% for m in missing %}
+                <div class="rv-missing-item">
+                    <div class="rv-missing-dot"></div>
+                    <span>{{ m }}</span>
+                </div>
+                {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-success py-2 mb-0" style="border-radius:10px;font-size:.85rem;">
+                    <i class="fas fa-check-circle me-2"></i>All profile fields are complete — great work!
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Robot Analysis Card -->
+            <div class="rv-robot-panel">
+                <div class="rv-robot-header">
+                    <div class="rv-robot-icon"><i class="fas fa-robot"></i></div>
+                    <div>
+                        <div class="rv-robot-label">AI Robot Analysis</div>
+                        <div class="rv-robot-name">LAWCOLAB Intelligence</div>
+                    </div>
+                    <span style="margin-left:auto;background:rgba(255,255,255,.1);padding:.2rem .65rem;border-radius:100px;font-size:.72rem;font-weight:600;color:rgba(255,255,255,.7);">
+                        Score: {{ score }}%
+                    </span>
+                </div>
+                <div class="rv-robot-msg">{{ robot_rec }}</div>
+                <div class="rv-robot-actions">
+                    <button class="rv-robot-btn" onclick="sendRobotNotify({{ showcase.id }}, this)">
+                        <i class="fas fa-paper-plane"></i>Send This Analysis to Firm
+                    </button>
+                    <a href="{{ url_for('dir_admin.submissions') }}" class="rv-robot-btn">
+                        <i class="fas fa-list"></i>Back to Queue
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Actions Panel -->
+        <div class="col-lg-4">
+            <div class="rv-action-panel">
+
+                <!-- Primary actions -->
+                <div class="rv-action-card">
+                    <h6 class="fw-bold mb-3" style="color:#0d1b4b;"><i class="fas fa-cog me-2 text-muted"></i>Actions</h6>
+
+                    {% if showcase.submission_status == 'submitted' %}
+                    <form method="POST" action="{{ url_for('dir_admin.approve_submission', showcase_id=showcase.id) }}" class="mb-2">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-success rv-act-btn">
+                            <i class="fas fa-check-circle"></i>Approve &amp; Publish
+                        </button>
+                    </form>
+
+                    <button class="btn btn-danger rv-act-btn" data-bs-toggle="collapse" data-bs-target="#rejectCollapse" style="border-radius:11px;">
+                        <i class="fas fa-times-circle"></i>Reject Submission
+                    </button>
+                    <div class="collapse mt-2" id="rejectCollapse">
+                        <form method="POST" action="{{ url_for('dir_admin.reject_submission', showcase_id=showcase.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <textarea class="form-control mb-2" name="reason" rows="3" required
+                                      placeholder="Feedback for the firm (sent with robot recommendations)…"
+                                      style="border-radius:10px;font-size:.83rem;"></textarea>
+                            <button type="submit" class="btn btn-danger w-100" style="border-radius:10px;">
+                                <i class="fas fa-times me-1"></i>Confirm &amp; Notify Firm
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+
+                    {% if showcase.submission_status == 'approved' %}
+                    <button class="btn {% if showcase.is_featured %}btn-warning{% else %}btn-outline-warning{% endif %} rv-act-btn"
+                            id="featureBtn" onclick="toggleFeature({{ showcase.id }}, this)"
+                            style="border-radius:11px;">
+                        <i class="fas fa-star"></i>{% if showcase.is_featured %}Unfeature{% else %}Feature in Spotlight{% endif %}
+                    </button>
+                    {% endif %}
+
+                    <hr class="my-3">
+
+                    <button class="btn btn-outline-secondary rv-act-btn" style="border-radius:11px;font-size:.85rem;"
+                            onclick="sendRobotNotify({{ showcase.id }}, this)">
+                        <i class="fas fa-robot" style="color:#7c3aed;"></i>Send Robot Analysis to Firm
+                    </button>
+                </div>
+
+                <!-- Firm info -->
+                <div class="rv-action-card">
+                    <div class="rv-section-title">Firm Details</div>
+                    <div style="font-size:.85rem;display:flex;flex-direction:column;gap:.45rem;">
+                        <div><span class="text-muted">Name:</span> <strong>{{ showcase.law_firm.name }}</strong></div>
+                        <div><span class="text-muted">Email:</span> {{ showcase.law_firm.email or '—' }}</div>
+                        <div><span class="text-muted">Submitted:</span> {{ showcase.submitted_at.strftime('%d %b %Y %H:%M') if showcase.submitted_at else '—' }}</div>
+                        {% if showcase.approved_at %}<div><span class="text-muted">Approved:</span> {{ showcase.approved_at.strftime('%d %b %Y') }}</div>{% endif %}
+                        {% if showcase.total_views %}<div><span class="text-muted">Views:</span> {{ showcase.total_views }}</div>{% endif %}
+                        {% if showcase.average_rating %}<div><span class="text-muted">Rating:</span> ⭐ {{ showcase.average_rating|round(1) }} ({{ showcase.total_reviews }} reviews)</div>{% endif %}
+                    </div>
+                    {% if showcase.rejection_reason %}
+                    <div class="mt-3 p-2 rounded" style="background:#fff5f5;border:1px solid #fecaca;font-size:.78rem;color:#b91c1c;">
+                        <strong>Last rejection:</strong> {{ showcase.rejection_reason }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Completeness mini summary -->
+                <div class="rv-action-card">
+                    <div class="rv-section-title">Quick Checklist</div>
+                    {% set items = [
+                        ('Logo', showcase.logo_image_url),
+                        ('Hero image', showcase.hero_image_url),
+                        ('Description', showcase.public_description),
+                        ('Phone', showcase.phone),
+                        ('Practice areas', showcase.practice_areas_json),
+                        ('Locations', showcase.locations_json),
+                        ('Tagline', showcase.tagline),
+                        ('Website', showcase.website_url),
+                        ('Social media', showcase.linkedin_url or showcase.facebook_url or showcase.instagram_url),
+                    ] %}
+                    {% for label, val in items %}
+                    <div style="display:flex;align-items:center;gap:.5rem;padding:.3rem 0;border-bottom:1px solid #f3f4f6;font-size:.82rem;">
+                        <i class="fas fa-{{ 'check-circle' if val else 'times-circle' }}" style="color:{{ '#16a34a' if val else '#ef4444' }};width:16px;flex-shrink:0;"></i>
+                        <span style="color:{{ '#374151' if val else '#9ca3af' }};">{{ label }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleFeature(id, btn) {
+    var token = document.querySelector('meta[name="csrf-token"]') ?
+        document.querySelector('meta[name="csrf-token"]').content : '';
+    fetch('/superadmin/directory/submissions/' + id + '/feature', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'csrf_token=' + encodeURIComponent(token)
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+        if (d.success) {
+            btn.innerHTML = '<i class="fas fa-star"></i>' + (d.is_featured ? 'Unfeature' : 'Feature in Spotlight');
+            btn.className = d.is_featured ? 'btn btn-warning rv-act-btn' : 'btn btn-outline-warning rv-act-btn';
+            showToast(d.message, 'success');
+        }
+    });
+}
+
+function sendRobotNotify(id, btn) {
+    var orig = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…';
+    btn.disabled = true;
+    var token = document.querySelector('meta[name="csrf-token"]') ?
+        document.querySelector('meta[name="csrf-token"]').content : '';
+    fetch('/superadmin/directory/submissions/' + id + '/robot-notify', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'csrf_token=' + encodeURIComponent(token)
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+        btn.disabled = false;
+        btn.innerHTML = orig;
+        showToast(d.message || 'Robot analysis sent!', d.success ? 'success' : 'error');
+    })
+    .catch(function(){
+        btn.disabled = false;
+        btn.innerHTML = orig;
+        showToast('Error sending notification.', 'error');
+    });
+}
+
+function showToast(msg, type) {
+    var el = document.createElement('div');
+    el.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;padding:.75rem 1.25rem;border-radius:12px;font-size:.88rem;font-weight:600;color:#fff;max-width:320px;box-shadow:0 8px 24px rgba(0,0,0,.18);';
+    el.style.background = type === 'success' ? '#15803d' : '#b91c1c';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(function(){ el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(function(){ el.remove(); }, 300); }, 3500);
+}
+</script>
 {% endblock %}
